@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/meganindya/musicblocks-2.git"
+    "url": "git+https://github.com/sugarlabs/musicblocks-2.git"
   },
   "keywords": [
     "musicblocks"
@@ -17,9 +17,9 @@
   "author": "Anindya Kundu <anindya.k22@outlook.com> (https://github.com/meganindya/)",
   "license": "AGPL-3.0",
   "bugs": {
-    "url": "https://github.com/meganindya/musicblocks-2/issues"
+    "url": "https://github.com/sugarlabs/musicblocks-2/issues"
   },
-  "homepage": "https://github.com/meganindya/musicblocks-2#readme",
+  "homepage": "https://github.com/sugarlabs/musicblocks-2#readme",
   "dependencies": {
     "http-server": "^0.12.3"
   }

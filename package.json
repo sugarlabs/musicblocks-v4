@@ -1,0 +1,26 @@
+{
+  "name": "musicblocks-2",
+  "version": "0.1.0",
+  "description": "A complete overhaul of the original Music Blocks",
+  "private": true,
+  "scripts": {
+    "serve": "http-server -a localhost -p 5000 --cors",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meganindya/musicblocks-2.git"
+  },
+  "keywords": [
+    "musicblocks"
+  ],
+  "author": "Anindya Kundu <anindya.k22@outlook.com> (https://github.com/meganindya/)",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/meganindya/musicblocks-2/issues"
+  },
+  "homepage": "https://github.com/meganindya/musicblocks-2#readme",
+  "dependencies": {
+    "http-server": "^0.12.3"
+  }
+}

@@ -1,0 +1,4 @@
+[submodule "musicblocks"]
+	path = musicblocks-base
+	url = https://github.com/sugarlabs/musicblocks.git
+	branch = mb-2-base

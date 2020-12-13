@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  musicblocks:
+    build: ./
+    image: musicblocks:initial
+    env_file:
+      - ./env/.env
+    ports:
+      - "5000:80"
+    volumes:
+      - ./:/app/
+    container_name: musicblocks
+    stdin_open: true
+    tty: true

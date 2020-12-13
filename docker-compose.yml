@@ -3,6 +3,8 @@ services:
   musicblocks:
     build: ./
     image: musicblocks:initial
+    env_file:
+      - ./env/.env
     ports:
       - "5000:80"
     volumes:

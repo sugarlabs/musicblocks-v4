@@ -4,9 +4,10 @@ services:
     build: ./
     image: musicblocks:initial
     env_file:
-      - ./env/.env
+      - ./env/development.env
     ports:
-      - "5000:80"
+      - "5000:3000"
+      - "5001:80"
     volumes:
       - ./:/app/
     container_name: musicblocks

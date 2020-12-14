@@ -13,6 +13,7 @@ _This project is containerized using [**docker**](https://www.docker.com/). Ther
 **docker** to be installed on the development machine._
 
 1. Setup _docker_.
+
     - For _Linux_, [install _Docker Engine_](https://docs.docker.com/engine/install/).
     - For _Windows_ or _Mac_ (_x86_64 / amd64_),
     [install _Docker Desktop_](https://www.docker.com/products/docker-desktop).
@@ -141,3 +142,28 @@ spawned and standard input/output is connected to the terminal.
         ```
 
         This compilation produces `file.js`, `file.js.deps`, and `file.js.map`.
+
+## Editor
+
+_All code is just plain text, so it doesn't really matter what you use to edit them._ However, using
+modern, feature-rich IDEs/text-editors like [_**Atom**_](https://atom.io/),
+[_**Brackets**_](http://brackets.io/), [_**WebStorm**_](https://www.jetbrains.com/webstorm/),
+[_**Sublime Text**_](https://www.sublimetext.com/),
+[_**Visual Studio Code**_](https://code.visualstudio.com/), etc. makes life way easier. These come
+with a directory-tree explorer, and an integrated terminal, at the very least, while having support
+for plugins/extensions to expand their functionality.
+
+Some (non-exhaustive) benefits of using these are _syntax highlighting_,
+_warning/error annotations_, _formatting_, _auto-refactoring_, tons of customizable
+_keyboard shortcuts_, etc.
+
+**Visual Studio Code** (**VSCode**) is currently the most-popular code editor for reasons like being
+_lightweight_, _cleaner_, large marketplace of _extensions_, integrated _Source Control_ features,
+_debugger_, _remote explorer_ support, _Regular Expression_ (_regex_) based find/replace, etc.
+
+In fact, a workspace configuration file for _vscode_`.vscode/settings.json` has already been added.
+Recommended extensions for this project are `Babel JavaScript`, `Dart`, `Docker`, `ESLint`,
+`Git Graph`, `GitLens`, `markdownlint`, `Prettier`, `SCSS IntelliSense`, and `SVG`.
+
+All that, however, shouldn't necessarily stop you from using **Emacs**, **Nano**, or **Vim**, if
+that's your poison :D. Happy coding!

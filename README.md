@@ -1,5 +1,7 @@
 # Music Blocks 2
 
+[![GitHub Super-Linter](https://github.com/sugarlabs/musicblocks-2/workflows/Super-Linter/badge.svg)](https://github.com/marketplace/actions/super-linter)
+
 A complete overhaul of the original [Music Blocks](https://github.com/sugarlabs/musicblocks).
 
 ## Notes

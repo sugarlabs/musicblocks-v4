@@ -29,11 +29,28 @@ Windows) this repository using
     git clone https://github.com/sugarlabs/musicblocks-2.git
     ```
 
-4. Build _docker image_ (built only first time) and launch _docker network_ using
+4. Build _docker image_ and launch _docker network_ using
+
+    _**Note:**_ A
+    [built initial development image](https://github.com/orgs/sugarlabs/packages/container/musicblocks/531083)
+    has been published to
+    [_Sugar Labs GitHub Container Registry_ (_GHCR_)](https://github.com/orgs/sugarlabs/packages?ecosystem=container)
+    , which can be pulled directly, so you don't have to build it again. Pull using
+
+    ```bash
+    docker pull ghcr.io/sugarlabs/musicblocks:initial
+    ```
+
+    Launch the _docker network_ using
 
     ```bash
     docker-compose up -d
     ```
+
+    If you haven't pulled the image from the _GitHub Container Registry_ (_GHCR_), it'll first build
+    the image using the `Dockerfile`, then launch the _docker network_. If an image already exists
+    locally, it'll not be rebuilt. To force a rebuild from the `Dockerfile` before launching the
+    _docker network_, add the `--build` flag.
 
 5. In another terminal, run
 

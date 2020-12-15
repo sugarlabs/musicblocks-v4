@@ -29,7 +29,7 @@ Windows) this repository using
     git clone https://github.com/sugarlabs/musicblocks-2.git
     ```
 
-4. Build _docker image_ and launch _docker network_ using
+4. Build _docker image_ and launch _docker network_.
 
     _**Note:**_ A
     [built initial development image](https://github.com/orgs/sugarlabs/packages/container/musicblocks/531083)
@@ -41,7 +41,7 @@ Windows) this repository using
     docker pull ghcr.io/sugarlabs/musicblocks:initial
     ```
 
-    Launch the _docker network_ using
+    Nagivate inside the project directory and launch the _docker network_ using
 
     ```bash
     docker-compose up -d
@@ -99,7 +99,7 @@ spawned and standard input/output is connected to the terminal.
     This is spawned on `0.0.0.0:80` inside the container, but mapped to `localhost:5001` on host.
     Visit `localhost:5001` in a browser to view the webpage served.
 
-10. Run _React scripts_ using
+10. Run _React scripts_.
 
     - For unoptimized development serving, run
 
@@ -116,7 +116,7 @@ spawned and standard input/output is connected to the terminal.
         npm run test
         ```
 
-    - For generating production build, run
+    - For generating a production build, run
 
         ```bash
         npm run build
@@ -124,9 +124,9 @@ spawned and standard input/output is connected to the terminal.
 
     _**Note:**_ If you're running using _Docker Desktop_ on _Windows_ or _Mac_, you might experience
     longer execution times for these scripts. This happens due to cross-file-system communication.
-    Duration varies across machines; duration primarily depends on hard drive speed.
+    Duration varies across machines; duration primarily depends on hard drive read/write speed.
 
-11. Miscellaneous commands
+11. Miscellaneous commands.
 
     - To launch the _Node runtime_, run
 
@@ -140,13 +140,13 @@ spawned and standard input/output is connected to the terminal.
         node file.js
         ```
 
-    - To transpile a _TypeScipt_ file, say `file.ts`, to _JavaScript_ run
+    - To transpile a _TypeScipt_ file, say `file.ts`, to _JavaScript_, run
 
         ```bash
         tsc file.ts
         ```
 
-        This compilation produces `file.js`.
+        This transpilation produces `file.js`.
 
     - To run a _Dart_ file, say `file.dart`, run
 
@@ -154,7 +154,7 @@ spawned and standard input/output is connected to the terminal.
         dart file.dart
         ```
 
-    - To compile a _Dart_ file, say `file.dart`, run
+    - To compile a _Dart_ file, say `file.dart`, to _JavaScript_, run
 
         ```bash
         dart compile js -o file.js file.dart
@@ -176,13 +176,14 @@ Some (non-exhaustive) benefits of using these are _syntax highlighting_,
 _warning/error annotations_, _formatting_, _auto-refactoring_, tons of customizable
 _keyboard shortcuts_, etc.
 
-**Visual Studio Code** (**VSCode**) is currently the most-popular code editor for reasons like being
-_lightweight_, _cleaner_, large marketplace of _extensions_, integrated _Source Control_ features,
-_debugger_, _remote explorer_ support, _Regular Expression_ (_regex_) based find/replace, etc.
+_**Visual Studio Code**_ (_**VSCode**_) is currently the most-popular code editor for reasons like
+being _lightweight_, _cleaner_, large marketplace of _extensions_, integrated _Source Control_
+features, _debugger_, _remote explorer_ support, _Regular Expression_ (_regex_) based find/replace,
+etc.
 
 In fact, a workspace configuration file for _vscode_`.vscode/settings.json` has already been added.
 Recommended extensions for this project are `Babel JavaScript`, `Dart`, `Docker`, `ESLint`,
 `Git Graph`, `GitLens`, `markdownlint`, `Prettier`, `SCSS IntelliSense`, and `SVG`.
 
-All that, however, shouldn't necessarily stop you from using **Emacs**, **Nano**, or **Vim**, if
-that's your poison :D. Happy coding!
+All that, however, shouldn't necessarily stop you from using _**Emacs**_, _**Nano**_, or _**Vim**_,
+if that's your poison :D. Happy coding!

@@ -1,0 +1,38 @@
+{
+  "name": "musicblocks.js",
+  "version": "0.1.0",
+  "description": "The core of the new Music Blocks 2 application",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meganindya/musicblocks.js.git"
+  },
+  "keywords": [
+    "musicblocks"
+  ],
+  "author": "Anindya Kundu <anindya.k22@outlook.com> (https://github.com/meganindya/)",
+  "license": "AGPL-3.0",
+  "module": "true",
+  "dependencies": {
+    "tone": "^14.7.58"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.11.1",
+    "@typescript-eslint/parser": "^4.11.1",
+    "clean-webpack-plugin": "^3.0.0",
+    "eslint": "^7.17.0",
+    "eslint-config-prettier": "^7.1.0",
+    "html-webpack-plugin": "^4.5.0",
+    "ts-loader": "^8.0.13",
+    "typescript": "^4.1.3",
+    "webpack": "^5.11.1",
+    "webpack-cli": "^4.3.1",
+    "webpack-dev-server": "^3.11.1"
+  },
+  "scripts": {
+    "build": "webpack",
+    "lint": "eslint src/**/*.ts",
+    "start": "webpack serve --open",
+    "watch": "webpack --watch"
+  }
+}

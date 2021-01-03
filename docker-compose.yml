@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  musicblocks:
+    build: ./
+    image: ghcr.io/meganindya/musicblocks:initial
+    env_file:
+      - ./env/development.env
+    ports:
+      - '5000:9000'
+    volumes:
+      - ./:/app/
+    container_name: musicblocks
+    stdin_open: true
+    tty: true

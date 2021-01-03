@@ -35,7 +35,7 @@
   "scripts": {
     "build": "webpack",
     "lint": "eslint src/**/*.ts",
-    "start": "webpack serve --open",
+    "start": "webpack serve --host 0.0.0.0 --open",
     "test": "jest",
     "watch": "webpack --watch"
   }

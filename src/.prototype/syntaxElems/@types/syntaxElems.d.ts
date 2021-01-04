@@ -1,3 +1,3 @@
-export interface IValueElement<T> {
-    value: T;
+export interface IDataElement<T> {
+    data: T;
 }

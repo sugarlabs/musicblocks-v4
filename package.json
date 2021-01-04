@@ -12,7 +12,6 @@
   ],
   "author": "Anindya Kundu <anindya.k22@outlook.com> (https://github.com/meganindya/)",
   "license": "AGPL-3.0",
-  "module": "true",
   "dependencies": {
     "tone": "^14.7.58"
   },
@@ -36,7 +35,7 @@
     "build": "webpack",
     "lint": "eslint src/**/*.ts",
     "start": "webpack serve --host 0.0.0.0 --open",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "watch": "webpack --watch"
   }
 }

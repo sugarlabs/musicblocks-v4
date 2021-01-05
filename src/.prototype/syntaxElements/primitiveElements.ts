@@ -1,6 +1,6 @@
-import { IDataElement } from './@types/syntaxElems';
+import { IPrimitiveElement } from './@types/primitiveTypes';
 
-class DataElement<T> implements IDataElement<T> {
+class PrimitiveElement<T> implements IPrimitiveElement<T> {
     private _data: T;
 
     constructor(data: T) {
@@ -16,19 +16,19 @@ class DataElement<T> implements IDataElement<T> {
     }
 }
 
-export class TInt extends DataElement<number> {
+export class TInt extends PrimitiveElement<number> {
     constructor(data: number) {
         super(Math.floor(data));
     }
 }
 
-export class TFloat extends DataElement<number> {
+export class TFloat extends PrimitiveElement<number> {
     constructor(data: number) {
         super(data);
     }
 }
 
-export class TChar extends DataElement<string> {
+export class TChar extends PrimitiveElement<string> {
     constructor(data: string | number) {
         super(
             typeof data === 'string'
@@ -45,13 +45,13 @@ export class TChar extends DataElement<string> {
     }
 }
 
-export class TString extends DataElement<string> {
+export class TString extends PrimitiveElement<string> {
     constructor(data: string) {
         super(data);
     }
 }
 
-export class TBoolean extends DataElement<boolean> {
+export class TBoolean extends PrimitiveElement<boolean> {
     constructor(data: boolean) {
         super(data);
     }

@@ -1,4 +1,4 @@
-import { TInt, TFloat, TChar, TString, TBoolean } from './dataElems';
+import { TInt, TFloat, TChar, TString, TBoolean } from './primitiveElements';
 
 test('assign 5 to TInt to equal 5', () => {
     const typeObj = new TInt(5);

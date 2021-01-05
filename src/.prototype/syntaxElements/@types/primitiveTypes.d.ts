@@ -6,10 +6,6 @@ import {
     TBoolean as Boolean
 } from '../primitiveElements';
 
-export interface IPrimitiveElement<T> {
-    data: T;
-}
-
 export type TInt = Int;
 export type TFloat = Float;
 export type TChar = Char;

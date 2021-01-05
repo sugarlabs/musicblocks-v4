@@ -1,4 +1,4 @@
-import { IPrimitiveElement } from './@types/primitiveTypes';
+import { IPrimitiveElement } from './@types/primitiveElements';
 
 class PrimitiveElement<T> implements IPrimitiveElement<T> {
     private _data: T;

@@ -4,10 +4,18 @@
 
 A complete overhaul of the original [Music Blocks](https://github.com/sugarlabs/musicblocks).
 
-## Notes
+## Contributing
 
 Please visit the [discussions](https://github.com/sugarlabs/musicblocks-2/discussions) tab at the
 top of the repository to follow the planning progress.
+
+A prototype is being built currently. It'll be in the
+[**musicblocks-lib**](https://github.com/meganindya/musicblocks-lib) repository. For updates, follow
+the `develop` branch and the feature branches that branch out of it. All initial development shall
+take place in that repository, before being incorporated here.
+
+The said repository has been added here as a submodule "_musicblocks-lib_". Look out for issues in
+the [issues](https://github.com/meganindya/musicblocks-lib/issues) tab of the repository.
 
 ## Setup Development Environment
 
@@ -62,20 +70,20 @@ Windows) this repository using
 spawned and standard input/output is connected to the terminal.
 
     _**Node**_ (_Node.js Runtime_), _**npm**_ (_Node Package Manager_), _**tsc**_ (_TypeScript
-    Compiler_), and _**Dart-SDK**_ (_Dart - Software Development Kit_) should be installed. Check
+    Compiler_), and _**ts-node**_ (_Node executable for TypeScript_) should be installed. Check
     using
 
     ```bash
-    node --version && npm --version && tsc --version && dart --version
+    node --version && npm --version && tsc --version && ts-node --version
     ```
 
     Output should look like
 
     ```bash
-    v14.15.1
-    6.14.8
+    v14.15.3
+    6.14.10
     Version 4.1.3
-    Dart SDK version: 2.10.4 (stable) (Unknown timestamp) on "linux_x64"
+    v9.1.1
     ```
 
 7. To shut down the _docker network_, run (in the terminal where you ran `docker-compose up -d`)
@@ -148,19 +156,11 @@ spawned and standard input/output is connected to the terminal.
 
         This transpilation produces `file.js`.
 
-    - To run a _Dart_ file, say `file.dart`, run
+    - To run a _TypeScript_ file directly, say `file.ts`, run
 
         ```bash
-        dart file.dart
+        ts-node file.ts
         ```
-
-    - To compile a _Dart_ file, say `file.dart`, to _JavaScript_, run
-
-        ```bash
-        dart compile js -o file.js file.dart
-        ```
-
-        This compilation produces `file.js`, `file.js.deps`, and `file.js.map`.
 
 ## Editor
 
@@ -182,8 +182,8 @@ features, _debugger_, _remote explorer_ support, _Regular Expression_ (_regex_) 
 etc.
 
 In fact, a workspace configuration file for _vscode_`.vscode/settings.json` has already been added.
-Recommended extensions for this project are `Babel JavaScript`, `Dart`, `Docker`, `ESLint`,
-`Git Graph`, `GitLens`, `markdownlint`, `Prettier`, `SCSS IntelliSense`, and `SVG`.
+Recommended extensions for this project are `Babel JavaScript`, `Docker`, `ESLint`, `Git Graph`,
+`GitLens`, `markdownlint`, `Prettier`, `SCSS IntelliSense`, and `SVG`.
 
 All that, however, shouldn't necessarily stop you from using _**Emacs**_, _**Nano**_, or _**Vim**_,
 if that's your poison :D. Happy coding!

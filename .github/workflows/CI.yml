@@ -1,0 +1,60 @@
+---
+#######################
+#######################
+## CI GitHub Actions ##
+#######################
+#######################
+name: Continuous Integration
+
+#
+# Documentation:
+# https://help.github.com/en/articles/workflow-syntax-for-github-actions
+#
+
+#############################
+# Start the job on all push #
+#############################
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+###############
+# Set the Job #
+###############
+jobs:
+  build:
+    # Name the Job
+    name: Continuous Integration
+    # Set the agent to run on
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x]
+
+    ##################
+    # Load all steps #
+    ##################
+    steps:
+      ##########################
+      # Checkout the code base #
+      ##########################
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+        ###################
+        # Run npm scripts #
+        ###################
+
+      - run: npm ci
+      # - run: npm run build --if-present
+      - run: npm test --if-present
+        env:
+          DEFAULT_BRANCH: develop

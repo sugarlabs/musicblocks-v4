@@ -2,7 +2,7 @@ version: '3.8'
 services:
   musicblocks:
     build: ./
-    image: ghcr.io/meganindya/musicblocks:initial
+    image: ghcr.io/sugarlabs/musicblocks:initial
     env_file:
       - ./env/development.env
     ports:

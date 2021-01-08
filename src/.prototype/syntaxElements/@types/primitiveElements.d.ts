@@ -1,3 +1,6 @@
+import { TPrimitiveName } from './primitiveTypes';
+
 export interface IPrimitiveElement<T> {
-    data: T;
+    value: T;
+    type: TPrimitiveName;
 }

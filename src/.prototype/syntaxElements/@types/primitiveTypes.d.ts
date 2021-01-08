@@ -1,13 +1,12 @@
-import {
-    TInt as Int,
-    TFloat as Float,
-    TChar as Char,
-    TString as String,
-    TBoolean as Boolean
-} from '../primitiveElements';
+type TNInt = 'TInt';
+type TNFloat = 'TFloat';
+type TNChar = 'TChar';
+type TNString = 'TString';
+type TNBoolean = 'TBoolean';
+export type TPrimitiveName = TNInt | TNFloat | TNChar | TNString | TNBoolean;
 
-export type TInt = Int;
-export type TFloat = Float;
-export type TChar = Char;
-export type TString = String;
-export type TBoolean = Boolean;
+import { TInt, TFloat, TChar, TString, TBoolean } from '../primitiveElements';
+
+// These should be imported from this module, hence exported again from here.
+export { TInt, TFloat, TChar, TString, TBoolean };
+export type TPrimitive = TInt | TFloat | TChar | TString | TBoolean;

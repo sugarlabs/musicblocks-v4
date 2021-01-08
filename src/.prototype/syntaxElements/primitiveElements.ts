@@ -1,58 +1,66 @@
 import { IPrimitiveElement } from './@types/primitiveElements';
+import { TPrimitiveName } from './@types/primitiveTypes';
 
 class PrimitiveElement<T> implements IPrimitiveElement<T> {
-    private _data: T;
+    private _value: T;
+    private _type: TPrimitiveName;
 
-    constructor(data: T) {
-        this._data = data;
+    constructor(type: TPrimitiveName, data: T) {
+        this._type = type;
+        this._value = data;
     }
 
-    get data() {
-        return this._data;
+    get type() {
+        return this._type;
     }
 
-    update(data: T) {
-        this._data = data;
+    get value() {
+        return this._value;
+    }
+
+    protected update(value: T) {
+        this._value = value;
     }
 }
 
 export class TInt extends PrimitiveElement<number> {
-    constructor(data: number) {
-        super(Math.floor(data));
+    constructor(value: number) {
+        super('TInt', Math.floor(value));
     }
 }
 
 export class TFloat extends PrimitiveElement<number> {
-    constructor(data: number) {
-        super(data);
+    constructor(value: number) {
+        super('TFloat', value);
     }
 }
 
 export class TChar extends PrimitiveElement<string> {
-    constructor(data: string | number) {
+    constructor(value: string | number) {
         super(
-            typeof data === 'string'
-                ? data.length === 0
+            'TChar',
+            typeof value === 'string'
+                ? value.length === 0
                     ? String.fromCharCode(0)
-                    : data.charAt(0)
-                : String.fromCharCode(Math.min(Math.max(data, 0), 255))
+                    : value.charAt(0)
+                : String.fromCharCode(Math.min(Math.max(value, 0), 255))
         );
     }
 
     addOffset(offset: number) {
-        const asciiValue = this.data.charCodeAt(0);
+        const asciiValue = this.value.charCodeAt(0);
         this.update(String.fromCharCode(Math.min(Math.max(asciiValue + offset, 0), 255)));
     }
 }
 
 export class TString extends PrimitiveElement<string> {
-    constructor(data: string) {
-        super(data);
+    constructor(value: string) {
+        super('TString', value);
     }
 }
 
 export class TBoolean extends PrimitiveElement<boolean> {
-    constructor(data: boolean) {
-        super(data);
+    constructor(value: boolean) {
+        super('TBoolean', value);
     }
 }

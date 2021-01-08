@@ -153,8 +153,8 @@ export abstract class StatementElement extends InstructionElement implements TS.
 }
 
 export abstract class BlockElement extends InstructionElement implements TS.IBlockElement {
-    private _childHeadFirst: InstructionElement | null;
-    private _childHeadSecond: InstructionElement | null;
+    private _childHeadFirst: InstructionElement | null = null;
+    private _childHeadSecond: InstructionElement | null = null;
 
     constructor(identifier: string, constraints?: { [key: string]: TPrimitiveName[] }) {
         super(identifier, constraints);

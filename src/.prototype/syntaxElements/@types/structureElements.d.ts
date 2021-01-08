@@ -28,13 +28,13 @@ export interface IInstructionArgs {
 }
 
 interface IInstructionElement extends ISyntaxElement {
-    args?: Object;
-    next: IInstructionElement | null;
+    args: Object | null;
+    next: Object | null;
 }
 
 export interface IStatementElement extends IInstructionElement {}
 
 export interface IBlockElement extends IInstructionElement {
-    // childHeadFirst: IInstructionElement | null;
-    // childHeadSecond?: IInstructionElement | null;
+    childHeadFirst: IInstructionElement | null;
+    childHeadSecond?: IInstructionElement | null;
 }

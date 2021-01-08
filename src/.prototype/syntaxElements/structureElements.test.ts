@@ -157,31 +157,10 @@ describe('class BlockElement', () => {
 
     // Rest are same as (above) StatementElement tests, therefore redundant to add.
 
-    test('assign a non-null instruction to childHeadFirst and verify', () => {
-        blockElem.childHeadFirst = stmntElem;
-        if (blockElem.childHeadFirst !== null) {
-            expect(blockElem.childHeadFirst.identifier).toBe('myStatement');
-        } else {
-            throw Error('object should not be null');
+    test('assign an instruction to innerHeads and verify', () => {
+        blockElem.innerHeads = [stmntElem];
+        if (blockElem.innerHeads.length !== 0) {
+            expect(blockElem.innerHeads[0].identifier).toBe('myStatement');
         }
-    });
-
-    test('assign null to childHeadFirst and verify', () => {
-        blockElem.childHeadFirst = null;
-        expect(blockElem.childHeadFirst).toBe(null);
-    });
-
-    test('assign a non-null instruction to childHeadSecond and verify', () => {
-        blockElem.childHeadSecond = stmntElem;
-        if (blockElem.childHeadSecond !== null) {
-            expect(blockElem.childHeadSecond.identifier).toBe('myStatement');
-        } else {
-            throw Error('object should not be null');
-        }
-    });
-
-    test('assign null to childHeadSecond and verify', () => {
-        blockElem.childHeadSecond = null;
-        expect(blockElem.childHeadSecond).toBe(null);
     });
 });

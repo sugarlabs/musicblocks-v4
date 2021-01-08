@@ -153,26 +153,17 @@ export abstract class StatementElement extends InstructionElement implements TS.
 }
 
 export abstract class BlockElement extends InstructionElement implements TS.IBlockElement {
-    private _childHeadFirst: InstructionElement | null = null;
-    private _childHeadSecond: InstructionElement | null = null;
+    private _innerHeads: InstructionElement[] = [];
 
     constructor(identifier: string, constraints?: { [key: string]: TPrimitiveName[] }) {
         super(identifier, constraints);
     }
 
-    set childHeadFirst(childHeadFirst: InstructionElement | null) {
-        this._childHeadFirst = childHeadFirst;
+    set innerHeads(innerHeads: InstructionElement[]) {
+        this._innerHeads = innerHeads;
     }
 
-    get childHeadFirst() {
-        return this._childHeadFirst;
-    }
-
-    set childHeadSecond(childHeadSecond: InstructionElement | null) {
-        this._childHeadSecond = childHeadSecond;
-    }
-
-    get childHeadSecond() {
-        return this._childHeadSecond;
+    get innerHeads() {
+        return this._innerHeads;
     }
 }

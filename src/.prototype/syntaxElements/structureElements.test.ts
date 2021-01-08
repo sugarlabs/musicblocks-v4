@@ -10,15 +10,19 @@ import {
 class CArgumentDataElement extends ArgumentDataElement {}
 /** Dummy class to extend abstract class ArgumentExpressionElement. */
 class CArgumentExpressionElement extends ArgumentExpressionElement {
-    /** Dummy implementation of abstract member data. */
     get data() {
         return new TInt(5);
     }
 }
 /** Dummy class to extend abstract class StatementElement. */
-class CStatementElement extends StatementElement {}
+class CStatementElement extends StatementElement {
+    onVisit() {}
+}
 /** Dummy class to extend abstract class BlockElement. */
-class CBlockElement extends BlockElement {}
+class CBlockElement extends BlockElement {
+    onVisit() {}
+    onExit() {}
+}
 
 let argData_int: ArgumentDataElement;
 let argData_float: ArgumentDataElement;
@@ -76,69 +80,62 @@ describe('class ArgumentExpressionElement', () => {
 let stmntElem: StatementElement;
 
 describe('class StatementElement', () => {
+    test('initialize object with no argument constraints and expect error on fetching argument labels', () => {
+        stmntElem = new CStatementElement('yourStatement');
+        expect(() => stmntElem.args.argNames).toThrowError(
+            `Invalid access: instruction "yourStatement" does not take arguments`
+        );
+    });
+
     test('initialize object with argument constraints and verify initial contents', () => {
         stmntElem = new CStatementElement('myStatement', {
             arg_1: ['TInt', 'TChar'],
             arg_2: ['TString']
         });
-        expect(stmntElem.next).toBe(null);
-        if (stmntElem.args !== null) {
+        try {
             expect(stmntElem.args.argNames).toEqual(['arg_1', 'arg_2']);
-        } else {
-            throw Error('object should not be null');
+        } catch (e) {
+            console.error(e);
         }
     });
 
     test('assign valid argument for valid argument label and verify', () => {
-        if (stmntElem.args !== null) {
+        try {
             stmntElem.args.setArg('arg_1', argData_char);
-            expect(stmntElem.args.getArg('arg_1')).not.toBe(null);
-            const argElem = stmntElem.args.getArg('arg_1');
-            if (argElem !== null) {
-                expect(argElem.data.value).toEqual('A');
-            } else {
-                throw Error('object should not be null');
+            const arg = stmntElem.args.getArg('arg_1');
+            if (arg !== null) {
+                expect(arg.data.value).toEqual('A');
             }
+        } catch (e) {
+            console.error(e);
         }
     });
 
     test('reset previous argument label with null and verify', () => {
-        if (stmntElem.args !== null) {
+        try {
             stmntElem.args.setArg('arg_1', null);
             expect(stmntElem.args.getArg('arg_1')).toBe(null);
-        } else {
-            throw Error('object should not be null');
+        } catch (e) {
+            console.error(e);
         }
     });
 
     test('try to fetch argument for invalid argument label and expect error', () => {
-        expect(() => {
-            if (stmntElem.args !== null) {
-                stmntElem.args.getArg('arg_3');
-            } else {
-                throw Error('object should not be null');
-            }
-        }).toThrowError('Invalid argument: "arg_3" does not exist for instruction "myStatement"');
+        expect(() => stmntElem.args.getArg('arg_3')).toThrowError(
+            'Invalid argument: "arg_3" does not exist for instruction "myStatement"'
+        );
     });
 
     test('try to assign argument for invalid argument label and expect error', () => {
-        expect(() => {
-            if (stmntElem.args !== null) {
-                stmntElem.args.setArg('arg_3', null);
-            } else {
-                throw Error('object should not be null');
-            }
-        }).toThrowError('Invalid argument: "arg_3" does not exist for instruction "myStatement"');
+        expect(() => stmntElem.args.setArg('arg_3', null)).toThrowError(
+            'Invalid argument: "arg_3" does not exist for instruction "myStatement"'
+        );
     });
 
     test('try to assign invalid return-type argument for valid argument label and expect error', () => {
-        expect(() => {
-            if (stmntElem.args !== null) {
-                stmntElem.args.setArg('arg_2', argData_int);
-            } else {
-                throw Error('object should not be null');
-            }
-        }).toThrowError('Invalid argument: "TInt" is not a valid type for "arg_2"');
+        expect(() => stmntElem.args.setArg('arg_2', argData_int)).toThrowError(
+            'Invalid argument: "TInt" is not a valid type for "arg_2"'
+        );
     });
 });
 
@@ -158,9 +155,14 @@ describe('class BlockElement', () => {
     // Rest are same as (above) StatementElement tests, therefore redundant to add.
 
     test('assign an instruction to innerHeads and verify', () => {
-        blockElem.innerHeads = [stmntElem];
-        if (blockElem.innerHeads.length !== 0) {
-            expect(blockElem.innerHeads[0].identifier).toBe('myStatement');
+        blockElem.childHeads = [stmntElem];
+        const head = blockElem.childHeads[0];
+        if (head !== null) {
+            expect(head.identifier).toBe('myStatement');
         }
+    });
+
+    test('fetch childHead and expect to be null', () => {
+        expect(blockElem.childHead).toBe(null);
     });
 });

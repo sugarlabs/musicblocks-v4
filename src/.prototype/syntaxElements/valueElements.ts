@@ -4,7 +4,7 @@ import { ArgumentDataElement } from './structureElements';
 /**
  * @abstract All ValueElements are ArgumentDataElements.
  */
-export namespace ValueElements {
+export namespace ValueElement {
     /** ArgumentDataElement wrapper for primitive TInt type. */
     export class IntElement extends ArgumentDataElement {
         constructor(value: number) {

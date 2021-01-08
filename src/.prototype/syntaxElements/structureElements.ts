@@ -17,7 +17,7 @@ abstract class SyntaxElement implements TS.ISyntaxElement {
 
 // ---- Argument Element ---------------------------------------------------------------------------
 
-abstract class ArgumentElement extends SyntaxElement implements TS.IArgumentElement {
+export abstract class ArgumentElement extends SyntaxElement implements TS.IArgumentElement {
     private _type: 'data' | 'expression';
     private _returnType: TPrimitiveName;
 
@@ -69,17 +69,26 @@ export abstract class ArgumentExpressionElement
 
 class InstructionArgs implements TS.IInstructionArgs {
     private _instruction: string;
-    private _argMap: { [key: string]: ArgumentElement | null };
-    private _argTypeMap: { [key: string]: TPrimitiveName[] };
+    private _argMap: { [key: string]: ArgumentElement | null } = {};
+    private _argTypeMap: { [key: string]: TPrimitiveName[] } | null = null;
 
-    constructor(instruction: string, constraints: { [key: string]: TPrimitiveName[] }) {
+    constructor(instruction: string, constraints: { [key: string]: TPrimitiveName[] } | null) {
         this._instruction = instruction;
-        this._argTypeMap = constraints;
-        this._argMap = {};
-        Object.keys(this._argTypeMap).forEach((argName) => (this._argMap[argName] = null));
+        if (constraints === null) {
+            return this;
+        } else {
+            this._argTypeMap = constraints;
+            Object.keys(this._argTypeMap).forEach((argName) => (this._argMap[argName] = null));
+        }
     }
 
+    /** @throws Invalid argument, Invalid access */
     private _validateArgName(argName: string): void {
+        if (this._argTypeMap === null) {
+            throw Error(
+                `Invalid access: instruction "${this._instruction}" does not take arguments`
+            );
+        }
         if (Object.keys(this._argTypeMap).indexOf(argName) === -1) {
             throw Error(
                 `Invalid argument: "${argName}" does not exist for instruction "${this._instruction}"`
@@ -87,50 +96,47 @@ class InstructionArgs implements TS.IInstructionArgs {
         }
     }
 
+    /** @throws Invalid argument, Invalid access */
     private _validateArg(argName: string, arg: ArgumentElement | null): void {
-        try {
-            this._validateArgName(argName);
-            if (arg !== null && this._argTypeMap[argName].indexOf(arg.returnType) === -1) {
-                throw Error(
-                    `Invalid argument: "${arg.returnType}" is not a valid type for "${argName}"`
-                );
-            }
-        } catch (e) {
-            throw e;
+        this._validateArgName(argName);
+        if (arg !== null && this._argTypeMap[argName].indexOf(arg.returnType) === -1) {
+            throw Error(
+                `Invalid argument: "${arg.returnType}" is not a valid type for "${argName}"`
+            );
         }
     }
 
+    /** @throws Invalid argument, Invalid access */
     setArg(argName: string, argElement: ArgumentElement | null): void {
-        try {
-            this._validateArg(argName, argElement);
-        } catch (e) {
-            throw e;
-        }
+        this._validateArg(argName, argElement);
         this._argMap[argName] = argElement;
     }
 
+    /** @throws Invalid argument, Invalid access */
     getArg(argName: string): ArgumentElement | null {
-        try {
-            this._validateArgName(argName);
-        } catch (e) {
-            throw e;
-        }
+        this._validateArgName(argName);
         return this._argMap[argName];
     }
 
+    /** @throws Invalid argument, Invalid access */
     get argNames(): string[] {
+        if (this._argTypeMap === null) {
+            throw Error(
+                `Invalid access: instruction "${this._instruction}" does not take arguments`
+            );
+        }
         return Object.keys(this._argTypeMap);
     }
 }
 
-abstract class InstructionElement extends SyntaxElement implements TS.IInstructionElement {
+export abstract class InstructionElement extends SyntaxElement implements TS.IInstructionElement {
     private _next: InstructionElement | null;
-    private _args: InstructionArgs | null;
+    private _args: InstructionArgs;
 
     constructor(identifier: string, constraints?: { [key: string]: TPrimitiveName[] }) {
         super(identifier);
         this._next = null;
-        this._args = !constraints ? null : new InstructionArgs(identifier, constraints);
+        this._args = new InstructionArgs(identifier, !constraints ? null : constraints);
     }
 
     set next(next: InstructionElement | null) {
@@ -144,6 +150,8 @@ abstract class InstructionElement extends SyntaxElement implements TS.IInstructi
     get args() {
         return this._args;
     }
+
+    abstract onVisit(): void;
 }
 
 export abstract class StatementElement extends InstructionElement implements TS.IStatementElement {
@@ -153,17 +161,28 @@ export abstract class StatementElement extends InstructionElement implements TS.
 }
 
 export abstract class BlockElement extends InstructionElement implements TS.IBlockElement {
-    private _innerHeads: InstructionElement[] = [];
+    private _childHeads: (InstructionElement | null)[] = [null];
+    private _childHead: InstructionElement | null = null;
 
     constructor(identifier: string, constraints?: { [key: string]: TPrimitiveName[] }) {
         super(identifier, constraints);
     }
 
-    set innerHeads(innerHeads: InstructionElement[]) {
-        this._innerHeads = innerHeads;
+    set childHeads(innerHeads: (InstructionElement | null)[]) {
+        this._childHeads = innerHeads;
     }
 
-    get innerHeads() {
-        return this._innerHeads;
+    get childHeads() {
+        return this._childHeads;
     }
+
+    set childHead(childHead: InstructionElement | null) {
+        this._childHead = childHead;
+    }
+
+    get childHead() {
+        return this._childHead;
+    }
+
+    abstract onExit(): void;
 }

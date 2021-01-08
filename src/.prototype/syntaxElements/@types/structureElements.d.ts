@@ -35,5 +35,6 @@ interface IInstructionElement extends ISyntaxElement {
 export interface IStatementElement extends IInstructionElement {}
 
 export interface IBlockElement extends IInstructionElement {
-    innerHeads: IInstructionElement[];
+    childHeads: (IInstructionElement | null)[];
+    childHead: IInstructionElement | null;
 }

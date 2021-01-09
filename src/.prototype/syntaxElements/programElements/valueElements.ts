@@ -1,5 +1,5 @@
-import { TInt, TFloat, TChar, TString, TBoolean } from './primitiveElements';
-import { ArgumentDataElement } from './structureElements';
+import { TInt, TFloat, TChar, TString, TBoolean } from '../primitiveElements';
+import { ArgumentDataElement } from '../structureElements';
 
 /**
  * @abstract All ValueElements are ArgumentDataElements.

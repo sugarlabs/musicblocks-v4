@@ -1,5 +1,5 @@
-import { TPrimitiveName } from './@types/primitiveTypes';
-import { ArgumentElement, StatementElement } from './structureElements';
+import { TPrimitiveName } from '../@types/primitiveTypes';
+import { ArgumentElement, StatementElement } from '../structureElements';
 
 type argType = ArgumentElement | null;
 

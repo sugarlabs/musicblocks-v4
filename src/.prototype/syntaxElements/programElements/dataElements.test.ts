@@ -1,5 +1,5 @@
+import { StatementElement } from '../structureElements';
 import { BoxElement } from './dataElements';
-import { StatementElement } from './structureElements';
 import { ValueElement } from './valueElements';
 
 describe('namespace BoxElement', () => {

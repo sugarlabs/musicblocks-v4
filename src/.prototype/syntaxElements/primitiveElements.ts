@@ -1,59 +1,132 @@
-import { IPrimitiveElement } from './@types/primitiveElements';
 import { TPrimitiveName } from './@types/primitiveTypes';
 
-class PrimitiveElement<T> implements IPrimitiveElement<T> {
-    private _value: T;
+interface IPrimitiveElement<T> {
+    type: TPrimitiveName;
+    value: T;
+}
+
+abstract class PrimitiveElement<T> implements IPrimitiveElement<T> {
+    protected _value: T;
     private _type: TPrimitiveName;
 
-    constructor(type: TPrimitiveName, data: T) {
+    constructor(type: TPrimitiveName, value: T) {
         this._type = type;
-        this._value = data;
+        this._value = value;
     }
 
     get type() {
         return this._type;
     }
 
-    get value() {
-        return this._value;
+    set value(value: T) {
+        this._value = value;
     }
 
-    protected update(value: T) {
-        this._value = value;
+    get value() {
+        return this._value;
     }
 }
 
 export class TInt extends PrimitiveElement<number> {
+    static toInt(value: number) {
+        return Math.floor(value);
+    }
+
+    /** @throws Invalid format */
+    static TInt(primitive: TInt | TFloat | TChar | TString) {
+        if (primitive instanceof TFloat) {
+            return new TInt(primitive.value);
+        } else if (primitive instanceof TChar) {
+            return new TInt((primitive.value as string).charCodeAt(0));
+        } else if (primitive instanceof TString) {
+            const num = Number(primitive.value);
+            if (isNaN(num)) {
+                throw Error(`Invalid format: TString object does not represent a number`);
+            }
+            return new TInt(num);
+        } else {
+            return primitive;
+        }
+    }
+
     constructor(value: number) {
-        super('TInt', Math.floor(value));
+        super('TInt', value);
+        this.value = value;
+    }
+
+    set value(value: number) {
+        this._value = TInt.toInt(value);
+    }
+
+    get value() {
+        return this._value;
     }
 }
 
 export class TFloat extends PrimitiveElement<number> {
+    /** @throws Invalid format */
+    static TFloat(primitive: TFloat | TInt | TString) {
+        if (primitive instanceof TInt) {
+            return new TFloat(primitive.value);
+        } else if (primitive instanceof TString) {
+            const num = Number(primitive.value);
+            if (isNaN(num)) {
+                throw Error(`Invalid format: TString object does not represent a number`);
+            }
+            return new TFloat(num);
+        } else {
+            return primitive;
+        }
+    }
+
     constructor(value: number) {
         super('TFloat', value);
     }
 }
 
-export class TChar extends PrimitiveElement<string> {
+export class TChar extends PrimitiveElement<string | number> {
+    static toChar(value: number) {
+        return String.fromCharCode(Math.min(Math.max(TInt.toInt(value), 0), 255));
+    }
+
+    static TChar(primitive: TChar | TInt) {
+        if (primitive instanceof TInt) {
+            return new TChar(TChar.toChar(primitive.value));
+        } else {
+            return primitive;
+        }
+    }
+
     constructor(value: string | number) {
-        super(
-            'TChar',
-            typeof value === 'string'
-                ? value.length === 0
-                    ? String.fromCharCode(0)
-                    : value.charAt(0)
-                : String.fromCharCode(Math.min(Math.max(value, 0), 255))
-        );
+        super('TChar', value);
+        this.value = value;
+    }
+
+    set value(value: string | number) {
+        if (typeof value === 'number') {
+            value = TChar.toChar(value);
+        }
+        this._value = value.length === 0 ? String.fromCharCode(0) : value.charAt(0);
+    }
+
+    get value() {
+        return this._value;
     }
 
     addOffset(offset: number) {
-        const asciiValue = this.value.charCodeAt(0);
-        this.update(String.fromCharCode(Math.min(Math.max(asciiValue + offset, 0), 255)));
+        this._value = TChar.toChar(this._value.toString().charCodeAt(0) + TInt.toInt(offset));
     }
 }
 
 export class TString extends PrimitiveElement<string> {
+    static TString(primitive: TString | TInt | TFloat | TChar) {
+        if (primitive instanceof TString) {
+            return primitive;
+        } else {
+            return new TString(primitive.value.toString());
+        }
+    }
+
     constructor(value: string) {
         super('TString', value);
     }

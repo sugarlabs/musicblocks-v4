@@ -58,16 +58,27 @@ export abstract class ArgumentDataElement
 export abstract class ArgumentExpressionElement
     extends ArgumentElement
     implements TS.IArgumentExpressionElement {
-    constructor(identifier: string, type: TPrimitiveName) {
+    private _args: ArgumentMap;
+
+    constructor(
+        identifier: string,
+        type: TPrimitiveName,
+        constraints?: { [key: string]: TPrimitiveName[] }
+    ) {
         super(identifier, 'expression', type);
+        this._args = new ArgumentMap(identifier, !constraints ? null : constraints);
+    }
+
+    get args() {
+        return this._args;
     }
 
     abstract get data(): TPrimitive;
 }
 
-// ---- Instruction Element ------------------------------------------------------------------------
+// ---- Argument Map -------------------------------------------------------------------------------
 
-class InstructionArgs implements TS.IInstructionArgs {
+class ArgumentMap implements TS.IArgumentMap {
     private _instruction: string;
     private _argMap: { [key: string]: ArgumentElement | null } = {};
     private _argTypeMap: { [key: string]: TPrimitiveName[] } | null = null;
@@ -129,14 +140,16 @@ class InstructionArgs implements TS.IInstructionArgs {
     }
 }
 
+// ---- Instruction Element ------------------------------------------------------------------------
+
 export abstract class InstructionElement extends SyntaxElement implements TS.IInstructionElement {
     private _next: InstructionElement | null;
-    private _args: InstructionArgs;
+    private _args: ArgumentMap;
 
     constructor(identifier: string, constraints?: { [key: string]: TPrimitiveName[] }) {
         super(identifier);
         this._next = null;
-        this._args = new InstructionArgs(identifier, !constraints ? null : constraints);
+        this._args = new ArgumentMap(identifier, !constraints ? null : constraints);
     }
 
     set next(next: InstructionElement | null) {

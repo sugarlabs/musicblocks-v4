@@ -19,17 +19,19 @@ export interface IArgumentElement extends ISyntaxElement {
 
 export interface IArgumentDataElement extends ISyntaxElement, IDataElement {}
 
-export interface IArgumentExpressionElement extends ISyntaxElement, IExpressionElement {}
+export interface IArgumentExpressionElement extends ISyntaxElement, IExpressionElement {
+    args: Object;
+}
 
-export interface IInstructionArgs {
+export interface IArgumentMap {
     argNames: string[];
     setArg: Function;
     getArg: Function;
 }
 
 interface IInstructionElement extends ISyntaxElement {
-    args: Object | null;
-    next: Object | null;
+    args: IArgumentMap;
+    next: IInstructionElement | null;
 }
 
 export interface IStatementElement extends IInstructionElement {}

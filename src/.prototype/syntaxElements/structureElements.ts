@@ -4,14 +4,14 @@ import * as TS from './@types/structureElements';
 // ---- Syntax Element -----------------------------------------------------------------------------
 
 abstract class SyntaxElement implements TS.ISyntaxElement {
-    private _identifier: string;
+    private _elementName: string;
 
-    constructor(identifier: string) {
-        this._identifier = identifier;
+    constructor(elementName: string) {
+        this._elementName = elementName;
     }
 
-    get identifier() {
-        return this._identifier;
+    get elementName() {
+        return this._elementName;
     }
 }
 
@@ -21,8 +21,8 @@ export abstract class ArgumentElement extends SyntaxElement implements TS.IArgum
     private _type: 'data' | 'expression';
     private _returnType: TPrimitiveName;
 
-    constructor(identifier: string, type: 'data' | 'expression', returnType: TPrimitiveName) {
-        super(identifier);
+    constructor(elementName: string, type: 'data' | 'expression', returnType: TPrimitiveName) {
+        super(elementName);
         this._type = type;
         this._returnType = returnType;
     }
@@ -44,8 +44,8 @@ export abstract class ArgumentDataElement
     implements TS.IArgumentDataElement {
     private _dataElement: TPrimitive;
 
-    constructor(identifier: string, dataElement: TPrimitive) {
-        super(identifier, 'data', dataElement.type);
+    constructor(elementName: string, dataElement: TPrimitive) {
+        super(elementName, 'data', dataElement.type);
         this._dataElement = dataElement;
     }
 
@@ -61,12 +61,12 @@ export abstract class ArgumentExpressionElement
     private _args: ArgumentMap;
 
     constructor(
-        identifier: string,
+        elementName: string,
         type: TPrimitiveName,
         constraints?: { [key: string]: TPrimitiveName[] }
     ) {
-        super(identifier, 'expression', type);
-        this._args = new ArgumentMap(identifier, !constraints ? null : constraints);
+        super(elementName, 'expression', type);
+        this._args = new ArgumentMap(elementName, !constraints ? null : constraints);
     }
 
     get args() {
@@ -150,10 +150,10 @@ export abstract class InstructionElement extends SyntaxElement implements TS.IIn
     private _next: InstructionElement | null;
     private _args: ArgumentMap;
 
-    constructor(identifier: string, constraints?: { [key: string]: TPrimitiveName[] }) {
-        super(identifier);
+    constructor(elementName: string, constraints?: { [key: string]: TPrimitiveName[] }) {
+        super(elementName);
         this._next = null;
-        this._args = new ArgumentMap(identifier, !constraints ? null : constraints);
+        this._args = new ArgumentMap(elementName, !constraints ? null : constraints);
     }
 
     set next(next: InstructionElement | null) {
@@ -172,8 +172,8 @@ export abstract class InstructionElement extends SyntaxElement implements TS.IIn
 }
 
 export abstract class StatementElement extends InstructionElement implements TS.IStatementElement {
-    constructor(identifier: string, constraints?: { [key: string]: TPrimitiveName[] }) {
-        super(identifier, constraints);
+    constructor(elementName: string, constraints?: { [key: string]: TPrimitiveName[] }) {
+        super(elementName, constraints);
     }
 }
 
@@ -181,8 +181,8 @@ export abstract class BlockElement extends InstructionElement implements TS.IBlo
     private _childHeads: (InstructionElement | null)[] = [null];
     private _childHead: InstructionElement | null = null;
 
-    constructor(identifier: string, constraints?: { [key: string]: TPrimitiveName[] }) {
-        super(identifier, constraints);
+    constructor(elementName: string, constraints?: { [key: string]: TPrimitiveName[] }) {
+        super(elementName, constraints);
     }
 
     set childHeads(innerHeads: (InstructionElement | null)[]) {

@@ -2,7 +2,7 @@ import { TPrimitive, TPrimitiveName } from './primitiveTypes';
 
 /** An object whose class implements this will be tied to the corresponding UI element. */
 export interface ISyntaxElement {
-    identifier: string;
+    elementName: string;
 }
 
 export interface IDataElement {

@@ -110,7 +110,11 @@ class ArgumentMap implements TS.IArgumentMap {
     /** @throws Invalid argument, Invalid access */
     private _validateArg(argName: string, arg: ArgumentElement | null): void {
         this._validateArgName(argName);
-        if (arg !== null && this._argTypeMap[argName].indexOf(arg.returnType) === -1) {
+        if (
+            arg !== null &&
+            this._argTypeMap !== null &&
+            this._argTypeMap[argName].indexOf(arg.returnType) === -1
+        ) {
             throw Error(
                 `Invalid argument: "${arg.returnType}" is not a valid type for "${argName}"`
             );

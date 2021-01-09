@@ -1,4 +1,4 @@
-import { ValueElement } from './ValueElements';
+import { ValueElement } from './valueElements';
 
 describe('namespace ValueElement', () => {
     test('instantiate a IntElement with 5 and expect 5 to be data', () => {

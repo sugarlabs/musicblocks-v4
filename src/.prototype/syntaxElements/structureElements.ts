@@ -38,7 +38,6 @@ export abstract class ArgumentElement extends SyntaxElement implements TS.IArgum
     abstract get data(): TPrimitive;
 }
 
-/** @todo: This should be an abstract class. Currently, not abstract as sub-classes not created. */
 export abstract class ArgumentDataElement
     extends ArgumentElement
     implements TS.IArgumentDataElement {
@@ -54,7 +53,6 @@ export abstract class ArgumentDataElement
     }
 }
 
-/** @todo: This should be an abstract class. Currently, not abstract as sub-classes not created. */
 export abstract class ArgumentExpressionElement
     extends ArgumentElement
     implements TS.IArgumentExpressionElement {

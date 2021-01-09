@@ -124,7 +124,7 @@ export class TFloat extends PrimitiveElement<number> {
     }
 }
 
-export class TChar extends PrimitiveElement<string | number> {
+export class TChar extends PrimitiveElement<string> {
     static toChar(value: number) {
         return String.fromCharCode(Math.min(Math.max(TInt.toInt(value), 0), 255));
     }
@@ -138,15 +138,20 @@ export class TChar extends PrimitiveElement<string | number> {
     }
 
     constructor(value: string | number) {
-        super('TChar', value);
-        this.value = value;
+        super('TChar', '');
+        if (typeof value === 'string') {
+            this.value = value;
+        } else {
+            this.valueInt = value;
+        }
     }
 
-    set value(value: string | number) {
-        if (typeof value === 'number') {
-            value = TChar.toChar(value);
-        }
+    set value(value: string) {
         this._value = value.length === 0 ? String.fromCharCode(0) : value.charAt(0);
+    }
+
+    set valueInt(value: number) {
+        this._value = TChar.toChar(value);
     }
 
     get value() {

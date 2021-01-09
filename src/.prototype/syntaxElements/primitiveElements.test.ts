@@ -36,12 +36,6 @@ describe('initialization and value verification', () => {
         expect(typeObj.value).toBe(String.fromCharCode(255));
     });
 
-    test('assign 65 and add offset of -500 to TChar to equal ASCII 0 character', () => {
-        const typeObj = new TChar(65);
-        typeObj.addOffset(-500);
-        expect(typeObj.value).toBe(String.fromCharCode(0));
-    });
-
     test('assign "mystring" to TString to equal "mystring"', () => {
         const typeObj = new TString('mystring');
         expect(typeObj.value).toBe('mystring');
@@ -172,6 +166,65 @@ describe('type conversions', () => {
             expect(newType instanceof TString).toBe(true);
             expect(newType.type).toBe('TString');
             expect(newType.value).toBe('a');
+        });
+    });
+});
+
+describe('operations on type elements', () => {
+    const operand_1 = new TInt(15);
+    const operand_2 = new TInt(4);
+
+    describe('class TInt', () => {
+        test('add TInt(15) and TInt(4) and expect new element value to be 19', () => {
+            expect(TInt.add(operand_1, operand_2).value).toBe(19);
+        });
+
+        test('subtract TInt(15) and TInt(4) and expect new element value to be 11', () => {
+            expect(TInt.subtract(operand_1, operand_2).value).toBe(11);
+        });
+
+        test('multiply TInt(15) and TInt(4) and expect new element value to be 60', () => {
+            expect(TInt.multiply(operand_1, operand_2).value).toBe(60);
+        });
+
+        test('divide TInt(15) and TInt(4) and expect new element value to be 3', () => {
+            expect(TInt.divide(operand_1, operand_2).value).toBe(3);
+        });
+
+        test('mod TInt(15) and TInt(4) and expect new element value to be 3', () => {
+            expect(TInt.mod(operand_1, operand_2).value).toBe(3);
+        });
+    });
+
+    const operand_3 = new TFloat(15.5);
+
+    describe('class TFloat', () => {
+        test('add TFloat(15.5) and TInt(4) and expect new element value to be 19.5', () => {
+            expect(TFloat.add(operand_3, operand_2).value).toBe(19.5);
+        });
+
+        test('subtract TFloat(15.5) and TInt(4) and expect new element value to be 11.5', () => {
+            expect(TFloat.subtract(operand_3, operand_2).value).toBe(11.5);
+        });
+
+        test('multiply TFloat(15.5) and TInt(4) and expect new element value to be 62', () => {
+            expect(TFloat.multiply(operand_3, operand_2).value).toBe(62);
+        });
+
+        test('divide TFloat(15.5) and TInt(4) and expect new element value to be 3.875', () => {
+            expect(TFloat.divide(operand_3, operand_2).value).toBe(3.875);
+        });
+
+        test('mod TFloat(15.5) and TInt(4) and expect new element value to be 3.5', () => {
+            expect(TFloat.mod(operand_3, operand_2).value).toBe(3.5);
+        });
+    });
+
+    describe('class TChar', () => {
+        test('assign 65 and add offset of -500 to TChar to equal ASCII 0 character', () => {
+            const typeObj = new TChar(65);
+            typeObj.addOffset(-500);
+            expect(typeObj.value).toBe(String.fromCharCode(0));
         });
     });
 });

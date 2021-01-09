@@ -61,6 +61,26 @@ export class TInt extends PrimitiveElement<number> {
     get value() {
         return this._value;
     }
+
+    static add(operand_1: TInt, operand_2: TInt) {
+        return new TInt(operand_1.value + operand_2.value);
+    }
+
+    static subtract(operand_1: TInt, operand_2: TInt) {
+        return new TInt(operand_1.value - operand_2.value);
+    }
+
+    static multiply(operand_1: TInt, operand_2: TInt) {
+        return new TInt(operand_1.value * operand_2.value);
+    }
+
+    static divide(operand_1: TInt, operand_2: TInt) {
+        return new TInt(operand_1.value / operand_2.value);
+    }
+
+    static mod(operand_1: TInt, operand_2: TInt) {
+        return new TInt(operand_1.value % operand_2.value);
+    }
 }
 
 export class TFloat extends PrimitiveElement<number> {
@@ -81,6 +101,26 @@ export class TFloat extends PrimitiveElement<number> {
 
     constructor(value: number) {
         super('TFloat', value);
+    }
+
+    static add(operand_1: TFloat | TInt, operand_2: TFloat | TInt) {
+        return new TFloat(operand_1.value + operand_2.value);
+    }
+
+    static subtract(operand_1: TFloat | TInt, operand_2: TFloat | TInt) {
+        return new TFloat(operand_1.value - operand_2.value);
+    }
+
+    static multiply(operand_1: TFloat | TInt, operand_2: TFloat | TInt) {
+        return new TFloat(operand_1.value * operand_2.value);
+    }
+
+    static divide(operand_1: TFloat | TInt, operand_2: TFloat | TInt) {
+        return new TFloat(operand_1.value / operand_2.value);
+    }
+
+    static mod(operand_1: TFloat | TInt, operand_2: TFloat | TInt) {
+        return new TFloat(operand_1.value % operand_2.value);
     }
 }
 

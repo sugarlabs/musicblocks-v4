@@ -15,6 +15,16 @@ describe('arithmetic operations', () => {
         expect(resElem.value).toBe(19.5);
     });
 
+    test('supply one valid ArgumentElement and type-castable ArgumentElement to AddExpressionElement and verify', () => {
+        operElem = new OperationElement.AddExpressionElement({
+            operand_1: new ValueElement.FloatElement(15.5),
+            operand_2: new ValueElement.IntElement(4)
+        });
+        const resElem = operElem.data;
+        expect(resElem.type).toBe('TFloat');
+        expect(resElem.value).toBe(19.5);
+    });
+
     test('supply one valid ArgumentElement and a null to AddExpressionElement and verify', () => {
         operElem = new OperationElement.AddExpressionElement({
             operand_1: new ValueElement.FloatElement(15.5),

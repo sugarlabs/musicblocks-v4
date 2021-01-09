@@ -113,9 +113,19 @@ class ArgumentMap implements TS.IArgumentMap {
             this._argTypeMap !== null &&
             this._argTypeMap[argName].indexOf(arg.returnType) === -1
         ) {
-            throw Error(
-                `Invalid argument: "${arg.returnType}" is not a valid type for "${argName}"`
-            );
+            // Allow higher type casting.
+            if (
+                !(
+                    (arg.returnType === 'TInt' &&
+                        this._argTypeMap[argName].indexOf('TFloat') !== -1) ||
+                    (arg.returnType === 'TChar' &&
+                        this._argTypeMap[argName].indexOf('TString') !== -1)
+                )
+            ) {
+                throw Error(
+                    `Invalid argument: "${arg.returnType}" is not a valid type for "${argName}"`
+                );
+            }
         }
     }
 

@@ -122,6 +122,18 @@ export class TFloat extends PrimitiveElement<number> {
     static mod(operand_1: TFloat | TInt, operand_2: TFloat | TInt) {
         return new TFloat(operand_1.value % operand_2.value);
     }
+
+    static equals(operand_1: TFloat | TInt, operand_2: TFloat | TInt) {
+        return new TBoolean(operand_1.value == operand_2.value);
+    }
+
+    static greaterThan(operand_1: TFloat | TInt, operand_2: TFloat | TInt) {
+        return new TBoolean(operand_1.value > operand_2.value);
+    }
+
+    static lessThan(operand_1: TFloat | TInt, operand_2: TFloat | TInt) {
+        return new TBoolean(operand_1.value < operand_2.value);
+    }
 }
 
 export class TChar extends PrimitiveElement<string> {

@@ -57,4 +57,5 @@ jobs:
       # - run: npm run build --if-present
       - run: npm test --if-present
         env:
+          CI: true
           DEFAULT_BRANCH: develop

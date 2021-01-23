@@ -35,35 +35,35 @@ describe('class ArgumentDataElement', () => {
     test('intialize object with a TInt(5) and verify contents', () => {
         argData_int = new CArgumentDataElement('myArgData', new TInt(5));
         expect(argData_int.elementName).toBe('myArgData');
-        expect(argData_int.type).toBe('data');
+        expect(argData_int.argType).toBe('data');
         expect(argData_int.data.value).toBe(5);
     });
 
     test('intialize object with a TFloat(3.14) and verify contents', () => {
         argData_float = new CArgumentDataElement('myArgData', new TFloat(3.14));
         expect(argData_float.elementName).toBe('myArgData');
-        expect(argData_float.type).toBe('data');
+        expect(argData_float.argType).toBe('data');
         expect(argData_float.data.value).toBe(3.14);
     });
 
     test('intialize object with a TChar(65) and verify contents', () => {
         argData_char = new CArgumentDataElement('myArgData', new TChar(65));
         expect(argData_char.elementName).toBe('myArgData');
-        expect(argData_char.type).toBe('data');
+        expect(argData_char.argType).toBe('data');
         expect(argData_char.data.value).toBe('A');
     });
 
     test('intialize object with a TString("str") and verify contents', () => {
         argData_string = new CArgumentDataElement('myArgData', new TString('str'));
         expect(argData_string.elementName).toBe('myArgData');
-        expect(argData_string.type).toBe('data');
+        expect(argData_string.argType).toBe('data');
         expect(argData_string.data.value).toBe('str');
     });
 
     test('intialize object with a TBoolean(false) and verify contents', () => {
         argData_boolean = new CArgumentDataElement('myArgData', new TBoolean(false));
         expect(argData_boolean.elementName).toBe('myArgData');
-        expect(argData_boolean.type).toBe('data');
+        expect(argData_boolean.argType).toBe('data');
         expect(argData_boolean.data.value).toBe(false);
     });
 });
@@ -72,8 +72,8 @@ describe('class ArgumentExpressionElement', () => {
     test('initialize object with valid arbitrary arguments and verify contents', () => {
         argExpr = new CArgumentExpressionElement('myArgExpression', 'TInt');
         expect(argExpr.elementName).toBe('myArgExpression');
-        expect(argExpr.returnType).toBe('TInt');
-        expect(argExpr.type).toBe('expression');
+        expect(argExpr.type).toBe('TInt');
+        expect(argExpr.argType).toBe('expression');
     });
 });
 

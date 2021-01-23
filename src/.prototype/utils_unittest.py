@@ -55,21 +55,55 @@ class MusicUtilsTestCase(unittest.TestCase):
     def current_note_test(self):
         print("CURRENT NOTE TESTS")
         cp = CurrentPitch()
-        
+
         self.assertEqual(
-            round(cp.get_freq(), 100), 392.0,
+            round(cp.get_freq(), 100),
+            392.0,
         )
         self.assertEqual(cp.get_generic_name(), "n7")
 
-        cp.scalar_transposition(1)
+        cp.apply_scalar_transposition(1)
         self.assertEqual(cp.get_generic_name(), "n9")
         self.assertEqual(
-            round(cp.get_freq(), 100), 440.0,
+            round(cp.get_freq(), 100),
+            440.0,
         )
-        cp.semitone_transposition(-2)
+        print(cp.get_freq())
+        self.assertEqual(
+            round(cp.get_scalar_interval(-1), 100),
+            392.0,
+        )
+        cp.apply_semitone_transposition(-2)
         self.assertEqual(cp.get_generic_name(), "n7")
         self.assertEqual(
-            round(cp.get_freq(), 100), 392.0,
+            round(cp.get_freq(), 100),
+            392.0,
+        )
+        self.assertEqual(
+            round(cp.get_semitone_interval(2), 100),
+            440.0,
+        )
+        cp.set_pitch(440.0)
+        self.assertEqual(cp.get_generic_name(), "n9")
+        cp.set_pitch(7, 4)
+        self.assertEqual(
+            round(cp.get_freq(), 100),
+            392.0,
+        )
+        cp.set_pitch("n7", 4)
+        self.assertEqual(
+            round(cp.get_freq(), 100),
+            392.0,
+        )
+        cp.set_pitch("g", 4)
+        self.assertEqual(
+            round(cp.get_freq(), 100),
+            392.0,
+        )
+        cp.set_pitch("sol", 4)
+        self.assertEqual(
+            round(cp.get_freq(), 100),
+            392.0,
         )
 
     def scale_test(self):

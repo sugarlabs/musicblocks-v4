@@ -3,7 +3,7 @@
 The Current Pitch class defines an object that manages pitch state.
 """
 
-# Copyright (c) 2020, 2021 Walter Bender, Sugar Labs
+# Copyright (c) 2021 Walter Bender, Sugar Labs
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the The GNU Affero General Public
@@ -63,7 +63,68 @@ class CurrentPitch:
             self._semitone_index, self._octave
         )
 
-    def semitone_transposition(self, number_of_half_steps):
+        # What is the absolute pitch number?
+        self._number = (
+            self._octave * self._t.get_number_of_semitones_in_octave()
+            + self._semitone_index
+        )
+
+    def set_pitch(self, pitch_name, octave=4):
+        """
+        Set current pitch to a new pitch by frequency, index and octave or
+        name. These internal states are updates: freq, semitone_index,
+        generic_name, octave, and number.
+
+        Parameters
+        ----------
+        pitch_name : float or int or str
+            The new pitch as a frequency (float), or a modal index (int) and
+            octave or note name (str) and octave.
+            Note names can be "n7", "g", "sol", or, if defined, a custom name.
+
+        octave : int
+            The new octave (not needed when pitch is specified by frequency)
+        """
+        if isinstance(pitch_name, float):
+            # Assume it is a frequency, and ignore the octave.
+            self._number = self._t.get_nearest_freq_index(pitch_name)
+            # Do we force the pitch to be in the temperament?
+            self._freq = self._t.get_freq_by_index(self._number)
+            (
+                self._semitone_index,
+                self._octave,
+            ) = self._t.get_modal_index_and_octave_from_freq_index(self._number)
+            self._generic_name = self._t.get_note_name(self._semitone_index)
+        elif isinstance(pitch_name, int):
+            # Assume it is a semitone index.
+            self._semitone_index = pitch_name
+            self._octave = octave
+            self._generic_name = self._t.get_note_name(self._semitone_index)
+            self._freq = self._t.get_freq_by_modal_index_and_octave(
+                self._semitone_index, self._octave
+            )
+            self._number = self._t.get_nearest_freq_index(self._freq)
+        elif isinstance(pitch_name, str):
+            # Assume it is a name of some sort.
+            self._generic_name = self._ks.convert_to_generic_note_name(pitch_name)[0]
+            self._semitone_index = self._t.get_modal_index(self._generic_name)
+            self._octave = octave
+            self._freq = self._t.get_freq_by_modal_index_and_octave(
+                self._semitone_index, self._octave
+            )
+            self._number = self._t.get_nearest_freq_index(self._freq)
+
+    def apply_semitone_transposition(self, number_of_half_steps):
+        """
+        Update the current note by applying a semitone transposition.
+        These internal states are updates: freq, semitone_index,
+        generic_name, octave, and number.
+
+        Parameters
+        ----------
+        number_of_half_steps : int
+            The transposition in half steps
+        """
         self._generic_name, delta_octave, error = self._ks.semitone_transform(
             self._generic_name, number_of_half_steps
         )
@@ -73,8 +134,19 @@ class CurrentPitch:
         self._freq = self._t.get_freq_by_modal_index_and_octave(
             self._semitone_index, self._octave
         )
+        self._number = self._t.get_nearest_freq_index(self._freq)
 
-    def scalar_transposition(self, number_of_scalar_steps):
+    def apply_scalar_transposition(self, number_of_scalar_steps):
+        """
+        Update the current note by applying a scalar transposition.
+        These internal states are updates: freq, semitone_index,
+        generic_name, octave, and number.
+
+        Parameters
+        ----------
+        number_of_scalar_steps : int
+            The transposition in scalar steps
+        """
         self._generic_name, delta_octave = self._ks.scalar_transform(
             self._generic_name, number_of_scalar_steps
         )
@@ -84,12 +156,94 @@ class CurrentPitch:
         self._freq = self._t.get_freq_by_modal_index_and_octave(
             self._semitone_index, self._octave
         )
+        self._number = self._t.get_nearest_freq_index(self._freq)
+
+    def get_semitone_interval(self, number_of_half_steps):
+        """
+        Calculate the frequency of the note number_of_half_steps
+        away from the current note.
+
+        Parameters
+        ----------
+        number_of_half_steps : int
+            The interval in half steps
+
+        Returns
+        -------
+        float
+            The frequency of the note at the specified interval.
+        """
+        generic_name, delta_octave, error = self._ks.semitone_transform(
+            self._generic_name, number_of_half_steps
+        )
+        semitone_index = self._t.get_modal_index(generic_name)
+        octave = self._octave + delta_octave
+        return self._t.get_freq_by_modal_index_and_octave(semitone_index, octave)
+
+    def get_scalar_interval(self, number_of_scalar_steps):
+        """
+        Calculate the frequency of the note number_of_scalar_steps
+        away from the current note.
+
+        Parameters
+        ----------
+        number_of_scalar_steps : int
+            The interval in scalar steps
+
+        Returns
+        -------
+        float
+            The frequency of the note at the specified interval.
+        """
+        generic_name, delta_octave = self._ks.scalar_transform(
+            self._generic_name, number_of_scalar_steps
+        )
+        semitone_index = self._t.get_modal_index(generic_name)
+        octave = self._octave + delta_octave
+        return self._t.get_freq_by_modal_index_and_octave(semitone_index, octave)
 
     def get_freq(self):
+        """
+        Returns
+        -------
+        float
+            The frequency of the current note in Hertz
+        """
         return self._freq
 
     def get_octave(self):
+        """
+        Returns
+        -------
+        int
+            The octave of the current note
+        """
         return self._octave
 
     def get_generic_name(self):
+        """
+        Returns
+        -------
+        str
+            The generic name of the current note
+        """
         return self._generic_name
+
+    def get_semitone_index(self):
+        """
+        Returns
+        -------
+        int
+            The modal index of the current note
+        """
+        return self._semitone_index
+
+    def get_number(self):
+        """
+        Returns
+        -------
+        int
+            The index of the current note within the list of all of the
+            notes defined by the temperament
+        """
+        return self._number

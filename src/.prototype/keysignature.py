@@ -1165,7 +1165,7 @@ class KeySignature:
         i, delta_octave = self._map_to_scalar_range(i - distance, delta_octave)
         return (
             self._restore_format(self.note_names[i], original_notation, prefer_sharps),
-            delta_octave
+            delta_octave,
         )
 
     def _restore_format(self, pitch_name, original_notation, prefer_sharps):

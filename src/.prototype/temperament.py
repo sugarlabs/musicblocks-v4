@@ -341,6 +341,35 @@ class Temperament:
         """
         return self.freqs
 
+    def get_nearest_freq_index(self, target):
+        """
+        Find the index of the frequency nearest to the target.
+
+        Parameters
+        ----------
+        target : float
+            The target frequency we are looking for.
+
+        Returns
+        -------
+        int
+            The index into the freqs array for the entry nearest to the target.
+        """
+        min = 10000
+        min_index = 0
+        for i, f in enumerate(self.freqs):
+            if abs(f - target) < min:
+                # If we are getting closer, store the index.
+                min = abs(f - target)
+                # An exact match: no need to keep looking.
+                if min == 0:
+                    return i
+                min_index = i
+            else:
+                # We've passed the minimum, so return the previous index.
+                return min_index
+        return min_index
+
     def get_note_names(self):
         """
         Generic note names are assigned to define a chromatic scale.
@@ -386,6 +415,8 @@ class Temperament:
 
     def get_freq_by_index(self, pitch_index):
         """
+        Return the frequency by an index into the frequency list.
+
         Parameters
         ----------
         pitch_index : int
@@ -403,6 +434,25 @@ class Temperament:
         if pitch_index > len(self.freqs) - 1:
             pitch_index = len(self.freqs) - 1
         return self.freqs[int(pitch_index)]
+
+    def get_modal_index_and_octave_from_freq_index(self, pitch_index):
+        """
+        Convert an index into the frequency list into a modal index
+        and an octave.
+
+        Parameters
+        ----------
+        pitch_index : int
+            The index into the frequency list
+
+        Returns
+        -------
+        int
+            the modal index in the scale
+        int
+            the octave
+        """
+        return pitch_index % self.octave_length, int(pitch_index / self.octave_length)
 
     def get_freq_by_modal_index_and_octave(self, modal_index, octave):
         """

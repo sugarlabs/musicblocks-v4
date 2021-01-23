@@ -267,3 +267,12 @@ class CurrentPitch:
             notes defined by the temperament
         """
         return self._number
+
+    def __str__(self):
+        """
+        Returns
+        -------
+        str
+            The frequency of the current pitch
+        """
+        return self.freq

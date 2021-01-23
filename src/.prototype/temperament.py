@@ -528,7 +528,7 @@ class Temperament:
         """
         return len(self.freqs)
 
-    def generate_generic_note_names(self):
+    def _generate_generic_note_names(self):
         """
         A generic name is defined for each note in the octave.
         The convention is n0, n1, etc. These notes can be used by
@@ -593,7 +593,7 @@ class Temperament:
                     continue
                 self.freqs.append(c * ratios[intervals[i]])
 
-        self.generate_generic_note_names()
+        self._generate_generic_note_names()
 
     def generate_equal_temperament(self, number_of_steps):
         """
@@ -625,7 +625,7 @@ class Temperament:
                     continue
                 self.freqs.append(self.freqs[-1] * root)
 
-        self.generate_generic_note_names()
+        self._generate_generic_note_names()
 
     def generate_custom(self, intervals, ratios, name="custom"):
         """
@@ -658,7 +658,7 @@ class Temperament:
                     continue
                 self.freqs.append(c * ratios[intervals[i]])
 
-        self.generate_generic_note_names()
+        self._generate_generic_note_names()
 
     def __str__(self):
         """

@@ -68,7 +68,6 @@ class MusicUtilsTestCase(unittest.TestCase):
             round(cp.get_freq(), 100),
             440.0,
         )
-        print(cp.get_freq())
         self.assertEqual(
             round(cp.get_scalar_interval(-1), 100),
             392.0,
@@ -101,6 +100,21 @@ class MusicUtilsTestCase(unittest.TestCase):
             392.0,
         )
         cp.set_pitch("sol", 4)
+        self.assertEqual(
+            round(cp.get_freq(), 100),
+            392.0,
+        )
+        cp.set_pitch(7, 4)
+        self.assertEqual(
+            round(cp.get_freq(), 100),
+            392.0,
+        )
+        cp.set_pitch(392)
+        self.assertEqual(
+            round(cp.get_freq(), 100),
+            392.0,
+        )
+        cp.set_pitch(55)
         self.assertEqual(
             round(cp.get_freq(), 100),
             392.0,

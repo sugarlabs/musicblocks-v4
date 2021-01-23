@@ -69,6 +69,17 @@ class CurrentPitch:
             + self._semitone_index
         )
 
+    def _define_by_frequency(self, freq):
+        # Assume it is a frequency, and ignore the octave.
+        self._number = self._t.get_nearest_freq_index(freq)
+        # Do we force the pitch to be in the temperament?
+        self._freq = self._t.get_freq_by_index(self._number)
+        (
+            self._semitone_index,
+            self._octave,
+        ) = self._t.get_modal_index_and_octave_from_freq_index(self._number)
+        self._generic_name = self._t.get_note_name(self._semitone_index)
+
     def set_pitch(self, pitch_name, octave=4):
         """
         Set current pitch to a new pitch by frequency, index and octave or
@@ -86,24 +97,33 @@ class CurrentPitch:
             The new octave (not needed when pitch is specified by frequency)
         """
         if isinstance(pitch_name, float):
-            # Assume it is a frequency, and ignore the octave.
-            self._number = self._t.get_nearest_freq_index(pitch_name)
-            # Do we force the pitch to be in the temperament?
-            self._freq = self._t.get_freq_by_index(self._number)
-            (
-                self._semitone_index,
-                self._octave,
-            ) = self._t.get_modal_index_and_octave_from_freq_index(self._number)
-            self._generic_name = self._t.get_note_name(self._semitone_index)
+            self._define_by_frequency(pitch_name)
         elif isinstance(pitch_name, int):
-            # Assume it is a semitone index.
-            self._semitone_index = pitch_name
-            self._octave = octave
-            self._generic_name = self._t.get_note_name(self._semitone_index)
-            self._freq = self._t.get_freq_by_modal_index_and_octave(
-                self._semitone_index, self._octave
-            )
-            self._number = self._t.get_nearest_freq_index(self._freq)
+            # A few assumptions here: If the int > number of defined
+            # in the temperament, assume it is a frequency.  If the
+            # int < number of semitones in an octave, assume it is a
+            # semitone index.  Otherwise, assume it is an index in the
+            # list of frequencies (a pitch number).
+            if pitch_name > self._t.get_number_of_notes_in_temperament():
+                self._define_by_frequency(pitch_name)
+            elif pitch_name > self._t.get_number_of_semitones_in_octave():
+                # Assume it is a pitch number
+                self._number = pitch_name
+                self._freq = self._t.get_freq_by_index(self._number)
+                (
+                    self._semitone_index,
+                    self._octave,
+                ) = self._t.get_modal_index_and_octave_from_freq_index(self._number)
+                self._generic_name = self._t.get_note_name(self._semitone_index)
+            else:
+                # Assume it is a semitone index.
+                self._semitone_index = pitch_name
+                self._octave = octave
+                self._generic_name = self._t.get_note_name(self._semitone_index)
+                self._freq = self._t.get_freq_by_modal_index_and_octave(
+                    self._semitone_index, self._octave
+                )
+                self._number = self._t.get_nearest_freq_index(self._freq)
         elif isinstance(pitch_name, str):
             # Assume it is a name of some sort.
             self._generic_name = self._ks.convert_to_generic_note_name(pitch_name)[0]

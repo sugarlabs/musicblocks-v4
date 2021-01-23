@@ -519,6 +519,15 @@ class Temperament:
         """
         return self.octave_length
 
+    def get_number_of_notes_in_temperament(self):
+        """
+        Returns
+        -------
+        int
+            The number of notes defined by the temperament
+        """
+        return len(self.freqs)
+
     def generate_generic_note_names(self):
         """
         A generic name is defined for each note in the octave.

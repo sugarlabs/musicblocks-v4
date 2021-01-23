@@ -52,7 +52,7 @@ def round(f, d):
 
 
 class MusicUtilsTestCase(unittest.TestCase):
-    def current_note_test(self):
+    def test_current_note(self):
         print("CURRENT NOTE TESTS")
         cp = CurrentPitch()
 
@@ -106,7 +106,7 @@ class MusicUtilsTestCase(unittest.TestCase):
             392.0,
         )
 
-    def scale_test(self):
+    def test_scale(self):
         print("SCALE TESTS")
         print("c major")
         s = Scale([2, 2, 1, 2, 2, 2, 1], 0)  # C Major
@@ -145,7 +145,7 @@ class MusicUtilsTestCase(unittest.TestCase):
         )
         self.assertEqual(s.get_scale_and_octave_deltas()[1][3], 1)
 
-    def normalize_test(self):
+    def test_normalize(self):
         print("NORMALIZE TESTS")
         self.assertTrue(normalize_pitch("C" + SHARP) == "c#")
         self.assertTrue(display_pitch("c#") == "C" + SHARP)
@@ -157,7 +157,7 @@ class MusicUtilsTestCase(unittest.TestCase):
         self.assertTrue(strip_accidental("b")[0] == "b")
         self.assertTrue(strip_accidental("b")[1] == 0)
 
-    def temperament_test(self):
+    def test_temperament(self):
         print("TEMPERAMENT TESTS")
         print("equal 12")
         t = Temperament()
@@ -202,7 +202,7 @@ class MusicUtilsTestCase(unittest.TestCase):
         self.assertEqual(round(t.get_base_frequency(), 100), 16.39)
         self.assertEqual(round(t.get_freqs()[57], 100), 441.0)
 
-    def key_signature_test(self):
+    def test_key_signature(self):
         print("KEY SIGNATURE TESTS")
         ks = KeySignature(mode="major", key="c")
         print("closest note tests")
@@ -468,7 +468,7 @@ class MusicUtilsTestCase(unittest.TestCase):
         self.assertEqual(ks.closest_note("bb")[0], "bb")
         self.assertEqual(ks.closest_note("n18")[0], "n17")
 
-    def print_scales_test(self):
+    def test_print_scales(self):
         ks = KeySignature(key="c", mode="ionian")
         print(ks)
         ks = KeySignature(key="d", mode="dorian")

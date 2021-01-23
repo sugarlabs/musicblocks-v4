@@ -10,12 +10,12 @@ Please visit the [discussions](https://github.com/sugarlabs/musicblocks-2/discus
 top of the repository to follow the planning progress.
 
 A prototype is being built currently. It'll be in the
-[**musicblocks-lib**](https://github.com/meganindya/musicblocks-lib) repository. For updates, follow
+[**musicblocks-lib**](https://github.com/sugarlabs/musicblocks-lib) repository. For updates, follow
 the `develop` branch and the feature branches that branch out of it. All initial development shall
 take place in that repository, before being incorporated here.
 
 The said repository has been added here as a submodule "_musicblocks-lib_". Look out for issues in
-the [issues](https://github.com/meganindya/musicblocks-lib/issues) tab of the repository.
+the [issues](https://github.com/sugarlabs/musicblocks-lib/issues) tab of the repository.
 
 ## Setup Development Environment
 

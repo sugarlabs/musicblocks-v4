@@ -1241,7 +1241,8 @@ from currentpitch import CurrentPitch
 
 # Use the default tuning (Equal temperament) and the default key and
 # mode (C Major).
-cp = CurrentPitch() print(cp.get_freq())
+cp = CurrentPitch()
+print(cp.get_freq())
 
 # Use Pythagorean tuning and G Major.
 t = Temperament(name="pythagorean")

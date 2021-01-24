@@ -227,4 +227,33 @@ describe('operations on type elements', () => {
             expect(typeObj.value).toBe(String.fromCharCode(0));
         });
     });
+
+    const operand_4 = new TBoolean(true);
+    const operand_5 = new TBoolean(false);
+
+    describe('class TBoolean', () => {
+        test('and TBoolean(true) and TBoolean(true) and expect new element value to be true', () => {
+            expect(TBoolean.and(operand_4, operand_4).value).toBe(true);
+        });
+
+        test('and TBoolean(true) and TBoolean(false) and expect new element value to be false', () => {
+            expect(TBoolean.and(operand_4, operand_5).value).toBe(false);
+        });
+
+        test('and TBoolean(false) and TBoolean(false) and expect new element value to be false', () => {
+            expect(TBoolean.and(operand_5, operand_5).value).toBe(false);
+        });
+
+        test('or TBoolean(true) and TBoolean(true) and expect new element value to be true', () => {
+            expect(TBoolean.or(operand_4, operand_4).value).toBe(true);
+        });
+
+        test('or TBoolean(true) and TBoolean(false) and expect new element value to be true', () => {
+            expect(TBoolean.or(operand_4, operand_5).value).toBe(true);
+        });
+
+        test('or TBoolean(false) and TBoolean(false) and expect new element value to be false', () => {
+            expect(TBoolean.or(operand_5, operand_5).value).toBe(false);
+        });
+    });
 });

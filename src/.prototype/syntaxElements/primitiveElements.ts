@@ -275,4 +275,16 @@ export class TBoolean extends PrimitiveElement<boolean> {
     constructor(value: boolean) {
         super('TBoolean', value);
     }
+
+    // -- Operators ------------------------------------------------------------
+
+    /** Binary && operator. */
+    static and(operand_1: TBoolean, operand_2: TBoolean) {
+        return new TBoolean(operand_1.value && operand_2.value);
+    }
+
+    /** Binary || operator. */
+    static or(operand_1: TBoolean, operand_2: TBoolean) {
+        return new TBoolean(operand_1.value || operand_2.value);
+    }
 }

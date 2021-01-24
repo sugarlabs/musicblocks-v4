@@ -144,9 +144,9 @@ class CurrentPitch:
         number_of_half_steps : int
             The transposition in half steps
         """
-        self._generic_name, delta_octave, error = self._ks.semitone_transform(
+        self._generic_name, delta_octave = self._ks.semitone_transform(
             self._generic_name, number_of_half_steps
-        )
+        )[0:2]
 
         self._octave += delta_octave
         self._semitone_index = self._t.get_modal_index(self._generic_name)
@@ -166,9 +166,9 @@ class CurrentPitch:
         number_of_scalar_steps : int
             The transposition in scalar steps
         """
-        self._generic_name, delta_octave, error = self._ks.scalar_transform(
+        self._generic_name, delta_octave = self._ks.scalar_transform(
             self._generic_name, number_of_scalar_steps
-        )
+        )[0:2]
 
         self._octave += delta_octave
         self._semitone_index = self._t.get_modal_index(self._generic_name)
@@ -192,9 +192,9 @@ class CurrentPitch:
         float
             The frequency of the note at the specified interval.
         """
-        generic_name, delta_octave, error = self._ks.semitone_transform(
+        generic_name, delta_octave = self._ks.semitone_transform(
             self._generic_name, number_of_half_steps
-        )
+        )[0:2]
         semitone_index = self._t.get_modal_index(generic_name)
         octave = self._octave + delta_octave
         return self._t.get_freq_by_modal_index_and_octave(semitone_index, octave)
@@ -214,9 +214,9 @@ class CurrentPitch:
         float
             The frequency of the note at the specified interval.
         """
-        generic_name, delta_octave, error = self._ks.scalar_transform(
+        generic_name, delta_octave = self._ks.scalar_transform(
             self._generic_name, number_of_scalar_steps
-        )
+        )[0:2]
         semitone_index = self._t.get_modal_index(generic_name)
         octave = self._octave + delta_octave
         return self._t.get_freq_by_modal_index_and_octave(semitone_index, octave)
@@ -274,4 +274,4 @@ class CurrentPitch:
         str
             The frequency of the current pitch
         """
-        return self.freq
+        return "%s: %s" % (self._generic_name, self.get_freq())

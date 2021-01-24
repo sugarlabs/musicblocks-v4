@@ -869,6 +869,33 @@ class KeySignature:
         """
 ```
 
+Key Signatures are defined by a key and a mode, e.g. `C Major`. This is used
+to define which semitones (half steps) in an octave are in the scale.
+
+```
+    ks = KeySignature(mode="major", key="c")
+```
+
+By default, the Key Signature object assumes that there are 12
+semitones per octave, but this can be overriden for temperaments with
+other configurations, e.g. the meantone temperaments.
+
+```
+    ks = KeySignature(mode="major", key="c", number_of_semitones=12)
+```
+
+The Key Signature is used to navigate the scale, either by scalar or
+semitone steps.
+
+```
+    generic_name, delta_octave, error = ks.semitone_transform(
+        generic_name, number_of_half_steps
+    )
+    generic_name, delta_octave, error = ks.scalar_transform(
+        generic_name, number_of_scalar_steps
+    )
+```
+
 Scale
 -----
 

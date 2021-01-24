@@ -1160,12 +1160,12 @@ class KeySignature:
         # Do we need to take into account the distance from the
         # closest scalar note?
         if distance == 0:
-            return new_note, delta_octave
+            return new_note, delta_octave, 0
         i = self.note_names.index(generic_new_note)
         i, delta_octave = self._map_to_scalar_range(i - distance, delta_octave)
         return (
             self._restore_format(self.note_names[i], original_notation, prefer_sharps),
-            delta_octave,
+            delta_octave, 0
         )
 
     def _restore_format(self, pitch_name, original_notation, prefer_sharps):

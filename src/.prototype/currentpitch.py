@@ -167,7 +167,7 @@ class CurrentPitch:
         number_of_scalar_steps : int
             The transposition in scalar steps
         """
-        self._generic_name, delta_octave = self._ks.scalar_transform(
+        self._generic_name, delta_octave, error = self._ks.scalar_transform(
             self._generic_name, number_of_scalar_steps
         )
 
@@ -215,7 +215,7 @@ class CurrentPitch:
         float
             The frequency of the note at the specified interval.
         """
-        generic_name, delta_octave = self._ks.scalar_transform(
+        generic_name, delta_octave, error = self._ks.scalar_transform(
             self._generic_name, number_of_scalar_steps
         )
         semitone_index = self._t.get_modal_index(generic_name)

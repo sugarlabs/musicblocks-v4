@@ -4,60 +4,80 @@ import { ArgumentElement, ArgumentExpressionElement } from '../structureElements
 
 type TArithOp = '+' | '-' | '*' | '/' | '%';
 type TRelnOp = '==' | '>' | '<';
+type TBoolOp = '||' | '&&';
 type TArg = ArgumentElement | null;
 
 export namespace OperationElement {
-    abstract class ArithmeticOperationElement extends ArgumentExpressionElement {
-        private _operator: TArithOp;
-        private operand_1: TArg;
-        private operand_2: TArg;
+    abstract class BinaryOperationElement extends ArgumentExpressionElement {
+        protected _operator: TArithOp | TRelnOp | TBoolOp;
+        protected _operand_1: TArg = null;
+        protected _operand_2: TArg = null;
 
         constructor(
             elementName: string,
-            returnType: TPrimitiveName,
-            operator: TArithOp,
-            arg: {
-                operand_1: TArg;
-                operand_2: TArg;
-            }
+            type: TPrimitiveName,
+            operator: TArithOp | TRelnOp | TBoolOp,
+            constraints: { operand_1: TPrimitiveName[]; operand_2: TPrimitiveName[] }
         ) {
-            super(elementName, returnType, {
+            super(elementName, type, constraints);
+            this._operator = operator;
+        }
+
+        public set operand_1(operand_1: TArg) {
+            this.args.setArg('operand_1', operand_1);
+            this._operand_1 = operand_1;
+        }
+
+        public get operand_1() {
+            return this._operand_1;
+        }
+
+        set operand_2(operand_2: TArg) {
+            this.args.setArg('operand_2', operand_2);
+            this._operand_2 = operand_2;
+        }
+
+        get operand_2() {
+            return this._operand_2;
+        }
+
+        abstract get data(): TPrimitive;
+    }
+
+    // -- Arithmetic Operators ---------------------------------------------------------------------
+
+    abstract class ArithmeticOperationElement extends BinaryOperationElement {
+        constructor(elementName: string, type: TPrimitiveName, operator: TArithOp) {
+            super(elementName, type, operator, {
                 operand_1: ['TFloat'],
                 operand_2: ['TFloat']
             });
-            this._operator = operator;
-
-            this.args.setArg('operand_1', arg.operand_1);
-            this.args.setArg('operand_2', arg.operand_2);
-
-            this.operand_1 = arg.operand_1;
-            this.operand_2 = arg.operand_2;
         }
 
         get data(): TPrimitive {
-            if (this.operand_1 === null) {
+            if (this._operand_1 === null) {
                 throw Error(`Invalid argument: "operand_1" cannot be null`);
             }
-            if (this.operand_2 === null) {
+            if (this._operand_2 === null) {
                 throw Error(`Invalid argument: "operand_2" cannot be null`);
             }
-            if (!(this.operand_1.data instanceof TInt || this.operand_1.data instanceof TFloat)) {
-                throw Error(`Invalid argument: "operand_1" cannot be of type TInt or TFloat`);
+            if (!(this._operand_1.data instanceof TInt || this._operand_1.data instanceof TFloat)) {
+                throw Error(`Invalid argument: "operand_1" can only be of type TInt or TFloat`);
             }
-            if (!(this.operand_2.data instanceof TInt || this.operand_2.data instanceof TFloat)) {
-                throw Error(`Invalid argument: "operand_2" cannot be of type TInt or TFloat`);
+            if (!(this._operand_2.data instanceof TInt || this._operand_2.data instanceof TFloat)) {
+                throw Error(`Invalid argument: "operand_2" can only be of type TInt or TFloat`);
             }
             switch (this._operator) {
                 case '+':
-                    return TFloat.add(this.operand_1.data, this.operand_2.data);
+                    return TFloat.add(this._operand_1.data, this._operand_2.data);
                 case '-':
-                    return TFloat.subtract(this.operand_1.data, this.operand_2.data);
+                    return TFloat.subtract(this._operand_1.data, this._operand_2.data);
                 case '*':
-                    return TFloat.multiply(this.operand_1.data, this.operand_2.data);
+                    return TFloat.multiply(this._operand_1.data, this._operand_2.data);
                 case '/':
-                    return TFloat.divide(this.operand_1.data, this.operand_2.data);
+                    return TFloat.divide(this._operand_1.data, this._operand_2.data);
                 case '%':
-                    return TFloat.mod(this.operand_1.data, this.operand_2.data);
+                    return TFloat.mod(this._operand_1.data, this._operand_2.data);
                 default:
                     throw Error(`Invalid access: this should not be reachable`);
             }
@@ -65,59 +85,43 @@ export namespace OperationElement {
     }
 
     export class AddElement extends ArithmeticOperationElement {
-        constructor(arg: { operand_1: TArg; operand_2: TArg }) {
-            super('add', 'TFloat', '+', arg);
+        constructor() {
+            super('add', 'TFloat', '+');
         }
     }
 
     export class SubtractElement extends ArithmeticOperationElement {
-        constructor(arg: { operand_1: TArg; operand_2: TArg }) {
-            super('add', 'TFloat', '-', arg);
+        constructor() {
+            super('add', 'TFloat', '-');
         }
     }
 
     export class MultiplyElement extends ArithmeticOperationElement {
-        constructor(arg: { operand_1: TArg; operand_2: TArg }) {
-            super('add', 'TFloat', '*', arg);
+        constructor() {
+            super('add', 'TFloat', '*');
         }
     }
 
     export class DivideElement extends ArithmeticOperationElement {
-        constructor(arg: { operand_1: TArg; operand_2: TArg }) {
-            super('add', 'TFloat', '/', arg);
+        constructor() {
+            super('add', 'TFloat', '/');
         }
     }
 
     export class ModElement extends ArithmeticOperationElement {
-        constructor(arg: { operand_1: TArg; operand_2: TArg }) {
-            super('add', 'TFloat', '%', arg);
+        constructor() {
+            super('add', 'TFloat', '%');
         }
     }
 
-    abstract class RelationOperationElement extends ArgumentExpressionElement {
-        private _operator: TRelnOp;
-        private operand_1: TArg;
-        private operand_2: TArg;
+    // -- Relational Operators ---------------------------------------------------------------------
 
-        constructor(
-            elementName: string,
-            operator: TRelnOp,
-            arg: {
-                operand_1: TArg;
-                operand_2: TArg;
-            }
-        ) {
-            super(elementName, 'TBoolean', {
+    abstract class RelationOperationElement extends BinaryOperationElement {
+        constructor(elementName: string, operator: TRelnOp) {
+            super(elementName, 'TBoolean', operator, {
                 operand_1: ['TFloat'],
                 operand_2: ['TFloat']
             });
-            this._operator = operator;
-
-            this.args.setArg('operand_1', arg.operand_1);
-            this.args.setArg('operand_2', arg.operand_2);
-
-            this.operand_1 = arg.operand_1;
-            this.operand_2 = arg.operand_2;
         }
 
         get data(): TBoolean {
@@ -128,10 +132,10 @@ export namespace OperationElement {
                 throw Error(`Invalid argument: "operand_2" cannot be null`);
             }
             if (!(this.operand_1.data instanceof TInt || this.operand_1.data instanceof TFloat)) {
-                throw Error(`Invalid argument: "operand_1" cannot be of type TInt or TFloat`);
+                throw Error(`Invalid argument: "operand_1" can only be of type TInt or TFloat`);
             }
             if (!(this.operand_2.data instanceof TInt || this.operand_2.data instanceof TFloat)) {
-                throw Error(`Invalid argument: "operand_2" cannot be of type TInt or TFloat`);
+                throw Error(`Invalid argument: "operand_2" can only be of type TInt or TFloat`);
             }
             switch (this._operator) {
                 case '==':
@@ -147,20 +151,66 @@ export namespace OperationElement {
     }
 
     export class EqualsElement extends RelationOperationElement {
-        constructor(arg: { operand_1: TArg; operand_2: TArg }) {
-            super('equals', '==', arg);
+        constructor() {
+            super('equals', '==');
         }
     }
 
     export class GreaterThanElement extends RelationOperationElement {
-        constructor(arg: { operand_1: TArg; operand_2: TArg }) {
-            super('equals', '>', arg);
+        constructor() {
+            super('equals', '>');
         }
     }
 
     export class LessThanElement extends RelationOperationElement {
-        constructor(arg: { operand_1: TArg; operand_2: TArg }) {
-            super('equals', '<', arg);
+        constructor() {
+            super('equals', '<');
+        }
+    }
+
+    // -- Boolean Operators ------------------------------------------------------------------------
+
+    abstract class BooleanOperationElement extends BinaryOperationElement {
+        constructor(elementName: string, operator: TBoolOp) {
+            super(elementName, 'TBoolean', operator, {
+                operand_1: ['TBoolean'],
+                operand_2: ['TBoolean']
+            });
+        }
+
+        get data(): TBoolean {
+            if (this.operand_1 === null) {
+                throw Error(`Invalid argument: "operand_1" cannot be null`);
+            }
+            if (this.operand_2 === null) {
+                throw Error(`Invalid argument: "operand_2" cannot be null`);
+            }
+            if (!(this.operand_1.data instanceof TBoolean)) {
+                throw Error(`Invalid argument: "operand_1" can only be of type TBoolean`);
+            }
+            if (!(this.operand_2.data instanceof TBoolean)) {
+                throw Error(`Invalid argument: "operand_2" can only be of type TBoolean`);
+            }
+            switch (this._operator) {
+                case '&&':
+                    return TBoolean.and(this.operand_1.data, this.operand_2.data);
+                case '||':
+                    return TBoolean.or(this.operand_1.data, this.operand_2.data);
+                default:
+                    throw Error(`Invalid access: this should not be reachable`);
+            }
+        }
+    }
+
+    export class AndElement extends BooleanOperationElement {
+        constructor() {
+            super('and', '&&');
+        }
+    }
+
+    export class OrElement extends BooleanOperationElement {
+        constructor() {
+            super('or', '||');
         }
     }
 }

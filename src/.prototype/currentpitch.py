@@ -17,7 +17,6 @@ The Current Pitch class defines an object that manages pitch state.
 
 from temperament import Temperament
 from keysignature import KeySignature
-from scale import Scale
 
 
 class CurrentPitch:

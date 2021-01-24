@@ -1,16 +1,12 @@
-import { StatementElement } from '../structureElements';
-import { BoxElement } from './dataElements';
+import { DataElement } from './dataElements';
 import { ValueElement } from './valueElements';
 
-describe('namespace BoxElement', () => {
-    let boxElem: StatementElement;
-
-    test('inititalize IntBoxElement with IntElement object and verify', () => {
-        boxElem = new BoxElement.IntBoxElement({
-            identifier: new ValueElement.StringElement('myBox'),
-            value: new ValueElement.IntElement(5)
-        });
-        const arg = boxElem.args.getArg('value');
+describe('namespace DataElement', () => {
+    test('inititalize IntDataElement with IntElement object and verify', () => {
+        const dataElem = new DataElement.IntDataElement();
+        dataElem.argIdentifier = new ValueElement.StringElement('myBox');
+        dataElem.argValue = new ValueElement.IntElement(5);
+        const arg = dataElem.args.getArg('value');
         if (arg !== null) {
             expect(arg.data.value).toBe(5);
         } else {
@@ -18,21 +14,19 @@ describe('namespace BoxElement', () => {
         }
     });
 
-    test('initialize IntBoxElement with ArgumentElement object of unaccepted return-type and expect error', () => {
+    test('initialize IntDataElement with ArgumentElement object of unaccepted return-type and expect error', () => {
         expect(() => {
-            boxElem = new BoxElement.IntBoxElement({
-                identifier: new ValueElement.StringElement('myBox'),
-                value: new ValueElement.TrueElement()
-            });
+            const dataElem = new DataElement.IntDataElement();
+            dataElem.argIdentifier = new ValueElement.StringElement('myBox');
+            dataElem.argValue = new ValueElement.TrueElement();
         }).toThrowError('Invalid argument: "TBoolean" is not a valid type for "value"');
     });
 
-    test('inititalize FloatBoxElement with FloatElement object and verify', () => {
-        boxElem = new BoxElement.FloatBoxElement({
-            identifier: new ValueElement.StringElement('myBox'),
-            value: new ValueElement.FloatElement(5.234)
-        });
-        const arg = boxElem.args.getArg('value');
+    test('inititalize FloatDataElement with FloatElement object and verify', () => {
+        const dataElem = new DataElement.FloatDataElement();
+        dataElem.argIdentifier = new ValueElement.StringElement('myBox');
+        dataElem.argValue = new ValueElement.FloatElement(5.234);
+        const arg = dataElem.args.getArg('value');
         if (arg !== null) {
             expect(arg.data.value).toBe(5.234);
         } else {
@@ -40,21 +34,19 @@ describe('namespace BoxElement', () => {
         }
     });
 
-    test('initialize FloatBoxElement with ArgumentElement object of unaccepted return-type and expect error', () => {
+    test('initialize FloatDataElement with ArgumentElement object of unaccepted return-type and expect error', () => {
         expect(() => {
-            boxElem = new BoxElement.FloatBoxElement({
-                identifier: new ValueElement.StringElement('myBox'),
-                value: new ValueElement.TrueElement()
-            });
+            const dataElem = new DataElement.FloatDataElement();
+            dataElem.argIdentifier = new ValueElement.StringElement('myBox');
+            dataElem.argValue = new ValueElement.TrueElement();
         }).toThrowError('Invalid argument: "TBoolean" is not a valid type for "value"');
     });
 
-    test('inititalize CharBoxElement with CharElement object and verify', () => {
-        boxElem = new BoxElement.CharBoxElement({
-            identifier: new ValueElement.StringElement('myBox'),
-            value: new ValueElement.CharElement(97)
-        });
-        const arg = boxElem.args.getArg('value');
+    test('inititalize CharDataElement with CharElement object and verify', () => {
+        const dataElem = new DataElement.CharDataElement();
+        dataElem.argIdentifier = new ValueElement.StringElement('myBox');
+        dataElem.argValue = new ValueElement.CharElement(97);
+        const arg = dataElem.args.getArg('value');
         if (arg !== null) {
             expect(arg.data.value).toBe('a');
         } else {
@@ -62,21 +54,19 @@ describe('namespace BoxElement', () => {
         }
     });
 
-    test('initialize CharBoxElement with ArgumentElement object of unaccepted return-type and expect error', () => {
+    test('initialize CharDataElement with ArgumentElement object of unaccepted return-type and expect error', () => {
         expect(() => {
-            boxElem = new BoxElement.CharBoxElement({
-                identifier: new ValueElement.StringElement('myBox'),
-                value: new ValueElement.TrueElement()
-            });
+            const dataElem = new DataElement.CharDataElement();
+            dataElem.argIdentifier = new ValueElement.StringElement('myBox');
+            dataElem.argValue = new ValueElement.TrueElement();
         }).toThrowError('Invalid argument: "TBoolean" is not a valid type for "value"');
     });
 
-    test('inititalize StringBoxElement with StringElement object and verify', () => {
-        boxElem = new BoxElement.StringBoxElement({
-            identifier: new ValueElement.StringElement('myBox'),
-            value: new ValueElement.StringElement('string')
-        });
-        const arg = boxElem.args.getArg('value');
+    test('inititalize StringDataElement with StringElement object and verify', () => {
+        const dataElem = new DataElement.StringDataElement();
+        dataElem.argIdentifier = new ValueElement.StringElement('myBox');
+        dataElem.argValue = new ValueElement.StringElement('string');
+        const arg = dataElem.args.getArg('value');
         if (arg !== null) {
             expect(arg.data.value).toBe('string');
         } else {
@@ -84,21 +74,19 @@ describe('namespace BoxElement', () => {
         }
     });
 
-    test('initialize StringBoxElement with ArgumentElement object of unaccepted return-type and expect error', () => {
+    test('initialize StringDataElement with ArgumentElement object of unaccepted return-type and expect error', () => {
         expect(() => {
-            boxElem = new BoxElement.StringBoxElement({
-                identifier: new ValueElement.StringElement('myBox'),
-                value: new ValueElement.TrueElement()
-            });
+            const dataElem = new DataElement.StringDataElement();
+            dataElem.argIdentifier = new ValueElement.StringElement('myBox');
+            dataElem.argValue = new ValueElement.TrueElement();
         }).toThrowError('Invalid argument: "TBoolean" is not a valid type for "value"');
     });
 
-    test('inititalize BooleanBoxElement with BooleanElement object and verify', () => {
-        boxElem = new BoxElement.BooleanBoxElement({
-            identifier: new ValueElement.StringElement('myBox'),
-            value: new ValueElement.TrueElement()
-        });
-        const arg = boxElem.args.getArg('value');
+    test('inititalize BooleanDataElement with BooleanElement object and verify', () => {
+        const dataElem = new DataElement.BooleanDataElement();
+        dataElem.argIdentifier = new ValueElement.StringElement('myBox');
+        dataElem.argValue = new ValueElement.TrueElement();
+        const arg = dataElem.args.getArg('value');
         if (arg !== null) {
             expect(arg.data.value).toBe(true);
         } else {
@@ -106,21 +94,19 @@ describe('namespace BoxElement', () => {
         }
     });
 
-    test('initialize BooleanBoxElement with ArgumentElement object of unaccepted return-type and expect error', () => {
+    test('initialize BooleanDataElement with ArgumentElement object of unaccepted return-type and expect error', () => {
         expect(() => {
-            boxElem = new BoxElement.BooleanBoxElement({
-                identifier: new ValueElement.StringElement('myBox'),
-                value: new ValueElement.IntElement(5)
-            });
+            const dataElem = new DataElement.BooleanDataElement();
+            dataElem.argIdentifier = new ValueElement.StringElement('myBox');
+            dataElem.argValue = new ValueElement.IntElement(5);
         }).toThrowError('Invalid argument: "TInt" is not a valid type for "value"');
     });
 
-    test('inititalize AnyBoxElement with StringElement object and verify', () => {
-        boxElem = new BoxElement.AnyBoxElement({
-            identifier: new ValueElement.StringElement('myBox'),
-            value: new ValueElement.StringElement('any')
-        });
-        const arg = boxElem.args.getArg('value');
+    test('inititalize AnyDataElement with StringElement object and verify', () => {
+        const dataElem = new DataElement.AnyDataElement();
+        dataElem.argIdentifier = new ValueElement.StringElement('myBox');
+        dataElem.argValue = new ValueElement.StringElement('any');
+        const arg = dataElem.args.getArg('value');
         if (arg !== null) {
             expect(arg.data.value).toBe('any');
         } else {

@@ -3,20 +3,13 @@ import { ArgumentElement, StatementElement } from '../structureElements';
 
 type argType = ArgumentElement | null;
 
-export namespace BoxElement {
-    class BoxElement extends StatementElement {
-        /** @throws Invalid argument */
-        constructor(
-            identifier: string,
-            valueConstraints: TPrimitiveName[],
-            arg: { identifier: argType; value: argType }
-        ) {
+export namespace DataElement {
+    class DataElement extends StatementElement {
+        constructor(identifier: string, valueConstraints: TPrimitiveName[]) {
             super(identifier, {
                 identifier: ['TString'],
                 value: valueConstraints
             });
-            this.args.setArg('identifier', arg.identifier);
-            this.args.setArg('value', arg.value);
         }
 
         /** @throws Invalid argument */
@@ -41,45 +34,39 @@ export namespace BoxElement {
         onVisit() {}
     }
 
-    export class IntBoxElement extends BoxElement {
-        /** @throws Invalid argument */
-        constructor(arg: { identifier: argType; value: argType }) {
-            super('box-int', ['TInt'], arg);
+    export class IntDataElement extends DataElement {
+        constructor() {
+            super('data-int', ['TInt']);
         }
     }
 
-    export class FloatBoxElement extends BoxElement {
-        /** @throws Invalid argument */
-        constructor(arg: { identifier: argType; value: argType }) {
-            super('box-float', ['TFloat'], arg);
+    export class FloatDataElement extends DataElement {
+        constructor() {
+            super('data-float', ['TFloat']);
         }
     }
 
-    export class CharBoxElement extends BoxElement {
-        /** @throws Invalid argument */
-        constructor(arg: { identifier: argType; value: argType }) {
-            super('box-char', ['TChar'], arg);
+    export class CharDataElement extends DataElement {
+        constructor() {
+            super('data-char', ['TChar']);
         }
     }
 
-    export class StringBoxElement extends BoxElement {
-        /** @throws Invalid argument */
-        constructor(arg: { identifier: argType; value: argType }) {
-            super('box-string', ['TString'], arg);
+    export class StringDataElement extends DataElement {
+        constructor() {
+            super('data-string', ['TString']);
         }
     }
 
-    export class BooleanBoxElement extends BoxElement {
-        /** @throws Invalid argument */
-        constructor(arg: { identifier: argType; value: argType }) {
-            super('box-boolean', ['TBoolean'], arg);
+    export class BooleanDataElement extends DataElement {
+        constructor() {
+            super('data-boolean', ['TBoolean']);
         }
     }
 
-    export class AnyBoxElement extends BoxElement {
-        /** @throws Invalid argument */
-        constructor(arg: { identifier: argType; value: argType }) {
-            super('box-any', ['TInt', 'TFloat', 'TChar', 'TString', 'TBoolean'], arg);
+    export class AnyDataElement extends DataElement {
+        constructor() {
+            super('data-any', ['TInt', 'TFloat', 'TChar', 'TString', 'TBoolean']);
         }
     }
 }

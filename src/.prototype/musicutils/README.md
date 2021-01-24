@@ -9,7 +9,7 @@ well as transpositions and intervals in a "current pitch" object.
 Curent Pitch
 ------------
 
-```
+```python
 class CurrentPitch:
     """
     A pitch is a note within a scale and temperament (tuning system).
@@ -153,16 +153,17 @@ By default, the current pitch object assumes `Equal` temperament tuning
 and a key signature of `C Major`. Also, by default, the initial pitch
 value is `G4`.
 
-```
+```python
 cp = CurrentPitch()
 ```
 
 There are three ways to change the current pitch:
+
 * assigning a new pitch explicitly
 * modifying the current pitch through a semitone transposition
 * modifying the current pitch through a scalar transposition
 
-```
+```python
 cp.set_pitch("g", 4)
 
 cp.set_pitch("sol", 4)
@@ -174,33 +175,34 @@ cp.set_pitch(7, 4)
 cp.set_pitch(392.0)
 ```
 
-```
+```python
 cp.apply_semitone_transposition(2)
 
 cp.apply_semitone_transposition(-12)
 ```
 
-```
+```python
 cp.apply_scalar_transposition(1)
 
 cp.apply_scalar_transposition(-8)
 ```
 
 There are several ways to access the current pitch:
+
 * getting the frequency in Hertz, e.g., 392.0
 * getting the "generic" note name, e.g., n7
 * getting the current octave, e.g., 4
 * getting the pitch number, e.g., 55
 * getting the semitone index, e.g., 7
 
-```
+```python
 freq = cp.get_freq()
 ```
 
 And you can calculate a frequency based on an interval starting from
 the current pitch, defined in semitone or scalar steps.
 
-```
+```python
 freq = cp.get_semitone_interval(4)
 
 freq = cp.get_scalar_interval(2)
@@ -209,7 +211,7 @@ freq = cp.get_scalar_interval(2)
 Temperament
 -----------
 
-```
+```python
 class Temperament:
     """
     In musical tuning, temperament is a tuning system that defines the
@@ -519,19 +521,20 @@ of 2. For example, 2^^(1/24) would produce quarter steps. Also, the
 temperament can be tuned to a different base pitch.
 
 The built-in temperaments are:
+
 * `"equal"`
 * `"just intonation"`
 * `"pythagorean"`
 * `"third comma meantone"`
 * `"quarter comma meantone"`
 
-```
+```python
     t = Temperament(name="equal")
 ```
 
 To tune to a different base frequency:
 
-```
+```python
     t.tune("a", 4, 441)
 ```
 
@@ -540,28 +543,28 @@ is n0, n1, etc. These notes can be used by the
 get_freq_by_generic_note_name_and_octave method to retrieve a
 frequency by note name and octave.
 
-```
+```python
     freq = t.get_freq_by_generic_note_name_and_octave("n7", 4)
 ```
 
 You may need to know the number of semitones in an octave and
 the number of notes in the temperament.
 
-```
+```python
     number_of_semitones = t.get_number_of_semitones_in_octave()
     number_of_notes = t.get_number_of_notes_in_temperament()
 ```
 
 And the note name from an index...
 
-```
+```python
    generic_name = t.get_note_name(semitone_index)
 ```
 
 You can get the pitch number from a frequency and a frequency from
 an index
 
-```
+```python
    pitch_number = t.get_nearest_freq_index(freq)
    freq = t.get_freq_by_index(pitch_number)
 ```
@@ -569,7 +572,7 @@ an index
 Key Signature
 -------------
 
-```
+```python
 class KeySignature:
 
     MUSICAL_MODES = {
@@ -923,7 +926,7 @@ class KeySignature:
 Key Signatures are defined by a key and a mode, e.g. `C Major`. This is used
 to define which semitones (half steps) in an octave are in the scale.
 
-```
+```python
     ks = KeySignature(mode="major", key="c")
 ```
 
@@ -931,14 +934,14 @@ By default, the Key Signature object assumes that there are 12
 semitones per octave, but this can be overriden for temperaments with
 other configurations, e.g. the meantone temperaments.
 
-```
+```python
     ks = KeySignature(mode="major", key="c", number_of_semitones=12)
 ```
 
 Within each Key Signature object is a Scale object, which is defined
 by the key and mode at the time of instanciation.
 
-```
+```python
     scale = ks.get_scale()
 ```
 
@@ -948,7 +951,7 @@ fixed and moveable Solfege, East Indian Solfege, scale degree, and
 custom defined names (The pitch name types are defined in
 musicutils.py).
 
-```
+```python
     ks.set_custom_note_names(
         ["charlie", "delta", "echo", "foxtrot", "golf", "alfa", "bravo"]
     )
@@ -972,7 +975,7 @@ is fixed: do == c, re == d, ...
 Moveable (not fixed) Solfege means that do == the first note in the
 scale, etc.
 
-```
+```python
     ks = KeySignature(key="g", mode="major")
     generic_name = ks.convert_to_generic_note_name("sol")[0]  # "n7"
     ks.set_fixed_solfege(False)  # Moveable
@@ -982,7 +985,7 @@ scale, etc.
 The Key Signature is used to navigate the scale, either by scalar or
 semitone steps.
 
-```
+```python
     generic_name, delta_octave, error = ks.semitone_transform(
         generic_name, number_of_half_steps
     )
@@ -991,11 +994,10 @@ semitone steps.
     )
 ```
 
-
 Scale
 -----
 
-```
+```python
 class Scale:
     """
     A scale is a selection of notes in an octave.
@@ -1086,11 +1088,10 @@ notes in a scale as an array, the number of notes in the scale, and
 the octave offsets associated with a scale (new octaves always start
 at C regardless of the temperament, key, or mode.
 
-
 Music Utils
 -----------
 
-```
+```python
 # Pitch name types
 GENERIC_NOTE_NAME = "generic note name"
 LETTER_NAME = "letter name"
@@ -1233,7 +1234,7 @@ EXAMPLE
 
 Putting it all together...
 
-```
+```python
 from temperament import Temperament
 from keysignature import KeySignature
 from currentpitch import CurrentPitch
@@ -1267,7 +1268,8 @@ Switching to Pythagorean tuning results in G4 mapping to
 `403.21972995787394`.
 
 The frequencies in G Major (Octave 4) are:
-```
+
+```python
 403.21972995787394
 453.62219620260817
 510.3249707279342

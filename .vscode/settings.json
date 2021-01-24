@@ -32,5 +32,7 @@
     "editor.wordWrap": "on",
     "editor.quickSuggestions": false,
     "editor.formatOnSave": false
-  }
+  },
+  "python.analysis.extraPaths": ["./src/.prototype/musicutils"],
+  "python.analysis.typeCheckingMode": "off"
 }

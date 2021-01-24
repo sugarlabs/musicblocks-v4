@@ -199,19 +199,41 @@ export abstract class StatementElement extends InstructionElement implements TS.
 }
 
 export abstract class BlockElement extends InstructionElement implements TS.IBlockElement {
-    private _childHeads: (InstructionElement | null)[] = [null];
-    private _childHead: InstructionElement | null = null;
+    private _blocksCount: number;
+    private _childHeads: (InstructionElement | null)[] = [];
+    private _childHead: InstructionElement | null;
 
-    constructor(elementName: string, constraints?: { [key: string]: TPrimitiveName[] }) {
+    /** @throws Invalid argument */
+    constructor(
+        elementName: string,
+        blocksCount: number,
+        constraints?: { [key: string]: TPrimitiveName[] }
+    ) {
         super(elementName, constraints);
+        if (blocksCount < 1) {
+            throw Error('Invalid argument: number of inner blocks cannot be less than 1');
+        }
+        this._blocksCount = blocksCount;
+        for (let i = 0; i < blocksCount; i++) {
+            this._childHeads.push(null);
+        }
+        this._childHead = this._childHeads[0];
     }
 
-    set childHeads(innerHeads: (InstructionElement | null)[]) {
-        this._childHeads = innerHeads;
+    /** @throws Invalid argument */
+    setChildHead(index: number, childHead: InstructionElement | null) {
+        if (index < 0 || index >= this._blocksCount) {
+            throw Error(`Invalid argument: index must lie in [0, ${this._blocksCount - 1}]`);
+        }
+        this._childHeads[index] = childHead;
     }
 
-    get childHeads() {
-        return this._childHeads;
+    /** @throws Invalid argument */
+    getChildHead(index: number) {
+        if (index < 0 || index >= this._blocksCount) {
+            throw Error(`Invalid argument: index must lie in [0, ${this._blocksCount - 1}]`);
+        }
+        return this._childHeads[index];
     }
 
     set childHead(childHead: InstructionElement | null) {

@@ -80,8 +80,10 @@ export interface IStatementElement extends IInstructionElement {}
  * instructions.
  */
 export interface IBlockElement extends IInstructionElement {
-    /** Stores the references to the head instruction inside the logical code block/s. */
-    childHeads: (IInstructionElement | null)[];
+    /** Sets the reference to the ith head instruction inside the logical code block/s. */
+    setChildHead: Function;
+    /** Returns the reference to the ith head instruction inside the logical code block/s. */
+    getChildHead: (index: number) => IInstructionElement | null;
     /** Initial head instruction. */
     childHead: IInstructionElement | null;
 }

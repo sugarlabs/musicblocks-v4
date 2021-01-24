@@ -10,12 +10,20 @@ export namespace ValueElement {
         constructor(value: number) {
             super('int', new TInt(value));
         }
+
+        update(value: number) {
+            this.data.value = value;
+        }
     }
 
     /** ArgumentDataElement wrapper for primitive TFloat type. */
     export class FloatElement extends ArgumentDataElement {
         constructor(value: number) {
             super('float', new TFloat(value));
+        }
+
+        update(value: number) {
+            this.data.value = value;
         }
     }
 
@@ -24,12 +32,20 @@ export namespace ValueElement {
         constructor(value: string | number) {
             super('char', new TChar(value));
         }
+
+        update(value: string | number) {
+            this.data.value = value;
+        }
     }
 
     /** ArgumentDataElement wrapper for primitive TString type. */
     export class StringElement extends ArgumentDataElement {
         constructor(value: string) {
             super('string', new TString(value));
+        }
+
+        update(value: string) {
+            this.data.value = value;
         }
     }
 

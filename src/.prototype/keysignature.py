@@ -723,7 +723,7 @@ class KeySignature:
         print("Pitch name %s not found." % pitch_name)
         return pitch_name, -1
 
-    def generic_note_name_to_letter_name(self, note_name, prefer_sharps=True):
+    def _generic_note_name_to_letter_name(self, note_name, prefer_sharps=True):
         """
         Convert from a generic note name as defined by the temperament
         to a letter name used by 12-semitone temperaments.
@@ -796,7 +796,7 @@ class KeySignature:
         print("Cannot convert %s" % note_name)
         return note_name, -1
 
-    def generic_note_name_to_solfege(self, note_name, prefer_sharps=True):
+    def _generic_note_name_to_solfege(self, note_name, prefer_sharps=True):
         """
         Convert from a generic note name as defined by the temperament
         to a solfege note used by 12-semitone temperaments.
@@ -809,7 +809,7 @@ class KeySignature:
             note_name, SOLFEGE_SHARP, SOLFEGE_FLAT, prefer_sharps
         )
 
-    def generic_note_name_to_east_indian_solfege(self, note_name, prefer_sharps=True):
+    def _generic_note_name_to_east_indian_solfege(self, note_name, prefer_sharps=True):
         """
         Convert from a generic note name as defined by the temperament
         to an East Indian solfege note used by 12-semitone temperaments.
@@ -825,7 +825,7 @@ class KeySignature:
             note_name, EAST_INDIAN_SHARP, EAST_INDIAN_FLAT, prefer_sharps
         )
 
-    def generic_note_name_to_scalar_mode_number(self, note_name, prefer_sharps=True):
+    def _generic_note_name_to_scalar_mode_number(self, note_name, prefer_sharps=True):
         """
         Convert from a generic note name as defined by the temperament
         to a scalar mode number used by 12-semitone temperaments.
@@ -839,7 +839,7 @@ class KeySignature:
             note_name, SCALAR_NAMES_SHARP, SCALAR_NAMES_FLAT, prefer_sharps
         )
 
-    def generic_note_name_to_custom_note_name(self, note_name):
+    def _generic_note_name_to_custom_note_name(self, note_name):
         """
         Convert from a generic note name as defined by the temperament
         to a custom_note_name used by 12-semitone temperaments.
@@ -993,7 +993,7 @@ class KeySignature:
                 i, delta_octave = self._map_to_semitone_range(i + delta, delta_octave)
                 if original_notation == SOLFEGE_NAME:
                     return (
-                        self.generic_note_name_to_solfege(
+                        self._generic_note_name_to_solfege(
                             self.note_names[i], "#" in starting_pitch
                         )[0],
                         delta_octave,
@@ -1001,7 +1001,7 @@ class KeySignature:
                     )
                 if original_notation == EAST_INDIAN_SOLFEGE_NAME:
                     return (
-                        self.generic_note_name_to_east_indian_solfege(
+                        self._generic_note_name_to_east_indian_solfege(
                             self.note_names[i], "#" in starting_pitch
                         )[0],
                         delta_octave,
@@ -1009,7 +1009,7 @@ class KeySignature:
                     )
                 if original_notation == SCALAR_MODE_NUMBER:
                     return (
-                        self.generic_note_name_to_scalar_mode_number(
+                        self._generic_note_name_to_scalar_mode_number(
                             self.note_names[i], "#" in starting_pitch
                         )[0],
                         delta_octave,
@@ -1165,8 +1165,33 @@ class KeySignature:
         i, delta_octave = self._map_to_scalar_range(i - distance, delta_octave)
         return (
             self._restore_format(self.note_names[i], original_notation, prefer_sharps),
-            delta_octave, 0
+            delta_octave,
+            0,
         )
+
+    def generic_note_name_convert_to_type(
+        self, pitch_name, target_type, prefer_sharps=True
+    ):
+        """
+        Given a generic note name, convert it to a pitch name type.
+
+        Parameters
+        ----------
+        pitch_name : str
+            Source generic note name
+
+        target_type : str
+            One of the predefined types, e.g., LETTER_NAME, SOLFEGE_NAME, etc.
+
+        prefer_sharps : boolean
+            If there is a choice, should we use a sharp or a flat?
+
+        Returns
+        -------
+        str
+            Converted note name
+        """
+        return self._restore_format(pitch_name, target_type, prefer_sharps)
 
     def _restore_format(self, pitch_name, original_notation, prefer_sharps):
         """
@@ -1175,15 +1200,15 @@ class KeySignature:
         if original_notation == GENERIC_NOTE_NAME:
             return pitch_name
         if original_notation == LETTER_NAME:
-            return self.generic_note_name_to_letter_name(pitch_name, prefer_sharps)[0]
+            return self._generic_note_name_to_letter_name(pitch_name, prefer_sharps)[0]
         if original_notation == SOLFEGE_NAME:
-            return self.generic_note_name_to_solfege(pitch_name, prefer_sharps)[0]
+            return self._generic_note_name_to_solfege(pitch_name, prefer_sharps)[0]
         if original_notation == CUSTOM_NAME:
-            return self.generic_note_name_to_custom_note_name(pitch_name)[0]
+            return self._generic_note_name_to_custom_note_name(pitch_name)[0]
         if original_notation == SCALAR_MODE_NUMBER:
-            return self.generic_note_name_to_scalar_mode_number(pitch_name)[0]
+            return self._generic_note_name_to_scalar_mode_number(pitch_name)[0]
         if original_notation == EAST_INDIAN_SOLFEGE_NAME:
-            return self.generic_note_name_to_east_indian_solfege(pitch_name)[0]
+            return self._generic_note_name_to_east_indian_solfege(pitch_name)[0]
         return pitch_name
 
     def closest_note(self, target):

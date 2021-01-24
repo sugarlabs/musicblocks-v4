@@ -374,12 +374,23 @@ class MusicUtilsTestCase(unittest.TestCase):
         self.assertEqual(ks.semitone_transform("golf", 3)[0], "n10")
 
         print("type conversions")
-        self.assertEqual(ks.generic_note_name_to_solfege("n7")[0], "sol")
-        self.assertEqual(ks.generic_note_name_to_solfege("n8")[0], "sol#")
-        self.assertEqual(ks.generic_note_name_to_solfege("n9")[0], "la")
-        self.assertEqual(ks.generic_note_name_to_east_indian_solfege("n7")[0], "pa")
-        self.assertEqual(ks.generic_note_name_to_scalar_mode_number("n7")[0], "5")
-        self.assertEqual(ks.generic_note_name_to_custom_note_name("n7")[0], "golf")
+        self.assertEqual(ks.generic_note_name_convert_to_type("n7", LETTER_NAME), "g")
+        self.assertEqual(
+            ks.generic_note_name_convert_to_type("n7", SOLFEGE_NAME), "sol"
+        )
+        self.assertEqual(
+            ks.generic_note_name_convert_to_type("n8", SOLFEGE_NAME), "sol#"
+        )
+        self.assertEqual(ks.generic_note_name_convert_to_type("n9", SOLFEGE_NAME), "la")
+        self.assertEqual(
+            ks.generic_note_name_convert_to_type("n7", EAST_INDIAN_SOLFEGE_NAME), "pa"
+        )
+        self.assertEqual(
+            ks.generic_note_name_convert_to_type("n7", SCALAR_MODE_NUMBER), "5"
+        )
+        self.assertEqual(
+            ks.generic_note_name_convert_to_type("n7", CUSTOM_NAME), "golf"
+        )
 
         print("pitch type check")
         self.assertEqual(ks.pitch_name_type("g"), LETTER_NAME)
@@ -405,8 +416,12 @@ class MusicUtilsTestCase(unittest.TestCase):
         # Test fixed Solfege
         print("fixed solfege")
         ks = KeySignature(key="g", mode="major")
+        self.assertEqual(
+            ks.generic_note_name_convert_to_type("n7", SOLFEGE_NAME), "sol"
+        )
         self.assertEqual(ks.convert_to_generic_note_name("sol")[0], "n7")
         ks.set_fixed_solfege(True)
+        self.assertEqual(ks.generic_note_name_convert_to_type("n7", SOLFEGE_NAME), "do")
         self.assertEqual(ks.convert_to_generic_note_name("do")[0], "n7")
 
         print("frequency conversion")
@@ -482,7 +497,7 @@ class MusicUtilsTestCase(unittest.TestCase):
         self.assertEqual(ks.closest_note("bb")[0], "bb")
         self.assertEqual(ks.closest_note("n18")[0], "n17")
 
-    def test_print_scales(self):
+    def print_scales(self):
         ks = KeySignature(key="c", mode="ionian")
         print(ks)
         ks = KeySignature(key="d", mode="dorian")

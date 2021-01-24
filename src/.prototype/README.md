@@ -571,6 +571,70 @@ Key Signature
 
 ```
 class KeySignature:
+
+    MUSICAL_MODES = {
+        # 12 notes in an octave
+        "chromatic": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        # 8 notes in an octave
+        "algerian": [2, 1, 2, 1, 1, 1, 3, 1],
+        "diminished": [2, 1, 2, 1, 2, 1, 2, 1],
+        "spanish": [1, 2, 1, 1, 1, 2, 2, 2],
+        "octatonic": [1, 2, 1, 2, 1, 2, 1, 2],
+        "bebop": [1, 1, 1, 2, 2, 1, 2, 2],
+        # 7 notes in an octave
+        "major": [2, 2, 1, 2, 2, 2, 1],
+        "harmonic major": [2, 2, 1, 2, 1, 3, 1],
+        "minor": [2, 1, 2, 2, 1, 2, 2],
+        "natural minor": [2, 1, 2, 2, 1, 2, 2],
+        "harmonic minor": [2, 1, 2, 2, 1, 3, 1],
+        "melodic minor": [2, 1, 2, 2, 2, 2, 1],
+        # "Church" modes
+        "ionian": [2, 2, 1, 2, 2, 2, 1],
+        "dorian": [2, 1, 2, 2, 2, 1, 2],
+        "phrygian": [1, 2, 2, 2, 1, 2, 2],
+        "lydian": [2, 2, 2, 1, 2, 2, 1],
+        "mixolydian": [2, 2, 1, 2, 2, 1, 2],
+        "aeolian": [2, 1, 2, 2, 1, 2, 2],
+        "locrian": [1, 2, 2, 1, 2, 2, 2],
+        "jazz minor": [2, 1, 2, 2, 2, 2, 1],
+        "arabic": [2, 2, 1, 1, 2, 2, 2],
+        "byzantine": [1, 3, 1, 2, 1, 3, 1],
+        "enigmatic": [1, 3, 2, 2, 2, 1, 1],
+        "ethiopian": [2, 1, 2, 2, 1, 2, 2],
+        "geez": [2, 1, 2, 2, 1, 2, 2],
+        "hindu": [2, 2, 1, 2, 1, 2, 2],
+        "hungarian": [2, 1, 3, 1, 1, 3, 1],
+        "maqam": [1, 3, 1, 2, 1, 3, 1],
+        "romanian minor": [2, 1, 3, 1, 2, 1, 2],
+        "spanish gypsy": [1, 3, 1, 2, 1, 2, 2],
+        # 6 notes in an octave
+        "minor blues": [3, 2, 1, 1, 3, 2],
+        "major blues": [2, 1, 1, 3, 2, 2],
+        "whole tone": [2, 2, 2, 2, 2, 2],
+        # 5 notes in an octave
+        "major pentatonic": [2, 2, 3, 2, 3],
+        "minor pentatonic": [3, 2, 2, 3, 2],
+        "chinese": [4, 2, 1, 4, 1],
+        "egyptian": [2, 3, 2, 3, 2],
+        "hirajoshi": [1, 4, 1, 4, 2],
+        "in": [1, 4, 2, 1, 4],
+        "minyo": [3, 2, 2, 3, 2],
+        "fibonacci": [1, 1, 2, 3, 5],
+    }
+
+    # These maqam mode names imply a specific key.
+    MAQAM_KEY_OVERRIDES = {
+        "hijaz kar": "c",
+        "hijaz kar maqam": "c",
+        "shahnaz": "d",
+        "maqam mustar": "eb",
+        "maqam jiharkah": "f",
+        "shadd araban": "g",
+        "suzidil": "a",
+        "ajam": "bb",
+        "ajam maqam": "bb",
+    }
+
     """
     A key signature is a set of sharp, flat, and natural symbols.
     """
@@ -713,38 +777,25 @@ class KeySignature:
         NOTE: Only for temperaments with 12 semitones.
         """
 
-    def generic_note_name_to_letter_name(self, note_name, prefer_sharps=True):
+    def generic_note_name_convert_to_type(self, pitch_name, target_type, prefer_sharps=True):
         """
-        Convert from a generic note name as defined by the temperament
-        to a letter name used by 12-semitone temperaments.
-        NOTE: Only for temperaments with 12 semitones.
-        """
+        Given a generic note name, convert it to a pitch name type.
 
-    def generic_note_name_to_solfege(self, note_name, prefer_sharps=True):
-        """
-        Convert from a generic note name as defined by the temperament
-        to a solfege note used by 12-semitone temperaments.
-        NOTE: Only for temperaments with 12 semitones.
-        """
+        Parameters
+        ----------
+        pitch_name : str
+            Source generic note name
 
-    def generic_note_name_to_east_indian_solfege(self, note_name, prefer_sharps=True):
-        """
-        Convert from a generic note name as defined by the temperament
-        to an East Indian solfege note used by 12-semitone temperaments.
-        NOTE: Only for temperaments with 12 semitones.
-        """
+        target_type : str
+            One of the predefined types, e.g., LETTER_NAME, SOLFEGE_NAME, etc.
 
-    def generic_note_name_to_scalar_mode_number(self, note_name, prefer_sharps=True):
-        """
-        Convert from a generic note name as defined by the temperament
-        to a scalar mode number used by 12-semitone temperaments.
-        NOTE: Only for temperaments with 12 semitones.
-        """
+        prefer_sharps : boolean
+            If there is a choice, should we use a sharp or a flat?
 
-    def generic_note_name_to_custom_note_name(self, note_name):
-        """
-        Convert from a generic note name as defined by the temperament
-        to a custom_note_name used by 12-semitone temperaments.
+        Returns
+        -------
+        str
+            Converted note name
         """
 
     def modal_pitch_to_letter(self, modal_index):
@@ -884,6 +935,50 @@ other configurations, e.g. the meantone temperaments.
     ks = KeySignature(mode="major", key="c", number_of_semitones=12)
 ```
 
+Within each Key Signature object is a Scale object, which is defined
+by the key and mode at the time of instanciation.
+
+```
+    scale = ks.get_scale()
+```
+
+Key Signature supports a variety of naming schemes, including the
+generic note names used by the Temperament object, letter names, both
+fixed and moveable Solfege, East Indian Solfege, scale degree, and
+custom defined names (The pitch name types are defined in
+musicutils.py).
+
+```
+    ks.set_custom_note_names(
+        ["charlie", "delta", "echo", "foxtrot", "golf", "alfa", "bravo"]
+    )
+
+    generic_name = ks.convert_to_generic_note_name("g")
+    generic_name = ks.convert_to_generic_note_name("sol")
+    generic_name = ks.convert_to_generic_note_name("5")
+    generic_name = ks.convert_to_generic_note_name("pa")
+    generic_name = ks.convert_to_generic_note_name("golf")
+
+    letter_name = ks.generic_note_name_convert_to_type("n7", LETTER_NAME)  # "g"
+    solfege_name = ks.generic_note_name_convert_to_type("n7", SOLFEGE_NAME)  # "sol"
+    ei_solfege_name = ks.generic_note_name_convert_to_type("n7", EAST_INDIAN_SOLFEGE_NAME)  # "pa"
+    custom_name = ks.generic_note_name_convert_to_type("n7", CUSTOM_NAME)  # "golf"
+    scalar_mode_number = ks.generic_note_name_convert_to_type("n7", SCALAR_MODE_NUMBER)  # "5"
+```
+
+Fixed Solfege means that the mapping between Solfege and letter names
+is fixed: do == c, re == d, ...
+
+Moveable (not fixed) Solfege means that do == the first note in the
+scale, etc.
+
+```
+    ks = KeySignature(key="g", mode="major")
+    generic_name = ks.convert_to_generic_note_name("sol")[0]  # "n7"
+    ks.set_fixed_solfege(False)  # Moveable
+    generic_name = ks.convert_to_generic_note_name("do")[0]  # "n7"
+```
+
 The Key Signature is used to navigate the scale, either by scalar or
 semitone steps.
 
@@ -895,6 +990,7 @@ semitone steps.
         generic_name, number_of_scalar_steps
     )
 ```
+
 
 Scale
 -----
@@ -983,5 +1079,151 @@ class Scale:
         """
 ```
 
+The Scale object holds the list of notes defined in the scale defined
+by a key and mode. While it is unlikely you'll need to access this
+object directly, there are public methods available for accessing the
+notes in a scale as an array, the number of notes in the scale, and
+the octave offsets associated with a scale (new octaves always start
+at C regardless of the temperament, key, or mode.
 
 
+Music Utils
+-----------
+
+```
+# Pitch name types
+GENERIC_NOTE_NAME = "generic note name"
+LETTER_NAME = "letter name"
+SOLFEGE_NAME = "solfege name"
+EAST_INDIAN_SOLFEGE_NAME = "east indian solfege name"
+SCALAR_MODE_NUMBER = "scalar mode number"
+CUSTOM_NAME = "custom name"
+UNKNOWN_PITCH_NAME = "unknown"
+
+
+def strip_accidental(pitch):
+    """
+    Remove an accidental and return the number of half steps that
+    would have resulted from its application to the pitch
+
+    Parameters
+    ----------
+    pitch : str
+        Upper or lowecase pitch name with accidentals as ASCII or Unicode
+
+    Returns
+    -------
+    str
+        Normalized pitch name
+    int
+        Change in half steps represented by the removed accidental
+    """
+
+
+def normalize_pitch(pitch):
+    """
+    Internally, we use a standardize form for our pitch letter names:
+    * Lowercase c, d, e, f, g, a, b for letter names;
+    * #, b, x, and bb for sharp, flat, double sharp, and double flat for
+      accidentals.
+
+    Note names for temperaments with more than 12 semitones are of the
+    form: n0, n1, ...
+
+    Parameters
+    ----------
+    pitch : str
+        Upper or lowecase pitch name with accidentals as ASCII or Unicode
+
+    Returns
+    -------
+    str
+        Normalized pitch name
+    """
+
+
+def display_pitch(pitch):
+    """
+    The internal pitch name is converted to unicode, e.g., cb --> C♭
+
+    Parameters
+    ----------
+    pitch : str
+        Upper or lowecase pitch name with accidentals as ASCII or Unicode
+
+    Returns
+    -------
+    str
+        Pretty pitch name
+    """
+
+
+def is_a_sharp(pitch_name):
+    """
+    Is the pitch a sharp or not flat?
+
+    Parameters
+    ----------
+    pitch_name : str
+        The pitch name to test
+
+    Returns
+    -------
+    boolean
+        Result of the test
+    """
+
+
+def find_sharp_index(pitch_name):
+    """
+    Return the index value of the pitch name
+
+    Parameters
+    ----------
+    pitch_name : str
+        The pitch name to test
+
+    Returns
+    -------
+    int
+        Index into the chromatic scale with sharp notes
+    """
+
+
+def is_a_flat(pitch_name):
+    """
+    Is the pitch a flat or not sharp?
+
+    Parameters
+    ----------
+    pitch_name : str
+        The pitch name to test
+
+    Returns
+    -------
+    boolean
+        Result of the test
+    """
+
+
+def find_flat_index(pitch_name):
+    """
+    Return the index value of the pitch name
+
+    Parameters
+    ----------
+    pitch_name : str
+        The pitch name to test
+
+    Returns
+    -------
+    int
+        Index into the chromatic scale with sharp notes
+    """
+
+
+def get_pitch_type(pitch_name):
+    """
+    Pitches can be specified as a letter name, a solfege name, etc.
+    """
+```

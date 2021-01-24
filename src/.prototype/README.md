@@ -1227,3 +1227,55 @@ def get_pitch_type(pitch_name):
     Pitches can be specified as a letter name, a solfege name, etc.
     """
 ```
+
+EXAMPLE
+-------
+
+Putting it all together...
+
+```
+from temperament import Temperament
+from keysignature import KeySignature
+from currentpitch import CurrentPitch
+
+# Use the default tuning (Equal temperament) and the default key and
+# mode (C Major).
+cp = CurrentPitch() print(cp.get_freq())
+
+# Use Pythagorean tuning and G Major.
+t = Temperament(name="pythagorean")
+ks = KeySignature(mode="major", key="g")
+cp = CurrentPitch(keysignature=ks, temperament=t)
+print(cp.get_freq())
+
+# Walk through the scale.
+mode_length = ks.get_mode_length()
+print(cp.get_freq())
+for i in range(mode_length):
+    cp.apply_scalar_transposition(1)
+    print(cp.get_freq())
+
+# Set the current pitch to G4.
+cp.set_pitch("g", 4)
+print(cp)
+```
+
+The default settings are Equal temperament, C Major, and G4. This
+results in a frequency of `391.9954879721078`.
+
+Switching to Pythagorean tuning results in G4 mapping to
+`403.21972995787394`.
+
+The frequencies in G Major (Octave 4) are:
+```
+403.21972995787394
+453.62219620260817
+510.3249707279342
+268.8131533052493
+302.4147974684054
+335.6374564664841
+377.59213852479456
+806.439459915748
+```
+
+Setting the current note back to G4: `n7 403.21972995787394`

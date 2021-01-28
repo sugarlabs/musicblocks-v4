@@ -1,4 +1,4 @@
-import { BlockElement } from '../structureElements';
+import { ArgumentElement, BlockElement } from '../structureElements';
 
 export namespace ConditionalElement {
     export class IfElseElement extends BlockElement {
@@ -6,6 +6,14 @@ export namespace ConditionalElement {
             super(elementName !== undefined ? elementName : 'if-else', 2, {
                 condition: ['TBoolean']
             });
+        }
+
+        set argCondition(condition: ArgumentElement | null) {
+            this.args.setArg('condition', condition);
+        }
+
+        get argCondition() {
+            return this.args.getArg('condition');
         }
 
         /** @throws Invalid argument */

@@ -1,21 +1,18 @@
 import { TPrimitiveName } from '../@types/primitiveTypes';
-import { TChar, TFloat, TInt, TString } from '../primitiveElements';
+import { TBoolean, TChar, TFloat, TInt, TString } from '../primitiveElements';
 import { ArgumentElement, StatementElement } from '../structureElements';
 import { ValueElement } from './valueElements';
 
 type argType = ArgumentElement | null;
-type valueType =
-    | ValueElement.IntElement
-    | ValueElement.FloatElement
-    | ValueElement.CharElement
-    | ValueElement.StringElement
-    | ValueElement.TrueElement
-    | ValueElement.FalseElement;
+type dataValueType =
+    | ValueElement.IntDataValueElement
+    | ValueElement.FloatDataValueElement
+    | ValueElement.CharDataValueElement
+    | ValueElement.StringDataValueElement
+    | ValueElement.BooleanDataValueElement;
 
 export namespace DataElement {
     abstract class DataElement extends StatementElement {
-        protected _valueElement: valueType | null = null;
-
         constructor(identifier: string, valueConstraints: TPrimitiveName[]) {
             super(identifier, {
                 identifier: ['TString'],
@@ -41,9 +38,7 @@ export namespace DataElement {
             return this.args.getArg('value');
         }
 
-        get valueElement() {
-            return this._valueElement;
-        }
+        abstract get valueElement(): dataValueType | null;
 
         abstract onVisit(): void;
     }
@@ -53,15 +48,16 @@ export namespace DataElement {
             super('data-int', ['TInt']);
         }
 
-        onVisit() {
+        get valueElement() {
             const arg = this.argValue;
             if (arg === null) {
                 throw Error('Invalid argument: value cannot be null');
             } else {
-                this._valueElement = new ValueElement.IntElement((arg.data as TInt).value);
-                this._valueElement.dataElement = this;
+                return new ValueElement.IntDataValueElement(arg.data as TInt);
             }
         }
+
+        onVisit() {}
     }
 
     export class FloatDataElement extends DataElement {
@@ -69,15 +65,16 @@ export namespace DataElement {
             super('data-float', ['TFloat']);
         }
 
-        onVisit() {
+        get valueElement() {
             const arg = this.argValue;
             if (arg === null) {
                 throw Error('Invalid argument: value cannot be null');
             } else {
-                this._valueElement = new ValueElement.FloatElement((arg.data as TFloat).value);
-                this._valueElement.dataElement = this;
+                return new ValueElement.FloatDataValueElement(arg.data as TFloat);
             }
         }
+
+        onVisit() {}
     }
 
     export class CharDataElement extends DataElement {
@@ -85,15 +82,16 @@ export namespace DataElement {
             super('data-char', ['TChar']);
         }
 
-        onVisit() {
+        get valueElement() {
             const arg = this.argValue;
             if (arg === null) {
                 throw Error('Invalid argument: value cannot be null');
             } else {
-                this._valueElement = new ValueElement.CharElement((arg.data as TChar).value);
-                this._valueElement.dataElement = this;
+                return new ValueElement.CharDataValueElement(arg.data as TChar);
             }
         }
+
+        onVisit() {}
     }
 
     export class StringDataElement extends DataElement {
@@ -101,15 +99,16 @@ export namespace DataElement {
             super('data-string', ['TString']);
         }
 
-        onVisit() {
+        get valueElement() {
             const arg = this.argValue;
             if (arg === null) {
                 throw Error('Invalid argument: value cannot be null');
             } else {
-                this._valueElement = new ValueElement.StringElement((arg.data as TString).value);
-                this._valueElement.dataElement = this;
+                return new ValueElement.StringDataValueElement(arg.data as TString);
             }
         }
+
+        onVisit() {}
     }
 
     export class BooleanDataElement extends DataElement {
@@ -117,17 +116,16 @@ export namespace DataElement {
             super('data-boolean', ['TBoolean']);
         }
 
-        onVisit() {
+        get valueElement() {
             const arg = this.argValue;
             if (arg === null) {
                 throw Error('Invalid argument: value cannot be null');
             } else {
-                this._valueElement = arg.data.value
-                    ? new ValueElement.TrueElement()
-                    : new ValueElement.FalseElement();
-                this._valueElement.dataElement = this;
+                return new ValueElement.BooleanDataValueElement(arg.data as TBoolean);
             }
         }
+
+        onVisit() {}
     }
 
     export class AnyDataElement extends DataElement {
@@ -135,27 +133,107 @@ export namespace DataElement {
             super('data-any', ['TInt', 'TFloat', 'TChar', 'TString', 'TBoolean']);
         }
 
-        onVisit() {
+        get valueElement() {
             const argValue = this.argValue;
             if (argValue === null) {
                 throw Error('Invalid argument: value cannot be null');
             } else {
                 const arg = argValue.data;
                 if (arg instanceof TInt) {
-                    this._valueElement = new ValueElement.IntElement(arg.value);
+                    return new ValueElement.IntDataValueElement(arg as TInt);
                 } else if (arg instanceof TFloat) {
-                    this._valueElement = new ValueElement.FloatElement(arg.value);
+                    return new ValueElement.FloatDataValueElement(arg as TFloat);
                 } else if (arg instanceof TChar) {
-                    this._valueElement = new ValueElement.CharElement(arg.value);
+                    return new ValueElement.CharDataValueElement(arg as TChar);
                 } else if (arg instanceof TString) {
-                    this._valueElement = new ValueElement.StringElement(arg.value);
+                    return new ValueElement.StringDataValueElement(arg as TString);
                 } else {
-                    this._valueElement = arg.value
-                        ? new ValueElement.TrueElement()
-                        : new ValueElement.FalseElement();
+                    return new ValueElement.BooleanDataValueElement(arg as TBoolean);
                 }
-                this._valueElement.dataElement = this;
             }
+        }
+
+        onVisit() {}
+    }
+
+    abstract class UpdateDataElement extends StatementElement {
+        constructor(
+            elementName: string,
+            constraints: {
+                currValue: [TPrimitiveName];
+                newValue: [TPrimitiveName];
+            }
+        ) {
+            super(elementName, constraints);
+        }
+
+        set argCurrValue(value: dataValueType | null) {
+            this.args.setArg('currValue', value);
+        }
+
+        get argCurrValue() {
+            return this.args.getArg('currValue') as dataValueType;
+        }
+
+        set argNewValue(value: dataValueType | null) {
+            this.args.setArg('newValue', value);
+        }
+
+        get argNewValue() {
+            return this.args.getArg('newValue') as dataValueType;
+        }
+
+        onVisit() {
+            const argCurr = this.argCurrValue;
+            const argNew = this.argNewValue;
+            if (argCurr !== null && argNew !== null) {
+                argCurr.data.value = argNew.data.value;
+            }
+        }
+    }
+
+    export class UpdateIntDataElement extends UpdateDataElement {
+        constructor() {
+            super('update-data-int', {
+                currValue: ['TInt'],
+                newValue: ['TInt']
+            });
+        }
+    }
+
+    export class UpdateFloatDataElement extends UpdateDataElement {
+        constructor() {
+            super('update-data-int', {
+                currValue: ['TFloat'],
+                newValue: ['TFloat']
+            });
+        }
+    }
+
+    export class UpdateCharDataElement extends UpdateDataElement {
+        constructor() {
+            super('update-data-int', {
+                currValue: ['TChar'],
+                newValue: ['TChar']
+            });
+        }
+    }
+
+    export class UpdateStringDataElement extends UpdateDataElement {
+        constructor() {
+            super('update-data-int', {
+                currValue: ['TString'],
+                newValue: ['TString']
+            });
+        }
+    }
+
+    export class UpdateBooleanDataElement extends UpdateDataElement {
+        constructor() {
+            super('update-data-int', {
+                currValue: ['TBoolean'],
+                newValue: ['TBoolean']
+            });
         }
     }
 }

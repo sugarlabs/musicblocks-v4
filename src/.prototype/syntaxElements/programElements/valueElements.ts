@@ -1,14 +1,30 @@
 import { TPrimitive } from '../@types/primitiveTypes';
 import { TInt, TFloat, TChar, TString, TBoolean } from '../primitiveElements';
 import { ArgumentDataElement } from '../structureElements';
+import { DataElement } from './dataElements';
+
+type dataElemType =
+    | DataElement.IntDataElement
+    | DataElement.FloatDataElement
+    | DataElement.CharDataElement
+    | DataElement.StringDataElement
+    | DataElement.BooleanDataElement;
+// | DataElement.AnyDataElement;
 
 /**
  * @abstract All ValueElements are ArgumentDataElements.
  */
 export namespace ValueElement {
     abstract class ValueElement extends ArgumentDataElement {
+        private _data: TPrimitive;
+
         constructor(elementName: string, data: TPrimitive) {
-            super(elementName, data);
+            super(elementName, data.type);
+            this._data = data;
+        }
+
+        get data() {
+            return this._data;
         }
     }
 
@@ -23,13 +39,6 @@ export namespace ValueElement {
         }
     }
 
-    /** Maybe merged into IntElement. */
-    export class IntDataValueElement extends ValueElement {
-        constructor(data: TInt) {
-            super('data-value-int', data);
-        }
-    }
-
     /** ArgumentDataElement wrapper for primitive TFloat type. */
     export class FloatElement extends ValueElement {
         constructor(value: number) {
@@ -38,13 +47,6 @@ export namespace ValueElement {
 
         update(value: number) {
             this.data.value = value;
-        }
-    }
-
-    /** Maybe merged into FloatElement. */
-    export class FloatDataValueElement extends ValueElement {
-        constructor(data: TFloat) {
-            super('data-value-float', data);
         }
     }
 
@@ -59,13 +61,6 @@ export namespace ValueElement {
         }
     }
 
-    /** Maybe merged into CharElement. */
-    export class CharDataValueElement extends ValueElement {
-        constructor(data: TChar) {
-            super('data-value-char', data);
-        }
-    }
-
     /** ArgumentDataElement wrapper for primitive TString type. */
     export class StringElement extends ValueElement {
         constructor(value: string) {
@@ -74,13 +69,6 @@ export namespace ValueElement {
 
         update(value: string) {
             this.data.value = value;
-        }
-    }
-
-    /** Maybe merged into StringElement. */
-    export class StringDataValueElement extends ValueElement {
-        constructor(data: TString) {
-            super('data-value-string', data);
         }
     }
 
@@ -98,9 +86,47 @@ export namespace ValueElement {
         }
     }
 
-    export class BooleanDataValueElement extends ValueElement {
-        constructor(data: TBoolean) {
-            super('data-value-boolean', data);
+    abstract class DataValueElement extends ArgumentDataElement {
+        private _dataElementRef: dataElemType;
+
+        constructor(elementName: string, dataElement: dataElemType) {
+            super(elementName, dataElement.type);
+            this._dataElementRef = dataElement;
+        }
+
+        /** @override */
+        get data() {
+            return this._dataElementRef.dataElementRef;
+        }
+    }
+
+    export class IntDataValueElement extends DataValueElement {
+        constructor(dataElement: DataElement.IntDataElement) {
+            super('data-value-int', dataElement);
+        }
+    }
+
+    export class FloatDataValueElement extends DataValueElement {
+        constructor(dataElement: DataElement.FloatDataElement) {
+            super('data-value-float', dataElement);
+        }
+    }
+
+    export class CharDataValueElement extends DataValueElement {
+        constructor(dataElement: DataElement.CharDataElement) {
+            super('data-value-char', dataElement);
+        }
+    }
+
+    export class StringDataValueElement extends DataValueElement {
+        constructor(dataElement: DataElement.StringDataElement) {
+            super('data-value-string', dataElement);
+        }
+    }
+
+    export class BooleanDataValueElement extends DataValueElement {
+        constructor(dataElement: DataElement.BooleanDataElement) {
+            super('data-value-boolean', dataElement);
         }
     }
 }

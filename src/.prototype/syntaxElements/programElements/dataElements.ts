@@ -208,12 +208,12 @@ export namespace DataElement {
             return this.args.getArg('currValue') as dataValueType;
         }
 
-        set argNewValue(value: dataValueType | null) {
+        set argNewValue(value: ArgumentElement | null) {
             this.args.setArg('newValue', value);
         }
 
         get argNewValue() {
-            return this.args.getArg('newValue') as dataValueType;
+            return this.args.getArg('newValue');
         }
 
         onVisit() {

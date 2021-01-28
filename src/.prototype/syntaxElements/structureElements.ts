@@ -184,6 +184,20 @@ export abstract class InstructionElement extends SyntaxElement implements TS.IIn
 
     /** Executes when element is encountered by MB program interpretor. */
     abstract onVisit(): void;
+
+    /** Whether current instruction is a dummy instruction */
+    get isDummy() {
+        return this.elementName === 'dummy';
+    }
+}
+
+/** To be treated as a terminating or non-existing instruction */
+export class DummyElement extends InstructionElement {
+    constructor() {
+        super('dummy');
+    }
+
+    onVisit() {}
 }
 
 export abstract class StatementElement extends InstructionElement implements TS.IStatementElement {

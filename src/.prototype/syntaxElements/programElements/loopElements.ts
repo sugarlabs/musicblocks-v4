@@ -1,9 +1,14 @@
 import { TFloat, TInt } from '../primitiveElements';
-import { ArgumentElement, BlockElement, InstructionElement } from '../structureElements';
+import {
+    ArgumentElement,
+    BlockElement,
+    DummyElement,
+    InstructionElement
+} from '../structureElements';
 
 export namespace LoopElement {
     export class RepeatLoopElement extends BlockElement {
-        private _nextStore: InstructionElement | null = null;
+        private _nextStore: InstructionElement | null = new DummyElement();
         private _counter: number = 0;
 
         constructor() {
@@ -13,12 +18,6 @@ export namespace LoopElement {
         }
 
         set argValue(value: ArgumentElement | null) {
-            if (value !== null) {
-                const data = TInt.TInt(value.data as TInt | TFloat);
-                this._counter = data.value;
-            } else {
-                this._counter = 0;
-            }
             this.args.setArg('value', value);
         }
 
@@ -26,9 +25,12 @@ export namespace LoopElement {
             const arg = this.args.getArg('value');
             if (arg === null || arg.data.value < 0) {
                 throw Error('Invalid argument: Repeat loop needs a positive value');
-            }
-            if (this._nextStore === null) {
-                this._nextStore = this.next;
+            } else {
+                // Not already repeating.
+                if (this._nextStore !== null && this._nextStore.isDummy) {
+                    this._nextStore = this.next;
+                    this._counter = arg.data.value as number;
+                }
             }
             this.childHead = this.getChildHead(0);
         }
@@ -38,8 +40,9 @@ export namespace LoopElement {
             if (this._counter > 0) {
                 this.next = this;
             } else {
+                // Reset values - repeat ended.
                 this.next = this._nextStore;
-                this._nextStore = null;
+                this._nextStore = new DummyElement();
             }
         }
     }

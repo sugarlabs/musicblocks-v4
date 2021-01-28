@@ -23,11 +23,5 @@ describe('namespace LoopElement', () => {
                 'Invalid argument: Repeat loop needs a positive value'
             );
         });
-
-        test('Attempt to assign a negative value to repeat and expect error', () => {
-            expect(() => (repeatElem.argValue = new ValueElement.IntElement(-5))).toThrowError(
-                'Invalid argument: Repeat loop needs a positive value'
-            );
-        });
     });
 });

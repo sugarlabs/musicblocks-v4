@@ -126,17 +126,11 @@ export abstract class ArgumentElement extends SyntaxElement implements TS.IArgum
 export abstract class ArgumentDataElement
     extends ArgumentElement
     implements TS.IArgumentDataElement {
-    /** Stores the primitive element that is wrapped. */
-    private _dataElement: TPrimitive;
-
-    constructor(elementName: string, dataElement: TPrimitive) {
-        super(elementName, 'data', dataElement.type);
-        this._dataElement = dataElement;
+    constructor(elementName: string, type: TPrimitiveName) {
+        super(elementName, 'data', type);
     }
 
-    get data() {
-        return this._dataElement;
-    }
+    abstract get data(): TPrimitive;
 }
 
 export abstract class ArgumentExpressionElement

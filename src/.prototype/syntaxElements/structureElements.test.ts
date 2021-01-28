@@ -7,7 +7,11 @@ import {
 } from './structureElements';
 
 /** Dummy class to extend abstract class ArgumentDataElement. */
-class CArgumentDataElement extends ArgumentDataElement {}
+class CArgumentDataElement extends ArgumentDataElement {
+    get data() {
+        return new TInt(5);
+    }
+}
 /** Dummy class to extend abstract class ArgumentExpressionElement. */
 class CArgumentExpressionElement extends ArgumentExpressionElement {
     get data() {
@@ -24,56 +28,26 @@ class CBlockElement extends BlockElement {
     onExit() {}
 }
 
-let argData_int: ArgumentDataElement;
-let argData_float: ArgumentDataElement;
-let argData_char: ArgumentDataElement;
-let argData_string: ArgumentDataElement;
-let argData_boolean: ArgumentDataElement;
+let argData: ArgumentDataElement;
 let argExpr: ArgumentExpressionElement;
 
 describe('class ArgumentDataElement', () => {
-    test('intialize object with a TInt(5) and verify contents', () => {
-        argData_int = new CArgumentDataElement('myArgData', new TInt(5));
-        expect(argData_int.elementName).toBe('myArgData');
-        expect(argData_int.argType).toBe('data');
-        expect(argData_int.data.value).toBe(5);
-    });
-
-    test('intialize object with a TFloat(3.14) and verify contents', () => {
-        argData_float = new CArgumentDataElement('myArgData', new TFloat(3.14));
-        expect(argData_float.elementName).toBe('myArgData');
-        expect(argData_float.argType).toBe('data');
-        expect(argData_float.data.value).toBe(3.14);
-    });
-
-    test('intialize object with a TChar(65) and verify contents', () => {
-        argData_char = new CArgumentDataElement('myArgData', new TChar(65));
-        expect(argData_char.elementName).toBe('myArgData');
-        expect(argData_char.argType).toBe('data');
-        expect(argData_char.data.value).toBe('A');
-    });
-
-    test('intialize object with a TString("str") and verify contents', () => {
-        argData_string = new CArgumentDataElement('myArgData', new TString('str'));
-        expect(argData_string.elementName).toBe('myArgData');
-        expect(argData_string.argType).toBe('data');
-        expect(argData_string.data.value).toBe('str');
-    });
-
-    test('intialize object with a TBoolean(false) and verify contents', () => {
-        argData_boolean = new CArgumentDataElement('myArgData', new TBoolean(false));
-        expect(argData_boolean.elementName).toBe('myArgData');
-        expect(argData_boolean.argType).toBe('data');
-        expect(argData_boolean.data.value).toBe(false);
+    test("intialize dummy ArgumentDataElement's subclass with valid arbitrary arguments and verify contents", () => {
+        argData = new CArgumentDataElement('myArgData', 'TInt');
+        expect(argData.elementName).toBe('myArgData');
+        expect(argData.type).toBe('TInt');
+        expect(argData.argType).toBe('data');
+        expect(argData.data.value).toBe(5);
     });
 });
 
 describe('class ArgumentExpressionElement', () => {
-    test('initialize object with valid arbitrary arguments and verify contents', () => {
+    test("initialize dummy ArgumentExpressionElement's subclass with valid arbitrary arguments and verify contents", () => {
         argExpr = new CArgumentExpressionElement('myArgExpression', 'TInt');
         expect(argExpr.elementName).toBe('myArgExpression');
         expect(argExpr.type).toBe('TInt');
         expect(argExpr.argType).toBe('expression');
+        expect(argExpr.data.value).toBe(5);
     });
 });
 
@@ -101,10 +75,10 @@ describe('class StatementElement', () => {
 
     test('assign valid argument for valid argument label and verify', () => {
         try {
-            stmntElem.args.setArg('arg_1', argData_char);
+            stmntElem.args.setArg('arg_1', argData);
             const arg = stmntElem.args.getArg('arg_1');
             if (arg !== null) {
-                expect(arg.data.value).toEqual('A');
+                expect(arg.data.value).toEqual(5);
             }
         } catch (e) {
             console.error(e);
@@ -133,7 +107,7 @@ describe('class StatementElement', () => {
     });
 
     test('try to assign invalid return-type argument for valid argument label and expect error', () => {
-        expect(() => stmntElem.args.setArg('arg_2', argData_int)).toThrowError(
+        expect(() => stmntElem.args.setArg('arg_2', argData)).toThrowError(
             'Invalid argument: "TInt" is not a valid type for "arg_2"'
         );
     });

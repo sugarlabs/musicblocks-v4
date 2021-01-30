@@ -54,12 +54,15 @@ const syntaxElementMap = {
 };
 
 export function createSyntaxElement(
-    elementName: string
+    elementName: string,
+    arg?: number | string
 ): {
     element: SyntaxElement;
     type: 'statement' | 'block' | 'arg-data' | 'arg-exp';
 } {
-    const element: SyntaxElement = new syntaxElementMap[elementName]();
+    // ts-ignore
+    const element: SyntaxElement =
+        arg !== null ? new syntaxElementMap[elementName](arg) : new syntaxElementMap[elementName]();
     const type =
         element instanceof InstructionElement
             ? element instanceof StatementElement

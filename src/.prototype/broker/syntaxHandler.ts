@@ -21,8 +21,8 @@ export default class SyntaxHandler implements ISyntaxHandler {
     // -- Utilities ------------------------------------------------------------
 
     /** Handles creation of syntax elements. */
-    private _handleCreate(elementName: string): string {
-        const element = Factory.createSyntaxElement(elementName);
+    private _handleCreate(elementName: string, arg?: number | string): string {
+        const element = Factory.createSyntaxElement(elementName, arg);
         let id: string;
         do {
             id = 'E' + Date.now();
@@ -118,7 +118,7 @@ export default class SyntaxHandler implements ISyntaxHandler {
     processQuery(query: TQuery): string {
         switch (query.action) {
             case 'create':
-                return this._handleCreate(query.props.elementName);
+                return this._handleCreate(query.props.elementName, query.props.arg);
             case 'remove':
                 this._handleRemove(query.props.elementID);
                 break;

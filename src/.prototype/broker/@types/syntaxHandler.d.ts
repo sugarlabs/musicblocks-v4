@@ -3,6 +3,7 @@ type TQuery =
           action: 'create';
           props: {
               elementName: string;
+              arg?: number | string;
           };
       }
     | {

@@ -1,5 +1,6 @@
 import SyntaxHandler from './syntaxHandler';
 import { SyntaxElement } from '../syntax-core/structureElements';
+import { ValueElement } from '../syntax-core/program-elements/valueElements';
 
 describe('related to Syntax Elements organization', () => {
     const synHandler = new SyntaxHandler();
@@ -16,6 +17,8 @@ describe('related to Syntax Elements organization', () => {
     let printElemProps: TElemProps;
     let addElemID: string;
     let addElemProps: TElemProps;
+    let intElemID: string;
+    let intElemProps: TElemProps;
 
     describe('element creation', () => {
         test('create a block element and verify props', () => {
@@ -71,6 +74,26 @@ describe('related to Syntax Elements organization', () => {
                 throw Error('Object should not be null');
             }
         });
+
+        test('create an argument data element and verify props', () => {
+            intElemID = synHandler.processQuery({
+                action: 'create',
+                props: {
+                    elementName: 'int',
+                    arg: 5
+                }
+            });
+            intElemProps = synHandler.getElement(intElemID);
+            expect(intElemProps).not.toBe(null);
+            if (intElemProps !== null) {
+                expect(intElemProps.elementName).toBe('int');
+                expect(intElemProps.type).toBe('arg-data');
+                expect(intElemProps.element.elementName).toBe('int');
+                expect((intElemProps.element as ValueElement.IntElement).data.value).toBe(5);
+            } else {
+                throw Error('Object should not be null');
+            }
+        });
     });
 
     describe('element removal', () => {
@@ -85,7 +108,7 @@ describe('related to Syntax Elements organization', () => {
             expect(startElemProps).toBe(null);
         });
 
-        test('attempt ro remove an element with an invalid ID and expect error', () => {
+        test('attempt to remove an element with an invalid ID and expect error', () => {
             expect(() => {
                 synHandler.processQuery({
                     action: 'remove',

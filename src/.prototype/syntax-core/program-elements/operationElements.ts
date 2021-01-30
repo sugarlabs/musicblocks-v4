@@ -92,25 +92,25 @@ export namespace OperationElement {
 
     export class SubtractElement extends ArithmeticOperationElement {
         constructor() {
-            super('add', 'TFloat', '-');
+            super('subtract', 'TFloat', '-');
         }
     }
 
     export class MultiplyElement extends ArithmeticOperationElement {
         constructor() {
-            super('add', 'TFloat', '*');
+            super('multiply', 'TFloat', '*');
         }
     }
 
     export class DivideElement extends ArithmeticOperationElement {
         constructor() {
-            super('add', 'TFloat', '/');
+            super('divide', 'TFloat', '/');
         }
     }
 
     export class ModElement extends ArithmeticOperationElement {
         constructor() {
-            super('add', 'TFloat', '%');
+            super('mod', 'TFloat', '%');
         }
     }
 
@@ -158,13 +158,13 @@ export namespace OperationElement {
 
     export class GreaterThanElement extends RelationOperationElement {
         constructor() {
-            super('equals', '>');
+            super('greater-than', '>');
         }
     }
 
     export class LessThanElement extends RelationOperationElement {
         constructor() {
-            super('equals', '<');
+            super('less-than', '<');
         }
     }
 

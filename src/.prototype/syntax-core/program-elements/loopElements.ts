@@ -1,4 +1,3 @@
-import { TFloat, TInt } from '../primitiveElements';
 import {
     ArgumentElement,
     BlockElement,

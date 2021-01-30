@@ -17,6 +17,8 @@ export interface ISyntaxElement {
     elementName: string;
     /** Stores the instrinsic music and art properties associated with the current context. */
     context: IContext | null;
+    /** Whether argument requires a context. */
+    requiresContext: boolean;
 }
 
 export interface IDataElement {
@@ -47,8 +49,6 @@ export interface IArgumentElement extends ISyntaxElement {
     type: TPrimitiveName;
     /** Returns the primitive element that the argument element returns. */
     data: TPrimitive;
-    /** Whether argument requires a context. */
-    requiresContext: boolean;
 }
 
 /**

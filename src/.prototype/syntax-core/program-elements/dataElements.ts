@@ -16,7 +16,7 @@ export namespace DataElement {
         private _type: TPrimitiveName;
 
         constructor(identifier: string, type: TPrimitiveName) {
-            super(identifier, {
+            super(identifier, false, {
                 identifier: ['TString'],
                 value: [type]
             });
@@ -197,7 +197,7 @@ export namespace DataElement {
                 newValue: [TPrimitiveName];
             }
         ) {
-            super(elementName, constraints);
+            super(elementName, false, constraints);
         }
 
         set argCurrValue(value: dataValueType | null) {

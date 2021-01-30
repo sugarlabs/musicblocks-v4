@@ -12,7 +12,7 @@ export namespace LoopElement {
         private _counter: number = 0;
 
         constructor() {
-            super('repeat', 1, {
+            super('repeat', 1, false, {
                 value: ['TInt', 'TFloat']
             });
         }

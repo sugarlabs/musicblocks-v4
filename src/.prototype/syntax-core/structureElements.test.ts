@@ -62,7 +62,7 @@ describe('class StatementElement', () => {
     });
 
     test('initialize object with argument constraints and verify initial contents', () => {
-        stmntElem = new CStatementElement('myStatement', {
+        stmntElem = new CStatementElement('myStatement', false, {
             arg_1: ['TInt', 'TChar'],
             arg_2: ['TString']
         });
@@ -117,7 +117,7 @@ describe('class BlockElement', () => {
     let blockElem: BlockElement;
 
     test('initialize object with argument constraints and verify initial contents', () => {
-        blockElem = new CBlockElement('myBlock', 1, { arg_1: ['TBoolean'] });
+        blockElem = new CBlockElement('myBlock', 1, false, { arg_1: ['TBoolean'] });
         expect(blockElem.next).toBe(null);
         if (blockElem.args !== null) {
             expect(blockElem.args.argNames).toEqual(['arg_1']);

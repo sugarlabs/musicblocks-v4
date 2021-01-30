@@ -17,20 +17,14 @@ export class StartBlock extends BlockElement implements IStartBlock {
 
 export class ActionBlock extends BlockElement implements IActionBlock {
     constructor() {
-        super('action', 1, {
+        super('action', 1, true, {
             name: ['TString']
         });
     }
 
-    onVisit() {
-        if (this.context === null) {
-            throw Error(`Invalid context: context cannot be null`);
-        }
-    }
+    onVisit() {}
 
-    onExit() {
-        this.context = null;
-    }
+    onExit() {}
 }
 
 // ---- Abstract Syntax Tree (AST) -----------------------------------------------------------------

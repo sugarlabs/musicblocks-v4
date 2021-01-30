@@ -1,5 +1,6 @@
 import { TPrimitiveName, TPrimitive } from './@types/primitiveTypes';
 import * as TS from './@types/structureElements';
+import { Context } from './context';
 
 // ---- Syntax Element -----------------------------------------------------------------------------
 
@@ -9,6 +10,7 @@ import * as TS from './@types/structureElements';
  */
 abstract class SyntaxElement implements TS.ISyntaxElement {
     private _elementName: string;
+    private _context: Context | null = null;
 
     constructor(elementName: string) {
         this._elementName = elementName;
@@ -16,6 +18,14 @@ abstract class SyntaxElement implements TS.ISyntaxElement {
 
     get elementName() {
         return this._elementName;
+    }
+
+    set context(context: Context) {
+        this._context = context;
+    }
+
+    get context() {
+        return this._context;
     }
 }
 
@@ -105,11 +115,18 @@ class ArgumentMap implements TS.IArgumentMap {
 export abstract class ArgumentElement extends SyntaxElement implements TS.IArgumentElement {
     private _argType: 'data' | 'expression';
     private _type: TPrimitiveName;
+    private _requiresContext: boolean;
 
-    constructor(elementName: string, argType: 'data' | 'expression', type: TPrimitiveName) {
+    constructor(
+        elementName: string,
+        argType: 'data' | 'expression',
+        type: TPrimitiveName,
+        requiresContext?: boolean
+    ) {
         super(elementName);
         this._argType = argType;
         this._type = type;
+        this._requiresContext = requiresContext !== undefined && requiresContext ? true : false;
     }
 
     get argType() {
@@ -118,6 +135,10 @@ export abstract class ArgumentElement extends SyntaxElement implements TS.IArgum
 
     get type() {
         return this._type;
+    }
+
+    get requiresContext() {
+        return this._requiresContext;
     }
 
     abstract get data(): TPrimitive;
@@ -161,12 +182,11 @@ export abstract class ArgumentExpressionElement
 // ---- Instruction Element ------------------------------------------------------------------------
 
 export abstract class InstructionElement extends SyntaxElement implements TS.IInstructionElement {
-    private _next: InstructionElement | null;
+    private _next: InstructionElement | null = null;
     private _args: ArgumentMap;
 
     constructor(elementName: string, constraints?: { [key: string]: TPrimitiveName[] }) {
         super(elementName);
-        this._next = null;
         this._args = new ArgumentMap(elementName, !constraints ? null : constraints);
     }
 

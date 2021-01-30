@@ -1,4 +1,5 @@
 import { TPrimitive, TPrimitiveName } from './primitiveTypes';
+import { IContext } from './context';
 
 /**
  * There are two categories of syntax elements: Arguments and Instructions.
@@ -14,6 +15,8 @@ import { TPrimitive, TPrimitiveName } from './primitiveTypes';
 export interface ISyntaxElement {
     /** Name of the supported syntax element. Different from identifiers. */
     elementName: string;
+    /** Stores the instrinsic music and art properties associated with the current context. */
+    context: IContext | null;
 }
 
 export interface IDataElement {
@@ -44,6 +47,8 @@ export interface IArgumentElement extends ISyntaxElement {
     type: TPrimitiveName;
     /** Returns the primitive element that the argument element returns. */
     data: TPrimitive;
+    /** Whether argument requires a context. */
+    requiresContext: boolean;
 }
 
 /**

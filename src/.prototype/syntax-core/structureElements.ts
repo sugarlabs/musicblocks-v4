@@ -8,7 +8,7 @@ import { Context } from './context';
  * Super class for all syntax elements. Holds the element name.
  * Will be tied to the corresponding UI element.
  */
-abstract class SyntaxElement implements TS.ISyntaxElement {
+export abstract class SyntaxElement implements TS.ISyntaxElement {
     private _elementName: string;
     private _context: Context | null = null;
     private _requiresContext: boolean;

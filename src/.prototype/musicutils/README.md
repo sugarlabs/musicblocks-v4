@@ -381,6 +381,42 @@ class Temperament:
             Returns the frequency (in Hertz) of a note by index
         """
 
+    def get_freq_index_by_generic_note_name_and_octave(self, note_name, octave):
+        """
+        Note name can be used to calculate an index the notes in an octave.
+
+        Parameters
+        ----------
+        note_name : str
+            The name of the note
+
+        octave : int
+            Which octave to access
+
+        Returns
+        -------
+        int
+            The index into the frequency list
+        """
+
+    def get_generic_note_name_and_octave_by_freq_index(self, idx):
+        """
+        Note name can be used to calculate an index the notes in an octave.
+
+        Parameters
+        ----------
+        idx : int
+            The index into the frequency list
+
+        Returns
+        -------
+        str
+            The name of the note
+
+        int
+            Which octave to access
+        """
+
     def get_modal_index_and_octave_from_freq_index(self, pitch_index):
         """
         Convert an index into the frequency list into a modal index
@@ -892,6 +928,80 @@ class KeySignature:
 
         int
             error code
+        """
+
+    def semitone_distance(self, pitch_a, octave_a, pitch_b, octave_b):
+        """
+        Calcualte the distance between two notes in semitone steps
+
+        Parameters
+        ----------
+        pitch_a : str
+            Pitch name one of two
+        octave_a : int
+            Octave number one of two
+        pitch_b : str
+            Pitch name two of two
+        octave_b : int
+            Octave number two of two
+
+        Returns
+        -------
+        int
+            Distance calculated in semitone steps
+        """
+
+    def scalar_distance(self, pitch_a, octave_a, pitch_b, octave_b):
+        """
+        Calcualte the distance between two notes in scalar steps
+
+        Parameters
+        ----------
+        pitch_a : str
+            Pitch name one of two
+        octave_a : int
+            Octave number one of two
+        pitch_b : str
+            Pitch name two of two
+        octave_b : int
+            Octave number two of two
+
+        Returns
+        -------
+        int
+            Distance calculated in scalar steps
+        int
+            Any semitone rounding error in the calculation
+        """
+
+    def invert(self, pitch_name, octave, invert_point_pitch, invert_point_octave, invert_mode):
+        """
+        Invert will rotate a series of notes around an invert point.
+        There are three different invert modes: even, odd, and
+        scalar. In even and odd modes, the rotation is based on half
+        steps. In even and scalar mode, the point of rotation is the
+        given note. In odd mode, the point of rotation is shifted up
+        by a 1/4 step, enabling rotation around a point between two
+        notes. In "scalar" mode, the scalar interval is preserved
+        around the point of rotation.
+
+        Parameters
+        ----------
+        pitch_name : str
+            The pitch name of the note to be rotated
+        octave : int
+            The octave of the note to be rotated
+        invert_point_name : str
+            The pitch name of the axis of inversion
+        invert_point_octave : int
+            The octave of the axis of inversion
+
+        Returns
+        -------
+        str
+            Pitch name of the inverted note
+        int
+            Octave of the inverted note
         """
 
     def closest_note(self, target):

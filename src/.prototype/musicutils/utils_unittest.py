@@ -183,6 +183,14 @@ class MusicUtilsTestCase(unittest.TestCase):
         self.assertEqual(round(f[21], 100), 55.0)  # A1
         self.assertEqual(len(t.get_note_names()), 12)
 
+        # A4 should be th 57th note
+        self.assertEqual(t.get_freq_index_by_generic_note_name_and_octave("n9", 4), 57)
+        self.assertEqual(
+            round(t.get_freq_by_generic_note_name_and_octave("n9", 4), 100), 440.0
+        )
+        self.assertEqual(t.get_generic_note_name_and_octave_by_freq_index(57)[0], "n9")
+        self.assertEqual(t.get_generic_note_name_and_octave_by_freq_index(57)[1], 4)
+
         print("pythagorean")
         t = Temperament(name="pythagorean")
         f = t.get_freqs()
@@ -256,6 +264,18 @@ class MusicUtilsTestCase(unittest.TestCase):
         self.assertEqual(ks.semitone_transform("n1b", -1)[1], -1)  # decrement octave
         self.assertEqual(ks.semitone_transform("n11x", 1)[0], "n2")
         self.assertEqual(ks.semitone_transform("n11x", 1)[1], 1)  # increment octave
+
+        print("invert transforms")
+        self.assertEqual(ks.invert("f", 5, "c", 5, "even")[0], "g")
+        self.assertEqual(ks.invert("f", 5, "c", 5, "even")[1], 4)
+        self.assertEqual(ks.invert("f", 4, "c", 5, "even")[1], 5)
+        self.assertEqual(ks.invert("d", 5, "c", 5, "even")[0], "a#")
+        self.assertEqual(ks.invert("f", 5, "c", 5, "odd")[0], "g#")
+        self.assertEqual(ks.invert("d", 5, "c", 5, "odd")[0], "b")
+        self.assertEqual(ks.invert("f", 5, "c", 5, "scalar")[0], "g")
+        self.assertEqual(ks.invert("d", 5, "c", 5, "scalar")[0], "b")
+        self.assertEqual(ks.invert("g", 5, "c", 5, "scalar")[0], "f")
+        self.assertEqual(ks.invert("b", 5, "c", 5, "scalar")[0], "d")
 
         t = Temperament()
         self.assertEqual(

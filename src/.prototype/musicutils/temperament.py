@@ -480,6 +480,56 @@ class Temperament:
             return self.freqs[-1]
         return self.freqs[int(i)]
 
+    def get_generic_note_name_and_octave_by_freq_index(self, idx):
+        """
+        Note name can be used to calculate an index the notes in an octave.
+
+        Parameters
+        ----------
+        idx : int
+            The index into the frequency list
+
+        Returns
+        -------
+        str
+            The name of the note
+
+        int
+            Which octave to access
+        """
+
+        return self.generic_note_names[idx % self.octave_length], int(
+            idx / self.octave_length
+        )
+
+    def get_freq_index_by_generic_note_name_and_octave(self, note_name, octave):
+        """
+        Note name can be used to calculate an index the notes in an octave.
+
+        Parameters
+        ----------
+        note_name : str
+            The name of the note
+
+        octave : int
+            Which octave to access
+
+        Returns
+        -------
+        int
+            The index into the frequency list
+        """
+        if note_name not in self.generic_note_names:
+            print("Note %s not found in generic note names." % (note_name))
+            return 0
+        ni = self.generic_note_names.index(note_name)
+        i = (octave * self.octave_length) + ni
+        if i < 0:
+            return 0
+        if i > len(self.freqs) - 1:
+            return len(self.freqs) - 1
+        return int(i)
+
     def get_freq_by_generic_note_name_and_octave(self, note_name, octave):
         """
         Note name can be used to calculate an index the notes in an octave.
@@ -499,16 +549,8 @@ class Temperament:
         """
         if len(self.freqs) == 0:
             return 0
-        if note_name not in self.generic_note_names:
-            print("Note %s not found in generic note names." % (note_name))
-            return 0
-        ni = self.generic_note_names.index(note_name)
-        i = (octave * self.octave_length) + ni
-        if i < 0:
-            return self.freqs[0]
-        if i > len(self.freqs) - 1:
-            return self.freqs[-1]
-        return self.freqs[int(i)]
+        i = self.get_freq_index_by_generic_note_name_and_octave(note_name, octave)
+        return self.freqs[i]
 
     def get_number_of_semitones_in_octave(self):
         """

@@ -1211,6 +1211,136 @@ class KeySignature:
             return self._generic_note_name_to_east_indian_solfege(pitch_name)[0]
         return pitch_name
 
+    def _pitch_to_note_number(self, pitch_name, octave):
+        """
+        Find the pitch number, e.g., A4 --> 57
+        """
+        generic_name = self.convert_to_generic_note_name(pitch_name)[0]
+        ni = self.note_names.index(generic_name)
+        i = (octave * self.number_of_semitones) + ni
+        return int(i)
+
+    def semitone_distance(self, pitch_a, octave_a, pitch_b, octave_b):
+        """
+        Calcualte the distance between two notes in semitone steps
+
+        Parameters
+        ----------
+        pitch_a : str
+            Pitch name one of two
+        octave_a : int
+            Octave number one of two
+        pitch_b : str
+            Pitch name two of two
+        octave_b : int
+            Octave number two of two
+
+        Returns
+        -------
+        int
+            Distance calculated in semitone steps
+        """
+        number1 = self._pitch_to_note_number(pitch_a, octave_a)
+        number2 = self._pitch_to_note_number(pitch_b, octave_b)
+        return number1 - number2
+
+    def scalar_distance(self, pitch_a, octave_a, pitch_b, octave_b):
+        """
+        Calcualte the distance between two notes in scalar steps
+
+        Parameters
+        ----------
+        pitch_a : str
+            Pitch name one of two
+        octave_a : int
+            Octave number one of two
+        pitch_b : str
+            Pitch name two of two
+        octave_b : int
+            Octave number two of two
+
+        Returns
+        -------
+        int
+            Distance calculated in scalar steps
+        int
+            Any semitone rounding error in the calculation
+        """
+        closest1 = self.closest_note(pitch_a)
+        closest2 = self.closest_note(pitch_b)
+        if closest1[1] > closest2[1]:
+            return (closest1[1] - closest2[1]) + self.get_mode_length() * (
+                octave_a - octave_b
+            ), closest1[2] + closest2[2]
+        else:
+            return (
+                self.get_mode_length() - (closest2[1] - closest1[1])
+            ) + self.get_mode_length() * (octave_a - octave_b), closest1[2] + closest2[
+                2
+            ]
+
+    def invert(
+        self, pitch_name, octave, invert_point_pitch, invert_point_octave, invert_mode
+    ):
+        """
+        Invert will rotate a series of notes around an invert point.
+        There are three different invert modes: even, odd, and
+        scalar. In even and odd modes, the rotation is based on half
+        steps. In even and scalar mode, the point of rotation is the
+        given note. In odd mode, the point of rotation is shifted up
+        by a 1/4 step, enabling rotation around a point between two
+        notes. In "scalar" mode, the scalar interval is preserved
+        around the point of rotation.
+
+        Parameters
+        ----------
+        pitch_name : str
+            The pitch name of the note to be rotated
+        octave : int
+            The octave of the note to be rotated
+        invert_point_name : str
+            The pitch name of the axis of inversion
+        invert_point_octave : int
+            The octave of the axis of inversion
+
+        Returns
+        -------
+        str
+            Pitch name of the inverted note
+        int
+            Octave of the inverted note
+        """
+        if isinstance(invert_mode, int):
+            if invert_mode % 2 == 0:
+                invert_mode = "even"
+            else:
+                invert_mode = "odd"
+
+        if invert_mode == "even" or invert_mode == "odd":
+            delta = self.semitone_distance(
+                pitch_name, octave, invert_point_pitch, invert_point_octave
+            )
+            if invert_mode == "even":
+                delta *= 2
+            elif invert_mode == "odd":
+                delta = 2 * delta - 1
+            inverted_pitch, delta_octave = self.semitone_transform(pitch_name, -delta)[
+                0:2
+            ]
+            return inverted_pitch, octave + delta_octave
+        elif invert_mode == "scalar":
+            delta = self.scalar_distance(
+                pitch_name, octave, invert_point_pitch, invert_point_octave
+            )[0]
+            delta *= 2
+            inverted_pitch, delta_octave = self.scalar_transform(pitch_name, -delta)[
+                0:2
+            ]
+            return inverted_pitch, octave + delta_octave
+        else:
+            print("Unknown invert mode", invert_mode)
+            return pitch_name, octave
+
     def closest_note(self, target):
         """
         Given a target pitch, what is the closest note in the current

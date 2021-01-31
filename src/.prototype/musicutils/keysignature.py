@@ -1222,7 +1222,7 @@ class KeySignature:
 
     def semitone_distance(self, pitch_a, octave_a, pitch_b, octave_b):
         """
-        Calcualte the distance between two notes in semitone steps
+        Calculate the distance between two notes in semitone steps
 
         Parameters
         ----------
@@ -1246,7 +1246,7 @@ class KeySignature:
 
     def scalar_distance(self, pitch_a, octave_a, pitch_b, octave_b):
         """
-        Calcualte the distance between two notes in scalar steps
+        Calculate the distance between two notes in scalar steps
 
         Parameters
         ----------

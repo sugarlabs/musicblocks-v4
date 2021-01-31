@@ -60,9 +60,15 @@ export function createSyntaxElement(
     element: SyntaxElement;
     type: 'statement' | 'block' | 'arg-data' | 'arg-exp';
 } {
-    // ts-ignore
+    if (!(elementName in syntaxElementMap)) {
+        throw Error(`Invalid argument: element with name ${elementName} does not exist.`);
+    }
     const element: SyntaxElement =
-        arg !== null ? new syntaxElementMap[elementName](arg) : new syntaxElementMap[elementName]();
+        arg !== undefined
+            ? // @ts-ignore
+              new syntaxElementMap[elementName](arg)
+            : // @ts-ignore
+              new syntaxElementMap[elementName]();
     const type =
         element instanceof InstructionElement
             ? element instanceof StatementElement

@@ -1,8 +1,11 @@
 import { ISyntaxHandler, TQuery } from './@types/syntaxHandler';
 import {
+    ArgumentDataElement,
     ArgumentElement,
     ArgumentExpressionElement,
+    BlockElement,
     InstructionElement,
+    StatementElement,
     SyntaxElement
 } from '../syntax-core/structureElements';
 import * as Factory from '../syntax-core/syntaxElementFactory';
@@ -138,7 +141,29 @@ export default class SyntaxHandler implements ISyntaxHandler {
         return 'successful'; // dummy
     }
 
-    getElement(elementID: string) {
-        return elementID in this._elementMap ? this._elementMap[elementID] : null;
+    getElement(
+        elementID: string
+    ): {
+        elementName: string;
+        element: StatementElement | BlockElement | ArgumentDataElement | ArgumentExpressionElement;
+        type: 'statement' | 'block' | 'arg-data' | 'arg-exp';
+    } {
+        if (!(elementID in this._elementMap)) {
+            throw Error(`Invalid argument: element with ID ${elementID} does not exist.`);
+        }
+        const elementProps = this._elementMap[elementID];
+        let element = elementProps.element;
+        switch (elementProps.type) {
+            case 'statement':
+                return { ...elementProps, element: element as StatementElement };
+            case 'block':
+                return { ...elementProps, element: element as BlockElement };
+            case 'arg-data':
+                return { ...elementProps, element: element as ArgumentDataElement };
+            case 'arg-exp':
+                return { ...elementProps, element: element as ArgumentExpressionElement };
+            default:
+                throw Error('Should not be reached.');
+        }
     }
 }

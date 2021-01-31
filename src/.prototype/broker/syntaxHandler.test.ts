@@ -1,15 +1,23 @@
 import SyntaxHandler from './syntaxHandler';
-import { SyntaxElement } from '../syntax-core/structureElements';
+import {
+    ArgumentDataElement,
+    ArgumentElement,
+    ArgumentExpressionElement,
+    BlockElement,
+    InstructionElement,
+    StatementElement
+} from '../syntax-core/structureElements';
 import { ValueElement } from '../syntax-core/program-elements/valueElements';
+import { DataElement } from '../syntax-core/program-elements/dataElements';
 
-describe('related to Syntax Elements organization', () => {
+describe("related to SyntaxElement objects' organization", () => {
     const synHandler = new SyntaxHandler();
 
     type TElemProps = {
         elementName: string;
-        element: SyntaxElement;
+        element: BlockElement | StatementElement | ArgumentDataElement | ArgumentExpressionElement;
         type: 'statement' | 'block' | 'arg-data' | 'arg-exp';
-    } | null;
+    };
 
     let startElemID: string;
     let startElemProps: TElemProps;
@@ -19,6 +27,10 @@ describe('related to Syntax Elements organization', () => {
     let addElemProps: TElemProps;
     let intElemID: string;
     let intElemProps: TElemProps;
+    let floatElemID: string;
+    let floatElemProps: TElemProps;
+    let intDataElemID: string;
+    let intDataElemProps: TElemProps;
 
     describe('element creation', () => {
         test('create a block element and verify props', () => {
@@ -29,14 +41,9 @@ describe('related to Syntax Elements organization', () => {
                 }
             });
             startElemProps = synHandler.getElement(startElemID);
-            expect(startElemProps).not.toBe(null);
-            if (startElemProps !== null) {
-                expect(startElemProps.elementName).toBe('start');
-                expect(startElemProps.type).toBe('block');
-                expect(startElemProps.element.elementName).toBe('start');
-            } else {
-                throw Error('Object should not be null');
-            }
+            expect(startElemProps.elementName).toBe('start');
+            expect(startElemProps.type).toBe('block');
+            expect(startElemProps.element.elementName).toBe('start');
         });
 
         test('create a statement element and verify props', () => {
@@ -47,14 +54,9 @@ describe('related to Syntax Elements organization', () => {
                 }
             });
             printElemProps = synHandler.getElement(printElemID);
-            expect(printElemProps).not.toBe(null);
-            if (printElemProps !== null) {
-                expect(printElemProps.elementName).toBe('print');
-                expect(printElemProps.type).toBe('statement');
-                expect(printElemProps.element.elementName).toBe('print');
-            } else {
-                throw Error('Object should not be null');
-            }
+            expect(printElemProps.elementName).toBe('print');
+            expect(printElemProps.type).toBe('statement');
+            expect(printElemProps.element.elementName).toBe('print');
         });
 
         test('create an argument expression element and verify props', () => {
@@ -65,14 +67,9 @@ describe('related to Syntax Elements organization', () => {
                 }
             });
             addElemProps = synHandler.getElement(addElemID);
-            expect(addElemProps).not.toBe(null);
-            if (addElemProps !== null) {
-                expect(addElemProps.elementName).toBe('add');
-                expect(addElemProps.type).toBe('arg-exp');
-                expect(addElemProps.element.elementName).toBe('add');
-            } else {
-                throw Error('Object should not be null');
-            }
+            expect(addElemProps.elementName).toBe('add');
+            expect(addElemProps.type).toBe('arg-exp');
+            expect(addElemProps.element.elementName).toBe('add');
         });
 
         test('create an argument data element and verify props', () => {
@@ -84,28 +81,94 @@ describe('related to Syntax Elements organization', () => {
                 }
             });
             intElemProps = synHandler.getElement(intElemID);
-            expect(intElemProps).not.toBe(null);
-            if (intElemProps !== null) {
-                expect(intElemProps.elementName).toBe('int');
-                expect(intElemProps.type).toBe('arg-data');
-                expect(intElemProps.element.elementName).toBe('int');
-                expect((intElemProps.element as ValueElement.IntElement).data.value).toBe(5);
+            expect(intElemProps.elementName).toBe('int');
+            expect(intElemProps.type).toBe('arg-data');
+            expect(intElemProps.element.elementName).toBe('int');
+            expect((intElemProps.element as ArgumentElement).data.value).toBe(5);
+        });
+    });
+
+    describe('element attachment', () => {
+        floatElemID = synHandler.processQuery({
+            action: 'create',
+            props: {
+                elementName: 'float',
+                arg: 3
+            }
+        });
+        floatElemProps = synHandler.getElement(floatElemID);
+
+        intDataElemID = synHandler.processQuery({
+            action: 'create',
+            props: {
+                elementName: 'data-int'
+            }
+        });
+        intDataElemProps = synHandler.getElement(intDataElemID);
+
+        test('attach an InstructionElement after an InstructionElement and verify', () => {
+            (printElemProps.element as InstructionElement).next = intDataElemProps.element as InstructionElement;
+            const elem = (printElemProps.element as InstructionElement).next;
+            expect(elem).not.toBe(null);
+            if (elem !== null) {
+                expect(elem.elementName).toBe('data-int');
+                expect(elem instanceof DataElement.IntDataElement);
             } else {
-                throw Error('Object should not be null');
+                throw Error('Object cannot be null.');
+            }
+        });
+
+        test('detach InstructionElement attached to another InstructionElement and verify', () => {
+            (printElemProps.element as InstructionElement).next = null;
+            expect((printElemProps.element as InstructionElement).next).toBe(null);
+        });
+
+        test('attach a valid ArgumentElement to an InstructionElement and verify', () => {
+            (printElemProps.element as InstructionElement).args.setArg(
+                'message',
+                intElemProps.element as ArgumentElement
+            );
+            const element = (printElemProps.element as InstructionElement).args.getArg('message');
+            expect(element).not.toBe(null);
+            if (element !== null) {
+                expect(element.type).toBe('TInt');
+                expect(element.elementName).toBe('int');
+                expect(element.data.value).toBe(5);
+            } else {
+                throw Error('Object cannot not be null.');
+            }
+        });
+
+        test('attach a valid ArgumentElement to an ArgumentExpressionElement and verify', () => {
+            (addElemProps.element as ArgumentExpressionElement).args.setArg(
+                'operand_1',
+                floatElemProps.element as ArgumentElement
+            );
+            const element = (addElemProps.element as ArgumentExpressionElement).args.getArg(
+                'operand_1'
+            );
+            expect(element).not.toBe(null);
+            if (element !== null) {
+                expect(element.type).toBe('TFloat');
+                expect(element.elementName).toBe('float');
+                expect(element.data.value).toBe(3);
+            } else {
+                throw Error('Object cannot not be null.');
             }
         });
     });
 
     describe('element removal', () => {
-        test('remove a previously created element and expect element properties fetch with its ID to be null', () => {
+        test('remove a previously created element and expect element properties fetch to throw error', () => {
             synHandler.processQuery({
                 action: 'remove',
                 props: {
                     elementID: startElemID
                 }
             });
-            startElemProps = synHandler.getElement(startElemID);
-            expect(startElemProps).toBe(null);
+            expect(() => synHandler.getElement(startElemID)).toThrowError(
+                `Invalid argument: element with ID ${startElemID} does not exist.`
+            );
         });
 
         test('attempt to remove an element with an invalid ID and expect error', () => {

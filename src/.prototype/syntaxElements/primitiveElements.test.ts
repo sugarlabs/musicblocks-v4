@@ -171,52 +171,205 @@ describe('type conversions', () => {
 });
 
 describe('operations on type elements', () => {
-    const operand_1 = new TInt(15);
-    const operand_2 = new TInt(4);
 
     describe('class TInt', () => {
         test('add TInt(15) and TInt(4) and expect new element value to be 19', () => {
+            const operand_1 = new TInt(15);
+            const operand_2 = new TInt(4);
+            operand_1.add(operand_2);
+            expect(operand_1.value).toBe(19);
+        });
+
+        test('add TInt(15) and TInt(4) and expect new element value to be 19', () => {
+            const operand_1 = new TInt(15);
+            const operand_2 = new TInt(4);
             expect(TInt.add(operand_1, operand_2).value).toBe(19);
         });
 
         test('subtract TInt(15) and TInt(4) and expect new element value to be 11', () => {
+            const operand_1 = new TInt(15);
+            const operand_2 = new TInt(4);
+            operand_1.subtract(operand_2);
+            expect(operand_1.value).toBe(11);
+        });
+
+        test('subtract TInt(15) and TInt(4) and expect new element value to be 11', () => {
+            const operand_1 = new TInt(15);
+            const operand_2 = new TInt(4);
             expect(TInt.subtract(operand_1, operand_2).value).toBe(11);
         });
 
         test('multiply TInt(15) and TInt(4) and expect new element value to be 60', () => {
+            const operand_1 = new TInt(15);
+            const operand_2 = new TInt(4);
+            operand_1.multiply(operand_2);
+            expect(operand_1.value).toBe(60);
+        });
+
+        test('multiply TInt(15) and TInt(4) and expect new element value to be 60', () => {
+            const operand_1 = new TInt(15);
+            const operand_2 = new TInt(4);
             expect(TInt.multiply(operand_1, operand_2).value).toBe(60);
         });
 
         test('divide TInt(15) and TInt(4) and expect new element value to be 3', () => {
+            const operand_1 = new TInt(15);
+            const operand_2 = new TInt(4);
+            operand_1.divide(operand_2);
+            expect(operand_1.value).toBe(3);
+        });
+
+        test('divide TInt(15) and TInt(4) and expect new element value to be 3', () => {
+            const operand_1 = new TInt(15);
+            const operand_2 = new TInt(4);
             expect(TInt.divide(operand_1, operand_2).value).toBe(3);
         });
 
         test('mod TInt(15) and TInt(4) and expect new element value to be 3', () => {
+            const operand_1 = new TInt(15);
+            const operand_2 = new TInt(4);
             expect(TInt.mod(operand_1, operand_2).value).toBe(3);
+        });
+
+        test('check for equality TInt(15) and TInt(4) and expect to get False', () => {
+            const operand_1 = new TInt(15);
+            const operand_2 = new TInt(4);
+            expect(TInt.equals(operand_1, operand_2).value).toBe(false);
+        });
+
+        test('check for equality TInt(4) and TInt(4) and expect to get True', () => {
+            const operand_1 = new TInt(4);
+            const operand_2 = new TInt(4);
+            expect(TInt.equals(operand_1, operand_2).value).toBe(true);
+        });
+
+        test('check if TInt(15) greater than TInt(4) and expect to get True', () => {
+            const operand_1 = new TInt(15);
+            const operand_2 = new TInt(4);
+            expect(TInt.greaterThan(operand_1, operand_2).value).toBe(true);
+        });
+
+        test('check if TInt(15) less than TInt(4) and expect to get False', () => {
+            const operand_1 = new TInt(15);
+            const operand_2 = new TInt(4);
+            expect(TInt.lessThan(operand_1, operand_2).value).toBe(false);
+        });
+
+        test('increment a TInt(15) object and expect value to be 16', () => {
+            const operand_1 = new TInt(15);
+            operand_1.increment();
+            expect(operand_1.value).toBe(16);
+        });
+
+        test('decrement a TInt(16) object and expect value to be 15', () => {
+            const operand_1 = new TInt(16);
+            operand_1.decrement();
+            expect(operand_1.value).toBe(15);
         });
     });
 
-    const operand_3 = new TFloat(15.5);
 
     describe('class TFloat', () => {
+
         test('add TFloat(15.5) and TInt(4) and expect new element value to be 19.5', () => {
+            const operand_3 = new TFloat(15.5);
+            const operand_2 = new TInt(4);
+            operand_3.add(operand_2);
+            expect(operand_3.value).toBe(19.5);
+        });
+
+        test('add TFloat(15.5) and TInt(4) and expect new element value to be 19.5', () => {
+            const operand_3 = new TFloat(15.5);
+            const operand_2 = new TInt(4);
             expect(TFloat.add(operand_3, operand_2).value).toBe(19.5);
         });
 
         test('subtract TFloat(15.5) and TInt(4) and expect new element value to be 11.5', () => {
+            const operand_3 = new TFloat(15.5);
+            const operand_2 = new TInt(4);
+            operand_3.subtract(operand_2);
+            expect(operand_3.value).toBe(11.5);
+        });
+
+        test('subtract TFloat(15.5) and TInt(4) and expect new element value to be 11.5', () => {
+            const operand_3 = new TFloat(15.5);
+            const operand_2 = new TInt(4);
             expect(TFloat.subtract(operand_3, operand_2).value).toBe(11.5);
         });
 
         test('multiply TFloat(15.5) and TInt(4) and expect new element value to be 62', () => {
+            const operand_3 = new TFloat(15.5);
+            const operand_2 = new TInt(4);
+            operand_3.multiply(operand_2);
+            expect(operand_3.value).toBe(62);
+        });
+
+        test('multiply TFloat(15.5) and TInt(4) and expect new element value to be 62', () => {
+            const operand_3 = new TFloat(15.5);
+            const operand_2 = new TInt(4);
             expect(TFloat.multiply(operand_3, operand_2).value).toBe(62);
         });
 
         test('divide TFloat(15.5) and TInt(4) and expect new element value to be 3.875', () => {
+            const operand_3 = new TFloat(15.5);
+            const operand_2 = new TInt(4);
+            operand_3.divide(operand_2);
+            expect(operand_3.value).toBe(3.875);
+        });
+
+        test('divide TFloat(15.5) and TInt(4) and expect new element value to be 3.875', () => {
+            const operand_3 = new TFloat(15.5);
+            const operand_2 = new TInt(4);
             expect(TFloat.divide(operand_3, operand_2).value).toBe(3.875);
         });
 
         test('mod TFloat(15.5) and TInt(4) and expect new element value to be 3.5', () => {
+            const operand_3 = new TFloat(15.5);
+            const operand_2 = new TInt(4);
+            operand_3.mod(operand_2);
+            expect(operand_3.value).toBe(3.5);
+        });
+
+        test('mod TFloat(15.5) and TInt(4) and expect new element value to be 3.5', () => {
+            const operand_3 = new TFloat(15.5);
+            const operand_2 = new TInt(4);
             expect(TFloat.mod(operand_3, operand_2).value).toBe(3.5);
+        });
+
+        test('check for equality of TFloat(15.5) and TInt(4) and expect to get false', () => {
+            const operand_3 = new TFloat(15.5);
+            const operand_2 = new TInt(4);
+            expect(TFloat.equals(operand_3, operand_2).value).toBe(false);
+        });
+
+        test('check for equality of TFloat(15.5) and TFloat(15.5) and expect to get true', () => {
+            const operand_3 = new TFloat(15.5);
+            const operand_2 = new TFloat(15.5);
+            expect(TFloat.equals(operand_3, operand_2).value).toBe(true);
+        });
+
+        test('check if TFloat(15.5) greaterThan TInt(4) and expect to get true', () => {
+            const operand_3 = new TFloat(15.5);
+            const operand_2 = new TInt(4);
+            expect(TFloat.greaterThan(operand_3, operand_2).value).toBe(true);
+        });
+
+        test('check if TFloat(15.5) lessThan TInt(4) and expect to get false', () => {
+            const operand_3 = new TFloat(15.5);
+            const operand_2 = new TInt(4);
+            expect(TFloat.lessThan(operand_3, operand_2).value).toBe(false);
+        });
+
+        test('increment a TFloat(15.5) object and expect value to be 16.5', () => {
+            const operand_3 = new TFloat(15.5);
+            operand_3.increment();
+            expect(operand_3.value).toBe(16.5);
+        });
+
+        test('decrement a TFloat(16.5) object and expect value to be 15.5', () => {
+            const operand_1 = new TFloat(15.5);
+            operand_1.decrement();
+            expect(operand_1.value).toBe(14.5);
         });
     });
 
@@ -254,6 +407,16 @@ describe('operations on type elements', () => {
 
         test('or TBoolean(false) and TBoolean(false) and expect new element value to be false', () => {
             expect(TBoolean.or(operand_5, operand_5).value).toBe(false);
+        });
+
+        test('invert a TBoolean(true) and expect value to be false', () => {
+            operand_4.invert();
+            expect(operand_4.value).toBe(false);
+        });
+
+        test('invert a TBoolean(false) and expect value to be true', () => {
+            operand_5.invert();
+            expect(operand_5.value).toBe(true);
         });
     });
 });

@@ -41,7 +41,7 @@ export namespace OperationElement {
             return this._operand_2;
         }
 
-        abstract get data(): TPrimitive;
+        abstract getData(): TPrimitive;
     }
 
     // -- Arithmetic Operators ---------------------------------------------------------------------
@@ -54,32 +54,57 @@ export namespace OperationElement {
             });
         }
 
-        get data(): TPrimitive {
+        getData(): TPrimitive {
             if (this._operand_1 === null) {
-                throw Error(`Invalid argument: "operand_1" cannot be null`);
+                throw Error(`"operand_1" cannot be null.`);
             }
             if (this._operand_2 === null) {
-                throw Error(`Invalid argument: "operand_2" cannot be null`);
+                throw Error(`"operand_2" cannot be null.`);
             }
-            if (!(this._operand_1.data instanceof TInt || this._operand_1.data instanceof TFloat)) {
-                throw Error(`Invalid argument: "operand_1" can only be of type TInt or TFloat`);
+            if (
+                !(
+                    this._operand_1.getData() instanceof TInt ||
+                    this._operand_1.getData() instanceof TFloat
+                )
+            ) {
+                throw Error(`"operand_1" can only be of type TInt or TFloat.`);
             }
-            if (!(this._operand_2.data instanceof TInt || this._operand_2.data instanceof TFloat)) {
-                throw Error(`Invalid argument: "operand_2" can only be of type TInt or TFloat`);
+            if (
+                !(
+                    this._operand_2.getData() instanceof TInt ||
+                    this._operand_2.getData() instanceof TFloat
+                )
+            ) {
+                throw Error(`"operand_2" can only be of type TInt or TFloat.`);
             }
             switch (this._operator) {
                 case '+':
-                    return TFloat.add(this._operand_1.data, this._operand_2.data);
+                    return TFloat.add(
+                        this._operand_1.getData() as TInt | TFloat,
+                        this._operand_2.getData() as TInt | TFloat
+                    );
                 case '-':
-                    return TFloat.subtract(this._operand_1.data, this._operand_2.data);
+                    return TFloat.subtract(
+                        this._operand_1.getData() as TInt | TFloat,
+                        this._operand_2.getData() as TInt | TFloat
+                    );
                 case '*':
-                    return TFloat.multiply(this._operand_1.data, this._operand_2.data);
+                    return TFloat.multiply(
+                        this._operand_1.getData() as TInt | TFloat,
+                        this._operand_2.getData() as TInt | TFloat
+                    );
                 case '/':
-                    return TFloat.divide(this._operand_1.data, this._operand_2.data);
+                    return TFloat.divide(
+                        this._operand_1.getData() as TInt | TFloat,
+                        this._operand_2.getData() as TInt | TFloat
+                    );
                 case '%':
-                    return TFloat.mod(this._operand_1.data, this._operand_2.data);
+                    return TFloat.mod(
+                        this._operand_1.getData() as TInt | TFloat,
+                        this._operand_2.getData() as TInt | TFloat
+                    );
                 default:
-                    throw Error(`Invalid access: this should not be reachable`);
+                    throw Error(`Should not be reached.`);
             }
         }
     }
@@ -124,28 +149,47 @@ export namespace OperationElement {
             });
         }
 
-        get data(): TBoolean {
+        getData(): TBoolean {
             if (this._operand_1 === null) {
-                throw Error(`Invalid argument: "operand_1" cannot be null`);
+                throw Error(`"operand_1" cannot be null.`);
             }
             if (this._operand_2 === null) {
-                throw Error(`Invalid argument: "operand_2" cannot be null`);
+                throw Error(`"operand_2" cannot be null.`);
             }
-            if (!(this._operand_1.data instanceof TInt || this._operand_1.data instanceof TFloat)) {
-                throw Error(`Invalid argument: "operand_1" can only be of type TInt or TFloat`);
+            if (
+                !(
+                    this._operand_1.getData() instanceof TInt ||
+                    this._operand_1.getData() instanceof TFloat
+                )
+            ) {
+                throw Error(`"operand_1" can only be of type TInt or TFloat.`);
             }
-            if (!(this._operand_2.data instanceof TInt || this._operand_2.data instanceof TFloat)) {
-                throw Error(`Invalid argument: "operand_2" can only be of type TInt or TFloat`);
+            if (
+                !(
+                    this._operand_2.getData() instanceof TInt ||
+                    this._operand_2.getData() instanceof TFloat
+                )
+            ) {
+                throw Error(`"operand_2" can only be of type TInt or TFloat.`);
             }
             switch (this._operator) {
                 case '==':
-                    return TFloat.equals(this._operand_1.data, this._operand_2.data);
+                    return TFloat.equals(
+                        this._operand_1.getData() as TInt | TFloat,
+                        this._operand_2.getData() as TInt | TFloat
+                    );
                 case '>':
-                    return TFloat.greaterThan(this._operand_1.data, this._operand_2.data);
+                    return TFloat.greaterThan(
+                        this._operand_1.getData() as TInt | TFloat,
+                        this._operand_2.getData() as TInt | TFloat
+                    );
                 case '<':
-                    return TFloat.lessThan(this._operand_1.data, this._operand_2.data);
+                    return TFloat.lessThan(
+                        this._operand_1.getData() as TInt | TFloat,
+                        this._operand_2.getData() as TInt | TFloat
+                    );
                 default:
-                    throw Error(`Invalid access: this should not be reachable`);
+                    throw Error(`Should not be reached.`);
             }
         }
     }
@@ -178,26 +222,32 @@ export namespace OperationElement {
             });
         }
 
-        get data(): TBoolean {
+        getData(): TBoolean {
             if (this._operand_1 === null) {
-                throw Error(`Invalid argument: "operand_1" cannot be null`);
+                throw Error(`"operand_1" cannot be null.`);
             }
             if (this._operand_2 === null) {
-                throw Error(`Invalid argument: "operand_2" cannot be null`);
+                throw Error(`"operand_2" cannot be null.`);
             }
-            if (!(this._operand_1.data instanceof TBoolean)) {
-                throw Error(`Invalid argument: "operand_1" can only be of type TBoolean`);
+            if (!(this._operand_1.getData() instanceof TBoolean)) {
+                throw Error(`"operand_1" can only be of type TBoolean.`);
             }
-            if (!(this._operand_2.data instanceof TBoolean)) {
-                throw Error(`Invalid argument: "operand_2" can only be of type TBoolean`);
+            if (!(this._operand_2.getData() instanceof TBoolean)) {
+                throw Error(`"operand_2" can only be of type TBoolean.`);
             }
             switch (this._operator) {
                 case '&&':
-                    return TBoolean.and(this._operand_1.data, this._operand_2.data);
+                    return TBoolean.and(
+                        this._operand_1.getData() as TBoolean,
+                        this._operand_2.getData() as TBoolean
+                    );
                 case '||':
-                    return TBoolean.or(this._operand_1.data, this._operand_2.data);
+                    return TBoolean.or(
+                        this._operand_1.getData() as TBoolean,
+                        this._operand_2.getData() as TBoolean
+                    );
                 default:
-                    throw Error(`Invalid access: this should not be reachable`);
+                    throw Error(`Should not be reached.`);
             }
         }
     }

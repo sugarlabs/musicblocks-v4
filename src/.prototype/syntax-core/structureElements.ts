@@ -10,24 +10,15 @@ import { Context } from './context';
  */
 export abstract class SyntaxElement implements TS.ISyntaxElement {
     private _elementName: string;
-    private _context: Context | null = null;
     private _requiresContext: boolean;
 
-    constructor(elementName: string, requiresContext?: boolean) {
+    constructor(elementName: string, requiresContext: boolean) {
         this._elementName = elementName;
-        this._requiresContext = requiresContext !== undefined && requiresContext ? true : false;
+        this._requiresContext = requiresContext;
     }
 
     get elementName() {
         return this._elementName;
-    }
-
-    set context(context: Context | null) {
-        this._context = context;
-    }
-
-    get context() {
-        return this._context;
     }
 
     get requiresContext() {
@@ -39,78 +30,72 @@ export abstract class SyntaxElement implements TS.ISyntaxElement {
 
 /** ADT that handles the mapping and interfacing of arguments to expressions/instructions. */
 class ArgumentMap implements TS.IArgumentMap {
-    private _instruction: string;
+    private _elementName: string;
     private _argMap: { [key: string]: ArgumentElement | null } = {};
     private _argTypeMap: { [key: string]: TPrimitiveName[] } | null = null;
 
-    constructor(instruction: string, constraints: { [key: string]: TPrimitiveName[] } | null) {
-        this._instruction = instruction;
+    constructor(elementName: string, constraints: { [key: string]: TPrimitiveName[] } | null) {
+        this._elementName = elementName;
         if (constraints === null) {
             return this;
         } else {
             this._argTypeMap = constraints;
-            Object.keys(this._argTypeMap).forEach((argName) => (this._argMap[argName] = null));
+            Object.keys(this._argTypeMap).forEach((argLabel) => (this._argMap[argLabel] = null));
         }
     }
 
     /**
      * Checks if and argument label exists for the corresponding instruction/expression.
-     * @throws Invalid argument, Invalid access
+     * @throws Error
      */
-    private _validateArgName(argName: string): void {
+    private _validateArgLabel(argLabel: string): void {
         if (this._argTypeMap === null) {
-            throw Error(
-                `Invalid access: instruction "${this._instruction}" does not take arguments`
-            );
+            throw Error(`"${this._elementName}" does not take arguments.`);
         }
-        if (Object.keys(this._argTypeMap).indexOf(argName) === -1) {
-            throw Error(
-                `Invalid argument: "${argName}" does not exist for instruction "${this._instruction}"`
-            );
+        if (Object.keys(this._argTypeMap).indexOf(argLabel) === -1) {
+            throw Error(`"${argLabel}" does not exist for "${this._elementName}".`);
         }
     }
 
     /**
      * Type-checks the type of the argument element with the constraints of the argument label.
-     * @throws Invalid argument, Invalid access
+     * @throws Error
      */
-    private _validateArg(argName: string, arg: ArgumentElement | null): void {
-        this._validateArgName(argName);
+    private _validateArg(argLabel: string, arg: ArgumentElement | null): void {
+        this._validateArgLabel(argLabel);
         if (
             arg !== null &&
             this._argTypeMap !== null &&
-            this._argTypeMap[argName].indexOf(arg.type) === -1
+            this._argTypeMap[argLabel].indexOf(arg.type) === -1
         ) {
             // Allow higher type casting.
             if (
                 !(
-                    (arg.type === 'TInt' && this._argTypeMap[argName].indexOf('TFloat') !== -1) ||
-                    (arg.type === 'TChar' && this._argTypeMap[argName].indexOf('TString') !== -1)
+                    (arg.type === 'TInt' && this._argTypeMap[argLabel].indexOf('TFloat') !== -1) ||
+                    (arg.type === 'TChar' && this._argTypeMap[argLabel].indexOf('TString') !== -1)
                 )
             ) {
-                throw Error(`Invalid argument: "${arg.type}" is not a valid type for "${argName}"`);
+                throw Error(`"${arg.type}" is not a valid type for "${argLabel}".`);
             }
         }
     }
 
-    /** @throws Invalid argument, Invalid access */
-    setArg(argName: string, argElement: ArgumentElement | null): void {
-        this._validateArg(argName, argElement);
-        this._argMap[argName] = argElement;
+    /** @throws Error */
+    setArg(argLabel: string, arg: ArgumentElement | null): void {
+        this._validateArg(argLabel, arg);
+        this._argMap[argLabel] = arg;
     }
 
-    /** @throws Invalid argument, Invalid access */
-    getArg(argName: string): ArgumentElement | null {
-        this._validateArgName(argName);
-        return this._argMap[argName];
+    /** @throws Error */
+    getArg(argLabel: string): ArgumentElement | null {
+        this._validateArgLabel(argLabel);
+        return this._argMap[argLabel];
     }
 
-    /** @throws Invalid argument, Invalid access */
-    get argNames(): string[] {
+    /** @throws Error */
+    get argLabels(): string[] {
         if (this._argTypeMap === null) {
-            throw Error(
-                `Invalid access: instruction "${this._instruction}" does not take arguments`
-            );
+            throw Error(`"${this._elementName}" does not take arguments.`);
         }
         return Object.keys(this._argTypeMap);
     }
@@ -141,17 +126,15 @@ export abstract class ArgumentElement extends SyntaxElement implements TS.IArgum
         return this._type;
     }
 
-    abstract get data(): TPrimitive;
+    abstract getData(context?: Context): TPrimitive;
 }
 
 export abstract class ArgumentDataElement
     extends ArgumentElement
     implements TS.IArgumentDataElement {
-    constructor(elementName: string, type: TPrimitiveName, requiresContext?: boolean) {
+    constructor(elementName: string, type: TPrimitiveName, requiresContext: boolean) {
         super(elementName, 'data', type, requiresContext);
     }
-
-    abstract get data(): TPrimitive;
 }
 
 export abstract class ArgumentExpressionElement
@@ -162,11 +145,8 @@ export abstract class ArgumentExpressionElement
     constructor(
         elementName: string,
         type: TPrimitiveName,
-        requiresContext?: boolean,
-        /**
-         * Certain argument expressions might not take arguments, instead could work on state
-         * objects exposed to the framework.
-         */
+        requiresContext: boolean,
+        // Certain argument expressions might not take arguments, instead could work on the context.
         constraints?: { [key: string]: TPrimitiveName[] }
     ) {
         super(elementName, 'expression', type, requiresContext);
@@ -176,8 +156,6 @@ export abstract class ArgumentExpressionElement
     get args() {
         return this._args;
     }
-
-    abstract get data(): TPrimitive;
 }
 
 // ---- Instruction Element ------------------------------------------------------------------------
@@ -188,7 +166,7 @@ export abstract class InstructionElement extends SyntaxElement implements TS.IIn
 
     constructor(
         elementName: string,
-        requiresContext?: boolean,
+        requiresContext: boolean,
         constraints?: { [key: string]: TPrimitiveName[] }
     ) {
         super(elementName, requiresContext);
@@ -208,7 +186,7 @@ export abstract class InstructionElement extends SyntaxElement implements TS.IIn
     }
 
     /** Executes when element is encountered by MB program interpretor. */
-    abstract onVisit(): void;
+    abstract onVisit(context?: Context): void;
 
     /** Whether current instruction is a dummy instruction */
     get isDummy() {
@@ -219,7 +197,7 @@ export abstract class InstructionElement extends SyntaxElement implements TS.IIn
 /** To be treated as a terminating or non-existing instruction */
 export class DummyElement extends InstructionElement {
     constructor() {
-        super('dummy');
+        super('dummy', false);
     }
 
     onVisit() {}
@@ -228,7 +206,7 @@ export class DummyElement extends InstructionElement {
 export abstract class StatementElement extends InstructionElement implements TS.IStatementElement {
     constructor(
         elementName: string,
-        requiresContext?: boolean,
+        requiresContext: boolean,
         constraints?: { [key: string]: TPrimitiveName[] }
     ) {
         super(elementName, requiresContext, constraints);
@@ -240,16 +218,16 @@ export abstract class BlockElement extends InstructionElement implements TS.IBlo
     private _childHeads: (InstructionElement | null)[] = [];
     private _childHead: InstructionElement | null;
 
-    /** @throws Invalid argument */
+    /** @throws Error */
     constructor(
         elementName: string,
         blocksCount: number,
-        requiresContext?: boolean,
+        requiresContext: boolean,
         constraints?: { [key: string]: TPrimitiveName[] }
     ) {
         super(elementName, requiresContext, constraints);
         if (blocksCount < 1) {
-            throw Error('Invalid argument: number of inner blocks cannot be less than 1');
+            throw Error('Number of inner blocks cannot be less than 1.');
         }
         this._blocksCount = blocksCount;
         for (let i = 0; i < blocksCount; i++) {
@@ -258,18 +236,18 @@ export abstract class BlockElement extends InstructionElement implements TS.IBlo
         this._childHead = this._childHeads[0];
     }
 
-    /** @throws Invalid argument */
+    /** @throws Error */
     setChildHead(index: number, childHead: InstructionElement | null) {
         if (index < 0 || index >= this._blocksCount) {
-            throw Error(`Invalid argument: index must lie in [0, ${this._blocksCount - 1}]`);
+            throw Error(`Index must lie in [0, ${this._blocksCount - 1}].`);
         }
         this._childHeads[index] = childHead;
     }
 
-    /** @throws Invalid argument */
+    /** @throws Error */
     getChildHead(index: number) {
         if (index < 0 || index >= this._blocksCount) {
-            throw Error(`Invalid argument: index must lie in [0, ${this._blocksCount - 1}]`);
+            throw Error(`Index must lie in [0, ${this._blocksCount - 1}].`);
         }
         return this._childHeads[index];
     }
@@ -283,5 +261,5 @@ export abstract class BlockElement extends InstructionElement implements TS.IBlo
     }
 
     /** Executes after instructions inside the block have been executed. */
-    abstract onExit(): void;
+    abstract onExit(context?: Context): void;
 }

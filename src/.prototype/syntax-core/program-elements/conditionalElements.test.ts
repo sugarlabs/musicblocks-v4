@@ -8,8 +8,8 @@ class CStatementElement extends StatementElement {
 }
 
 describe('namespace ConditionalElement', () => {
-    const statement_1 = new CStatementElement('statement-1');
-    const statement_2 = new CStatementElement('statement-2');
+    const statement_1 = new CStatementElement('statement-1', false);
+    const statement_2 = new CStatementElement('statement-2', false);
 
     describe('class IfElseElement', () => {
         const ifElseElem = new ConditionalElement.IfElseElement();

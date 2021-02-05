@@ -19,11 +19,11 @@ export namespace ValueElement {
         private _data: TPrimitive;
 
         constructor(elementName: string, data: TPrimitive) {
-            super(elementName, data.type);
+            super(elementName, data.type, false);
             this._data = data;
         }
 
-        get data() {
+        getData() {
             return this._data;
         }
     }
@@ -35,7 +35,7 @@ export namespace ValueElement {
         }
 
         update(value: number) {
-            this.data.value = value;
+            this.getData().value = value;
         }
     }
 
@@ -46,7 +46,7 @@ export namespace ValueElement {
         }
 
         update(value: number) {
-            this.data.value = value;
+            this.getData().value = value;
         }
     }
 
@@ -57,7 +57,7 @@ export namespace ValueElement {
         }
 
         update(value: string | number) {
-            this.data.value = value;
+            this.getData().value = value;
         }
     }
 
@@ -68,7 +68,7 @@ export namespace ValueElement {
         }
 
         update(value: string) {
-            this.data.value = value;
+            this.getData().value = value;
         }
     }
 
@@ -90,12 +90,12 @@ export namespace ValueElement {
         private _dataElementRef: dataElemType;
 
         constructor(elementName: string, dataElement: dataElemType) {
-            super(elementName, dataElement.type);
+            super(elementName, dataElement.type, false);
             this._dataElementRef = dataElement;
         }
 
         /** @override */
-        get data() {
+        getData() {
             return this._dataElementRef.dataElementRef;
         }
     }

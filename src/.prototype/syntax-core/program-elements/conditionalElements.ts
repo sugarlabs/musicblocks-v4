@@ -22,7 +22,7 @@ export namespace ConditionalElement {
             if (arg === null) {
                 throw Error('Invalid argument: condition cannot be null');
             }
-            this.childHead = this.getChildHead(arg.data.value ? 0 : 1);
+            this.childHead = this.getChildHead(arg.getData().value ? 0 : 1);
         }
 
         onExit() {}

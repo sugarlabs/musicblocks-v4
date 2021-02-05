@@ -15,16 +15,11 @@ import { IContext } from './context';
 export interface ISyntaxElement {
     /** Name of the supported syntax element. Different from identifiers. */
     elementName: string;
-    /** Stores the instrinsic music and art properties associated with the current context. */
-    context: IContext | null;
     /** Whether argument requires a context. */
     requiresContext: boolean;
 }
 
-export interface IDataElement {
-    /** A primitive element. */
-    data: TPrimitive;
-}
+export interface IDataElement {}
 
 export interface IExpressionElement {}
 
@@ -34,12 +29,14 @@ export interface IExpressionElement {}
  */
 export interface IArgumentMap {
     /** Returns the list of argument labels. */
-    argNames: string[];
+    argLabels: string[];
     /** Assigns an ArgumentElement | null corresponding to an argument label. */
     setArg: Function;
     /** Returns the ArgumentElement | null corresponding to an argument label. */
     getArg: Function;
 }
+
+// ---- Argument elements --------------------------------------------------------------------------
 
 /** To be implemented by the super-class of all argument elements. */
 export interface IArgumentElement extends ISyntaxElement {
@@ -48,23 +45,25 @@ export interface IArgumentElement extends ISyntaxElement {
     /** Return type of the argument element. */
     type: TPrimitiveName;
     /** Returns the primitive element that the argument element returns. */
-    data: TPrimitive;
+    getData: (context?: IContext) => TPrimitive;
 }
 
 /**
  * To be implemented by sub-classes of class that implement IArgumentElement and represent data
  * arguments.
  */
-export interface IArgumentDataElement extends ISyntaxElement, IDataElement {}
+export interface IArgumentDataElement extends IArgumentElement, IDataElement {}
 
 /**
  * To be implemented by sub-classes of class that implement IArgumentElement and represent
  * expression arguments.
  */
-export interface IArgumentExpressionElement extends ISyntaxElement, IExpressionElement {
+export interface IArgumentExpressionElement extends IArgumentElement, IExpressionElement {
     /** Stores an object of the class that implements IArgumentMap. */
     args: IArgumentMap;
 }
+
+// ---- Instruction elements -----------------------------------------------------------------------
 
 /** To be implemented by the super-class of all instruction elements. */
 interface IInstructionElement extends ISyntaxElement {
@@ -72,6 +71,8 @@ interface IInstructionElement extends ISyntaxElement {
     args: IArgumentMap;
     /** Stores the reference to the next instruction in stack. */
     next: IInstructionElement | null;
+    /** Triggered before instruction is executed. */
+    onVisit: (context?: IContext) => void;
 }
 
 /**
@@ -91,4 +92,6 @@ export interface IBlockElement extends IInstructionElement {
     getChildHead: (index: number) => IInstructionElement | null;
     /** Initial head instruction. */
     childHead: IInstructionElement | null;
+    /** Triggered after block instruction is executed. */
+    onExit: (context?: IContext) => void;
 }

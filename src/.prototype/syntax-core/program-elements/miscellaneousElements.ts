@@ -16,7 +16,7 @@ export namespace MiscellaneousElement {
         onVisit() {
             const arg = this.args.getArg('message');
             if (arg !== null) {
-                console.log(`" ${arg.data.value} "`);
+                console.log(`" ${arg.getData().value} "`);
             } else {
                 console.log(`" ${null} "`);
             }

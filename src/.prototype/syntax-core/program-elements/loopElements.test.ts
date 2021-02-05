@@ -19,9 +19,7 @@ describe('namespace LoopElement', () => {
 
         test('Repeat with a null value and expect error', () => {
             repeatElem.argValue = null;
-            expect(() => repeatElem.onVisit()).toThrowError(
-                'Invalid argument: Repeat loop needs a positive value'
-            );
+            expect(() => repeatElem.onVisit()).toThrowError('Repeat loop needs a positive value.');
         });
     });
 });

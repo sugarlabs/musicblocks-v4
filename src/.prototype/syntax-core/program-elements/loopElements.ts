@@ -22,13 +22,13 @@ export namespace LoopElement {
 
         onVisit() {
             const arg = this.args.getArg('value');
-            if (arg === null || arg.data.value < 0) {
-                throw Error('Invalid argument: Repeat loop needs a positive value');
+            if (arg === null || arg.getData().value < 0) {
+                throw Error('Repeat loop needs a positive value.');
             } else {
                 // Not already repeating.
                 if (this._nextStore !== null && this._nextStore.isDummy) {
                     this._nextStore = this.next;
-                    this._counter = arg.data.value as number;
+                    this._counter = arg.getData().value as number;
                 }
             }
             this.childHead = this.getChildHead(0);

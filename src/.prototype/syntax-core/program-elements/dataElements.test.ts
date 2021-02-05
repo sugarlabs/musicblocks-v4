@@ -9,9 +9,9 @@ describe('namespace DataElement', () => {
             dataElem.argValue = new ValueElement.IntElement(5);
             const arg = dataElem.args.getArg('value');
             if (arg !== null) {
-                expect(arg.data.value).toBe(5);
+                expect(arg.getData().value).toBe(5);
             } else {
-                throw Error('Object should not be null');
+                throw Error('Object should not be null.');
             }
         });
 
@@ -20,7 +20,7 @@ describe('namespace DataElement', () => {
                 const dataElem = new DataElement.IntDataElement();
                 dataElem.argIdentifier = new ValueElement.StringElement('myBox');
                 dataElem.argValue = new ValueElement.TrueElement();
-            }).toThrowError('Invalid argument: "TBoolean" is not a valid type for "value"');
+            }).toThrowError('"TBoolean" is not a valid type for "value".');
         });
 
         test('initialize FloatDataElement with FloatElement object and verify', () => {
@@ -29,9 +29,9 @@ describe('namespace DataElement', () => {
             dataElem.argValue = new ValueElement.FloatElement(5.234);
             const arg = dataElem.args.getArg('value');
             if (arg !== null) {
-                expect(arg.data.value).toBe(5.234);
+                expect(arg.getData().value).toBe(5.234);
             } else {
-                throw Error('Object should not be null');
+                throw Error('Object should not be null.');
             }
         });
 
@@ -40,7 +40,7 @@ describe('namespace DataElement', () => {
                 const dataElem = new DataElement.FloatDataElement();
                 dataElem.argIdentifier = new ValueElement.StringElement('myBox');
                 dataElem.argValue = new ValueElement.TrueElement();
-            }).toThrowError('Invalid argument: "TBoolean" is not a valid type for "value"');
+            }).toThrowError('"TBoolean" is not a valid type for "value".');
         });
 
         test('initialize CharDataElement with CharElement object and verify', () => {
@@ -49,9 +49,9 @@ describe('namespace DataElement', () => {
             dataElem.argValue = new ValueElement.CharElement(97);
             const arg = dataElem.args.getArg('value');
             if (arg !== null) {
-                expect(arg.data.value).toBe('a');
+                expect(arg.getData().value).toBe('a');
             } else {
-                throw Error('Object should not be null');
+                throw Error('Object should not be null.');
             }
         });
 
@@ -60,7 +60,7 @@ describe('namespace DataElement', () => {
                 const dataElem = new DataElement.CharDataElement();
                 dataElem.argIdentifier = new ValueElement.StringElement('myBox');
                 dataElem.argValue = new ValueElement.TrueElement();
-            }).toThrowError('Invalid argument: "TBoolean" is not a valid type for "value"');
+            }).toThrowError('"TBoolean" is not a valid type for "value".');
         });
 
         test('initialize StringDataElement with StringElement object and verify', () => {
@@ -69,9 +69,9 @@ describe('namespace DataElement', () => {
             dataElem.argValue = new ValueElement.StringElement('string');
             const arg = dataElem.args.getArg('value');
             if (arg !== null) {
-                expect(arg.data.value).toBe('string');
+                expect(arg.getData().value).toBe('string');
             } else {
-                throw Error('Object should not be null');
+                throw Error('Object should not be null.');
             }
         });
 
@@ -80,7 +80,7 @@ describe('namespace DataElement', () => {
                 const dataElem = new DataElement.StringDataElement();
                 dataElem.argIdentifier = new ValueElement.StringElement('myBox');
                 dataElem.argValue = new ValueElement.TrueElement();
-            }).toThrowError('Invalid argument: "TBoolean" is not a valid type for "value"');
+            }).toThrowError('"TBoolean" is not a valid type for "value".');
         });
 
         test('initialize BooleanDataElement with BooleanElement object and verify', () => {
@@ -89,9 +89,9 @@ describe('namespace DataElement', () => {
             dataElem.argValue = new ValueElement.TrueElement();
             const arg = dataElem.args.getArg('value');
             if (arg !== null) {
-                expect(arg.data.value).toBe(true);
+                expect(arg.getData().value).toBe(true);
             } else {
-                throw Error('Object should not be null');
+                throw Error('Object should not be null.');
             }
         });
 
@@ -100,7 +100,7 @@ describe('namespace DataElement', () => {
                 const dataElem = new DataElement.BooleanDataElement();
                 dataElem.argIdentifier = new ValueElement.StringElement('myBox');
                 dataElem.argValue = new ValueElement.IntElement(5);
-            }).toThrowError('Invalid argument: "TInt" is not a valid type for "value"');
+            }).toThrowError('"TInt" is not a valid type for "value".');
         });
 
         // test('initialize AnyDataElement with StringElement object and verify', () => {
@@ -123,8 +123,8 @@ describe('namespace DataElement', () => {
             dataElem.argValue = new ValueElement.IntElement(5);
             const valueElement = dataElem.valueElement;
             expect(valueElement instanceof ValueElement.IntDataValueElement).toBe(true);
-            expect(valueElement.data.value).toBe(5);
-            const dataElement = valueElement.data;
+            expect(valueElement.getData().value).toBe(5);
+            const dataElement = valueElement.getData();
             expect(dataElement).toEqual(dataElem.dataElementRef);
         });
 
@@ -132,9 +132,7 @@ describe('namespace DataElement', () => {
             const dataElem = new DataElement.IntDataElement();
             dataElem.argIdentifier = new ValueElement.StringElement('myBox');
             dataElem.argValue = null;
-            expect(() => dataElem.dataElementRef).toThrowError(
-                'Invalid argument: value cannot be null'
-            );
+            expect(() => dataElem.dataElementRef).toThrowError('Value cannot be null.');
         });
 
         test('verify reference in created DataValueElement after assigning a FloatDataElement', () => {
@@ -144,8 +142,8 @@ describe('namespace DataElement', () => {
             dataElem.onVisit();
             const valueElement = dataElem.valueElement;
             expect(valueElement instanceof ValueElement.FloatDataValueElement).toBe(true);
-            expect(valueElement.data.value).toBe(2.71828);
-            const dataElement = valueElement.data;
+            expect(valueElement.getData().value).toBe(2.71828);
+            const dataElement = valueElement.getData();
             expect(dataElement).toEqual(dataElem.dataElementRef);
         });
 
@@ -153,9 +151,7 @@ describe('namespace DataElement', () => {
             const dataElem = new DataElement.FloatDataElement();
             dataElem.argIdentifier = new ValueElement.StringElement('myBox');
             dataElem.argValue = null;
-            expect(() => dataElem.dataElementRef).toThrowError(
-                'Invalid argument: value cannot be null'
-            );
+            expect(() => dataElem.dataElementRef).toThrowError('Value cannot be null.');
         });
 
         test('verify reference in created DataValueElement after assigning a CharDataElement', () => {
@@ -165,8 +161,8 @@ describe('namespace DataElement', () => {
             dataElem.onVisit();
             const valueElement = dataElem.valueElement;
             expect(valueElement instanceof ValueElement.CharDataValueElement).toBe(true);
-            expect(valueElement.data.value).toBe('a');
-            const dataElement = valueElement.data;
+            expect(valueElement.getData().value).toBe('a');
+            const dataElement = valueElement.getData();
             expect(dataElement).toEqual(dataElem.dataElementRef);
         });
 
@@ -174,9 +170,7 @@ describe('namespace DataElement', () => {
             const dataElem = new DataElement.CharDataElement();
             dataElem.argIdentifier = new ValueElement.StringElement('myBox');
             dataElem.argValue = null;
-            expect(() => dataElem.dataElementRef).toThrowError(
-                'Invalid argument: value cannot be null'
-            );
+            expect(() => dataElem.dataElementRef).toThrowError('Value cannot be null.');
         });
 
         test('verify reference in created DataValueElement after assigning a StringDataElement', () => {
@@ -186,8 +180,8 @@ describe('namespace DataElement', () => {
             dataElem.onVisit();
             const valueElement = dataElem.valueElement;
             expect(valueElement instanceof ValueElement.StringDataValueElement).toBe(true);
-            expect(valueElement.data.value).toBe('string');
-            const dataElement = valueElement.data;
+            expect(valueElement.getData().value).toBe('string');
+            const dataElement = valueElement.getData();
             expect(dataElement).toEqual(dataElem.dataElementRef);
         });
 
@@ -195,9 +189,7 @@ describe('namespace DataElement', () => {
             const dataElem = new DataElement.StringDataElement();
             dataElem.argIdentifier = new ValueElement.StringElement('myBox');
             dataElem.argValue = null;
-            expect(() => dataElem.dataElementRef).toThrowError(
-                'Invalid argument: value cannot be null'
-            );
+            expect(() => dataElem.dataElementRef).toThrowError('Value cannot be null.');
         });
 
         test('verify reference in created DataValueElement after assigning a BooleanDataElement with TrueElement', () => {
@@ -207,8 +199,8 @@ describe('namespace DataElement', () => {
             dataElem.onVisit();
             const valueElement = dataElem.valueElement;
             expect(valueElement instanceof ValueElement.BooleanDataValueElement).toBe(true);
-            expect(valueElement.data.value).toBe(true);
-            const dataElement = valueElement.data;
+            expect(valueElement.getData().value).toBe(true);
+            const dataElement = valueElement.getData();
             expect(dataElement).toEqual(dataElem.dataElementRef);
         });
 
@@ -219,8 +211,8 @@ describe('namespace DataElement', () => {
             dataElem.onVisit();
             const valueElement = dataElem.valueElement;
             expect(valueElement instanceof ValueElement.BooleanDataValueElement).toBe(true);
-            expect(valueElement.data.value).toBe(false);
-            const dataElement = valueElement.data;
+            expect(valueElement.getData().value).toBe(false);
+            const dataElement = valueElement.getData();
             expect(dataElement).toEqual(dataElem.dataElementRef);
         });
 
@@ -228,9 +220,7 @@ describe('namespace DataElement', () => {
             const dataElem = new DataElement.BooleanDataElement();
             dataElem.argIdentifier = new ValueElement.StringElement('myBox');
             dataElem.argValue = null;
-            expect(() => dataElem.dataElementRef).toThrowError(
-                'Invalid argument: value cannot be null'
-            );
+            expect(() => dataElem.dataElementRef).toThrowError('Value cannot be null.');
         });
 
         // test('verify created ValueElement after executing a AnyDataElement', () => {

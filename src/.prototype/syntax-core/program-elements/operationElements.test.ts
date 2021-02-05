@@ -6,7 +6,7 @@ describe('arithmetic operations', () => {
         const operElem = new OperationElement.AddElement();
         operElem.argOperand_1 = new ValueElement.FloatElement(15.5);
         operElem.argOperand_2 = new ValueElement.FloatElement(4);
-        const resElem = operElem.data;
+        const resElem = operElem.getData();
         expect(resElem.type).toBe('TFloat');
         expect(resElem.value).toBe(19.5);
     });
@@ -15,7 +15,7 @@ describe('arithmetic operations', () => {
         const operElem = new OperationElement.AddElement();
         operElem.argOperand_1 = new ValueElement.FloatElement(15.5);
         operElem.argOperand_2 = new ValueElement.IntElement(4);
-        const resElem = operElem.data;
+        const resElem = operElem.getData();
         expect(resElem.type).toBe('TFloat');
         expect(resElem.value).toBe(19.5);
     });
@@ -24,14 +24,14 @@ describe('arithmetic operations', () => {
         const operElem = new OperationElement.AddElement();
         operElem.argOperand_1 = new ValueElement.FloatElement(15.5);
         operElem.argOperand_2 = null;
-        expect(() => operElem.data).toThrowError('Invalid argument: "operand_2" cannot be null');
+        expect(() => operElem.getData()).toThrowError('"operand_2" cannot be null.');
     });
 
     test('supply two valid ArgumentElements to SubtractElement and verify', () => {
         const operElem = new OperationElement.SubtractElement();
         operElem.argOperand_1 = new ValueElement.FloatElement(15.5);
         operElem.argOperand_2 = new ValueElement.FloatElement(4);
-        const resElem = operElem.data;
+        const resElem = operElem.getData();
         expect(resElem.type).toBe('TFloat');
         expect(resElem.value).toBe(11.5);
     });
@@ -40,7 +40,7 @@ describe('arithmetic operations', () => {
         const operElem = new OperationElement.MultiplyElement();
         operElem.argOperand_1 = new ValueElement.FloatElement(15.5);
         operElem.argOperand_2 = new ValueElement.FloatElement(4);
-        const resElem = operElem.data;
+        const resElem = operElem.getData();
         expect(resElem.type).toBe('TFloat');
         expect(resElem.value).toBe(62);
     });
@@ -49,7 +49,7 @@ describe('arithmetic operations', () => {
         const operElem = new OperationElement.DivideElement();
         operElem.argOperand_1 = new ValueElement.FloatElement(15.5);
         operElem.argOperand_2 = new ValueElement.FloatElement(4);
-        const resElem = operElem.data;
+        const resElem = operElem.getData();
         expect(resElem.type).toBe('TFloat');
         expect(resElem.value).toBe(3.875);
     });
@@ -58,7 +58,7 @@ describe('arithmetic operations', () => {
         const operElem = new OperationElement.ModElement();
         operElem.argOperand_1 = new ValueElement.FloatElement(15.5);
         operElem.argOperand_2 = new ValueElement.FloatElement(4);
-        const resElem = operElem.data;
+        const resElem = operElem.getData();
         expect(resElem.type).toBe('TFloat');
         expect(resElem.value).toBe(3.5);
     });
@@ -69,7 +69,7 @@ describe('relation operations', () => {
         const operElem = new OperationElement.EqualsElement();
         operElem.argOperand_1 = new ValueElement.FloatElement(15.5);
         operElem.argOperand_2 = new ValueElement.FloatElement(15.5);
-        const resElem = operElem.data;
+        const resElem = operElem.getData();
         expect(resElem.type).toBe('TBoolean');
         expect(resElem.value).toBe(true);
     });
@@ -78,7 +78,7 @@ describe('relation operations', () => {
         const operElem = new OperationElement.EqualsElement();
         operElem.argOperand_1 = new ValueElement.FloatElement(15.0);
         operElem.argOperand_2 = new ValueElement.IntElement(15);
-        const resElem = operElem.data;
+        const resElem = operElem.getData();
         expect(resElem.type).toBe('TBoolean');
         expect(resElem.value).toBe(true);
     });
@@ -87,14 +87,14 @@ describe('relation operations', () => {
         const operElem = new OperationElement.EqualsElement();
         operElem.argOperand_1 = new ValueElement.FloatElement(15.5);
         operElem.argOperand_2 = null;
-        expect(() => operElem.data).toThrowError('Invalid argument: "operand_2" cannot be null');
+        expect(() => operElem.getData()).toThrowError('"operand_2" cannot be null.');
     });
 
     test('supply two valid ArgumentElements to GreaterThanElement and verify', () => {
         const operElem = new OperationElement.GreaterThanElement();
         operElem.argOperand_1 = new ValueElement.FloatElement(15.5);
         operElem.argOperand_2 = new ValueElement.FloatElement(4);
-        const resElem = operElem.data;
+        const resElem = operElem.getData();
         expect(resElem.type).toBe('TBoolean');
         expect(resElem.value).toBe(true);
     });
@@ -103,7 +103,7 @@ describe('relation operations', () => {
         const operElem = new OperationElement.LessThanElement();
         operElem.argOperand_1 = new ValueElement.FloatElement(15.5);
         operElem.argOperand_2 = new ValueElement.FloatElement(4);
-        const resElem = operElem.data;
+        const resElem = operElem.getData();
         expect(resElem.type).toBe('TBoolean');
         expect(resElem.value).toBe(false);
     });
@@ -114,7 +114,7 @@ describe('boolean operations', () => {
         const operElem = new OperationElement.AndElement();
         operElem.argOperand_1 = new ValueElement.TrueElement();
         operElem.argOperand_2 = new ValueElement.TrueElement();
-        const resElem = operElem.data;
+        const resElem = operElem.getData();
         expect(resElem.type).toBe('TBoolean');
         expect(resElem.value).toBe(true);
     });
@@ -123,14 +123,14 @@ describe('boolean operations', () => {
         const operElem = new OperationElement.AndElement();
         operElem.argOperand_1 = new ValueElement.TrueElement();
         operElem.argOperand_2 = null;
-        expect(() => operElem.data).toThrowError('Invalid argument: "operand_2" cannot be null');
+        expect(() => operElem.getData()).toThrowError('"operand_2" cannot be null.');
     });
 
     test('supply two valid ArgumentElements to OrElement and verify', () => {
         const operElem = new OperationElement.OrElement();
         operElem.argOperand_1 = new ValueElement.TrueElement();
         operElem.argOperand_2 = new ValueElement.FalseElement();
-        const resElem = operElem.data;
+        const resElem = operElem.getData();
         expect(resElem.type).toBe('TBoolean');
         expect(resElem.value).toBe(true);
     });

@@ -64,9 +64,9 @@ export namespace DataElement {
         get dataElementRef() {
             const arg = this.argValue;
             if (arg === null) {
-                throw Error('Invalid argument: value cannot be null');
+                throw Error('Value cannot be null.');
             } else {
-                return arg.data as TInt;
+                return arg.getData() as TInt;
             }
         }
 
@@ -85,9 +85,9 @@ export namespace DataElement {
         get dataElementRef() {
             const arg = this.argValue;
             if (arg === null) {
-                throw Error('Invalid argument: value cannot be null');
+                throw Error('Value cannot be null.');
             } else {
-                return arg.data as TFloat;
+                return arg.getData() as TFloat;
             }
         }
 
@@ -106,9 +106,9 @@ export namespace DataElement {
         get dataElementRef() {
             const arg = this.argValue;
             if (arg === null) {
-                throw Error('Invalid argument: value cannot be null');
+                throw Error('Value cannot be null.');
             } else {
-                return arg.data as TChar;
+                return arg.getData() as TChar;
             }
         }
 
@@ -127,9 +127,9 @@ export namespace DataElement {
         get dataElementRef() {
             const arg = this.argValue;
             if (arg === null) {
-                throw Error('Invalid argument: value cannot be null');
+                throw Error('Value cannot be null.');
             } else {
-                return arg.data as TString;
+                return arg.getData() as TString;
             }
         }
 
@@ -148,9 +148,9 @@ export namespace DataElement {
         get dataElementRef() {
             const arg = this.argValue;
             if (arg === null) {
-                throw Error('Invalid argument: value cannot be null');
+                throw Error('Value cannot be null.');
             } else {
-                return arg.data as TBoolean;
+                return arg.getData() as TBoolean;
             }
         }
 
@@ -220,7 +220,7 @@ export namespace DataElement {
             const argCurr = this.argCurrValue;
             const argNew = this.argNewValue;
             if (argCurr !== null && argNew !== null) {
-                argCurr.data.value = argNew.data.value;
+                argCurr.getData().value = argNew.getData().value;
             }
         }
     }

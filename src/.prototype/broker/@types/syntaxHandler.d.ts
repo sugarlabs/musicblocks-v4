@@ -1,3 +1,6 @@
+import { IAST } from '../../syntax-core/@types/AST';
+import { ISyntaxElement } from '../../syntax-core/@types/structureElements';
+
 type TQuery =
     | {
           action: 'create';
@@ -31,4 +34,14 @@ type TQuery =
 export interface ISyntaxHandler {
     /** Processes all messages related to syntax and returns acknowledgement or throws error. */
     processQuery: (query: TQuery) => string;
+    /** Returns the corresponding syntax element for an elementID. */
+    getElement: (
+        elementID: string
+    ) => {
+        elementName: string;
+        element: ISyntaxElement;
+        type: 'statement' | 'block' | 'arg-data' | 'arg-exp';
+    };
+    /** Returns the AST object. */
+    AST: IAST;
 }

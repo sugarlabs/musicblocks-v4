@@ -9,6 +9,7 @@ import {
 } from '../syntax-core/structureElements';
 import { ValueElement } from '../syntax-core/program-elements/valueElements';
 import { DataElement } from '../syntax-core/program-elements/dataElements';
+import { StartBlock } from '../syntax-core/AST';
 
 describe("related to SyntaxElement objects' organization", () => {
     const synHandler = new SyntaxHandler();
@@ -19,8 +20,8 @@ describe("related to SyntaxElement objects' organization", () => {
         type: 'statement' | 'block' | 'arg-data' | 'arg-exp';
     };
 
-    let startElemID: string;
-    let startElemProps: TElemProps;
+    let repeatElemID: string;
+    let repeatElemProps: TElemProps;
     let printElemID: string;
     let printElemProps: TElemProps;
     let addElemID: string;
@@ -31,19 +32,21 @@ describe("related to SyntaxElement objects' organization", () => {
     let floatElemProps: TElemProps;
     let intDataElemID: string;
     let intDataElemProps: TElemProps;
+    let startElemID: string;
+    let startElemProps: TElemProps;
 
     describe('element creation', () => {
-        test('create a block element and verify props', () => {
-            startElemID = synHandler.processQuery({
+        test('create a (non-start) block element and verify props', () => {
+            repeatElemID = synHandler.processQuery({
                 action: 'create',
                 props: {
-                    elementName: 'start'
+                    elementName: 'repeat'
                 }
             });
-            startElemProps = synHandler.getElement(startElemID);
-            expect(startElemProps.elementName).toBe('start');
-            expect(startElemProps.type).toBe('block');
-            expect(startElemProps.element.elementName).toBe('start');
+            repeatElemProps = synHandler.getElement(repeatElemID);
+            expect(repeatElemProps.elementName).toBe('repeat');
+            expect(repeatElemProps.type).toBe('block');
+            expect(repeatElemProps.element.elementName).toBe('repeat');
         });
 
         test('create a statement element and verify props', () => {
@@ -85,6 +88,23 @@ describe("related to SyntaxElement objects' organization", () => {
             expect(intElemProps.type).toBe('arg-data');
             expect(intElemProps.element.elementName).toBe('int');
             expect((intElemProps.element as ArgumentElement).data.value).toBe(5);
+        });
+
+        test('create a start element and verify', () => {
+            startElemID = synHandler.processQuery({
+                action: 'create',
+                props: {
+                    elementName: 'start'
+                }
+            });
+            startElemProps = synHandler.getElement(startElemID);
+            expect(startElemProps.elementName).toBe('start');
+            expect(startElemProps.type).toBe('block');
+            expect(startElemProps.element.elementName).toBe('start');
+            expect(startElemProps.element instanceof StartBlock).toBe(true);
+            expect(
+                synHandler.AST.startBlocks.indexOf(startElemProps.element as StartBlock)
+            ).not.toBe(-1);
         });
     });
 
@@ -163,12 +183,27 @@ describe("related to SyntaxElement objects' organization", () => {
             synHandler.processQuery({
                 action: 'remove',
                 props: {
+                    elementID: repeatElemID
+                }
+            });
+            expect(() => synHandler.getElement(repeatElemID)).toThrowError(
+                `Invalid argument: element with ID ${repeatElemID} does not exist.`
+            );
+        });
+
+        test("remove a previously created 'start' element and expect element properties fetch to throw error", () => {
+            const startElem = synHandler.getElement(startElemID).element;
+            expect(startElem instanceof StartBlock).toBe(true);
+            synHandler.processQuery({
+                action: 'remove',
+                props: {
                     elementID: startElemID
                 }
             });
             expect(() => synHandler.getElement(startElemID)).toThrowError(
                 `Invalid argument: element with ID ${startElemID} does not exist.`
             );
+            expect(synHandler.AST.startBlocks.indexOf(startElem as StartBlock)).toBe(-1);
         });
 
         test('attempt to remove an element with an invalid ID and expect error', () => {

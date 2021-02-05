@@ -30,24 +30,10 @@ export class ActionBlock extends BlockElement implements IActionBlock {
 // ---- Abstract Syntax Tree (AST) -----------------------------------------------------------------
 
 export class AST implements IAST {
-    /** Stores the singleton instance (once instantiated). */
-    private static _instance: AST | undefined;
-
     private _startBlocks: StartBlock[] = [];
     private _actionBlocks: ActionBlock[] = [];
 
-    /** Creates and returns a new instance of the class if one doesn't exist, else returns the existing one. */
-    constructor() {
-        if (AST._instance) {
-            return AST._instance;
-        }
-        AST._instance = this;
-    }
-
-    /** Getter that returns the singleton instance. */
-    static get instance() {
-        return AST._instance;
-    }
+    constructor() {}
 
     get startBlocks() {
         return this._startBlocks;
@@ -57,15 +43,18 @@ export class AST implements IAST {
         return this._actionBlocks;
     }
 
-    get newStart() {
-        const start = new StartBlock();
-        this._startBlocks.push(start);
-        return start;
+    addStart(): StartBlock {
+        const startElement = new StartBlock();
+        this._startBlocks.push(startElement);
+        return startElement;
     }
 
-    get newAction() {
-        const action = new ActionBlock();
-        this._actionBlocks.push(action);
-        return action;
+    removeStart(startElement: StartBlock) {
+        const index = this._startBlocks.indexOf(startElement);
+        if (index !== -1) {
+            this._startBlocks.splice(index, 1);
+        } else {
+            throw Error(`Start block does not exist in AST.`);
+        }
     }
 }

@@ -9,6 +9,7 @@ import {
     SyntaxElement
 } from '../syntax-core/structureElements';
 import * as Factory from '../syntax-core/syntaxElementFactory';
+import { AST, StartBlock } from '../syntax-core/AST';
 
 export default class SyntaxHandler implements ISyntaxHandler {
     private _elementMap: {
@@ -18,31 +19,57 @@ export default class SyntaxHandler implements ISyntaxHandler {
             type: 'statement' | 'block' | 'arg-data' | 'arg-exp';
         };
     } = {};
+    private _AST: AST;
 
-    constructor() {}
+    constructor() {
+        this._AST = new AST();
+    }
 
     // -- Utilities ------------------------------------------------------------
 
-    /** Handles creation of syntax elements. */
-    private _handleCreate(elementName: string, arg?: number | string): string {
-        const element = Factory.createSyntaxElement(elementName, arg);
+    /** Returns an unique ID for syntax elements. */
+    private get _newID(): string {
         let id: string;
+        // Failsafe. Impossible to get a duplicate under normal circumstances.
         do {
             id = 'E' + Date.now();
         } while (id in this._elementMap);
-        this._elementMap[id] = { elementName, ...element };
+        return id;
+    }
+
+    /** Handles creation of syntax elements. */
+    private _handleCreate(elementName: string, arg?: number | string): string {
+        const id = this._newID;
+        switch (elementName) {
+            case 'start':
+                const startElement = this._AST.addStart();
+                this._elementMap[id] = {
+                    elementName: 'start',
+                    element: startElement,
+                    type: 'block'
+                };
+                break;
+            default:
+                const element = Factory.createSyntaxElement(elementName, arg);
+                this._elementMap[id] = { elementName, ...element };
+        }
         return id;
     }
 
     /** Handles removal of syntax elements. */
     private _handleRemove(elementID: string): void {
         if (elementID in this._elementMap) {
+            const element = this._elementMap[elementID].element;
+            if (element.elementName === 'start') {
+                this._AST.removeStart(element as StartBlock);
+            }
             delete this._elementMap[elementID];
         } else {
             throw Error(`Invalid argument: element with ID "${elementID}" does not exist.`);
         }
     }
 
+    /** Generic method to handle attachment. */
     private _handleAttachment(
         type: 'instruction' | 'argument',
         elementID_1: string,
@@ -165,5 +192,9 @@ export default class SyntaxHandler implements ISyntaxHandler {
             default:
                 throw Error('Should not be reached.');
         }
+    }
+
+    get AST(): AST {
+        return this._AST;
     }
 }

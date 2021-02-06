@@ -6,8 +6,8 @@ describe('arithmetic operations', () => {
         const operElem = new OperationElement.AddElement();
         const resElem = operElem.getData({
             args: {
-                operand_1: new ValueElement.FloatElement(15.5).getData(),
-                operand_2: new ValueElement.FloatElement(4).getData()
+                operand_1: new ValueElement.FloatElement(15.5).getData({}),
+                operand_2: new ValueElement.FloatElement(4).getData({})
             }
         });
         expect(resElem.type).toBe('TFloat');
@@ -18,8 +18,8 @@ describe('arithmetic operations', () => {
         const operElem = new OperationElement.AddElement();
         const resElem = operElem.getData({
             args: {
-                operand_1: new ValueElement.FloatElement(15.5).getData(),
-                operand_2: new ValueElement.IntElement(4).getData()
+                operand_1: new ValueElement.FloatElement(15.5).getData({}),
+                operand_2: new ValueElement.IntElement(4).getData({})
             }
         });
         expect(resElem.type).toBe('TFloat');
@@ -35,8 +35,8 @@ describe('arithmetic operations', () => {
         const operElem = new OperationElement.SubtractElement();
         const resElem = operElem.getData({
             args: {
-                operand_1: new ValueElement.FloatElement(15.5).getData(),
-                operand_2: new ValueElement.FloatElement(4).getData()
+                operand_1: new ValueElement.FloatElement(15.5).getData({}),
+                operand_2: new ValueElement.FloatElement(4).getData({})
             }
         });
         expect(resElem.type).toBe('TFloat');
@@ -47,8 +47,8 @@ describe('arithmetic operations', () => {
         const operElem = new OperationElement.MultiplyElement();
         const resElem = operElem.getData({
             args: {
-                operand_1: new ValueElement.FloatElement(15.5).getData(),
-                operand_2: new ValueElement.FloatElement(4).getData()
+                operand_1: new ValueElement.FloatElement(15.5).getData({}),
+                operand_2: new ValueElement.FloatElement(4).getData({})
             }
         });
         expect(resElem.type).toBe('TFloat');
@@ -59,8 +59,8 @@ describe('arithmetic operations', () => {
         const operElem = new OperationElement.DivideElement();
         const resElem = operElem.getData({
             args: {
-                operand_1: new ValueElement.FloatElement(15.5).getData(),
-                operand_2: new ValueElement.FloatElement(4).getData()
+                operand_1: new ValueElement.FloatElement(15.5).getData({}),
+                operand_2: new ValueElement.FloatElement(4).getData({})
             }
         });
         expect(resElem.type).toBe('TFloat');
@@ -71,8 +71,8 @@ describe('arithmetic operations', () => {
         const operElem = new OperationElement.ModElement();
         const resElem = operElem.getData({
             args: {
-                operand_1: new ValueElement.FloatElement(15.5).getData(),
-                operand_2: new ValueElement.FloatElement(4).getData()
+                operand_1: new ValueElement.FloatElement(15.5).getData({}),
+                operand_2: new ValueElement.FloatElement(4).getData({})
             }
         });
         expect(resElem.type).toBe('TFloat');
@@ -85,8 +85,8 @@ describe('relation operations', () => {
         const operElem = new OperationElement.EqualsElement();
         const resElem = operElem.getData({
             args: {
-                operand_1: new ValueElement.FloatElement(15.5).getData(),
-                operand_2: new ValueElement.FloatElement(15.5).getData()
+                operand_1: new ValueElement.FloatElement(15.5).getData({}),
+                operand_2: new ValueElement.FloatElement(15.5).getData({})
             }
         });
         expect(resElem.type).toBe('TBoolean');
@@ -97,8 +97,8 @@ describe('relation operations', () => {
         const operElem = new OperationElement.EqualsElement();
         const resElem = operElem.getData({
             args: {
-                operand_1: new ValueElement.FloatElement(15.0).getData(),
-                operand_2: new ValueElement.IntElement(15).getData()
+                operand_1: new ValueElement.FloatElement(15.0).getData({}),
+                operand_2: new ValueElement.IntElement(15).getData({})
             }
         });
         expect(resElem.type).toBe('TBoolean');
@@ -116,8 +116,8 @@ describe('relation operations', () => {
         const operElem = new OperationElement.GreaterThanElement();
         const resElem = operElem.getData({
             args: {
-                operand_1: new ValueElement.FloatElement(15.5).getData(),
-                operand_2: new ValueElement.FloatElement(4).getData()
+                operand_1: new ValueElement.FloatElement(15.5).getData({}),
+                operand_2: new ValueElement.FloatElement(4).getData({})
             }
         });
         expect(resElem.type).toBe('TBoolean');
@@ -128,8 +128,8 @@ describe('relation operations', () => {
         const operElem = new OperationElement.LessThanElement();
         const resElem = operElem.getData({
             args: {
-                operand_1: new ValueElement.FloatElement(15.5).getData(),
-                operand_2: new ValueElement.FloatElement(4).getData()
+                operand_1: new ValueElement.FloatElement(15.5).getData({}),
+                operand_2: new ValueElement.FloatElement(4).getData({})
             }
         });
         expect(resElem.type).toBe('TBoolean');
@@ -142,8 +142,8 @@ describe('boolean operations', () => {
         const operElem = new OperationElement.AndElement();
         const resElem = operElem.getData({
             args: {
-                operand_1: new ValueElement.TrueElement().getData(),
-                operand_2: new ValueElement.TrueElement().getData()
+                operand_1: new ValueElement.TrueElement().getData({}),
+                operand_2: new ValueElement.TrueElement().getData({})
             }
         });
         expect(resElem.type).toBe('TBoolean');
@@ -154,15 +154,15 @@ describe('boolean operations', () => {
     //     const operElem = new OperationElement.AndElement();
     //     operElem.argOperand_1 = new ValueElement.TrueElement();
     //     operElem.argOperand_2 = null;
-    //     expect(() => operElem.getData()).toThrowError('"operand_2" cannot be null.');
+    //     expect(() => operElem.getData({})).toThrowError('"operand_2" cannot be null.');
     // });
 
     test('supply two valid ArgumentElements to OrElement and verify', () => {
         const operElem = new OperationElement.OrElement();
         const resElem = operElem.getData({
             args: {
-                operand_1: new ValueElement.TrueElement().getData(),
-                operand_2: new ValueElement.FalseElement().getData()
+                operand_1: new ValueElement.TrueElement().getData({}),
+                operand_2: new ValueElement.FalseElement().getData({})
             }
         });
         expect(resElem.type).toBe('TBoolean');

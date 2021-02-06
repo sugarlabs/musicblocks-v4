@@ -1,5 +1,6 @@
 import { TPrimitive, TPrimitiveName } from './primitiveTypes';
 import { IContext } from './context';
+import { ISymbolTable } from './symbolTable';
 
 /**
  * There are two categories of syntax elements: Arguments and Instructions.
@@ -43,7 +44,7 @@ export interface IArgumentElement extends ISyntaxElement {
     /** Return type of the argument element. */
     type: TPrimitiveName;
     /** Returns the primitive element that the argument element returns. */
-    getData: (props: { context?: IContext; args?: { [key: string]: TPrimitive } }) => TPrimitive;
+    getData: Function;
 }
 
 /**
@@ -70,7 +71,7 @@ interface IInstructionElement extends ISyntaxElement {
     /** Stores the reference to the next instruction in stack. */
     next: IInstructionElement | null;
     /** Triggered before instruction is executed. */
-    onVisit: (props: { context?: IContext; args?: { [key: string]: TPrimitive } }) => void;
+    onVisit: Function;
 }
 
 /**
@@ -91,5 +92,5 @@ export interface IBlockElement extends IInstructionElement {
     /** Initial head instruction. */
     childHead: IInstructionElement | null;
     /** Triggered after block instruction is executed. */
-    onExit: (props: { context?: IContext; args?: { [key: string]: TPrimitive } }) => void;
+    onExit: Function;
 }

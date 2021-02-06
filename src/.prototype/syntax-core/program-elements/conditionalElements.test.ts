@@ -21,7 +21,7 @@ describe('namespace ConditionalElement', () => {
             ifElseElem.args.setArg('condition', argElem);
             ifElseElem.onVisit({
                 args: {
-                    condition: argElem.getData()
+                    condition: argElem.getData({})
                 }
             });
             const childHead = ifElseElem.childHead;
@@ -37,7 +37,7 @@ describe('namespace ConditionalElement', () => {
             ifElseElem.args.setArg('condition', argElem);
             ifElseElem.onVisit({
                 args: {
-                    condition: argElem.getData()
+                    condition: argElem.getData({})
                 }
             });
             const childHead = ifElseElem.childHead;
@@ -65,7 +65,7 @@ describe('namespace ConditionalElement', () => {
             IfThenElem.args.setArg('condition', argElem);
             IfThenElem.onVisit({
                 args: {
-                    condition: argElem.getData()
+                    condition: argElem.getData({})
                 }
             });
             const childHead = IfThenElem.childHead;
@@ -81,7 +81,7 @@ describe('namespace ConditionalElement', () => {
             IfThenElem.args.setArg('condition', argElem);
             IfThenElem.onVisit({
                 args: {
-                    condition: argElem.getData()
+                    condition: argElem.getData({})
                 }
             });
             const childHead = IfThenElem.childHead;

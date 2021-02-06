@@ -10,7 +10,7 @@ describe('namespace LoopElement', () => {
             for (let i = 0; i < 2; i++) {
                 repeatElem.onVisit({
                     args: {
-                        value: valueElem.getData()
+                        value: valueElem.getData({})
                     }
                 });
                 repeatElem.onExit();
@@ -18,7 +18,7 @@ describe('namespace LoopElement', () => {
             }
             repeatElem.onVisit({
                 args: {
-                    value: valueElem.getData()
+                    value: valueElem.getData({})
                 }
             });
             repeatElem.onExit();
@@ -30,7 +30,7 @@ describe('namespace LoopElement', () => {
             expect(() =>
                 repeatElem.onVisit({
                     args: {
-                        value: valueElem.getData()
+                        value: valueElem.getData({})
                     }
                 })
             ).toThrowError('Repeat loop needs a positive value.');

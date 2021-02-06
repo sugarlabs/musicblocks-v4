@@ -1,9 +1,10 @@
 import { TPrimitive } from '../@types/primitiveTypes';
 import { TInt, TFloat, TChar, TString, TBoolean } from '../primitiveElements';
 import { ArgumentDataElement } from '../structureElements';
+import { SymbolTable } from '../symbolTable';
 import { DataElement } from './dataElements';
 
-type dataElemType =
+type TDataElem =
     | DataElement.IntDataElement
     | DataElement.FloatDataElement
     | DataElement.CharDataElement
@@ -16,7 +17,7 @@ type dataElemType =
  */
 export namespace ValueElement {
     abstract class ValueElement extends ArgumentDataElement {
-        private _data: TPrimitive;
+        protected _data: TPrimitive;
 
         constructor(elementName: string, data: TPrimitive) {
             super(elementName, data.type);
@@ -24,7 +25,7 @@ export namespace ValueElement {
         }
 
         /** @override */
-        getData() {
+        getData(props: { symbolTable?: SymbolTable }) {
             return this._data;
         }
     }
@@ -36,7 +37,7 @@ export namespace ValueElement {
         }
 
         update(value: number) {
-            this.getData().value = value;
+            this._data.value = value;
         }
     }
 
@@ -47,7 +48,7 @@ export namespace ValueElement {
         }
 
         update(value: number) {
-            this.getData().value = value;
+            this._data.value = value;
         }
     }
 
@@ -58,7 +59,7 @@ export namespace ValueElement {
         }
 
         update(value: string | number) {
-            this.getData().value = value;
+            this._data.value = value;
         }
     }
 
@@ -69,7 +70,7 @@ export namespace ValueElement {
         }
 
         update(value: string) {
-            this.getData().value = value;
+            this._data.value = value;
         }
     }
 
@@ -87,47 +88,48 @@ export namespace ValueElement {
         }
     }
 
-    abstract class DataValueElement extends ArgumentDataElement {
-        private _dataElementRef: dataElemType;
+    abstract class DataValueElement extends ValueElement {
+        constructor(elementName: string, symbol: TString) {
+            super(elementName, symbol);
+        }
 
-        constructor(elementName: string, dataElement: dataElemType) {
-            super(elementName, dataElement.type);
-            this._dataElementRef = dataElement;
+        update(value: string) {
+            this._data.value = value;
         }
 
         /** @override */
-        getData() {
-            return this._dataElementRef.dataElementRef;
+        getData(props: { symbolTable: SymbolTable }) {
+            return props.symbolTable.getSymbolData(this._data as TString);
         }
     }
 
     export class IntDataValueElement extends DataValueElement {
-        constructor(dataElement: DataElement.IntDataElement) {
-            super('data-value-int', dataElement);
+        constructor(symbol: TString) {
+            super('data-value-int', symbol);
         }
     }
 
     export class FloatDataValueElement extends DataValueElement {
-        constructor(dataElement: DataElement.FloatDataElement) {
-            super('data-value-float', dataElement);
+        constructor(symbol: TString) {
+            super('data-value-float', symbol);
         }
     }
 
     export class CharDataValueElement extends DataValueElement {
-        constructor(dataElement: DataElement.CharDataElement) {
-            super('data-value-char', dataElement);
+        constructor(symbol: TString) {
+            super('data-value-char', symbol);
         }
     }
 
     export class StringDataValueElement extends DataValueElement {
-        constructor(dataElement: DataElement.StringDataElement) {
-            super('data-value-string', dataElement);
+        constructor(symbol: TString) {
+            super('data-value-string', symbol);
         }
     }
 
     export class BooleanDataValueElement extends DataValueElement {
-        constructor(dataElement: DataElement.BooleanDataElement) {
-            super('data-value-boolean', dataElement);
+        constructor(symbol: TString) {
+            super('data-value-boolean', symbol);
         }
     }
 }

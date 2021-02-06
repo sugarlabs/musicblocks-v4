@@ -1,9 +1,10 @@
 import { TPrimitive, TPrimitiveName } from '../@types/primitiveTypes';
-import { TBoolean, TChar, TFloat, TInt, TString } from '../primitiveElements';
-import { ArgumentElement, StatementElement } from '../structureElements';
+import { TString } from '../primitiveElements';
+import { StatementElement } from '../structureElements';
+import { SymbolTable } from '../symbolTable';
 import { ValueElement } from './valueElements';
 
-type dataValueType =
+type TDataValue =
     | ValueElement.IntDataValueElement
     | ValueElement.FloatDataValueElement
     | ValueElement.CharDataValueElement
@@ -26,16 +27,26 @@ export namespace DataElement {
             return this._type;
         }
 
-        abstract get valueElement(): dataValueType;
+        get argIdentifier() {
+            const arg = this.args.getArg('identifier');
+            if (arg === null) {
+                throw Error('Invalid data element: missing identifier.');
+            } else {
+                return arg.getData({}) as TString;
+            }
+        }
 
-        abstract get dataElementRef(): TPrimitive;
+        abstract get valueElement(): TDataValue;
 
-        abstract onVisit(props: {
+        onVisit(props: {
             args: {
                 identifier: TPrimitive;
                 value: TPrimitive;
             };
-        }): void;
+            symbolTable: SymbolTable;
+        }) {
+            props.symbolTable.addSymbol(props.args.identifier as TString, props.args.value);
+        }
     }
 
     export class IntDataElement extends DataElement {
@@ -44,19 +55,8 @@ export namespace DataElement {
         }
 
         get valueElement() {
-            return new ValueElement.IntDataValueElement(this);
+            return new ValueElement.IntDataValueElement(this.argIdentifier);
         }
-
-        get dataElementRef() {
-            const arg = this.args.getArg('value');
-            if (arg === null) {
-                throw Error('Value cannot be null.');
-            } else {
-                return (arg as ValueElement.IntElement).getData() as TInt;
-            }
-        }
-
-        onVisit() {}
     }
 
     export class FloatDataElement extends DataElement {
@@ -65,19 +65,8 @@ export namespace DataElement {
         }
 
         get valueElement() {
-            return new ValueElement.FloatDataValueElement(this);
+            return new ValueElement.FloatDataValueElement(this.argIdentifier);
         }
-
-        get dataElementRef() {
-            const arg = this.args.getArg('value');
-            if (arg === null) {
-                throw Error('Value cannot be null.');
-            } else {
-                return (arg as ValueElement.FloatElement).getData() as TFloat;
-            }
-        }
-
-        onVisit() {}
     }
 
     export class CharDataElement extends DataElement {
@@ -86,19 +75,8 @@ export namespace DataElement {
         }
 
         get valueElement() {
-            return new ValueElement.CharDataValueElement(this);
+            return new ValueElement.CharDataValueElement(this.argIdentifier);
         }
-
-        get dataElementRef() {
-            const arg = this.args.getArg('value');
-            if (arg === null) {
-                throw Error('Value cannot be null.');
-            } else {
-                return (arg as ValueElement.CharElement).getData() as TChar;
-            }
-        }
-
-        onVisit() {}
     }
 
     export class StringDataElement extends DataElement {
@@ -107,19 +85,8 @@ export namespace DataElement {
         }
 
         get valueElement() {
-            return new ValueElement.StringDataValueElement(this);
+            return new ValueElement.StringDataValueElement(this.argIdentifier);
         }
-
-        get dataElementRef() {
-            const arg = this.args.getArg('value');
-            if (arg === null) {
-                throw Error('Value cannot be null.');
-            } else {
-                return (arg as ValueElement.StringElement).getData() as TString;
-            }
-        }
-
-        onVisit() {}
     }
 
     export class BooleanDataElement extends DataElement {
@@ -128,21 +95,8 @@ export namespace DataElement {
         }
 
         get valueElement() {
-            return new ValueElement.BooleanDataValueElement(this);
+            return new ValueElement.BooleanDataValueElement(this.argIdentifier);
         }
-
-        get dataElementRef() {
-            const arg = this.args.getArg('value');
-            if (arg === null) {
-                throw Error('Value cannot be null.');
-            } else {
-                return (arg as
-                    | ValueElement.TrueElement
-                    | ValueElement.FalseElement).getData() as TBoolean;
-            }
-        }
-
-        onVisit() {}
     }
 
     // export class AnyDataElement extends DataElement {

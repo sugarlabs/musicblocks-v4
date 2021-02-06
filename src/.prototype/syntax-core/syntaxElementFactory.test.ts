@@ -12,13 +12,13 @@ describe('createSyntaxElement utililty', () => {
         const elem = createSyntaxElement('int', 5);
         expect(elem.element.elementName).toBe('int');
         expect(elem.type).toBe('arg-data');
-        expect((elem.element as ValueElement.IntElement).getData().value).toBe(5);
+        expect((elem.element as ValueElement.IntElement).getData({}).value).toBe(5);
     });
 
     test('attempt to instantiate (with invalid arguments) an element that takes arguments and expect error', () => {
         expect(() => {
             const elem = createSyntaxElement('int', 'string');
-            const v = (elem.element as ValueElement.IntElement).getData();
+            const v = (elem.element as ValueElement.IntElement).getData({});
             expect(v.value).toBe('string');
         }).toThrowError('Instantiation failed: invalid argument supplied for element "int".');
     });

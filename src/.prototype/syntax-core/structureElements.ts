@@ -1,6 +1,7 @@
 import { TPrimitiveName, TPrimitive } from './@types/primitiveTypes';
 import * as TS from './@types/structureElements';
 import { Context } from './context';
+import { SymbolTable } from './symbolTable';
 
 // ---- Syntax Element -----------------------------------------------------------------------------
 
@@ -116,8 +117,9 @@ export abstract class ArgumentElement extends SyntaxElement implements TS.IArgum
     }
 
     abstract getData(props: {
-        context?: Context;
         args?: { [key: string]: TPrimitive };
+        context?: Context;
+        symbolTable?: SymbolTable;
     }): TPrimitive;
 }
 
@@ -177,7 +179,11 @@ export abstract class InstructionElement extends SyntaxElement implements TS.IIn
     }
 
     /** Executes when element is encountered by MB program interpretor. */
-    abstract onVisit(props: { context?: Context; args?: { [key: string]: TPrimitive } }): void;
+    abstract onVisit(props: {
+        args?: { [key: string]: TPrimitive };
+        context?: Context;
+        symbolTable?: SymbolTable;
+    }): void;
 
     /** Whether current instruction is a dummy instruction. */
     get isDummy() {
@@ -248,5 +254,9 @@ export abstract class BlockElement extends InstructionElement implements TS.IBlo
     }
 
     /** Executes after instructions inside the block have been executed. */
-    abstract onExit(props: { context?: Context; args?: { [key: string]: TPrimitive } }): void;
+    abstract onExit(props: {
+        args?: { [key: string]: TPrimitive };
+        context?: Context;
+        symbolTable?: SymbolTable;
+    }): void;
 }

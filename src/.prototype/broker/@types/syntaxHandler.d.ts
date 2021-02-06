@@ -1,11 +1,12 @@
 import { IAST } from '../../syntax-core/@types/AST';
 import { ISyntaxElement } from '../../syntax-core/@types/structureElements';
+import { TSyntaxElementName } from '../../syntax-core/syntaxElementFactory';
 
 type TQuery =
     | {
           action: 'create';
           props: {
-              elementName: string;
+              elementName: TSyntaxElementName;
               arg?: number | string;
           };
       }

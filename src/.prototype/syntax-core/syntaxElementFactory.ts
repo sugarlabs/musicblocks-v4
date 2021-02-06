@@ -13,13 +13,13 @@ import { ConditionalElement } from './program-elements/conditionalElements';
 import { LoopElement } from './program-elements/loopElements';
 import { MiscellaneousElement } from './program-elements/miscellaneousElements';
 
-const syntaxElementMap = {
+export const syntaxElementMap = {
     'start': StartBlock,
     'action': ActionBlock,
-    'int': ValueElement.IntElement,
-    'float': ValueElement.FloatElement,
-    'char': ValueElement.CharElement,
-    'string': ValueElement.StringElement,
+    // 'int': ValueElement.IntElement,
+    // 'float': ValueElement.FloatElement,
+    // 'char': ValueElement.CharElement,
+    // 'string': ValueElement.StringElement,
     'true': ValueElement.TrueElement,
     'false': ValueElement.FalseElement,
     // 'data-value-int': ValueElement.IntDataValueElement,
@@ -53,29 +53,55 @@ const syntaxElementMap = {
     'print': MiscellaneousElement.PrintElement
 };
 
+type TValueElementName = 'int' | 'float' | 'char' | 'string';
+export type TSyntaxElementName = keyof typeof syntaxElementMap | TValueElementName;
+
+/**
+ * Instantiates a syntax element and returns the object along with its super-class type.
+ * @param elementName - name of the supported element.
+ * @param arg - parameter for instantiation (value elements require one).
+ */
 export function createSyntaxElement(
-    elementName: string,
-    arg?: number | string
+    elementName: TSyntaxElementName,
+    arg?: unknown
 ): {
     element: SyntaxElement;
     type: 'statement' | 'block' | 'arg-data' | 'arg-exp';
 } {
-    if (!(elementName in syntaxElementMap)) {
-        throw Error(`Invalid argument: element with name ${elementName} does not exist.`);
+    try {
+        let element: SyntaxElement;
+        switch (elementName) {
+            case 'int':
+                if (typeof arg !== 'number') throw Error();
+                element = new ValueElement.IntElement(arg as number);
+                break;
+            case 'float':
+                if (typeof arg !== 'number') throw Error();
+                element = new ValueElement.FloatElement(arg as number);
+                break;
+            case 'char':
+                if (typeof arg !== 'number' && typeof arg !== 'string') throw Error();
+                element = new ValueElement.CharElement(arg as number | string);
+                break;
+            case 'string':
+                if (typeof arg !== 'string') throw Error();
+                element = new ValueElement.StringElement(arg as string);
+                break;
+            default:
+                element = new syntaxElementMap[elementName]();
+        }
+        const type =
+            element instanceof InstructionElement
+                ? element instanceof StatementElement
+                    ? 'statement'
+                    : 'block'
+                : element instanceof ArgumentDataElement
+                ? 'arg-data'
+                : 'arg-exp';
+        return { element, type };
+    } catch (e) {
+        throw Error(
+            `Instantiation failed: invalid argument supplied for element "${elementName}".`
+        );
     }
-    const element: SyntaxElement =
-        arg !== undefined
-            ? // @ts-ignore
-              new syntaxElementMap[elementName](arg)
-            : // @ts-ignore
-              new syntaxElementMap[elementName]();
-    const type =
-        element instanceof InstructionElement
-            ? element instanceof StatementElement
-                ? 'statement'
-                : 'block'
-            : element instanceof ArgumentDataElement
-            ? 'arg-data'
-            : 'arg-exp';
-    return { element, type };
 }

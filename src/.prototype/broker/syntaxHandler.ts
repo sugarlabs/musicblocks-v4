@@ -38,7 +38,7 @@ export default class SyntaxHandler implements ISyntaxHandler {
     }
 
     /** Handles creation of syntax elements. */
-    private _handleCreate(elementName: string, arg?: number | string): string {
+    private _handleCreate(elementName: Factory.TSyntaxElementName, arg?: number | string): string {
         const id = this._newID;
         switch (elementName) {
             case 'start':

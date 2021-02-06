@@ -10,6 +10,7 @@ import {
 } from '../syntax-core/structureElements';
 import * as Factory from '../syntax-core/syntaxElementFactory';
 import { AST, StartBlock } from '../syntax-core/AST';
+import { SymbolTable } from '../syntax-core/symbolTable';
 
 export default class SyntaxHandler implements ISyntaxHandler {
     private _elementMap: {
@@ -20,9 +21,11 @@ export default class SyntaxHandler implements ISyntaxHandler {
         };
     } = {};
     private _AST: AST;
+    private _symbolTable: SymbolTable;
 
     constructor() {
         this._AST = new AST();
+        this._symbolTable = new SymbolTable();
     }
 
     // -- Utilities ------------------------------------------------------------
@@ -196,5 +199,9 @@ export default class SyntaxHandler implements ISyntaxHandler {
 
     get AST(): AST {
         return this._AST;
+    }
+
+    get symbolTable(): SymbolTable {
+        return this._symbolTable;
     }
 }

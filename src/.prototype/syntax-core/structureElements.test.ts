@@ -33,7 +33,7 @@ let argExpr: ArgumentExpressionElement;
 
 describe('class ArgumentDataElement', () => {
     test("intialize dummy ArgumentDataElement's subclass with valid arbitrary arguments and verify contents", () => {
-        argData = new CArgumentDataElement('myArgData', 'TInt', false);
+        argData = new CArgumentDataElement('myArgData', 'TInt');
         expect(argData.elementName).toBe('myArgData');
         expect(argData.type).toBe('TInt');
         expect(argData.argType).toBe('data');
@@ -43,7 +43,7 @@ describe('class ArgumentDataElement', () => {
 
 describe('class ArgumentExpressionElement', () => {
     test("initialize dummy ArgumentExpressionElement's subclass with valid arbitrary arguments and verify contents", () => {
-        argExpr = new CArgumentExpressionElement('myArgExpression', 'TInt', false);
+        argExpr = new CArgumentExpressionElement('myArgExpression', 'TInt');
         expect(argExpr.elementName).toBe('myArgExpression');
         expect(argExpr.type).toBe('TInt');
         expect(argExpr.argType).toBe('expression');
@@ -55,14 +55,14 @@ let stmntElem: StatementElement;
 
 describe('class StatementElement', () => {
     test('initialize object with no argument constraints and expect error on fetching argument labels', () => {
-        stmntElem = new CStatementElement('yourStatement', false);
+        stmntElem = new CStatementElement('yourStatement');
         expect(() => stmntElem.args.argLabels).toThrowError(
             `"yourStatement" does not take arguments.`
         );
     });
 
     test('initialize object with argument constraints and verify initial contents', () => {
-        stmntElem = new CStatementElement('myStatement', false, {
+        stmntElem = new CStatementElement('myStatement', {
             arg_1: ['TInt', 'TChar'],
             arg_2: ['TString']
         });
@@ -117,7 +117,7 @@ describe('class BlockElement', () => {
     let blockElem: BlockElement;
 
     test('initialize object with argument constraints and verify initial contents', () => {
-        blockElem = new CBlockElement('myBlock', 1, false, { arg_1: ['TBoolean'] });
+        blockElem = new CBlockElement('myBlock', 1, { arg_1: ['TBoolean'] });
         expect(blockElem.next).toBe(null);
         if (blockElem.args !== null) {
             expect(blockElem.args.argLabels).toEqual(['arg_1']);

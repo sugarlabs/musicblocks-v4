@@ -19,7 +19,7 @@ export namespace OperationElement {
             operator: TArithOp | TRelnOp | TBoolOp,
             constraints: { operand_1: TPrimitiveName[]; operand_2: TPrimitiveName[] }
         ) {
-            super(elementName, type, false, constraints);
+            super(elementName, type, constraints);
             this._operator = operator;
         }
 

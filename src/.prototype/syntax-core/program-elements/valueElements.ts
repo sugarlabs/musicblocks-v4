@@ -19,7 +19,7 @@ export namespace ValueElement {
         private _data: TPrimitive;
 
         constructor(elementName: string, data: TPrimitive) {
-            super(elementName, data.type, false);
+            super(elementName, data.type);
             this._data = data;
         }
 
@@ -91,7 +91,7 @@ export namespace ValueElement {
         private _dataElementRef: dataElemType;
 
         constructor(elementName: string, dataElement: dataElemType) {
-            super(elementName, dataElement.type, false);
+            super(elementName, dataElement.type);
             this._dataElementRef = dataElement;
         }
 

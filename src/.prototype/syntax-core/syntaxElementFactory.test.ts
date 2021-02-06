@@ -5,14 +5,12 @@ describe('createSyntaxElement utililty', () => {
     test("instantiate an element that doesn't take arguments and verify object and type", () => {
         const elem = createSyntaxElement('start');
         expect(elem.element.elementName).toBe('start');
-        expect(elem.element.requiresContext).toBe(false);
         expect(elem.type).toBe('block');
     });
 
     test('instantiate (with valid arguments) an element that takes arguments and verify object and type', () => {
         const elem = createSyntaxElement('int', 5);
         expect(elem.element.elementName).toBe('int');
-        expect(elem.element.requiresContext).toBe(false);
         expect(elem.type).toBe('arg-data');
         expect((elem.element as ValueElement.IntElement).getData().value).toBe(5);
     });

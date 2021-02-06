@@ -15,7 +15,7 @@ export namespace DataElement {
         private _type: TPrimitiveName;
 
         constructor(identifier: string, type: TPrimitiveName) {
-            super(identifier, false, {
+            super(identifier, {
                 identifier: ['TString'],
                 value: [type]
             });
@@ -30,7 +30,12 @@ export namespace DataElement {
 
         abstract get dataElementRef(): TPrimitive;
 
-        abstract onVisit(): void;
+        abstract onVisit(props: {
+            args: {
+                identifier: TPrimitive;
+                value: TPrimitive;
+            };
+        }): void;
     }
 
     export class IntDataElement extends DataElement {
@@ -180,7 +185,7 @@ export namespace DataElement {
                 newValue: [TPrimitiveName];
             }
         ) {
-            super(elementName, false, constraints);
+            super(elementName, constraints);
         }
 
         onVisit(props: {

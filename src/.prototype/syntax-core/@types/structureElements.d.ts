@@ -15,8 +15,6 @@ import { IContext } from './context';
 export interface ISyntaxElement {
     /** Name of the supported syntax element. Different from identifiers. */
     elementName: string;
-    /** Whether argument requires a context. */
-    requiresContext: boolean;
 }
 
 export interface IDataElement {}

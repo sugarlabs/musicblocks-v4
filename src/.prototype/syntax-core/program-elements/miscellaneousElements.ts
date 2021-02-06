@@ -4,7 +4,7 @@ import { ArgumentElement, StatementElement } from '../structureElements';
 export namespace MiscellaneousElement {
     export class PrintElement extends StatementElement {
         constructor() {
-            super('print', false, {
+            super('print', {
                 message: ['TInt', 'TFloat', 'TChar', 'TString', 'TBoolean']
             });
         }

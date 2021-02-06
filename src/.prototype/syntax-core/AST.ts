@@ -8,7 +8,7 @@ export class StartBlock extends BlockElement implements IStartBlock {
     private _context: Context;
 
     constructor() {
-        super('start', 1, false);
+        super('start', 1);
         this._context = new Context();
     }
 
@@ -23,7 +23,7 @@ export class StartBlock extends BlockElement implements IStartBlock {
 
 export class ActionBlock extends BlockElement implements IActionBlock {
     constructor() {
-        super('action', 1, true, {
+        super('action', 1, {
             name: ['TString']
         });
     }

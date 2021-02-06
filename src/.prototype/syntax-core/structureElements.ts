@@ -10,19 +10,13 @@ import { Context } from './context';
  */
 export abstract class SyntaxElement implements TS.ISyntaxElement {
     private _elementName: string;
-    private _requiresContext: boolean;
 
-    constructor(elementName: string, requiresContext: boolean) {
+    constructor(elementName: string) {
         this._elementName = elementName;
-        this._requiresContext = requiresContext;
     }
 
     get elementName() {
         return this._elementName;
-    }
-
-    get requiresContext() {
-        return this._requiresContext;
     }
 }
 
@@ -107,13 +101,8 @@ export abstract class ArgumentElement extends SyntaxElement implements TS.IArgum
     private _argType: 'data' | 'expression';
     private _type: TPrimitiveName;
 
-    constructor(
-        elementName: string,
-        argType: 'data' | 'expression',
-        type: TPrimitiveName,
-        requiresContext: boolean
-    ) {
-        super(elementName, requiresContext);
+    constructor(elementName: string, argType: 'data' | 'expression', type: TPrimitiveName) {
+        super(elementName);
         this._argType = argType;
         this._type = type;
     }
@@ -135,8 +124,8 @@ export abstract class ArgumentElement extends SyntaxElement implements TS.IArgum
 export abstract class ArgumentDataElement
     extends ArgumentElement
     implements TS.IArgumentDataElement {
-    constructor(elementName: string, type: TPrimitiveName, requiresContext: boolean) {
-        super(elementName, 'data', type, requiresContext);
+    constructor(elementName: string, type: TPrimitiveName) {
+        super(elementName, 'data', type);
     }
 }
 
@@ -148,11 +137,10 @@ export abstract class ArgumentExpressionElement
     constructor(
         elementName: string,
         type: TPrimitiveName,
-        requiresContext: boolean,
         // Certain argument expressions might not take arguments, instead could work on the context.
         constraints?: { [key: string]: TPrimitiveName[] }
     ) {
-        super(elementName, 'expression', type, requiresContext);
+        super(elementName, 'expression', type);
         this._args = new ArgumentMap(elementName, !constraints ? null : constraints);
     }
 
@@ -169,11 +157,10 @@ export abstract class InstructionElement extends SyntaxElement implements TS.IIn
 
     constructor(
         elementName: string,
-        requiresContext: boolean,
         // Certain instructions might not take arguments, instead could work on the context.
         constraints?: { [key: string]: TPrimitiveName[] }
     ) {
-        super(elementName, requiresContext);
+        super(elementName);
         this._args = new ArgumentMap(elementName, !constraints ? null : constraints);
     }
 
@@ -201,19 +188,15 @@ export abstract class InstructionElement extends SyntaxElement implements TS.IIn
 /** To be treated as a terminating or non-existing instruction. */
 export class DummyElement extends InstructionElement {
     constructor() {
-        super('dummy', false);
+        super('dummy');
     }
 
     onVisit() {}
 }
 
 export abstract class StatementElement extends InstructionElement implements TS.IStatementElement {
-    constructor(
-        elementName: string,
-        requiresContext: boolean,
-        constraints?: { [key: string]: TPrimitiveName[] }
-    ) {
-        super(elementName, requiresContext, constraints);
+    constructor(elementName: string, constraints?: { [key: string]: TPrimitiveName[] }) {
+        super(elementName, constraints);
     }
 }
 
@@ -226,10 +209,9 @@ export abstract class BlockElement extends InstructionElement implements TS.IBlo
     constructor(
         elementName: string,
         blocksCount: number,
-        requiresContext: boolean,
         constraints?: { [key: string]: TPrimitiveName[] }
     ) {
-        super(elementName, requiresContext, constraints);
+        super(elementName, constraints);
         if (blocksCount < 1) {
             throw Error('Number of inner blocks cannot be less than 1.');
         }

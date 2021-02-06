@@ -37,7 +37,7 @@ describe('class ArgumentDataElement', () => {
         expect(argData.elementName).toBe('myArgData');
         expect(argData.type).toBe('TInt');
         expect(argData.argType).toBe('data');
-        expect(argData.getData().value).toBe(5);
+        expect(argData.getData({}).value).toBe(5);
     });
 });
 
@@ -47,7 +47,7 @@ describe('class ArgumentExpressionElement', () => {
         expect(argExpr.elementName).toBe('myArgExpression');
         expect(argExpr.type).toBe('TInt');
         expect(argExpr.argType).toBe('expression');
-        expect(argExpr.getData().value).toBe(5);
+        expect(argExpr.getData({}).value).toBe(5);
     });
 });
 
@@ -78,7 +78,7 @@ describe('class StatementElement', () => {
             stmntElem.args.setArg('arg_1', argData);
             const arg = stmntElem.args.getArg('arg_1');
             if (arg !== null) {
-                expect(arg.getData().value).toEqual(5);
+                expect(arg.getData({}).value).toEqual(5);
             }
         } catch (e) {
             console.error(e);

@@ -1,3 +1,4 @@
+import { TPrimitive } from '../@types/primitiveTypes';
 import { ArgumentElement, StatementElement } from '../structureElements';
 
 export namespace MiscellaneousElement {
@@ -8,18 +9,9 @@ export namespace MiscellaneousElement {
             });
         }
 
-        set argMessage(message: ArgumentElement | null) {
-            this.args.setArg('message', message);
-        }
-
         /** @todo logic to be implemented after UI is created. Currently just for demonstration. */
-        onVisit() {
-            const arg = this.args.getArg('message');
-            if (arg !== null) {
-                console.log(`" ${arg.getData().value} "`);
-            } else {
-                console.log(`" ${null} "`);
-            }
+        onVisit(props: { args: { message: TPrimitive } }) {
+            console.log(`" ${props.args['message'].value} "`);
         }
     }
 }

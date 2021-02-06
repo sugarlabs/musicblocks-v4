@@ -41,7 +41,9 @@ export namespace OperationElement {
             return this._operand_2;
         }
 
-        abstract getData(): TPrimitive;
+        abstract getData(props: {
+            args: { operand_1: TPrimitive; operand_2: TPrimitive };
+        }): TPrimitive;
     }
 
     // -- Arithmetic Operators ---------------------------------------------------------------------
@@ -54,54 +56,44 @@ export namespace OperationElement {
             });
         }
 
-        getData(): TPrimitive {
-            if (this._operand_1 === null) {
-                throw Error(`"operand_1" cannot be null.`);
-            }
-            if (this._operand_2 === null) {
-                throw Error(`"operand_2" cannot be null.`);
-            }
-            if (
-                !(
-                    this._operand_1.getData() instanceof TInt ||
-                    this._operand_1.getData() instanceof TFloat
-                )
-            ) {
+        getData(props: {
+            args: {
+                operand_1: TPrimitive;
+                operand_2: TPrimitive;
+            };
+        }): TPrimitive {
+            if (!(props.args.operand_1 instanceof TInt || props.args.operand_1 instanceof TFloat)) {
                 throw Error(`"operand_1" can only be of type TInt or TFloat.`);
             }
-            if (
-                !(
-                    this._operand_2.getData() instanceof TInt ||
-                    this._operand_2.getData() instanceof TFloat
-                )
-            ) {
+            if (!(props.args.operand_2 instanceof TInt || props.args.operand_2 instanceof TFloat)) {
                 throw Error(`"operand_2" can only be of type TInt or TFloat.`);
             }
+
             switch (this._operator) {
                 case '+':
                     return TFloat.add(
-                        this._operand_1.getData() as TInt | TFloat,
-                        this._operand_2.getData() as TInt | TFloat
+                        props.args.operand_1 as TInt | TFloat,
+                        props.args.operand_2 as TInt | TFloat
                     );
                 case '-':
                     return TFloat.subtract(
-                        this._operand_1.getData() as TInt | TFloat,
-                        this._operand_2.getData() as TInt | TFloat
+                        props.args.operand_1 as TInt | TFloat,
+                        props.args.operand_2 as TInt | TFloat
                     );
                 case '*':
                     return TFloat.multiply(
-                        this._operand_1.getData() as TInt | TFloat,
-                        this._operand_2.getData() as TInt | TFloat
+                        props.args.operand_1 as TInt | TFloat,
+                        props.args.operand_2 as TInt | TFloat
                     );
                 case '/':
                     return TFloat.divide(
-                        this._operand_1.getData() as TInt | TFloat,
-                        this._operand_2.getData() as TInt | TFloat
+                        props.args.operand_1 as TInt | TFloat,
+                        props.args.operand_2 as TInt | TFloat
                     );
                 case '%':
                     return TFloat.mod(
-                        this._operand_1.getData() as TInt | TFloat,
-                        this._operand_2.getData() as TInt | TFloat
+                        props.args.operand_1 as TInt | TFloat,
+                        props.args.operand_2 as TInt | TFloat
                     );
                 default:
                     throw Error(`Should not be reached.`);
@@ -149,44 +141,34 @@ export namespace OperationElement {
             });
         }
 
-        getData(): TBoolean {
-            if (this._operand_1 === null) {
-                throw Error(`"operand_1" cannot be null.`);
-            }
-            if (this._operand_2 === null) {
-                throw Error(`"operand_2" cannot be null.`);
-            }
-            if (
-                !(
-                    this._operand_1.getData() instanceof TInt ||
-                    this._operand_1.getData() instanceof TFloat
-                )
-            ) {
+        getData(props: {
+            args: {
+                operand_1: TPrimitive;
+                operand_2: TPrimitive;
+            };
+        }): TPrimitive {
+            if (!(props.args.operand_1 instanceof TInt || props.args.operand_1 instanceof TFloat)) {
                 throw Error(`"operand_1" can only be of type TInt or TFloat.`);
             }
-            if (
-                !(
-                    this._operand_2.getData() instanceof TInt ||
-                    this._operand_2.getData() instanceof TFloat
-                )
-            ) {
+            if (!(props.args.operand_2 instanceof TInt || props.args.operand_2 instanceof TFloat)) {
                 throw Error(`"operand_2" can only be of type TInt or TFloat.`);
             }
+
             switch (this._operator) {
                 case '==':
                     return TFloat.equals(
-                        this._operand_1.getData() as TInt | TFloat,
-                        this._operand_2.getData() as TInt | TFloat
+                        props.args.operand_1 as TInt | TFloat,
+                        props.args.operand_2 as TInt | TFloat
                     );
                 case '>':
                     return TFloat.greaterThan(
-                        this._operand_1.getData() as TInt | TFloat,
-                        this._operand_2.getData() as TInt | TFloat
+                        props.args.operand_1 as TInt | TFloat,
+                        props.args.operand_2 as TInt | TFloat
                     );
                 case '<':
                     return TFloat.lessThan(
-                        this._operand_1.getData() as TInt | TFloat,
-                        this._operand_2.getData() as TInt | TFloat
+                        props.args.operand_1 as TInt | TFloat,
+                        props.args.operand_2 as TInt | TFloat
                     );
                 default:
                     throw Error(`Should not be reached.`);
@@ -222,29 +204,29 @@ export namespace OperationElement {
             });
         }
 
-        getData(): TBoolean {
-            if (this._operand_1 === null) {
-                throw Error(`"operand_1" cannot be null.`);
-            }
-            if (this._operand_2 === null) {
-                throw Error(`"operand_2" cannot be null.`);
-            }
-            if (!(this._operand_1.getData() instanceof TBoolean)) {
+        getData(props: {
+            args: {
+                operand_1: TPrimitive;
+                operand_2: TPrimitive;
+            };
+        }): TPrimitive {
+            if (!(props.args.operand_1 instanceof TBoolean)) {
                 throw Error(`"operand_1" can only be of type TBoolean.`);
             }
-            if (!(this._operand_2.getData() instanceof TBoolean)) {
+            if (!(props.args.operand_2 instanceof TBoolean)) {
                 throw Error(`"operand_2" can only be of type TBoolean.`);
             }
+
             switch (this._operator) {
                 case '&&':
                     return TBoolean.and(
-                        this._operand_1.getData() as TBoolean,
-                        this._operand_2.getData() as TBoolean
+                        props.args.operand_1 as TBoolean,
+                        props.args.operand_2 as TBoolean
                     );
                 case '||':
                     return TBoolean.or(
-                        this._operand_1.getData() as TBoolean,
-                        this._operand_2.getData() as TBoolean
+                        props.args.operand_1 as TBoolean,
+                        props.args.operand_2 as TBoolean
                     );
                 default:
                     throw Error(`Should not be reached.`);

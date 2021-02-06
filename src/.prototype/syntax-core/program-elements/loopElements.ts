@@ -1,9 +1,5 @@
-import {
-    ArgumentElement,
-    BlockElement,
-    DummyElement,
-    InstructionElement
-} from '../structureElements';
+import { TPrimitive } from '../@types/primitiveTypes';
+import { BlockElement, DummyElement, InstructionElement } from '../structureElements';
 
 export namespace LoopElement {
     export class RepeatLoopElement extends BlockElement {
@@ -16,19 +12,14 @@ export namespace LoopElement {
             });
         }
 
-        set argValue(value: ArgumentElement | null) {
-            this.args.setArg('value', value);
-        }
-
-        onVisit() {
-            const arg = this.args.getArg('value');
-            if (arg === null || arg.getData().value < 0) {
+        onVisit(props: { args: { value: TPrimitive } }) {
+            if (props.args['value'].value < 0) {
                 throw Error('Repeat loop needs a positive value.');
             } else {
                 // Not already repeating.
                 if (this._nextStore !== null && this._nextStore.isDummy) {
                     this._nextStore = this.next;
-                    this._counter = arg.getData().value as number;
+                    this._counter = props.args['value'].value as number;
                 }
             }
             this.childHead = this.getChildHead(0);

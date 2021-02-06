@@ -6,20 +6,34 @@ describe('namespace LoopElement', () => {
         const repeatElem = new LoopElement.RepeatLoopElement();
 
         test('Repeat 3 times while expecting next instruction to be itself twice and null after 3rd iteration', () => {
-            repeatElem.argValue = new ValueElement.IntElement(3);
+            const valueElem = new ValueElement.IntElement(3);
             for (let i = 0; i < 2; i++) {
-                repeatElem.onVisit();
+                repeatElem.onVisit({
+                    args: {
+                        value: valueElem.getData()
+                    }
+                });
                 repeatElem.onExit();
                 expect(repeatElem.next).toEqual(repeatElem);
             }
-            repeatElem.onVisit();
+            repeatElem.onVisit({
+                args: {
+                    value: valueElem.getData()
+                }
+            });
             repeatElem.onExit();
             expect(repeatElem.next).toBe(null);
         });
 
-        test('Repeat with a null value and expect error', () => {
-            repeatElem.argValue = null;
-            expect(() => repeatElem.onVisit()).toThrowError('Repeat loop needs a positive value.');
+        test('Repeat with a negative value and expect error', () => {
+            const valueElem = new ValueElement.IntElement(-3);
+            expect(() =>
+                repeatElem.onVisit({
+                    args: {
+                        value: valueElem.getData()
+                    }
+                })
+            ).toThrowError('Repeat loop needs a positive value.');
         });
     });
 });

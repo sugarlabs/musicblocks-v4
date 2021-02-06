@@ -3,7 +3,6 @@ import { TBoolean, TChar, TFloat, TInt, TString } from '../primitiveElements';
 import { ArgumentElement, StatementElement } from '../structureElements';
 import { ValueElement } from './valueElements';
 
-type argType = ArgumentElement | null;
 type dataValueType =
     | ValueElement.IntDataValueElement
     | ValueElement.FloatDataValueElement
@@ -27,24 +26,6 @@ export namespace DataElement {
             return this._type;
         }
 
-        /** @throws Invalid argument */
-        set argIdentifier(identifier: argType) {
-            this.args.setArg('identifier', identifier);
-        }
-
-        get argIdentifier() {
-            return this.args.getArg('identifier');
-        }
-
-        /** @throws Invalid argument */
-        set argValue(value: argType) {
-            this.args.setArg('value', value);
-        }
-
-        get argValue() {
-            return this.args.getArg('value');
-        }
-
         abstract get valueElement(): dataValueType;
 
         abstract get dataElementRef(): TPrimitive;
@@ -62,11 +43,11 @@ export namespace DataElement {
         }
 
         get dataElementRef() {
-            const arg = this.argValue;
+            const arg = this.args.getArg('value');
             if (arg === null) {
                 throw Error('Value cannot be null.');
             } else {
-                return arg.getData() as TInt;
+                return (arg as ValueElement.IntElement).getData() as TInt;
             }
         }
 
@@ -83,11 +64,11 @@ export namespace DataElement {
         }
 
         get dataElementRef() {
-            const arg = this.argValue;
+            const arg = this.args.getArg('value');
             if (arg === null) {
                 throw Error('Value cannot be null.');
             } else {
-                return arg.getData() as TFloat;
+                return (arg as ValueElement.FloatElement).getData() as TFloat;
             }
         }
 
@@ -104,11 +85,11 @@ export namespace DataElement {
         }
 
         get dataElementRef() {
-            const arg = this.argValue;
+            const arg = this.args.getArg('value');
             if (arg === null) {
                 throw Error('Value cannot be null.');
             } else {
-                return arg.getData() as TChar;
+                return (arg as ValueElement.CharElement).getData() as TChar;
             }
         }
 
@@ -125,11 +106,11 @@ export namespace DataElement {
         }
 
         get dataElementRef() {
-            const arg = this.argValue;
+            const arg = this.args.getArg('value');
             if (arg === null) {
                 throw Error('Value cannot be null.');
             } else {
-                return arg.getData() as TString;
+                return (arg as ValueElement.StringElement).getData() as TString;
             }
         }
 
@@ -146,11 +127,13 @@ export namespace DataElement {
         }
 
         get dataElementRef() {
-            const arg = this.argValue;
+            const arg = this.args.getArg('value');
             if (arg === null) {
                 throw Error('Value cannot be null.');
             } else {
-                return arg.getData() as TBoolean;
+                return (arg as
+                    | ValueElement.TrueElement
+                    | ValueElement.FalseElement).getData() as TBoolean;
             }
         }
 
@@ -200,28 +183,13 @@ export namespace DataElement {
             super(elementName, false, constraints);
         }
 
-        set argCurrValue(value: dataValueType | null) {
-            this.args.setArg('currValue', value);
-        }
-
-        get argCurrValue() {
-            return this.args.getArg('currValue') as dataValueType;
-        }
-
-        set argNewValue(value: ArgumentElement | null) {
-            this.args.setArg('newValue', value);
-        }
-
-        get argNewValue() {
-            return this.args.getArg('newValue');
-        }
-
-        onVisit() {
-            const argCurr = this.argCurrValue;
-            const argNew = this.argNewValue;
-            if (argCurr !== null && argNew !== null) {
-                argCurr.getData().value = argNew.getData().value;
-            }
+        onVisit(props: {
+            args: {
+                currValue: TPrimitive;
+                newValue: TPrimitive;
+            };
+        }) {
+            props.args.currValue.value = props.args.newValue.value;
         }
     }
 

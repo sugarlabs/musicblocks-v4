@@ -23,6 +23,7 @@ export namespace ValueElement {
             this._data = data;
         }
 
+        /** @override */
         getData() {
             return this._data;
         }

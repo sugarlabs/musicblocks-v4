@@ -111,7 +111,7 @@ export abstract class ArgumentElement extends SyntaxElement implements TS.IArgum
         elementName: string,
         argType: 'data' | 'expression',
         type: TPrimitiveName,
-        requiresContext?: boolean
+        requiresContext: boolean
     ) {
         super(elementName, requiresContext);
         this._argType = argType;
@@ -126,7 +126,10 @@ export abstract class ArgumentElement extends SyntaxElement implements TS.IArgum
         return this._type;
     }
 
-    abstract getData(context?: Context): TPrimitive;
+    abstract getData(props: {
+        context?: Context;
+        args?: { [key: string]: TPrimitive };
+    }): TPrimitive;
 }
 
 export abstract class ArgumentDataElement
@@ -167,6 +170,7 @@ export abstract class InstructionElement extends SyntaxElement implements TS.IIn
     constructor(
         elementName: string,
         requiresContext: boolean,
+        // Certain instructions might not take arguments, instead could work on the context.
         constraints?: { [key: string]: TPrimitiveName[] }
     ) {
         super(elementName, requiresContext);
@@ -186,15 +190,15 @@ export abstract class InstructionElement extends SyntaxElement implements TS.IIn
     }
 
     /** Executes when element is encountered by MB program interpretor. */
-    abstract onVisit(context?: Context): void;
+    abstract onVisit(props: { context?: Context; args?: { [key: string]: TPrimitive } }): void;
 
-    /** Whether current instruction is a dummy instruction */
+    /** Whether current instruction is a dummy instruction. */
     get isDummy() {
         return this.elementName === 'dummy';
     }
 }
 
-/** To be treated as a terminating or non-existing instruction */
+/** To be treated as a terminating or non-existing instruction. */
 export class DummyElement extends InstructionElement {
     constructor() {
         super('dummy', false);
@@ -252,6 +256,7 @@ export abstract class BlockElement extends InstructionElement implements TS.IBlo
         return this._childHeads[index];
     }
 
+    /** @param childHead must always be one of the values of `_childHeads`. */
     set childHead(childHead: InstructionElement | null) {
         this._childHead = childHead;
     }
@@ -261,5 +266,5 @@ export abstract class BlockElement extends InstructionElement implements TS.IBlo
     }
 
     /** Executes after instructions inside the block have been executed. */
-    abstract onExit(context?: Context): void;
+    abstract onExit(props: { context?: Context; args?: { [key: string]: TPrimitive } }): void;
 }

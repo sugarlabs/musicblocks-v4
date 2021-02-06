@@ -5,9 +5,15 @@ import { Context } from './context';
 // ---- Top Level Blocks (Start and Action) --------------------------------------------------------
 
 export class StartBlock extends BlockElement implements IStartBlock {
+    private _context: Context;
+
     constructor() {
-        super('start', 1);
-        this.context = new Context();
+        super('start', 1, false);
+        this._context = new Context();
+    }
+
+    get context() {
+        return this._context;
     }
 
     onVisit() {}

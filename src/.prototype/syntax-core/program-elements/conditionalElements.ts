@@ -1,4 +1,5 @@
-import { ArgumentElement, BlockElement } from '../structureElements';
+import { TPrimitive } from '../@types/primitiveTypes';
+import { BlockElement } from '../structureElements';
 
 export namespace ConditionalElement {
     export class IfElseElement extends BlockElement {
@@ -8,21 +9,8 @@ export namespace ConditionalElement {
             });
         }
 
-        set argCondition(condition: ArgumentElement | null) {
-            this.args.setArg('condition', condition);
-        }
-
-        get argCondition() {
-            return this.args.getArg('condition');
-        }
-
-        /** @throws Invalid argument */
-        onVisit() {
-            const arg = this.args.getArg('condition');
-            if (arg === null) {
-                throw Error('Invalid argument: condition cannot be null');
-            }
-            this.childHead = this.getChildHead(arg.getData().value ? 0 : 1);
+        onVisit(props: { args: { condition: TPrimitive } }) {
+            this.childHead = this.getChildHead(props.args['condition'].value ? 0 : 1);
         }
 
         onExit() {}

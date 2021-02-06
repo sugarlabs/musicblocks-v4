@@ -87,7 +87,7 @@ describe("related to SyntaxElement objects' organization", () => {
             expect(intElemProps.elementName).toBe('int');
             expect(intElemProps.type).toBe('arg-data');
             expect(intElemProps.element.elementName).toBe('int');
-            expect((intElemProps.element as ArgumentElement).getData().value).toBe(5);
+            expect((intElemProps.element as ArgumentElement).getData({}).value).toBe(5);
         });
 
         test('create a start element and verify', () => {
@@ -153,7 +153,7 @@ describe("related to SyntaxElement objects' organization", () => {
             if (element !== null) {
                 expect(element.type).toBe('TInt');
                 expect(element.elementName).toBe('int');
-                expect(element.getData().value).toBe(5);
+                expect(element.getData({}).value).toBe(5);
             } else {
                 throw Error('Object cannot not be null.');
             }
@@ -171,7 +171,7 @@ describe("related to SyntaxElement objects' organization", () => {
             if (element !== null) {
                 expect(element.type).toBe('TFloat');
                 expect(element.elementName).toBe('float');
-                expect(element.getData().value).toBe(3);
+                expect(element.getData({}).value).toBe(3);
             } else {
                 throw Error('Object cannot not be null.');
             }

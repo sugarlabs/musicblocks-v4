@@ -45,7 +45,7 @@ export interface IArgumentElement extends ISyntaxElement {
     /** Return type of the argument element. */
     type: TPrimitiveName;
     /** Returns the primitive element that the argument element returns. */
-    getData: (context?: IContext) => TPrimitive;
+    getData: (props: { context?: IContext; args?: { [key: string]: TPrimitive } }) => TPrimitive;
 }
 
 /**
@@ -72,7 +72,7 @@ interface IInstructionElement extends ISyntaxElement {
     /** Stores the reference to the next instruction in stack. */
     next: IInstructionElement | null;
     /** Triggered before instruction is executed. */
-    onVisit: (context?: IContext) => void;
+    onVisit: (props: { context?: IContext; args?: { [key: string]: TPrimitive } }) => void;
 }
 
 /**
@@ -93,5 +93,5 @@ export interface IBlockElement extends IInstructionElement {
     /** Initial head instruction. */
     childHead: IInstructionElement | null;
     /** Triggered after block instruction is executed. */
-    onExit: (context?: IContext) => void;
+    onExit: (props: { context?: IContext; args?: { [key: string]: TPrimitive } }) => void;
 }

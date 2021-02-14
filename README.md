@@ -12,7 +12,10 @@ top of the repository to follow the planning progress.
 A prototype is being built currently. It'll be in the
 [**musicblocks-lib**](https://github.com/sugarlabs/musicblocks-lib) repository. For updates, follow
 the `develop` branch and the feature branches that branch out of it. All initial development shall
-take place in that repository, before being incorporated here.
+take place in that repository. The said branch repository shall contain the core (engine) of the
+Music Blocks 2 application. A bundle shall be built there, which shall serve as the core of this
+application; this repository shall contain the user-end client which is to communicate with the said
+core through a broker module.
 
 The said repository has been added here as a submodule "_musicblocks-lib_". Look out for issues in
 the [issues](https://github.com/sugarlabs/musicblocks-lib/issues) tab of the repository.
@@ -30,7 +33,7 @@ _This project is containerized using [**docker**](https://www.docker.com/). Ther
 
 2. Open a teminal and navigate to working directory (where the source code will reside).
 
-3. _Git Clone_ (additional [installation](https://git-scm.com/downloads) of Git required on
+3. _Git Clone_ (additional [installation](https://git-scm.com/downloads) of _Git_ required on
 Windows) this repository using
 
     ```bash
@@ -42,8 +45,8 @@ Windows) this repository using
     _**Note:**_ A
     [built initial development image](https://github.com/orgs/sugarlabs/packages/container/musicblocks/531083)
     has been published to
-    [_Sugar Labs GitHub Container Registry_ (_GHCR_)](https://github.com/orgs/sugarlabs/packages?ecosystem=container)
-    , which can be pulled directly, so you don't have to build it again. Pull using
+    [_Sugar Labs GitHub Container Registry_ (_GHCR_)](https://github.com/orgs/sugarlabs/packages?ecosystem=container),
+    which can be pulled directly, so you don't have to build it again. Pull using
 
     ```bash
     docker pull ghcr.io/sugarlabs/musicblocks:initial
@@ -164,8 +167,8 @@ spawned and standard input/output is connected to the terminal.
 
 ## Editor
 
-_All code is just plain text, so it doesn't really matter what you use to edit them._ However, using
-modern, feature-rich IDEs/text-editors like [_**Atom**_](https://atom.io/),
+_All code is just plain text, so it doesn't really matter what you use to edit them._ However,
+using modern, feature-rich IDEs/text-editors like [_**Atom**_](https://atom.io/),
 [_**Brackets**_](http://brackets.io/), [_**WebStorm**_](https://www.jetbrains.com/webstorm/),
 [_**Sublime Text**_](https://www.sublimetext.com/),
 [_**Visual Studio Code**_](https://code.visualstudio.com/), etc. makes life way easier. These come

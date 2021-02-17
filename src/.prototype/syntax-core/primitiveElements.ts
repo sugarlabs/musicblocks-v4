@@ -393,7 +393,7 @@ export class TString extends PrimitiveElement<string> {
     };
 
     compareTo(operand: TChar | TString): TInt{
-        return new TInt(this.compareTo(operand).value)
+        return new TInt(this.value.length - operand.value.length);
     };
 
     static compare(operand_1: TChar | TString, operand_2: TChar | TString): TInt{

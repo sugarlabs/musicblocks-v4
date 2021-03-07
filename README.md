@@ -1,4 +1,4 @@
-# Music Blocks 2
+# Music Blocks 2.0
 
 A complete overhaul of the original [Music Blocks](https://github.com/sugarlabs/musicblocks).
 
@@ -17,6 +17,12 @@ core through a broker module.
 
 The said repository has been added here as a submodule "_musicblocks-lib_". Look out for issues in
 the [issues](https://github.com/sugarlabs/musicblocks-lib/issues) tab of the repository.
+
+## Tech Stack
+
+Music Blocks 2.0 shall be built using `React 17 (with hooks)` and `TypeScript 4`. In addition,
+`SCSS` shall be used for styling. `Webpack` has been configured to transpile and bundle the source
+code, for deployment on a web browser.
 
 ## Setup Development Environment
 

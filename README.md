@@ -168,20 +168,7 @@ spawned and standard input/output is connected to the terminal.
     npm ci
     ```
 
-9. To spawn a _HTTP Server_ (uses _Python 3_'s `http.server`), run
-
-    ```bash
-    npm run serve
-    ```
-
-    This is spawned on `0.0.0.0:80` inside the container, but mapped to `localhost:5001` on host.
-    Visit `localhost:5001` in a browser to view the webpage served.
-
-    _**Note:**_ If you're running using _Docker Desktop_ on _Windows_ or _Mac_, you might experience
-    longer execution times for these scripts. This happens due to cross-file-system communication.
-    Duration varies across machines; duration primarily depends on hard drive read/write speed.
-
-10. Miscellaneous commands.
+9. Miscellaneous commands.
 
     - To launch the _Node runtime_, run
 
@@ -209,7 +196,7 @@ spawned and standard input/output is connected to the terminal.
         ts-node file.ts
         ```
 
-11. Configured scripts.
+10. Configured scripts.
 
     - For testing, run
 

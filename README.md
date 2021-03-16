@@ -4,7 +4,7 @@ The core of the new [Music Blocks 2.0](https://github.com/sugarlabs/musicblocks-
 
 ## Tech Stack
 
-This core of Music Blocks 2.0 uses `TypeScript 4`. In addition, `ts-jest` shall be used for testing.
+This core of Music Blocks 2.0 uses `TypeScript 4`. In addition, `Jest` shall be used for testing.
 `Webpack` has been configured to transpile and bundle the source code, for deployment on a web
 browser.
 
@@ -177,34 +177,11 @@ spawned and standard input/output is connected to the terminal.
     This is spawned on `0.0.0.0:80` inside the container, but mapped to `localhost:5001` on host.
     Visit `localhost:5001` in a browser to view the webpage served.
 
-10. Run _React scripts_.
-
-    - For unoptimized development serving, run
-
-        ```bash
-        npm start
-        ```
-
-        This is spawned on `127.0.0.1:3000` inside the container, but mapped to `localhost:5000` on
-        host. Visit `localhost:5000` in a browser to view the webpage served.
-
-    - For testing, run
-
-        ```bash
-        npm run test
-        ```
-
-    - For generating a production build, run
-
-        ```bash
-        npm run build
-        ```
-
     _**Note:**_ If you're running using _Docker Desktop_ on _Windows_ or _Mac_, you might experience
     longer execution times for these scripts. This happens due to cross-file-system communication.
     Duration varies across machines; duration primarily depends on hard drive read/write speed.
 
-11. Miscellaneous commands.
+10. Miscellaneous commands.
 
     - To launch the _Node runtime_, run
 
@@ -231,6 +208,48 @@ spawned and standard input/output is connected to the terminal.
         ```bash
         ts-node file.ts
         ```
+
+11. Configured scripts.
+
+    - For testing, run
+
+        ```bash
+        npm run test
+        ```
+
+        To run a specific path
+
+        ```bash
+        npm run test -- "test/path"
+        ```
+
+        To run in watch mode
+
+        ```bash
+        npm run test -- "test/path" --watch
+        ```
+
+    - For generating a production build, run
+
+        ```bash
+        npm run build
+        ```
+
+    - For checking linting problems
+
+        ```bash
+        npm run lint
+        ```
+
+        To autofix fixable problems
+
+        ```bash
+        npm run lint -- --fix
+        ```
+
+    _**Note:**_ If you're running using _Docker Desktop_ on _Windows_ or _Mac_, you might experience
+    longer execution times for these scripts. This happens due to cross-file-system communication.
+    Duration varies across machines; duration primarily depends on hard drive read/write speed.
 
 ## Editor
 

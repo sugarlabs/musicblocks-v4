@@ -71,17 +71,20 @@ quality.
 2. If a PR is addressing an issue, prefix the branch name with the issue number. For example, say a
 PR is addressing issue `100`, a branch name could be `100-patch-foobar`.
 
-3. Follow
+3. Meaningfully separate code across commits. Don't create arbitrary commits. In case it gets
+dirty, please do an _interactive rebase_ with _squash_ and _reword_ to improve.
+
+4. Follow
 [conventional commit messages specification](https://www.conventionalcommits.org/en/v1.0.0-beta.2/)
 to help issue tracking. More often than not, take time to add meaningful commit descriptions.
 
-4. At any point, when new components are created or existing components are modified, unit tests
+5. At any point, when new components are created or existing components are modified, unit tests
 (passing) reflecting the changes need to be part of the PR before being reviewed.
 
-5. Two workflows &mdash; a _Continuous Integration_ (_CI_) and a _Linter_ (_Super Linter_) has been
+6. Two workflows &mdash; a _Continuous Integration_ (_CI_) and a _Linter_ (_Super Linter_) has been
 configured. Each PR must pass the checks before being reviewed.
 
-6. For any new functions/methods or classes, add extensive [TSDoc](https://tsdoc.org/) documentation.
+7. For any new functions/methods or classes, add extensive [TSDoc](https://tsdoc.org/) documentation.
 
 _Please note there is no need to ask permission to work on an issue. You should check for pull
 requests linked to an issue you are addressing; if there are none, then assume nobody has done

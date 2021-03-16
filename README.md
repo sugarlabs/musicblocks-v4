@@ -68,10 +68,17 @@ configured to lint check the files on a pull request. In fact, the _TypeScript_ 
 will throw errors/warnings if there are linting problems. This has been done to maintain code
 quality.
 
-2. At any point, when new components are created or existing components are modified, unit tests
+2. If a PR is addressing an issue, prefix the branch name with the issue number. For example, say a
+PR is addressing issue `100`, a branch name could be `100-patch-foobar`.
+
+3. Follow
+[conventional commit messages specification](https://www.conventionalcommits.org/en/v1.0.0-beta.2/)
+to help issue tracking.
+
+4. At any point, when new components are created or existing components are modified, unit tests
 (passing) reflecting the changes need to be part of the PR before being reviewed.
 
-3. Two workflows &mdash; a _Continuous Integration_ (_CI_) and a _Linter_ (_Super Linter_) has been
+5. Two workflows &mdash; a _Continuous Integration_ (_CI_) and a _Linter_ (_Super Linter_) has been
 configured. Each PR must pass the checks before being reviewed.
 
 _Please note there is no need to ask permission to work on an issue. You should check for pull

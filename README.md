@@ -60,7 +60,7 @@ or the _Sugar-dev Devel <[sugar-devel@lists.sugarlabs.org](mailto:sugar-devel@li
 mailing list. Don't ask silly questions (unless you don't know it is silly ;p) before searching it
 on the web.
 
-### Notes
+### Code Quality Notes
 
 1. Sticking to _TypeScript_ conventions, use _PascalCase_ for filenames, _CAPITALCASE_ for
 constants, _camelCase_ for identifiers. Linting has been strictly configured. A `super-linter` is
@@ -73,13 +73,15 @@ PR is addressing issue `100`, a branch name could be `100-patch-foobar`.
 
 3. Follow
 [conventional commit messages specification](https://www.conventionalcommits.org/en/v1.0.0-beta.2/)
-to help issue tracking.
+to help issue tracking. More often than not, take time to add meaningful commit descriptions.
 
 4. At any point, when new components are created or existing components are modified, unit tests
 (passing) reflecting the changes need to be part of the PR before being reviewed.
 
 5. Two workflows &mdash; a _Continuous Integration_ (_CI_) and a _Linter_ (_Super Linter_) has been
 configured. Each PR must pass the checks before being reviewed.
+
+6. For any new functions/methods or classes, add extensive [TSDoc](https://tsdoc.org/) documentation.
 
 _Please note there is no need to ask permission to work on an issue. You should check for pull
 requests linked to an issue you are addressing; if there are none, then assume nobody has done

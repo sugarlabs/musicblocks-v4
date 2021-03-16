@@ -60,6 +60,12 @@ or the _Sugar-dev Devel <[sugar-devel@lists.sugarlabs.org](mailto:sugar-devel@li
 mailing list. Don't ask silly questions (unless you don't know it is silly ;p) before searching it
 on the web.
 
+10. Sticking to _TypeScript_ conventions, use _PascalCase_ for filenames, _CAPITALCASE_ for
+constants, _camelCase_ for identifiers. Linting has been strictly configured. A `super-linter` is
+configured to lint check the files on a pull request. In fact, the _TypeScript_ watcher or build
+will throw errors/warnings if there are linting problems. This has been done to maintain code
+quality.
+
 _Please note there is no need to ask permission to work on an issue. You should check for pull
 requests linked to an issue you are addressing; if there are none, then assume nobody has done
 anything. Begin to fix the problem, test, make your commits, push your commits, then make a pull

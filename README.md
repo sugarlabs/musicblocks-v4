@@ -86,6 +86,10 @@ configured. Each PR must pass the checks before being reviewed.
 
 7. For any new functions/methods or classes, add extensive [TSDoc](https://tsdoc.org/) documentation.
 
+8. Each PR needs to have supporting unit tests covering all (or as much practical) use cases to
+qualify for review. In case testing is done via some non-standard method, adequate description of
+the method/s need/s to be specified in the PR body.
+
 _Please note there is no need to ask permission to work on an issue. You should check for pull
 requests linked to an issue you are addressing; if there are none, then assume nobody has done
 anything. Begin to fix the problem, test, make your commits, push your commits, then make a pull

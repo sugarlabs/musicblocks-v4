@@ -60,11 +60,19 @@ or the _Sugar-dev Devel <[sugar-devel@lists.sugarlabs.org](mailto:sugar-devel@li
 mailing list. Don't ask silly questions (unless you don't know it is silly ;p) before searching it
 on the web.
 
-10. Sticking to _TypeScript_ conventions, use _PascalCase_ for filenames, _CAPITALCASE_ for
+### Notes
+
+1. Sticking to _TypeScript_ conventions, use _PascalCase_ for filenames, _CAPITALCASE_ for
 constants, _camelCase_ for identifiers. Linting has been strictly configured. A `super-linter` is
 configured to lint check the files on a pull request. In fact, the _TypeScript_ watcher or build
 will throw errors/warnings if there are linting problems. This has been done to maintain code
 quality.
+
+2. At any point, when new components are created or existing components are modified, unit tests
+(passing) reflecting the changes need to be part of the PR before being reviewed.
+
+3. Two workflows &mdash; a _Continuous Integration_ (_CI_) and a _Linter_ (_Super Linter_) has been
+configured. Each PR must pass the checks before being reviewed.
 
 _Please note there is no need to ask permission to work on an issue. You should check for pull
 requests linked to an issue you are addressing; if there are none, then assume nobody has done

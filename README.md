@@ -1,6 +1,6 @@
 # musicblocks.js
 
-The core of the new Music Blocks 2.0 application.
+The core of the new [Music Blocks 2.0](https://github.com/sugarlabs/musicblocks-2) application.
 
 ## Tech Stack
 

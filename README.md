@@ -1,10 +1,10 @@
-# musicblocks.js
+# Core (engine) of musicblocks-v4
 
-The core of the new [Music Blocks 2.0](https://github.com/sugarlabs/musicblocks-2) application.
+The core of the new [Music Blocks (v4)](https://github.com/sugarlabs/musicblocks-v4) application.
 
 ## Tech Stack
 
-This core of Music Blocks 2.0 uses `TypeScript 4`. In addition, `Jest` shall be used for testing.
+This core of Music Blocks v4 uses `TypeScript 4`. In addition, `Jest` shall be used for testing.
 `Webpack` has been configured to transpile and bundle the source code, for deployment on a web
 browser.
 
@@ -15,7 +15,7 @@ Programmers, please follow these general
 
 ### New Contributors
 
-Use the [discussions](https://github.com/sugarlabs/musicblocks/discussions) tab at the top of the
+Use the [discussions](https://github.com/sugarlabs/musicblocks-v4-lib/discussions) tab at the top of the
 repository to:
 
 - Ask questions you’re wondering about.
@@ -29,7 +29,7 @@ Feel free. But, please don't spam :p.
 1. Your contributions need not necessarily have to address any discovered issue. If you encounter
 any, feel free to add a fix through a PR, or create a new issue ticket.
 
-2. Use [labels](https://github.com/sugarlabs/musicblocks/labels) on your issues and PRs.
+2. Use [labels](https://github.com/sugarlabs/musicblocks-v4-lib/labels) on your issues and PRs.
 
 3. Do not spam with lots of PRs with little changes.
 
@@ -113,7 +113,7 @@ _This project is containerized using [**docker**](https://www.docker.com/). Ther
 Windows) this repository using
 
     ```bash
-    git clone https://github.com/sugarlabs/musicblocks-2.git
+    git clone https://github.com/sugarlabs/musicblocks-v4-lib.git
     ```
 
 4. Build _docker image_ and launch _docker network_.

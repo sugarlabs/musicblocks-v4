@@ -1,26 +1,26 @@
-# Music Blocks 2.0
+# Music Blocks (v4)
 
-A complete overhaul of the original [Music Blocks](https://github.com/sugarlabs/musicblocks).
+A complete overhaul of [Music Blocks](https://github.com/sugarlabs/musicblocks).
 
 ## Contributing
 
-Please visit the [discussions](https://github.com/sugarlabs/musicblocks-2/discussions) tab at the
+Please visit the [discussions](https://github.com/sugarlabs/musicblocks-v4/discussions) tab at the
 top of the repository to follow the planning progress.
 
 A prototype is being built currently. It'll be in the
-[**musicblocks-lib**](https://github.com/sugarlabs/musicblocks-lib) repository. For updates, follow
-the `develop` branch and the feature branches that branch out of it. All initial development shall
-take place in that repository. The said branch repository shall contain the core (engine) of the
-Music Blocks 2 application. A bundle shall be built there, which shall serve as the core of this
-application; this repository shall contain the user-end client which is to communicate with the said
-core through a broker module.
+[**musicblocks-v4-lib**](https://github.com/sugarlabs/musicblocks-lib) repository. For updates,
+follow the `develop` branch and the feature branches that branch out of it. All initial development
+shall take place in that repository. The said branch repository shall contain the core (engine) of
+the Music Blocks v4 application. A bundle shall be built there, which shall serve as the core of
+this application; this repository shall contain the user-end client which is to communicate with the
+said core through a broker module.
 
-The said repository has been added here as a submodule "_musicblocks-lib_". Look out for issues in
-the [issues](https://github.com/sugarlabs/musicblocks-lib/issues) tab of the repository.
+The said repository has been added here as a submodule "_musicblocks-v4-lib_". Look out for issues
+in the [issues](https://github.com/sugarlabs/musicblocks-v4-lib/issues) tab of the repository.
 
 ## Tech Stack
 
-Music Blocks 2.0 shall be built using `React 17 (with hooks)` and `TypeScript 4`. In addition,
+Music Blocks v4 shall be built using `React 17 (with hooks)` and `TypeScript 4`. In addition,
 `SCSS` shall be used for styling. `Webpack` has been configured to transpile and bundle the source
 code, for deployment on a web browser.
 

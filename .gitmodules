@@ -1,4 +1,4 @@
-[submodule "musicblocks-lib"]
-	path = musicblocks-lib
-	url = https://github.com/meganindya/musicblocks-lib.git
+[submodule "lib"]
+	path = lib
+	url = https://github.com/sugarlabs/musicblocks-v4-lib.git
 	branch = develop

@@ -8,7 +8,7 @@ Please visit the [discussions](https://github.com/sugarlabs/musicblocks-v4/discu
 top of the repository to follow the planning progress.
 
 A prototype is being built currently. It'll be in the
-[**musicblocks-v4-lib**](https://github.com/sugarlabs/musicblocks-lib) repository. For updates,
+[**musicblocks-v4-lib**](https://github.com/sugarlabs/musicblocks-v4-lib) repository. For updates,
 follow the `develop` branch and the feature branches that branch out of it. All initial development
 shall take place in that repository. The said branch repository shall contain the core (engine) of
 the Music Blocks v4 application. A bundle shall be built there, which shall serve as the core of
@@ -41,7 +41,7 @@ _This project is containerized using [**docker**](https://www.docker.com/). Ther
 Windows) this repository using
 
     ```bash
-    git clone https://github.com/sugarlabs/musicblocks-2.git
+    git clone https://github.com/sugarlabs/musicblocks-v4.git
     ```
 
 4. Build _docker image_ and launch _docker network_.

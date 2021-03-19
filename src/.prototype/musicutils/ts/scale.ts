@@ -41,7 +41,7 @@ export class Scale implements IScale {
      * @param startingIndex - An index into the half steps defining an octave that determines from
      * where to start building the scale, e.g., 0 for C and 7 for G in a 12-step temperament.
      * Defaults to `0`.
-     * @param _numberOfSemitones - If the `halfStepsPattern` is an empty list, then use the number
+     * @param numberOfSemitones - If the `halfStepsPattern` is an empty list, then use the number
      * of semitones instead. (Or trigger a mapping from 12 to 21.) Defaults to `12`.
      * @param preferSharps - If we are mapping from 12 to 21 semitones, we need to know whether or
      * not to prefer sharps or flats. Defaults to `true`.

@@ -62,11 +62,11 @@ on the web.
 
 ### Code Quality Notes
 
-1. Sticking to _TypeScript_ conventions, use _PascalCase_ for filenames, _CAPITALCASE_ for
-constants, _camelCase_ for identifiers. Linting has been strictly configured. A `super-linter` is
-configured to lint check the files on a pull request. In fact, the _TypeScript_ watcher or build
-will throw errors/warnings if there are linting problems. This has been done to maintain code
-quality.
+1. Sticking to _TypeScript_ conventions, use _camelCase_ for filenames, _CAPITALCASE_ for
+constants, _camelCase_ for identifiers, and _PascalCase for classes_. Linting has been strictly
+configured. A `super-linter` is configured to lint check the files on a pull request. In fact, the
+_TypeScript_ watcher or build will throw errors/warnings if there are linting problems. This has
+been done to maintain code quality.
 
 2. If a PR is addressing an issue, prefix the branch name with the issue number. For example, say a
 PR is addressing issue `100`, a branch name could be `100-patch-foobar`.

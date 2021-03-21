@@ -330,7 +330,7 @@ export function stripAccidental(pitch: string): [string, number] {
         return [pitch.slice(0, pitch.length - 1), 1];
     }
     if (pitch.endsWith(DOUBLESHARP)) {
-        return [pitch.slice(0, pitch.length - 1), 2];
+        return [pitch.slice(0, pitch.length - 2), 2];
     }
     if (pitch.endsWith(NATURAL)) {
         return [pitch.slice(0, pitch.length - 1), 0];
@@ -487,7 +487,7 @@ export function getPitchType(pitchName: string): string {
 
     pitchName = stripAccidental(pitchName)[0];
 
-    if (pitchName[0] === 'n' && Number(pitchName.slice(1)) % 1 !== 0) {
+    if (pitchName[0] === 'n' && Number.isInteger(Number(pitchName.slice(1)))) {
         return GENERIC_NOTE_NAME;
     }
     if (SOLFEGE_NAMES.includes(pitchName)) {

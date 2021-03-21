@@ -11,8 +11,24 @@ import {
 
 describe('Music utilities', () => {
     describe('Validate stripAccidental', () => {
+        test('Strip accidental on pitch c and expect pitch c with 0 change in half steps', () => {
+            expect(stripAccidental('c')).toEqual(['c', 0]);
+        });
+
         test('Strip accidental on pitch gbb and expect pitch g with -2 change in half steps', () => {
             expect(stripAccidental('gbb')).toEqual(['g', -2]);
+        });
+
+        test('Strip accidental on pitch cb and expect pitch c with -1 change in half steps', () => {
+            expect(stripAccidental('cb')).toEqual(['c', -1]);
+        });
+
+        test('Strip accidental on pitch c# and expect pitch c with +1 change in half steps', () => {
+            expect(stripAccidental('c#')).toEqual(['c', 1]);
+        });
+
+        test('Strip accidental on pitch cx and expect pitch c with +2 change in half steps', () => {
+            expect(stripAccidental('cx')).toEqual(['c', 2]);
         });
 
         test('Strip accidental on pitch d𝄫 and expect pitch d with -2 change in half steps', () => {
@@ -27,14 +43,26 @@ describe('Music utilities', () => {
             expect(stripAccidental('a♯')).toEqual(['a', 1]);
         });
 
+        test('Strip accidental on pitch c𝄪 and expect pitch c with +2 change in half steps', () => {
+            expect(stripAccidental('c𝄪')).toEqual(['c', 2]);
+        });
+
         test('Strip accidental on pitch b♮ and expect pitch b with 0 change in half steps', () => {
             expect(stripAccidental('b♮')).toEqual(['b', 0]);
+        });
+
+        test('Strip accidental on pitch c and expect pitch c with 0 change in half steps', () => {
+            expect(stripAccidental('c')).toEqual(['c', 0]);
         });
     });
 
     describe('Validate normalizePitch', () => {
         test('Normalize pitch C♭ and expect to be cb', () => {
             expect(normalizePitch('C♭')).toBe('cb');
+        });
+
+        test('Normalize pitch C𝄪 and expect to be cx', () => {
+            expect(normalizePitch('C𝄪')).toBe('cx');
         });
 
         test('Normalize pitch C♯ and expect to be c#', () => {
@@ -55,12 +83,20 @@ describe('Music utilities', () => {
             expect(displayPitch('cb')).toBe('C♭');
         });
 
+        test('Pretty print cx and expect to be C𝄪', () => {
+            expect(displayPitch('cx')).toBe('C𝄪');
+        });
+
         test('Pretty print d# and expect to be D♯', () => {
             expect(displayPitch('d#')).toBe('D♯');
         });
 
         test('Pretty print dbb and expect to be D𝄫', () => {
             expect(displayPitch('dbb')).toBe('D𝄫');
+        });
+
+        test('Pretty print c and expect to be C', () => {
+            expect(displayPitch('c')).toBe('C');
         });
     });
 
@@ -125,8 +161,16 @@ describe('Music utilities', () => {
     });
 
     describe('Validate getPitchType', () => {
+        test("Generate pitch type of pitch c♯ and expect 'letter name'", () => {
+            expect(getPitchType('c♯')).toBe('letter name');
+        });
+
         test("Generate pitch type of pitch bb and expect 'letter name'", () => {
             expect(getPitchType('bb')).toBe('letter name');
+        });
+
+        test("Generate pitch type of pitch e# and expect 'letter name'", () => {
+            expect(getPitchType('e#')).toBe('letter name');
         });
 
         test("Generate pitch type of pitch do and expect 'solfege name'", () => {
@@ -137,8 +181,20 @@ describe('Music utilities', () => {
             expect(getPitchType('dha')).toBe('east indian solfege name');
         });
 
-        test("Generate pitch type of pitch aaa and expect 'uknown'", () => {
+        test("Generate pitch type of pitch aaa and expect 'unknown'", () => {
             expect(getPitchType('aaa')).toBe('unknown');
+        });
+
+        test("Generate pitch type of pitch 3 and expect 'scalar mode number'", () => {
+            expect(getPitchType('3')).toBe('scalar mode number');
+        });
+
+        test("Generate pitch type of pitch n2.3 and expect 'scalar mode number'", () => {
+            expect(getPitchType('n2.3')).toBe('unknown');
+        });
+
+        test("Generate pitch type of pitch n2 and expect 'scalar mode number'", () => {
+            expect(getPitchType('n2')).toBe('generic note name');
         });
     });
 });

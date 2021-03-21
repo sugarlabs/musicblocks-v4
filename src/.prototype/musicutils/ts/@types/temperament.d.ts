@@ -1,32 +1,44 @@
+/** Interface for the Temperament class. */
 export interface ITemperament {
-    C0: number;
-    intervals: Array<string>;
-    ratios: { [key: string]: number };
+    /** Setter and Getter for the base frequency (in Hertz) used to seed the calculations. */
+    baseFrequency: number;
+    /** Setter and Getter for the number of octaves in the temperament. */
+    numberOfOctaves: number;
 
-    baseFrequency: number; // get set
-    numberOfOctaves: number; // get set
+    /** Getter for the name of the temperament. */
+    readonly name: string;
+    /** Getter for the list of all of the frequencies in the temperament. */
+    readonly freqs: number[];
+    /** Getter for the list of generic note names. */
+    readonly noteNames: string[];
+    /** Getter for the number of notes defined per octave. */
+    readonly numberOfSemitonesInOctave: number;
+    /** Getter for the number of notes defined by the temperament. */
+    readonly numberOfNotesInTemperament: number;
 
-    readonly name: string; // get
-    readonly freqs: Array<number>; // get
-    readonly noteNames: Array<string>; // get
-    readonly numberOfSemitonesInOctave: number; // get
-    readonly numberOfNotesInTemperament: number; // get
-
-    generate: (name: string) => void;
-    getModalIndex: (noteName: string) => number;
-    getNoteName: (semitoneIndex: number) => string;
-    getFreqByIndex: (pitchIndex: number) => number;
+    /** Finds the index of the frequency nearest to the target. */
     getNearestFreqIndex: (target: number) => number;
-    generateEqualTemperament: (numberOfSteps: number) => void;
-    tune: (pitchNameArg: string, octave: number, frequency: number) => number;
-    getGenericNoteNameAndOctaveByFreqIndex: (idx: number) => [string, number];
-    getModalIndexAndOctaveFromFreqIndex: (pitchIndex: number) => Array<number>;
+    /** Returns the generic note name associated with an index. */
+    getNoteName: (semitoneIndex: number) => string;
+    /** Returns the index associated with a generic note name. */
+    getModalIndex: (noteName: string) => number;
+    /** Returns the frequency by an index into the frequency list. */
+    getFreqByIndex: (pitchIndex: number) => number;
+    /** Converts an index into the frequency list into a modal index and an octave. */
+    getModalIndexAndOctaveFromFreqIndex: (pitchIndex: number) => [number, number];
+    /** Returns the frequency that corresponds to the index and octave (in Hertz). */
     getFreqByModalIndexAndOctave: (modalIndex: number, octave: number) => number;
-    getFreqByGenericNoteNameAndOctave: (noteName: string, octave: number) => number;
+    getGenericNoteNameAndOctaveByFreqIndex: (idx: number) => [string, number];
     getFreqIndexByGenericNoteNameAndOctave: (noteName: string, octave: number) => number;
-    generateCustom: (
-        intervals: Array<string>,
-        ratios: { [key: string]: number },
-        name: string
-    ) => void;
+    getFreqByGenericNoteNameAndOctave: (noteName: string, octave: number) => number;
+
+    /**
+     * Creates one of the predefined temperaments based on the rules for generating the frequencies
+     * and the selected intervals used to determine which frequencies to include in the temperament.
+     */
+    generate: (name: string) => void;
+    generateEqualTemperament: (numberOfSteps: number) => void;
+    generateCustom: (intervals: string[], ratios: { [key: string]: number }, name: string) => void;
+    /** Calculates a base frequency based on a pitch and frequency. */
+    tune: (pitchNameArg: string, octave: number, frequency: number) => number;
 }

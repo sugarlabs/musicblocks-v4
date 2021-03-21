@@ -1,32 +1,20 @@
-/*
-Temperament defines the relationships between notes.
-*/
-
-// Copyright (c) 2020, 2021 Walter Bender, Sugar Labs
-
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the The GNU Affero General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-
-// You should have received a copy of the GNU Affero General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, 51 Franklin Street, Suite 500 Boston, MA 02110-1335 USA
-
-import { normalizePitch, CHROMATIC_NOTES_SHARP, CHROMATIC_NOTES_FLAT } from './musicutils';
 import { ITemperament } from './@types/temperament';
+import { normalizePitch, CHROMATIC_NOTES_SHARP, CHROMATIC_NOTES_FLAT } from './musicutils';
 
 /**
- * In musical tuning, temperament is a tuning system that defines the
-    notes (semitones) in an octave. Most modern Western musical
-    instruments are tuned in the equal temperament system based on the
-    1/12 root of 2 (12 semitones per octave). Many traditional
-    temperaments are based on ratios.
+ * Temperament defines the relationships between notes.
+ *
+ * @remarks
+ * In musical tuning, temperament is a tuning system that defines the notes (semitones) in an
+ * octave. Most modern Western musical instruments are tuned in the equal temperament system based
+ * on the 1/12 root of 2 (12 semitones per octave). Many traditional temperaments are based on
+ * ratios.
  */
-export class Temperament implements ITemperament {
-    // The intervals define which ratios are used to define the notes
-    // within a given temperament.
-    static readonly DEFAULT_INTERVALS: Array<string> = [
+export default class Temperament implements ITemperament {
+    /**
+     * The intervals define which ratios are used to define the notes within a given temperament.
+     */
+    private static readonly DEFAULT_INTERVALS: string[] = [
         'perfect 1',
         'minor 2',
         'major 2',
@@ -42,7 +30,7 @@ export class Temperament implements ITemperament {
         'perfect 8'
     ];
 
-    static readonly TWELVE_TONE_EQUAL_RATIOS: { [key: string]: number } = {
+    private static readonly TWELVE_TONE_EQUAL_RATIOS: { [key: string]: number } = {
         'perfect 1': 1,
         'minor 2': Math.pow(2, 1 / 12),
         'augmented 1': Math.pow(2, 1 / 12),
@@ -67,7 +55,7 @@ export class Temperament implements ITemperament {
         'perfect 8': 2
     };
 
-    static readonly JUST_INTONATION_RATIOS: { [key: string]: number } = {
+    private static readonly JUST_INTONATION_RATIOS: { [key: string]: number } = {
         'perfect 1': 1,
         'minor 2': 16 / 15,
         'augmented 1': 16 / 15,
@@ -92,7 +80,7 @@ export class Temperament implements ITemperament {
         'perfect 8': 2
     };
 
-    static readonly PYTHAGOREAN_RATIOS: { [key: string]: number } = {
+    private static readonly PYTHAGOREAN_RATIOS: { [key: string]: number } = {
         'perfect 1': 1,
         'minor 2': 256 / 243,
         'augmented 1': 256 / 243,
@@ -117,7 +105,7 @@ export class Temperament implements ITemperament {
         'perfect 8': 2
     };
 
-    static readonly THIRD_COMMA_MEANTONE_RATIOS: { [key: string]: number } = {
+    private static readonly THIRD_COMMA_MEANTONE_RATIOS: { [key: string]: number } = {
         'perfect 1': 1,
         'minor 2': 1.075693,
         'augmented 1': 1.037156,
@@ -142,7 +130,7 @@ export class Temperament implements ITemperament {
         'perfect 8': 2
     };
 
-    static readonly THIRD_COMMA_MEANTONE_INTERVALS: Array<string> = [
+    private static readonly THIRD_COMMA_MEANTONE_INTERVALS: string[] = [
         'perfect 1',
         'augmented 1',
         'minor 2',
@@ -165,7 +153,7 @@ export class Temperament implements ITemperament {
         'perfect 8'
     ];
 
-    static readonly QUARTER_COMMA_MEANTONE_RATIOS: { [key: string]: number } = {
+    private static readonly QUARTER_COMMA_MEANTONE_RATIOS: { [key: string]: number } = {
         'perfect 1': 1,
         'minor 2': 16 / 15,
         'augmented 1': 25 / 24,
@@ -190,7 +178,7 @@ export class Temperament implements ITemperament {
         'perfect 8': 2
     };
 
-    static readonly QUARTER_COMMA_MEANTONE_INTERVALS: Array<string> = [
+    private static readonly QUARTER_COMMA_MEANTONE_INTERVALS: string[] = [
         'perfect 1',
         'augmented 1',
         'minor 2',
@@ -215,117 +203,110 @@ export class Temperament implements ITemperament {
         'perfect 8'
     ];
 
-    // instance variables
-    C0: number = 16.3516; // By default, we use C in Octave 0 as our base frequency.
-    intervals: Array<string>;
-    ratios: { [key: string]: number };
+    /**
+     * Base frequency in Hertz.
+     * @remarks By default, we use C in Octave 0 as our base frequency.
+     */
+    public static readonly C0: number = 16.3516;
 
+    /** The name of the temperament. */
     private _name: string;
-    private _freqs: Array<number> = []; // Each temperament contains a list of notes in hertz.
+    /**
+     * List of all of the frequencies in the temperament.
+     * @remarks Each temperament contains a list of notes in hertz.
+     */
+    private _freqs: number[] = [];
+    /** Number of semitones in octave. */
     private _octaveLength: number;
+    /** The frequency (in Hertz) used to seed the calculation of the notes. */
     private _baseFrequency: number;
+    /** The number of octaves in the temperament. */
     private _numberOfOctaves: number;
-    private _genericNoteNames: Array<string> = []; // An array of names for each note in an octave
+    /** Temperament interval names. */
+    private _intervals: string[];
+    /** Ratios associated with the current interval set. */
+    private _ratios: { [key: string]: number };
+    /** An array of names for each note in an octave. */
+    private _genericNoteNames: string[] = [];
 
     /**
-     * Initialize the class. A temperament will be generated but it can
-        subsequently be overriden.
+     * Initializes the class.
+     *
+     * @remarks
+     * A temperament will be generated but it can subsequently be overriden.
+     *
      * @param name - The name of a temperament, e.g., "equal", "just intonation". etc.
      */
     constructor(name: string = 'equal') {
         this._name = name;
-        this._octaveLength = 12; // in semitones
-        this._baseFrequency = this.C0;
+        this._octaveLength = 12;
+        this._baseFrequency = Temperament.C0;
         this._numberOfOctaves = 8;
-        this.ratios = {};
-        this.intervals = [];
+        this._ratios = {};
+        this._intervals = [];
         this.generate(this._name);
     }
 
     /**
-     * Calculate a base frequency based on a pitch and frequency
-     * @param pitch_name - Pitch name, e.g. A#
-     * @param octave - Octave
-     * @param frequency - Frequency from which to calculate the new base frequency
-     * @returns - New base frequency for C0
+     * @remarks
+     * The base frequency is used as the starting point for generating the notes.
+     *
+     * @param frequency - The frequency (in Hertz) used to seed the calculation of the notes used in
+     * the temperament.
      */
-    tune(pitchNameArg: string, octave: number, frequency: number): number {
-        const pitch_name: string = normalizePitch(pitchNameArg);
-        let i: number;
-        if (CHROMATIC_NOTES_SHARP.includes(pitch_name)) {
-            i = CHROMATIC_NOTES_SHARP.indexOf(pitch_name);
-        } else if (CHROMATIC_NOTES_FLAT.includes(pitch_name)) {
-            i = CHROMATIC_NOTES_FLAT.indexOf(pitch_name);
-        } else {
-            console.log(`pitch ${pitch_name} not found.`);
-            return 0;
-        }
-
-        if (Object.keys(this.ratios).length && this.intervals.length) {
-            this._baseFrequency = frequency / 2 ** octave / this.ratios[this.intervals[i]];
-            this.generate(this._name);
-        }
-        return this._baseFrequency;
-    }
-
-    /**
-     * The base frequency is used as the starting point for generating the notes
-     * @param frequency - The frequency (in Hertz) used to seed the calculation of the
-            notes used in the temperament.
-     */
-    set baseFrequency(frequency: number) {
+    public set baseFrequency(frequency: number) {
         this._baseFrequency = frequency;
     }
 
     /**
-     * @returns - The base frequency (in Hertz) used to seed the calculations
+     * The base frequency (in Hertz) used to seed the calculations.
      */
-    get baseFrequency(): number {
+    public get baseFrequency(): number {
         return this._baseFrequency;
     }
 
     /**
+     * @remarks
      * How many octaves are defined for the temperament?
-     * @param num - The number of octaves in the temperament. (8 octaves in
-            equal temperament would span 96 notes).
+     *
+     * @param num - The number of octaves in the temperament. (8 octaves in equal temperament would
+     * span 96 notes).
      */
-    set numberOfOctaves(num: number) {
+    public set numberOfOctaves(num: number) {
         this._numberOfOctaves = Math.min(1, Number(Math.abs(num)));
     }
 
     /**
-     * @returns - The number of octaves in the temperament
+     * The number of octaves in the temperament.
      */
-    get numberOfOctaves(): number {
+    public get numberOfOctaves(): number {
         return this._numberOfOctaves;
     }
 
     /**
-     * @returns - The name of the temperament
+     * The name of the temperament.
      */
     public get name(): string {
         return this._name;
     }
 
     /**
-     * freqs is the list of all of the frequencies in the temperament
-     * @returns - A list of frequencies in Hertz
+     * List of all of the frequencies in the temperament.
      */
-    public get freqs(): Array<number> {
+    public get freqs(): number[] {
         return this._freqs;
     }
 
     /**
-     * Find the index of the frequency nearest to the target
-     * @param target - The target frequency we are looking for
-     * @returns - The index into the freqs array for the entry nearest to the target
+     * Finds the index of the frequency nearest to the target.
+     *
+     * @param target - The target frequency we are looking for.
+     * @returns The index into the freqs array for the entry nearest to the target.
      */
     public getNearestFreqIndex(target: number): number {
         let min: number = 10000;
         let minIndex: number = 0;
-        this._freqs.forEach;
-        for (let i = 0; i < this._freqs.length; i++) {
-            const f = this._freqs[i];
+        for (const [i, f] of this._freqs.entries()) {
             if (Math.abs(f - target) < min) {
                 // If we are getting closer, store the index.
                 min = Math.abs(f - target);
@@ -343,68 +324,74 @@ export class Temperament implements ITemperament {
     }
 
     /**
-     * Generic note names are assigned to define a chromatic scale
-     * @returns - A list of note names (str)
+     * The list of generic note names.
+     *
+     * @remarks
+     * Generic note names are assigned to define a chromatic scale.
      */
-    public get noteNames(): Array<string> {
+    public get noteNames(): string[] {
         return this._genericNoteNames;
     }
 
     /**
-     * Return the generic note name associated with an index
-     * @param semitoneIndex - Index into generic note names that define an octave
-     * @returns - The corresponding note name
+     * Returns the generic note name associated with an index.
+     *
+     * @param semitoneIndex - Index into generic note names that define an octave.
+     * @returns The corresponding note name.
      */
     public getNoteName(semitoneIndex: number): string {
         return this._genericNoteNames[semitoneIndex];
     }
 
     /**
-     * Return the index associated with a generic note name
-     * @param noteName - The corresponding note name
-     * @returns - Index into generic note names that define an octave
+     * Returns the index associated with a generic note name.
+     *
+     * @param noteName - The corresponding note name.
+     * @returns Index into generic note names that define an octave.
      */
     public getModalIndex(noteName: string): number {
         return this._genericNoteNames.indexOf(noteName);
     }
 
     /**
-     * Return the frequency by an index into the frequency list
-     * @param pitchIndex - The index into the frequency list
-     * @returns - Returns the frequency (in Hertz) of a note by index
+     * Returns the frequency by an index into the frequency list.
+     *
+     * @param pitchIndex - The index into the frequency list.
+     * @returns The frequency (in Hertz) of a note by index.
      */
     public getFreqByIndex(pitchIndex: number): number {
         if (this._freqs.length === 0) {
             return 0;
         }
-        if (pitchIndex < 0) {
-            pitchIndex = 0;
-        }
-        if (pitchIndex > this._freqs.length - 1) {
-            pitchIndex = this._freqs.length - 1;
-        }
+
+        pitchIndex = Math.max(0, Math.min(this._freqs.length - 1, pitchIndex));
         return this._freqs[Math.floor(pitchIndex)];
     }
 
     /**
-     * Convert an index into the frequency list into a modal index and an octave.
-     * @param pitchIndex - The index into the frequency list
-     * @returns - the modal index in the scale, the octave
+     * Converts an index into the frequency list into a modal index and an octave.
+     *
+     * @param pitchIndex - The index into the frequency list.
+     * @returns An array (2-tuple) of the modal index in the scale and the octave.
      */
-    public getModalIndexAndOctaveFromFreqIndex(pitchIndex: number): Array<number> {
+    public getModalIndexAndOctaveFromFreqIndex(pitchIndex: number): [number, number] {
         return [pitchIndex % this._octaveLength, Math.floor(pitchIndex / this._octaveLength)];
     }
 
     /**
+     * Returns the frequency that corresponds to the index and octave (in Hertz).
+     *
+     * @remarks
      * Modal index is an index into the notes in a octave.
-     * @param modalIndex - The index of the note within an octave
-     * @param octave - Which octave to access
-     * @returns - The frequency that corresponds to the index and octave (in Hertz)
+     *
+     * @param modalIndex - The index of the note within an octave.
+     * @param octave - Which octave to access.
      */
     public getFreqByModalIndexAndOctave(modalIndex: number, octave: number): number {
         if (this._freqs.length === 0) {
             return 0;
         }
+
         const i: number = Math.floor(octave) * this._octaveLength + modalIndex;
         if (i < 0) {
             return this._freqs[0];
@@ -416,9 +403,11 @@ export class Temperament implements ITemperament {
     }
 
     /**
+     * @remarks
      * Note name can be used to calculate an index the notes in an octave.
-     * @param idx - The index into the frequency list
-     * @returns - The name of the note, Which octave to access
+     *
+     * @param idx - The index into the frequency list.
+     * @returns An array (2-tuple) of the name of the note and which octave to access.
      */
     public getGenericNoteNameAndOctaveByFreqIndex(idx: number): [string, number] {
         return [
@@ -428,18 +417,23 @@ export class Temperament implements ITemperament {
     }
 
     /**
+     * @remarks
      * Note name can be used to calculate an index the notes in an octave.
-     * @param noteName - The name of the note
-     * @param octave - Which octave to access
-     * @returns - The index into the frequency list
+     *
+     * @param noteName - The name of the note.
+     * @param octave - Which octave to access.
+     * @returns The index into the frequency list.
+     *
+     * @throws {ItemNotFoundError}
+     * Thrown if note name does not exist in list of generic note names.
      */
     public getFreqIndexByGenericNoteNameAndOctave(noteName: string, octave: number): number {
         if (!(noteName in this._genericNoteNames)) {
-            console.log(`Note ${noteName} not found in generic note names.`);
-            return 0;
+            throw Error(`ItemNotFoundError: Note ${noteName} not found in generic note names.`);
         }
+
         const ni: number = this._genericNoteNames.indexOf(noteName);
-        let i: number = octave * this._octaveLength + ni;
+        const i: number = octave * this._octaveLength + ni;
         if (i < 0) {
             return 0;
         }
@@ -450,10 +444,12 @@ export class Temperament implements ITemperament {
     }
 
     /**
+     * @remarks
      * Note name can be used to calculate an index the notes in an octave.
-     * @param noteName - The name of the note
-     * @param octave - Which octave to access
-     * @returns - The frequency that corresponds to the index and octave (in Hertz)
+     *
+     * @param noteName - The name of the note.
+     * @param octave - Which octave to access.
+     * @returns The frequency that corresponds to the index and octave (in Hertz).
      */
     public getFreqByGenericNoteNameAndOctave(noteName: string, octave: number): number {
         if (this._freqs.length === 0) {
@@ -464,55 +460,50 @@ export class Temperament implements ITemperament {
     }
 
     /**
-     * @returns - The number of notes defined per octave
+     * The number of notes defined per octave.
      */
     public get numberOfSemitonesInOctave(): number {
         return this._octaveLength;
     }
 
     /**
-     * @returns - The number of notes defined by the temperament
+     * The number of notes defined by the temperament.
      */
     public get numberOfNotesInTemperament(): number {
         return this._freqs.length;
     }
 
     /**
-     * A generic name is defined for each note in the octave.
-        The convention is n0, n1, etc. These notes can be used by
-        the getFreqByGenericNoteNameAndOctave method to retrieve
-        a frequency by note name and octave.
+     * Defines a generic name for each note in the octave.
+     *
+     * @remarks
+     * The convention is n0, n1, etc. These notes can be used by the
+     * `getFreqByGenericNoteNameAndOctave` method to retrieve a frequency by note name and octave.
      */
     private _generateGenericNoteNames() {
         this._genericNoteNames = [];
         for (let i = 0; i < this._octaveLength; i++) {
-            this._genericNoteNames.push(`n${i}d`);
+            this._genericNoteNames.push(`n${i}`);
         }
     }
 
     /**
+     * Creates one of the predefined temperaments based on the rules for generating the frequencies
+     * and the selected intervals used to determine which frequencies to include in the temperament.
+     * A rule might be to use a series of ratios between steps, as in the Pythagorean temperament,
+     * or to use a fixed ratio, such as the twelth root of two when calculating equal temperament.
      *
-     * @param name - The name of one of the predefined temperaments
+     * - The base frequency used when applying the rules is defined in `this._baseFrequency`.
+     * - The number of times to apply the rules is determined by `this._numberOfOctaves`.
+     * - The resultant frequencies are stored in `this._freqs`.
+     * - The resultant number of notes per octave is stored in `this._octaveLength`.
+     *
+     * @param name - The name of one of the predefined temperaments.
      */
     public generate(name: string): void {
-        /*
-            Generate creates one of the predefined temperaments based on the
-            rules for generating the frequencies and the selected intervals used
-            to determine which frequencies to include in the temperament.
-            A rule might be to use a series of ratios between steps, as in the
-            Pythagorean temperament, or to use a fixed ratio, such as the
-            twelth root of two when calculating equal temperament.
-
-            The base frequency used when applying the rules is defined in
-            this.base_frequency
-            The number of times to apply the rules is determined by
-            this.number_of_octaves
-            The resultant frequencies are stored in this._freqs
-            The resultant number of notes per octave is stored in
-            this._octaveLength
-        */
         this._name = name.toLowerCase();
-        let ratios: { [key: string]: number }, intervals: Array<string>;
+
+        let ratios: { [key: string]: number }, intervals: string[];
         if (this._name == 'third comma meantone') {
             intervals = [...Temperament.THIRD_COMMA_MEANTONE_INTERVALS];
             ratios = Temperament.THIRD_COMMA_MEANTONE_RATIOS;
@@ -528,12 +519,13 @@ export class Temperament implements ITemperament {
             } else if (this._name == 'pythagorean') {
                 ratios = Temperament.PYTHAGOREAN_RATIOS;
             } else {
-                console.log(`Unknown temperament ${name}; using equal temperament`);
+                console.debug(`Unknown temperament ${name}; using equal temperament`);
                 ratios = Temperament.TWELVE_TONE_EQUAL_RATIOS;
             }
         }
-        this.ratios = ratios;
-        this.intervals = intervals;
+
+        this._ratios = ratios;
+        this._intervals = intervals;
         this._octaveLength = intervals.length - 1;
         this._freqs = [this._baseFrequency];
 
@@ -546,15 +538,16 @@ export class Temperament implements ITemperament {
                 this._freqs.push(c * ratios[intervals[i]]);
             }
         }
+
         this._generateGenericNoteNames();
     }
 
     /**
-     * Equal temperaments can be generated for different numbers of steps
-        between the notes in an octave. The predefined equal temperament
-        defines 12 steps per octave, which is perhaps the most common
-        tuning system in modern Western music. But any number of steps can
-        be used.
+     * @remarks
+     * Equal temperaments can be generated for different numbers of steps between the notes in an
+     * octave. The predefined equal temperament defines 12 steps per octave, which is perhaps the
+     * most common tuning system in modern Western music. But any number of steps can be used.
+     *
      * @param numberOfSteps - The number of equal steps into which to divide an octave.
      */
     public generateEqualTemperament(numberOfSteps: number): void {
@@ -581,17 +574,18 @@ export class Temperament implements ITemperament {
     }
 
     /**
+     * @remarks
      * A custom temperament can be defined with arbitrary rules.
-     * @param intervals - An ordered list of interval names to define per octave
-     * @param ratios - A dictionary of ratios to apply when generating the note
-            frequencies in an octave. The dictionary keys are defined
-            in the intervals list. Each ratio (between 1 and 2) is applied
-            to the base frequency of the octave. The final frequency
-            should always be equal to 2.
-     * @param name - The name associated with the custom temperament
+     *
+     * @param intervals - An ordered list of interval names to define per octave.
+     * @param ratios - A dictionary of ratios to apply when generating the note frequencies in an
+       octave. The dictionary keys are defined in the intervals list. Each ratio (between 1 and 2)
+       is applied to the base frequency of the octave. The final frequency should always be equal to
+       2.
+     * @param name - The name associated with the custom temperament.
      */
     public generateCustom(
-        intervals: Array<string>,
+        intervals: string[],
         ratios: { [key: string]: number },
         name: string = 'custom'
     ): void {
@@ -608,6 +602,37 @@ export class Temperament implements ITemperament {
                 this._freqs.push(c * ratios[intervals[i]]);
             }
         }
+
         this._generateGenericNoteNames();
+    }
+
+    /**
+     * Calculates a base frequency based on a pitch and frequency.
+     *
+     * @param pitchName - Pitch name, e.g. A#.
+     * @param octave - Octave.
+     * @param frequency - Frequency from which to calculate the new base frequency.
+     * @returns New base frequency for C0.
+     *
+     * @throws {ItemNotFoundError}
+     * Thrown if normalized pitch name does not exist in list of chromatic sharp/flat notes.
+     */
+    public tune(pitchName: string, octave: number, frequency: number): number {
+        pitchName = normalizePitch(pitchName);
+
+        let i: number;
+        if (CHROMATIC_NOTES_SHARP.includes(pitchName)) {
+            i = CHROMATIC_NOTES_SHARP.indexOf(pitchName);
+        } else if (CHROMATIC_NOTES_FLAT.includes(pitchName)) {
+            i = CHROMATIC_NOTES_FLAT.indexOf(pitchName);
+        } else {
+            throw Error(`ItemNotFoundError: pitch ${pitchName} not found.`);
+        }
+
+        if (Object.keys(this._ratios).length && this._intervals.length !== 0) {
+            this._baseFrequency = frequency / 2 ** octave / this._ratios[this._intervals[i]];
+            this.generate(this._name);
+        }
+        return this._baseFrequency;
     }
 }

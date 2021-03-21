@@ -189,11 +189,11 @@ describe('Music utilities', () => {
             expect(getPitchType('3')).toBe('scalar mode number');
         });
 
-        test("Generate pitch type of pitch n2.3 and expect 'scalar mode number'", () => {
+        test("Generate pitch type of pitch n2.3 and expect 'unknown'", () => {
             expect(getPitchType('n2.3')).toBe('unknown');
         });
 
-        test("Generate pitch type of pitch n2 and expect 'scalar mode number'", () => {
+        test("Generate pitch type of pitch n2 and expect 'generic note name'", () => {
             expect(getPitchType('n2')).toBe('generic note name');
         });
     });

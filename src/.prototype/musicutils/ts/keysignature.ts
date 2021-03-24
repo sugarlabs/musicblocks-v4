@@ -1,7 +1,6 @@
 /*
-The KeySignature class defines an object that manages a specific
-key/mode combination.
-*/
+ * The KeySignature class defines an object that manages a specific key/mode combination.
+ */
 
 // Copyright (c) 2020, 2021 Walter Bender, Sugar Labs
 
@@ -15,7 +14,7 @@ key/mode combination.
 // Foundation, 51 Franklin Street, Suite 500 Boston, MA 02110-1335 USA
 
 import { IKeySignature } from './@types/keysignature';
-import { Scale } from './Scale';
+import { Scale } from './scale';
 import {
     isAFlat,
     isASharp,
@@ -54,33 +53,26 @@ import {
 /** A key signature is a set of sharp, flat, and natural symbols. */
 export default class KeySignature implements IKeySignature {
     /**
-     * In defining a scale, we need to know the key, the mode, and the
-        number of notes in the temperament used to define the scale.
-     * @param mode - One of the modes defined in this.MUSIC_MODES
-     * @param key - Any pitch defined by in the temperament. (Note that currently
-            the only notation supported is for temperaments with up to 12
-            steps.
-     * @param numberOfSemitones - The number of semitones defined in the temperament
+     * @remarks
+     * Predefined modes are defined by the number of semitones between notes.
      */
-
-    // Predefined modes are defined by the number of semitones between notes.
     static readonly MUSICAL_MODES: { [key: string]: number[] } = {
-        // 12 notes in an octave
+        // 12 notes in an octave.
         'chromatic': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        // 8 notes in an octave
+        // 8 notes in an octave.
         'algerian': [2, 1, 2, 1, 1, 1, 3, 1],
         'diminished': [2, 1, 2, 1, 2, 1, 2, 1],
         'spanish': [1, 2, 1, 1, 1, 2, 2, 2],
         'octatonic': [1, 2, 1, 2, 1, 2, 1, 2],
         'bebop': [1, 1, 1, 2, 2, 1, 2, 2],
-        // 7 notes in an octave
+        // 7 notes in an octave.
         'major': [2, 2, 1, 2, 2, 2, 1],
         'harmonic major': [2, 2, 1, 2, 1, 3, 1],
         'minor': [2, 1, 2, 2, 1, 2, 2],
         'natural minor': [2, 1, 2, 2, 1, 2, 2],
         'harmonic minor': [2, 1, 2, 2, 1, 3, 1],
         'melodic minor': [2, 1, 2, 2, 2, 2, 1],
-        // "Church" modes
+        // "Church" modes.
         'ionian': [2, 2, 1, 2, 2, 2, 1],
         'dorian': [2, 1, 2, 2, 2, 1, 2],
         'phrygian': [1, 2, 2, 2, 1, 2, 2],
@@ -99,11 +91,11 @@ export default class KeySignature implements IKeySignature {
         'maqam': [1, 3, 1, 2, 1, 3, 1],
         'romanian minor': [2, 1, 3, 1, 2, 1, 2],
         'spanish gypsy': [1, 3, 1, 2, 1, 2, 2],
-        // 6 notes in an octave
+        // 6 notes in an octave.
         'minor blues': [3, 2, 1, 1, 3, 2],
         'major blues': [2, 1, 1, 3, 2, 2],
         'whole tone': [2, 2, 2, 2, 2, 2],
-        // 5 notes in an octave
+        // 5 notes in an octave.
         'major pentatonic': [2, 2, 3, 2, 3],
         'minor pentatonic': [3, 2, 2, 3, 2],
         'chinese': [4, 2, 1, 4, 1],
@@ -114,7 +106,7 @@ export default class KeySignature implements IKeySignature {
         'fibonacci': [1, 1, 2, 3, 5]
     };
 
-    // These maqam mode names imply a specific key.
+    /** These maqam mode names imply a specific key. */
     static readonly MAQAM_KEY_OVERRIDES: { [key: string]: string } = {
         'hijaz kar': 'c',
         'hijaz kar maqam': 'c',
@@ -136,7 +128,7 @@ export default class KeySignature implements IKeySignature {
         'minor': 'minor'
     };
 
-    // These key signaturs (and their equivalents) prefer sharps over flats.
+    /** These key signaturs (and their equivalents) prefer sharps over flats. */
     static readonly PREFER_SHARPS: string[] = [
         'c major',
         'c major pentatonic',
@@ -219,6 +211,16 @@ export default class KeySignature implements IKeySignature {
     private _customNoteNames: string[];
     private _numberOfSemitones: number;
 
+    /**
+     * @remarks
+     * In defining a scale, we need to know the key, the mode, and the number of notes in the
+     * temperament used to define the scale.
+     *
+     * @param mode - One of the modes defined in `this.MUSIC_MODES`.
+     * @param key - Any pitch defined by in the temperament. (Note that currently the only notation
+     * supported is for temperaments with up to 12 steps.
+     * @param numberOfSemitones - The number of semitones defined in the temperament.
+     */
     constructor(
         modeArg: string | number[] = 'major',
         key: string = 'c',
@@ -243,14 +245,15 @@ export default class KeySignature implements IKeySignature {
                 this.mode = mode;
                 this.halfSteps = KeySignature.MUSICAL_MODES[this.mode];
             } else {
-                console.log('mode not found');
+                console.debug(`mode "${mode}"not found`);
                 this.mode = 'chromatic';
                 this.halfSteps = KeySignature.MUSICAL_MODES[this.mode];
             }
         } else if (Array.isArray(modeArg)) {
-            this.mode = 'custom'; // We could look for a match
+            this.mode = 'custom'; // we could look for a match
             this.halfSteps = modeArg;
         }
+
         this.key = key;
         let i: number = 0;
         if (typeof this.key === 'string') {
@@ -267,21 +270,20 @@ export default class KeySignature implements IKeySignature {
                 }
                 i = findFlatIndex(this.key);
             } else if (this.key[0] === 'n' && this.key.slice(1).match(/^\d+$/)) {
-                i = Number(this.key.slice(1)); // This is not very robust.
+                i = Number(this.key.slice(1)); // this is not very robust
             } else {
-                console.log('Could not find key index: ' + this.key);
+                console.debug('Could not find key index: ' + this.key);
             }
-        } else if (typeof this.key === 'number') {
+        }
+        // Unreachable?
+        else if (typeof this.key === 'number') {
             i = this.key;
-        } else {
-            console.log('bad key type ' + typeof key);
         }
 
-        if (this.halfSteps.length === 0) {
-            this._scale = new Scale(null, i, numberOfSemitones);
-        } else {
-            this._scale = new Scale(this.halfSteps, i, numberOfSemitones, preferSharps);
-        }
+        this._scale =
+            this.halfSteps.length === 0
+                ? new Scale(null, i, numberOfSemitones)
+                : new Scale(this.halfSteps, i, numberOfSemitones, preferSharps);
 
         this.genericScale = this._scale.getScale();
         this._numberOfSemitones = this._scale.numberOfSemitones;
@@ -292,12 +294,12 @@ export default class KeySignature implements IKeySignature {
                 this.key = CHROMATIC_NOTES_SHARP[this.key];
             }
             this._noteNames = this._scale.noteNames;
-            let scale: string[];
-            if (this._preferSharps(this.key, this.mode) || this.key.includes('#')) {
-                scale = this._scale.getScale(CHROMATIC_NOTES_SHARP);
-            } else {
-                scale = this._scale.getScale(CHROMATIC_NOTES_FLAT);
-            }
+            const scale: string[] = this._scale.getScale(
+                this._preferSharps(this.key, this.mode) || this.key.includes('#')
+                    ? CHROMATIC_NOTES_SHARP
+                    : CHROMATIC_NOTES_FLAT
+            );
+
             // In generating the scale, the key may have been switched to an equivalent.
             scale[0] = this.key;
             scale[scale.length - 1] = this.key;
@@ -307,11 +309,10 @@ export default class KeySignature implements IKeySignature {
             this._assignScalarModeNumbers();
         } else {
             this._noteNames = this._scale.noteNames;
-            if (this._noteNames.length === 21) {
-                this.scale = this._scale.getScale(ALL_NOTES);
-            } else {
-                this.scale = this._scale.getScale();
-            }
+            this.scale =
+                this._noteNames.length === 21
+                    ? this._scale.getScale(ALL_NOTES)
+                    : this._scale.getScale();
             if (typeof this.key === 'number') {
                 this.key = this._noteNames[this.key];
             }
@@ -325,34 +326,38 @@ export default class KeySignature implements IKeySignature {
     }
 
     /**
-     * @remarks
-     * Fixed Solfege means that the mapping between Solfege and
-     * letter names is fixed: do == c, re == d, ...
-     * Moveable (not fixed) Solfege means that do == the first note
-     * in the scale, etc.
+     * State of fixed Solfege.
      *
-     * @param state - State to set FIxed Solfege: True or False
+     * @remarks
+     * - Fixed Solfege means that the mapping between Solfege and letter names is fixed: do == c,
+        re == d, ...
+     * - Moveable (not fixed) Solfege means that do == the first note in the scale, etc.
+     *
+     * @param state - State to set Fixed Solfege: `true` or `false`.
      */
     public set fixedSolfege(state: boolean) {
         this._fixedSolfege = state;
     }
 
     /**
-     * State of fixed Solfege
+     * State of fixed Solfege.
      */
     public get fixedSolfege(): boolean {
         return this._fixedSolfege;
     }
 
     /**
-     * Normalize the scale by converting double sharps and double flats
-     * @param scale - The notes in a scale
-     * @returns - The same scale where the notes have been converted to just
-            sharps, flats, and naturals
+     * Normalize the scale by converting double sharps and double flats.
+     *
+     * @param scale - The notes in a scale.
+     * @returns The same scale where the notes have been converted to just sharps, flats, and
+     * naturals.
      */
     public normalizeScale(scale: string[]): string[] {
-        // At this point, the scale includes the first note of the next
-        // octave. Hence, for example, the Latin modes have 8 notes.
+        /*
+         * At this point, the scale includes the first note of the next octave. Hence, for example
+         * the Latin modes have 8 notes.
+         */
         if (scale.length < 9) {
             // Convert to preferred accidental.
             if (!this._preferSharps(this.key, this.mode) && this.key.includes('#')) {
@@ -393,12 +398,13 @@ export default class KeySignature implements IKeySignature {
                     if (scale[i] in CONVERT_DOWN) {
                         newCurrentNote = CONVERT_DOWN[scale[i]];
                     } else {
-                        console.log(scale[i]);
+                        console.debug(scale[i]);
                     }
-                    // If changing the current note makes it the same
-                    // as the previous note, then we need to change the
-                    // next note instead.
-                    if (newCurrentNote[0] != scale[i - 1][0]) {
+                    /*
+                     * If changing the current note makes it the same as the previous note, then we
+                     * need to change the next note instead.
+                     */
+                    if (newCurrentNote[0] !== scale[i - 1][0]) {
                         scale[i] = newCurrentNote;
                     } else {
                         if (scale[i + 1] in CONVERT_UP) {
@@ -420,6 +426,7 @@ export default class KeySignature implements IKeySignature {
                 });
             }
         }
+
         let convertUp: boolean = false;
         let convertDown: boolean = false;
         for (let i = 0; i < scale.length; i++) {
@@ -456,8 +463,9 @@ export default class KeySignature implements IKeySignature {
 
     /**
      * Given a list of names, map them to the current mode.
-     * @param sourceList - List of names, e.g., Solfege names
-     * @returns - List of names mapped to the mode
+     *
+     * @param sourceList - List of names, e.g., Solfege names.
+     * @returns List of names mapped to the mode.
      */
     private _modeMapList(sourceList: string[]): string[] {
         const returnList: string[] = [];
@@ -469,8 +477,7 @@ export default class KeySignature implements IKeySignature {
                 j += sourceList.length;
             }
             if (modeLength < 8) {
-                // We ensured a unique letter name for each note when we
-                // built the scale.
+                // We ensured a unique letter name for each note when we built the scale.
                 returnList.push(sourceList[j]);
             } else {
                 // Some letters are repeated, so we need the accidentals.
@@ -479,68 +486,83 @@ export default class KeySignature implements IKeySignature {
                 );
             }
         }
-        returnList[-1] = returnList[0];
+        returnList[returnList.length - 1] = returnList[0];
         return returnList;
     }
 
+    /**
+     * Create a Solfege mapping of the scale ("fixed Solfege == true")
+     *
+     * @example
+     * Major: ['do', 're', 'me', 'fa', 'sol', 'la', 'ti', 'do']
+     * Major Pentatonic: ['do', 're', 'me', 'sol', 'la', 'do']
+     * Minor Pentatonic: ['do', 'me', 'fa', 'sol', 'ti', 'do']
+     * Whole Tone: ['do', 're', 'me', 'sol', 'la', 'ti', 'do']
+     *
+     * @remarks
+     * Solfege assignment only works for temperaments of 12 semitones.
+     *
+     * @throws {ItemNotFoundError}
+     * Thrown if solfeges for temperaments with `this._numberOfSemitones` do not exist.
+     */
     private _assignSolfegeNoteNames() {
-        /*
-        Create a Solfege mapping of the scale ("fixed Solfege == True")
-
-        Examples:
-        Major: ['do', 're', 'me', 'fa', 'sol', 'la', 'ti', 'do']
-        Major Pentatonic: ['do', 're', 'me', 'sol', 'la', 'do']
-        Minor Pentatonic: ['do', 'me', 'fa', 'sol', 'ti', 'do']
-        Whole Tone: ['do', 're', 'me', 'sol', 'la', 'ti', 'do']
-        NOTE: Solfege assignment only works for temperaments of 12 semitones.
-        */
         this._solfegeNotes = [];
 
         if (this._numberOfSemitones === 12 || this._numberOfSemitones === 21) {
             this._solfegeNotes = this._modeMapList(SOLFEGE_NAMES);
         } else {
-            console.log(`No Solfege for temperaments with ${this._numberOfSemitones} semitones.`);
+            throw Error(
+                `ItemNotFoundError: no Solfege for temperaments with ${this._numberOfSemitones} semitones.`
+            );
         }
     }
 
+    /**
+     * East Indian Solfege.
+     *
+     * @remarks
+     * Solfege assignment only works for temperaments of 12 semitones.
+     *
+     * @throws {ItemNotFoundError}
+     * Thrown if East Indian solfeges for temperaments with `this._numberOfSemitones` do not exist.
+     */
     private _assignEastIndianSolfegeNoteNames(): void {
-        /*
-        East Indian Solfege
-        NOTE: Solfege assignment only works for temperaments of 12 semitones.
-        */
         this.eastIndianSolfegeNotes = [];
 
         if (this._numberOfSemitones === 12 || this._numberOfSemitones === 21) {
             this.eastIndianSolfegeNotes = this._modeMapList(EAST_INDIAN_NAMES);
         } else {
-            console.log(
-                `No EI Solfege for temperaments with ${this._numberOfSemitones} semitones.`
+            throw Error(
+                `ItemNotFoundError: no EI Solfege for temperaments with ${this._numberOfSemitones} semitones.`
             );
         }
     }
 
+    /**
+     * @remarks
+     * - Scalar mode numbers refer to the available notes in the mode.
+     * - Assignment only works for temperaments of 12 semitones.
+     *
+     * @throws {ItemNotFoundError}
+     * Thrown if mode numbers for temperaments with `this._numberOfSemitones` do not exist.
+     */
     private _assignScalarModeNumbers(): void {
-        /*
-        Scalar mode numbers refer to the available notes in the mode
-        NOTE: Assignment only works for temperaments of 12 semitones.
-        */
         this.scalarModeNumbers = [];
 
         if (this._numberOfSemitones === 12 || this._numberOfSemitones === 21) {
             this.scalarModeNumbers = this._modeMapList(SCALAR_MODE_NUMBERS);
         } else {
-            console.log(
-                `No mode numbers for temperaments with ${this._numberOfSemitones} semitones.`
+            throw Error(
+                `ItemNotFoundError: no mode numbers for temperaments with ${this._numberOfSemitones} semitones.`
             );
         }
     }
 
     /**
      * The (scalar) notes in the scale.
-     * @returns - The (scalar) notes in the scale.
      */
     public get_scale(): string[] {
-        return this.scale.slice(0, this.scale.length - 1);
+        return this.scale.slice(0, -1);
     }
 
     public get solfegeNotes(): string[] {
@@ -548,59 +570,68 @@ export default class KeySignature implements IKeySignature {
     }
 
     /**
-     * How many notes are in the scale?
-     * @returns - The number of (scalar) notes in the scale.
+     * How many (scalar) notes are in the scale?
      */
     public get modeLength(): number {
         return this.scale.length - 1;
     }
 
     /**
-     * How many semitones (half-steps) are in the temperament used to
-        define this key/mode?
-     * @returns - The number of semitones in the temperament used to define the scale
+     * How many semitones (half-steps) are in the temperament used to define this key/mode?
      */
     public get numberOfSemitones(): number {
         return this._numberOfSemitones;
     }
 
     /**
-     * Custom note names defined by user
-     * @param customNames - A list of custom names
-     * @returns
+     * Custom note names defined by user.
+     *
+     * @remarks
+     * Names should not end with b or x or they will cause collisions with the flat (b) and
+     * doublesharp (x) accidentals.
+     *
+     * @param customNames - A list of custom names.
+     *
+     * @throws {InvalidArgumentError}
+     * Thrown if exactly same number of custom names aren't supplied for the mode length.
      */
     public set customNoteNames(customNames: string[]) {
-        /*
-        Note: Names should not end with b or x or they will cause
-        collisions with the flat (b) and doublesharp (x) accidentals.
-        */
         if (customNames.length !== this.modeLength) {
-            console.log('A unique name must be assigned to every note in the mode.');
+            throw Error(
+                'InvalidArgumentError: A unique name must be assigned to every note in the mode.'
+            );
         }
+
         this._customNoteNames = customNames.slice(0);
     }
 
     /**
-     * Custom note names defined by user
-     * @returns - Custom names
+     * Custom note names defined by user.
      */
     public get customNoteNames(): string[] {
         return this._customNoteNames;
     }
 
+    /**
+     * Convert from a source name, e.g., Solfege, to a note name.
+     *
+     * @param pitchName
+     * @param sourceList
+     *
+     * @returns
+     */
     private _nameConverter(pitchName: string, sourceList: string[]): string | null {
-        /*
-        Convert from a source name, e.g., Solfege, to a note name.
-        */
         if (sourceList.includes(pitchName)) {
             const i = sourceList.indexOf(pitchName);
             return this.convertToGenericNoteName(this.scale[i])[0];
         }
-        let delta;
+
+        let delta: number;
         [pitchName, delta] = stripAccidental(pitchName);
         if (sourceList.includes(pitchName)) {
             let i = sourceList.indexOf(pitchName);
             const noteName = this.convertToGenericNoteName(this.scale[i])[0];
+
             i = this._noteNames.indexOf(noteName);
             i += delta;
             if (i < 0) {
@@ -609,15 +640,18 @@ export default class KeySignature implements IKeySignature {
             if (i > this._numberOfSemitones - 1) {
                 i -= this._numberOfSemitones;
             }
+
             return this._noteNames[i];
         }
+
         return null;
     }
 
     /**
-     * Check pitch type, including test for custom names
+     * Checks pitch type, including test for custom names.
+     *
      * @param pitchName - pitch name to test
-     * @returns - pitch type, e.g., LETTER_NAME, SOLFEGE_NAME, etc.
+     * @returns pitch type, e.g., LETTER_NAME, SOLFEGE_NAME, etc.
      */
     public pitchNameType(pitchName: string): string {
         let originalNotation = getPitchType(pitchName);
@@ -631,11 +665,13 @@ export default class KeySignature implements IKeySignature {
     }
 
     /**
-     * Convert from a letter name used by 12-semitone temperaments to
-     * a generic note name as defined by the temperament.
-     * NOTE: Only for temperaments with 12 semitones.
+     * Converts from a letter name used by 12-semitone temperaments to a generic note name as
+     * defined by the temperament.
      *
-     * @param pitchName - name of pitch
+     * @remarks
+     * Only for temperaments with 12 semitones.
+     *
+     * @param pitchName - name of pitch.
      * @returns
      */
     public convertToGenericNoteName(pitchName: string): [string, number] {
@@ -654,13 +690,15 @@ export default class KeySignature implements IKeySignature {
         }
 
         if (originalNotation === LETTER_NAME) {
-            // Look for a letter name, e.g., g# or ab
+            // Look for a letter name, e.g., g# or ab.
             if (pitchName.includes('#') && isASharp(pitchName)) {
                 return [this._noteNames[findSharpIndex(pitchName)], 0];
             }
+
             if (isAFlat(pitchName)) {
                 return [this._noteNames[findFlatIndex(pitchName)], 0];
             }
+
             // Catch cb, bx, etc.
             if (pitchName in EQUIVALENT_SHARPS) {
                 return [
@@ -668,28 +706,35 @@ export default class KeySignature implements IKeySignature {
                     0
                 ];
             }
+
             if (pitchName in EQUIVALENT_FLATS) {
                 return [this._noteNames[findFlatIndex(EQUIVALENT_FLATS[pitchName])], 0];
             }
+
             if (pitchName in EQUIVALENTS) {
-                if (EQUIVALENTS[pitchName][0].includes('#')) {
-                    return [this._noteNames[findSharpIndex(EQUIVALENTS[pitchName][0])], 0];
-                }
-                return [this._noteNames[findFlatIndex(EQUIVALENTS[pitchName][0])], 0];
+                return [
+                    this._noteNames[
+                        EQUIVALENTS[pitchName][0].includes('#')
+                            ? findSharpIndex(EQUIVALENTS[pitchName][0])
+                            : findFlatIndex(EQUIVALENTS[pitchName][0])
+                    ],
+                    0
+                ];
             }
         }
 
         if (originalNotation === SOLFEGE_NAME) {
-            // Look for a Solfege name
+            // Look for a Solfege name.
             if (this._fixedSolfege) {
                 const noteName = this._nameConverter(pitchName, this._solfegeNotes);
-                if (noteName) {
+                if (noteName !== null) {
                     return [noteName, 0];
                 }
             } else {
                 if (pitchName.includes('#') && SOLFEGE_SHARP.includes(pitchName)) {
                     return [this._noteNames[SOLFEGE_SHARP.indexOf(pitchName)], 0];
                 }
+
                 if (SOLFEGE_FLAT.includes(pitchName)) {
                     return [this._noteNames[SOLFEGE_FLAT.indexOf(pitchName)], 0];
                 }
@@ -697,13 +742,14 @@ export default class KeySignature implements IKeySignature {
         }
 
         if (originalNotation === CUSTOM_NAME) {
-            // Look for a Custom name
+            // Look for a Custom name.
             if (this._customNoteNames.length > 0) {
                 const noteName = this._nameConverter(pitchName, this._customNoteNames);
                 if (noteName !== null) {
                     return [noteName, 0];
                 }
             }
+
             if (this._fixedSolfege) {
                 const strippedPitch = stripAccidental(pitchName)[0];
                 const noteName = this._nameConverter(strippedPitch, this._customNoteNames);
@@ -713,16 +759,14 @@ export default class KeySignature implements IKeySignature {
             } else {
                 const strippedPitch = stripAccidental(pitchName)[0];
                 if (pitchName.includes('#') && this._customNoteNames.includes(strippedPitch)) {
-                    let i = this._customNoteNames.indexOf(strippedPitch);
-                    i += 1;
+                    let i = this._customNoteNames.indexOf(strippedPitch) + 1;
                     if (i > this._noteNames.length) {
                         i = 0;
                     }
                     return [this._noteNames[i], 0];
                 }
                 if (SCALAR_NAMES_FLAT.includes(pitchName)) {
-                    let i = this._customNoteNames.indexOf(strippedPitch);
-                    i -= 1;
+                    let i = this._customNoteNames.indexOf(strippedPitch) - 1;
                     if (i > 0) {
                         i = this._noteNames.length;
                     }
@@ -732,7 +776,7 @@ export default class KeySignature implements IKeySignature {
         }
 
         if (originalNotation === EAST_INDIAN_SOLFEGE_NAME) {
-            // Look for a East Indian Solfege name
+            // Look for a East Indian Solfege name.
             if (this._fixedSolfege) {
                 const noteName = this._nameConverter(pitchName, this.eastIndianSolfegeNotes);
                 if (noteName !== null) {
@@ -742,6 +786,7 @@ export default class KeySignature implements IKeySignature {
                 if (pitchName.includes('#') && EAST_INDIAN_SHARP.includes(pitchName)) {
                     return [this._noteNames[EAST_INDIAN_SHARP.indexOf(pitchName)], 0];
                 }
+
                 if (EAST_INDIAN_FLAT.includes(pitchName)) {
                     return [this._noteNames[EAST_INDIAN_FLAT.indexOf(pitchName)], 0];
                 }
@@ -759,86 +804,116 @@ export default class KeySignature implements IKeySignature {
                 if (pitchName.includes('#') && SCALAR_NAMES_SHARP.includes(pitchName)) {
                     return [this._noteNames[SCALAR_NAMES_SHARP.indexOf(pitchName)], 0];
                 }
+
                 if (SCALAR_NAMES_FLAT.includes(pitchName)) {
                     return [this._noteNames[SCALAR_NAMES_FLAT.indexOf(pitchName)], 0];
                 }
             }
         }
 
+        console.debug(`Pitch name ${pitchName} not found.`);
         return [pitchName, -1];
     }
 
+    /**
+     * Convert from a generic note name as defined by the temperament to a letter name used by
+     * 12-semitone temperaments.
+     *
+     * @remarks
+     * Only for temperaments with 12 semitones.
+     *
+     * @param noteName
+     * @param preferSharps
+     * @returns
+     */
     private _genericNoteNameToLetterName(
         noteName: string,
         preferSharps: boolean = true
     ): [string, number] {
-        /*
-        Convert from a generic note name as defined by the temperament
-        to a letter name used by 12-semitone temperaments.
-        NOTE: Only for temperaments with 12 semitones.
-        */
         noteName = normalizePitch(noteName);
+
         // Maybe it is already a letter name?
         if (isASharp(noteName)) {
             return [noteName, 0];
         }
+
         if (isAFlat(noteName)) {
             return [noteName, 0];
         }
+
         if (this._numberOfSemitones === 21) {
             return [ALL_NOTES[this._noteNames.indexOf(noteName)], 0];
         }
+
         if (this._numberOfSemitones !== 12) {
-            console.log(`Cannot convert ${noteName} to a letter name.`);
+            console.debug(`Cannot convert ${noteName} to a letter name.`);
             return [noteName, -1];
         }
 
         if (this._noteNames.includes(noteName)) {
-            if (preferSharps) {
-                return [CHROMATIC_NOTES_SHARP[this._noteNames.indexOf(noteName)], 0];
-            }
-            return [CHROMATIC_NOTES_FLAT[this._noteNames.indexOf(noteName)], 0];
+            return [
+                preferSharps
+                    ? CHROMATIC_NOTES_SHARP[this._noteNames.indexOf(noteName)]
+                    : CHROMATIC_NOTES_FLAT[this._noteNames.indexOf(noteName)],
+                0
+            ];
         }
 
-        console.log(`Note name ${noteName} not found.`);
+        console.debug(`Note name ${noteName} not found.`);
         return [noteName, -1];
     }
 
+    /**
+     * @param noteName
+     * @param targetList
+     * @returns
+     */
     private _convertFromNoteName(noteName: string, targetList: string[]): [string, number] {
         noteName = normalizePitch(noteName);
+
         // Maybe it is already in the list?
         if (targetList.includes(noteName)) {
             return [noteName, 0];
         }
+
         if (this._numberOfSemitones !== 12) {
-            console.log(`Cannot convert ${noteName} to a letter name.`);
+            console.debug(`Cannot convert ${noteName} to a letter name.`);
             return [noteName, -1];
         }
 
         if (this._noteNames.includes(noteName)) {
-            // First find the corresponding letter name
+            // First find the corresponding letter name.
             const letterName = CHROMATIC_NOTES_SHARP[this._noteNames.indexOf(noteName)];
             // Next, find the closest note in the scale.
             const [_, i, distance, error] = this.closestNote(letterName);
             // Use the index to get the corresponding solfege note
             if (error < 0) {
-                console.log('Cannot find closest note to ' + letterName);
+                console.debug('Cannot find closest note to ' + letterName);
                 return [noteName, -1];
             }
+
             if (distance === 0) {
                 return [targetList[i], 0];
             }
-            // Remove any accidental
+
+            // Remove any accidental.
             let [targetNote, delta] = stripAccidental(targetList[i]);
-            // Add back in the appropriate accidental
-            delta += distance as number;
+            // Add back in the appropriate accidental.
+            delta += distance;
             return [targetNote + ['bb', 'b', '', '#', 'x'][delta + 2], 0];
         }
 
-        console.log(`Note name ${noteName} not found.`);
+        console.debug(`Note name ${noteName} not found.`);
         return [noteName, -1];
     }
 
+    /**
+     * @param noteName
+     * @param sharpScale
+     * @param flatScale
+     * @param preferSharps
+     * @returns
+     */
     private _findMoveable(
         noteName: string,
         sharpScale: string[],
@@ -846,161 +921,193 @@ export default class KeySignature implements IKeySignature {
         preferSharps: boolean
     ): [string, number] {
         noteName = normalizePitch(noteName);
+
         if (sharpScale.includes(noteName)) {
             return [noteName, 0];
         }
+
         if (flatScale.includes(noteName)) {
             return [noteName, 0];
         }
+
         if (this._numberOfSemitones !== 12) {
-            console.log(`Cannot convert noteName`);
+            console.debug(`Cannot convert noteName`);
             return [noteName, -1];
         }
 
         if (this._noteNames.includes(noteName)) {
-            if (preferSharps) {
-                return [sharpScale[this._noteNames.indexOf(noteName)], 0];
-            }
-            return [flatScale[this._noteNames.indexOf(noteName)], 0];
+            return [
+                preferSharps
+                    ? sharpScale[this._noteNames.indexOf(noteName)]
+                    : flatScale[this._noteNames.indexOf(noteName)],
+                0
+            ];
         }
 
-        console.log(`Cannot convert ${noteName}`);
+        console.debug(`Cannot convert ${noteName}`);
         return [noteName, -1];
     }
 
+    /**
+     * Converts from a generic note name as defined by the temperament to a solfege note used by
+     * 12-semitone temperaments.
+     *
+     * @remarks
+     * Only for temperaments with 12 semitones.
+     *
+     * @param noteName
+     * @param preferSharps
+     * @returns
+     */
     private _genericNoteNameToSolfege(
         noteName: string,
         preferSharps: boolean = true
     ): [string, number] {
-        /*
-        Convert from a generic note name as defined by the temperament
-        to a solfege note used by 12-semitone temperaments.
-        NOTE: Only for temperaments with 12 semitones.
-        */
-        if (this._fixedSolfege) {
-            return this._convertFromNoteName(noteName, this._solfegeNotes);
-        }
-        return this._findMoveable(noteName, SOLFEGE_SHARP, SOLFEGE_FLAT, preferSharps);
+        return this._fixedSolfege
+            ? this._convertFromNoteName(noteName, this._solfegeNotes)
+            : this._findMoveable(noteName, SOLFEGE_SHARP, SOLFEGE_FLAT, preferSharps);
     }
 
+    /**
+     * Converts from a generic note name as defined by the temperament to an East Indian solfege
+     * note used by 12-semitone temperaments.
+     *
+     * @remarks
+     * Only for temperaments with 12 semitones.
+     *
+     * @param noteName
+     * @param preferSharps
+     * @returns
+     */
     private _genericNoteNameToEastIndianSolfege(
         noteName: string,
         preferSharps: boolean = true
     ): [string, number] {
-        /*
-        Convert from a generic note name as defined by the temperament
-        to an East Indian solfege note used by 12-semitone temperaments.
-        NOTE: Only for temperaments with 12 semitones.
-        */
-
-        if (this._fixedSolfege) {
-            return this._convertFromNoteName(noteName, this.eastIndianSolfegeNotes);
-        }
-
-        return this._findMoveable(noteName, EAST_INDIAN_SHARP, EAST_INDIAN_FLAT, preferSharps);
+        return this._fixedSolfege
+            ? this._convertFromNoteName(noteName, this.eastIndianSolfegeNotes)
+            : this._findMoveable(noteName, EAST_INDIAN_SHARP, EAST_INDIAN_FLAT, preferSharps);
     }
 
+    /**
+     * Converts from a generic note name as defined by the temperament to a scalar mode number used
+     * by 12-semitone temperaments.
+     *
+     * @remarks
+     * Only for temperaments with 12 semitones.
+     *
+     * @param noteName
+     * @param preferSharps
+     * @returns
+     */
     private _genericNoteNameToScalarModeNumber(
         noteName: string,
         preferSharps: boolean = true
     ): [string, number] {
-        /*
-        Convert from a generic note name as defined by the temperament
-        to a scalar mode number used by 12-semitone temperaments.
-        NOTE: Only for temperaments with 12 semitones.
-        */
-
-        if (this._fixedSolfege) {
-            return this._convertFromNoteName(noteName, this.scalarModeNumbers);
-        }
-
-        return this._findMoveable(noteName, SCALAR_NAMES_SHARP, SCALAR_NAMES_FLAT, preferSharps);
+        return this._fixedSolfege
+            ? this._convertFromNoteName(noteName, this.scalarModeNumbers)
+            : this._findMoveable(noteName, SCALAR_NAMES_SHARP, SCALAR_NAMES_FLAT, preferSharps);
     }
 
+    /**
+     * Converts from a generic note name as defined by the temperament to a custom_noteName used by
+     * 12-semitone temperaments.
+     *
+     * @remarks
+     * Only for temperaments with 12 semitones.
+     *
+     * @param noteName
+     * @returns
+     */
     private _genericNoteNameToCustomNoteName(noteName: string): [string, number] {
-        /*
-        Convert from a generic note name as defined by the temperament
-        to a custom_noteName used by 12-semitone temperaments.
-        NOTE: Only for temperaments with 12 semitones.
-        */
-
         return this._convertFromNoteName(noteName, this._customNoteNames);
     }
 
     /**
-     * Given a modal number, return the corresponding pitch in the scale
-        (and any change in octave).
-     * @param modalIndex - The modal index specifies an index into the scale. If the
-            index is >= mode length or < 0, a relative change in octave
-            is also calculated.
-     * @returns - The pitch that is the result of indexing the scale by the
-            modal index, The relative change in octave due to mapping the modal index
-            to the mode length
+     * Given a modal number, returns the corresponding pitch in the scale (and any change in octave).
+     *
+     * @param modalIndex - The modal index specifies an index into the scale.
+     * If the index is >= mode length or < 0, a relative change in octaveis also calculated.
+     * @returns
+     * An array (2-tuple) of
+     *  - The pitch that is the result of indexing the scale by the modal index.
+     *  - The relative change in octave due to mapping the modal index to the mode length.
      */
     public modalPitchToLetter(modalIndex: number): [string, number] {
         const modeLength = this.modeLength;
         modalIndex = Math.floor(Number(modalIndex));
         let deltaOctave = Math.floor(modalIndex / modeLength);
+
         if (modalIndex < 0) {
-            deltaOctave -= 1;
+            deltaOctave--;
             while (modalIndex < 0) {
                 modalIndex += modeLength;
             }
         }
+
         while (modalIndex > modeLength - 1) {
             modalIndex -= modeLength;
         }
+
         return [this.scale[modalIndex], deltaOctave];
     }
 
     /**
      * Given a pitch, check to see if it is in the scale.
+     *
      * @param target - The target pitch specified as a pitch letter, e.g., c#, fb.
-     * @returns - True if the note is in the scale
+     * @returns `true` if the note is in the scale, `false` otherwise.
      */
     public noteInScale(target: string): boolean {
         return this.closestNote(target)[2] === 0;
     }
 
     /**
-     * Ensure that an index value is within the range of the temperament, e.g.,
-        i == 12 would be mapped to 0 with a change in octave +1 for a
-        temperament with 12 semitones.
-     * @param i - Index value into semitones
-     * @param deltaOctave - Any previous change in octave that needs to be preserved
-     * @returns - Index mapped to semitones, Any additonal change in octave due to mapping
+     * Ensures that an index value is within the range of the temperament.
+     *
+     * @example
+     * i == 12 would be mapped to 0 with a change in octave +1 for a temperament with 12 semitones.
+     *
+     * @param i - Index value into semitones.
+     * @param deltaOctave - Any previous change in octave that needs to be preserved.
+     * @returns
+     * An array (2-tuple) of
+     *  - The index mapped to semitones.
+     *  - Any additonal change in octave due to mapping.
      */
     private _mapToSemitoneRange(i: number, deltaOctave: number): [number, number] {
         while (i < 0) {
             i += this._numberOfSemitones;
-            deltaOctave -= 1;
+            deltaOctave--;
         }
+
         while (i > this._numberOfSemitones - 1) {
             i -= this._numberOfSemitones;
-            deltaOctave += 1;
+            deltaOctave++;
         }
+
         return [i, deltaOctave];
     }
 
     /**
-     * Given a starting pitch, add a semitone transform and return
-        the resultant pitch (and any change in octave).
+     * Given a starting pitch, add a semitone transform and return the resultant pitch (and any
+     * change in octave).
+     *
      * @param startingPitch - The starting pitch specified as a pitch letter, e.g., c#, fb.
-     * @param numberOfHalfSteps - Half steps are steps in the notes defined by the temperament
-     * @returns 
-     *      - The pitch that is the number of half steps from the starting
-            pitch.
-            - The relative change in octave between the starting pitch and the
-            new pitch.
-            - error code
+     * @param numberOfHalfSteps - Half steps are steps in the notes defined by the temperament.
+     * @returns
+     * An array (3-tuple) of
+     *  - The pitch that is the number of half steps from the starting pitch.
+     *  - The relative change in octave between the starting pitch and the new pitch.
+     *  - Error code.
      */
     public semitoneTransform(
         startingPitch: string,
         numberOfHalfSteps: number
     ): [string, number, number] {
         startingPitch = normalizePitch(startingPitch);
-        let originalNotation = this.pitchNameType(startingPitch);
+        const originalNotation = this.pitchNameType(startingPitch);
         let deltaOctave = 0;
+
         if (this._numberOfSemitones === 12) {
             if (originalNotation === LETTER_NAME) {
                 if (isASharp(startingPitch)) {
@@ -1009,20 +1116,18 @@ export default class KeySignature implements IKeySignature {
                     [i, deltaOctave] = this._mapToSemitoneRange(i, deltaOctave);
                     return [CHROMATIC_NOTES_SHARP[i], deltaOctave, 0];
                 }
+
                 if (isAFlat(startingPitch)) {
                     let i = findFlatIndex(startingPitch);
                     i += numberOfHalfSteps;
                     [i, deltaOctave] = this._mapToSemitoneRange(i, deltaOctave);
                     return [CHROMATIC_NOTES_FLAT[i], deltaOctave, 0];
                 }
+
                 const [strippedPitch, delta] = stripAccidental(startingPitch);
-                let noteName: string, error: number;
-                if (this._noteNames.includes(strippedPitch)) {
-                    noteName = strippedPitch;
-                    error = 0;
-                } else {
-                    [noteName, error] = this.convertToGenericNoteName(strippedPitch);
-                }
+                const [noteName, error] = this._noteNames.includes(strippedPitch)
+                    ? [strippedPitch, 0]
+                    : this.convertToGenericNoteName(strippedPitch);
 
                 if (error === 0) {
                     if (this._noteNames.includes(noteName)) {
@@ -1032,16 +1137,18 @@ export default class KeySignature implements IKeySignature {
                         return [this._noteNames[i], deltaOctave, 0];
                     }
                 }
-                console.log(`Cannot find ${startingPitch} in note names.`);
+
+                console.debug(`Cannot find ${startingPitch} in note names.`);
                 return [startingPitch, 0, -1];
             }
 
-            const [noteName, error] = this.convertToGenericNoteName(startingPitch);
-            const [strippedPitch, delta] = stripAccidental(noteName); // startingPitch)
+            const [noteName, _] = this.convertToGenericNoteName(startingPitch);
+            const [strippedPitch, delta] = stripAccidental(noteName); // startingPitch
             if (this._noteNames.includes(strippedPitch)) {
                 let i = this._noteNames.indexOf(strippedPitch);
                 i += numberOfHalfSteps;
                 [i, deltaOctave] = this._mapToSemitoneRange(i + delta, deltaOctave);
+
                 if (originalNotation === SOLFEGE_NAME) {
                     return [
                         this._genericNoteNameToSolfege(
@@ -1052,6 +1159,7 @@ export default class KeySignature implements IKeySignature {
                         0
                     ];
                 }
+
                 if (originalNotation === EAST_INDIAN_SOLFEGE_NAME) {
                     return [
                         this._genericNoteNameToEastIndianSolfege(
@@ -1062,6 +1170,7 @@ export default class KeySignature implements IKeySignature {
                         0
                     ];
                 }
+
                 if (originalNotation === SCALAR_MODE_NUMBER) {
                     return [
                         this._genericNoteNameToScalarModeNumber(
@@ -1072,31 +1181,35 @@ export default class KeySignature implements IKeySignature {
                         0
                     ];
                 }
+
                 return [this._noteNames[i], deltaOctave, 0];
             }
-            console.log(`Cannot find ${startingPitch} in note names.`);
+
+            console.debug(`Cannot find ${startingPitch} in note names.`);
             return [startingPitch, 0, -1];
         }
 
-        const __calculateIncrement = (delta: number, j: number) => {
-            /*
-            Do we skip the accidental?
-            */
-            if (delta === 0 && j % 3 === 2) {
-                return 2;
-            }
-            if (delta === 1 && j % 3 === 1) {
-                return 2;
-            }
-            if (delta === -1 && j % 3 === 2) {
-                return 2;
-            }
-            return 1;
-        };
         const [strippedPitch, delta] = stripAccidental(startingPitch);
-        // If there are 21 semitones, assume c, c#, db, d, d#,
-        // eb... but still go from c# to d or db to c.
+        /*
+         * If there are 21 semitones, assume c, c#, db, d, d#, eb... but still go from c# to d or db
+         * to c.
+         */
         if (this._numberOfSemitones === 21) {
+            /**
+             * Do we skip the accidental?
+             *
+             * @param delta
+             * @param j
+             * @returns
+             */
+            const __calculateIncrement = (delta: number, j: number) => {
+                return (delta === 0 && j % 3 === 2) ||
+                    (delta === 1 && j % 3 === 1) ||
+                    (delta === -1 && j % 3 === 2)
+                    ? 2
+                    : 1;
+            };
+
             if (ALL_NOTES.includes(startingPitch)) {
                 let i = ALL_NOTES.indexOf(startingPitch);
                 if (numberOfHalfSteps > 0) {
@@ -1111,6 +1224,7 @@ export default class KeySignature implements IKeySignature {
                 [i, deltaOctave] = this._mapToSemitoneRange(i, deltaOctave);
                 return [ALL_NOTES[i], deltaOctave, 0];
             }
+
             if (this._noteNames.includes(strippedPitch)) {
                 let i = this._noteNames.indexOf(strippedPitch);
                 if (numberOfHalfSteps > 0) {
@@ -1134,69 +1248,70 @@ export default class KeySignature implements IKeySignature {
             return [this._noteNames[i], deltaOctave, 0];
         }
 
-        console.log(`Cannot find ${startingPitch} in note names.`);
+        console.debug(`Cannot find ${startingPitch} in note names.`);
         return [startingPitch, 0, -1];
     }
 
     /**
+     * Ensure that an index value is within the range of the scale, e.g., i == 8 would be mapped to
+     * 0 with a change in octave +1 for a 7-tone scale.
      *
      * @param i - Index value into scale
      * @param deltaOctave - Any previous change in octave that needs to be preserved
      * @returns
-     *      - Index mapped to scale
-     *      - Any additonal change in octave due to mapping
+     * An array (2-tuple) of
+     *  - Index mapped to scale.
+     *  - Any additonal change in octave due to mapping.
      */
     private _mapToScalarRange(i: number, deltaOctave: number): [number, number] {
-        /*
-        Ensure that an index value is within the range of the scale, e.g.,
-        i == 8 would be mapped to 0 with a change in octave +1 for a
-        7-tone scale.
-        */
-
         const modeLength = this.modeLength;
+
         while (i < 0) {
             i += modeLength;
             deltaOctave -= 1;
         }
+
         while (i > modeLength - 1) {
             i -= modeLength;
             deltaOctave += 1;
         }
+
         return [i, deltaOctave];
     }
 
     /**
-     * 
+     * Given a starting pitch, adds a scalar transform and returns the resultant pitch (and any
+     * change in octave).
+     *
      * @param startingPitch - The starting pitch specified as a pitch letter, e.g., c#, fb.
-            Note that the starting pitch may or may not be in the scale.
-     * @param numberOfScalarSteps - Scalar steps are steps in the scale (as opposed to half-steps)
-     * @returns 
-     *      - The pitch that is the number of scalar steps from the starting
-            pitch.
-            - The relative change in octave between the starting pitch and the
-            new pitch.
-            - error code
+     * Note that the starting pitch may or may not be in the scale.
+     * @param numberOfScalarSteps - Scalar steps are steps in the scale (as opposed to half-steps).
+     * @returns
+     * An array (3-tuple) of
+     *  - The pitch that is the number of scalar steps from the starting pitch.
+     *  - The relative change in octave between the starting pitch and the new pitch.
+     *  - Error code.
      */
     public scalarTransform(
         startingPitch: string,
         numberOfScalarSteps: number
     ): [string, number, number] {
         startingPitch = normalizePitch(startingPitch);
-        let originalNotation: string = this.pitchNameType(startingPitch);
-        let preferSharps: boolean = startingPitch.includes('#');
-        // The calculation is done in the generic note namespace
-        let genericPitch: string = this.convertToGenericNoteName(startingPitch)[0];
-        // First, we need to find the closest note to our starting
-        // pitch.
-        let [_, closestIndex, distance, error] = this.closestNote(genericPitch);
+
+        const originalNotation: string = this.pitchNameType(startingPitch);
+        const preferSharps: boolean = startingPitch.includes('#');
+        // The calculation is done in the generic note namespace.
+        const genericPitch: string = this.convertToGenericNoteName(startingPitch)[0];
+        // First, we need to find the closest note to our starting pitch.
+        const [_, closestIndex, distance, error] = this.closestNote(genericPitch);
+
         if (error < 0) {
-            return [startingPitch, 0, error as number];
+            return [startingPitch, 0, error];
         }
-        // Next, we add the scalar interval -- the steps are in the
-        // scale.
+
+        // Next, we add the scalar interval -- the steps are in the scale.
         const newIndex: number = closestIndex + numberOfScalarSteps;
-        // We also need to determine if we will be travelling more than
-        // one octave.
+        // We also need to determine if we will be travelling more than one octave.
         const modeLength = this.modeLength;
         let deltaOctave: number = Math.floor(newIndex / modeLength);
 
@@ -1211,17 +1326,16 @@ export default class KeySignature implements IKeySignature {
         const genericNewNote: string = this.genericScale[normalizedIndex];
         const newNote = this._restoreFormat(genericNewNote, originalNotation, preferSharps);
 
-        // We need to keep track of whether or not we crossed C, which
-        // is the octave boundary.
+        // We need to keep track of whether or not we crossed C, which is the octave boundary.
         if (newIndex < 0) {
-            deltaOctave -= 1;
+            deltaOctave--;
         }
 
-        // Do we need to take into account the distance from the
-        // closest scalar note?
+        // Do we need to take into account the distance from the closest scalar note?
         if (distance === 0) {
             return [newNote, deltaOctave, 0];
         }
+
         let i = this._noteNames.indexOf(genericNewNote);
         [i, deltaOctave] = this._mapToScalarRange(i - distance, deltaOctave);
         return [
@@ -1232,11 +1346,12 @@ export default class KeySignature implements IKeySignature {
     }
 
     /**
-     * Given a generic note name, convert it to a pitch name type.
-     * @param pitchName - Source generic note name
+     * Given a generic note name, converts it to a pitch name type.
+     *
+     * @param pitchName - Source generic note name.
      * @param targetType - One of the predefined types, e.g., LETTER_NAME, SOLFEGE_NAME, etc.
      * @param preferSharps - If there is a choice, should we use a sharp or a flat?
-     * @returns - Converted note name
+     * @returns Converted note name.
      */
     public genericNoteNameConvertToType(
         pitchName: string,
@@ -1246,39 +1361,58 @@ export default class KeySignature implements IKeySignature {
         return this._restoreFormat(pitchName, targetType, preferSharps);
     }
 
+    /**
+     * Format convertor.
+     *
+     * @todo could be done with a dictionary?
+     *
+     * @param pitchName
+     * @param originalNotation
+     * @param preferSharps
+     * @returns
+     */
     private _restoreFormat(
         pitchName: string,
         originalNotation: string,
         preferSharps: boolean
     ): string {
-        /*
-            Format convertor (could be done with a dictionary?)
-        */
         if (originalNotation === GENERIC_NOTE_NAME) {
             return pitchName;
         }
+
         if (originalNotation === LETTER_NAME) {
             return this._genericNoteNameToLetterName(pitchName, preferSharps)[0];
         }
+
         if (originalNotation === SOLFEGE_NAME) {
             return this._genericNoteNameToSolfege(pitchName, preferSharps)[0];
         }
+
         if (originalNotation === CUSTOM_NAME) {
             return this._genericNoteNameToCustomNoteName(pitchName)[0];
         }
+
         if (originalNotation === SCALAR_MODE_NUMBER) {
             return this._genericNoteNameToScalarModeNumber(pitchName)[0];
         }
+
         if (originalNotation === EAST_INDIAN_SOLFEGE_NAME) {
             return this._genericNoteNameToEastIndianSolfege(pitchName)[0];
         }
+
         return pitchName;
     }
 
+    /**
+     * Finds the pitch number.
+     *
+     * @example
+     * A4 --> 57
+     *
+     * @param pitchName - Source generic note name.
+     * @param octave - Corresponding octave
+     */
     private _pitchToNoteNumber(pitchName: string, octave: number): number {
-        /*
-        Find the pitch number, e.g., A4 --> 57
-        */
         const genericName = this.convertToGenericNoteName(pitchName)[0];
         const ni = this._noteNames.indexOf(genericName);
         const i = octave * this._numberOfSemitones + ni;
@@ -1286,12 +1420,13 @@ export default class KeySignature implements IKeySignature {
     }
 
     /**
-     * Calculate the distance between two notes in semitone steps
-     * @param pitchA - Pitch name one of two
-     * @param octaveA - Octave number one of two
-     * @param pitchB - Pitch name two of two
-     * @param octaveB - Octave number two of two
-     * @returns - Distance calculated in semitone steps
+     * Calculates the distance between two notes in semitone steps.
+     *
+     * @param pitchA - Pitch name one of two.
+     * @param octaveA - Octave number one of two.
+     * @param pitchB - Pitch name two of two.
+     * @param octaveB - Octave number two of two.
+     * @returns Distance calculated in scalar steps.
      */
     public semitoneDistance(
         pitchA: string,
@@ -1305,14 +1440,16 @@ export default class KeySignature implements IKeySignature {
     }
 
     /**
-     * Calculate the distance between two notes in scalar steps
-     * @param pitchA - Pitch name one of two
-     * @param octaveA - Octave number one of two
-     * @param pitchB - Pitch name two of two
-     * @param octaveB - Octave number two of two
+     * Calculates the distance between two notes in scalar steps.
+     *
+     * @param pitchA - Pitch name one of two.
+     * @param octaveA - Octave number one of two.
+     * @param pitchB - Pitch name two of two.
+     * @param octaveB - Octave number two of two.
      * @returns
-     *      - Distance calculated in scalar steps
-     *      - Any semitone rounding error in the calculation
+     * An array (2-tuple) of
+     *  - Distance calculated in scalar steps.
+     *  - Any semitone rounding error in the calculation.
      */
     public scalarDistance(
         pitchA: string,
@@ -1338,37 +1475,31 @@ export default class KeySignature implements IKeySignature {
     }
 
     /**
-     * Invert will rotate a series of notes around an invert point.
-        There are three different invert modes: even, odd, and
-        scalar. In even and odd modes, the rotation is based on half
-        steps. In even and scalar mode, the point of rotation is the
-        given note. In odd mode, the point of rotation is shifted up
-        by a 1/4 step, enabling rotation around a point between two
-        notes. In "scalar" mode, the scalar interval is preserved
-        around the point of rotation.
-     * @param pitchName - The pitch name of the note to be rotated
-     * @param octave - The octave of the note to be rotated
-     * @param invertPointPitch - The pitch name of the axis of inversion
-     * @param invertPointOctave - The octave of the axis of inversion
-     * @param invertMode 
-     * @returns 
-     *      - Pitch name of the inverted note
-     *      - Octave of the inverted note
+     * Rotates a series of notes around an invert point.
+     *
+     * @param pitchName - The pitch name of the note to be rotated.
+     * @param octave - The octave of the note to be rotated.
+     * @param invertPointPitch - The pitch name of the axis of inversion.
+     * @param invertPointOctave - The octave of the axis of inversion.
+     * @param invertMode - There are three different invert modes:
+     * `even`, `odd`, and `scalar`. In even and odd modes, the rotation is based on half steps. In
+     * even and scalar mode, the point of rotation is the given note. In odd mode, the point of
+     * rotation is shifted up by a 1/4 step, enabling rotation around a point between two notes. In
+     * scalar mode, the scalar interval is preserved around the point of rotation.
+     * @returns
+     * An array (2-tuple)
+     *  - Pitch name of the inverted note.
+     *  - Octave of the inverted note.
      */
     public invert(
         pitchName: string,
         octave: number,
         invertPointPitch: string,
         invertPointOctave: number,
-        invertMode: string
+        invertMode: 'even' | 'odd' | 'scalar'
     ): [string, number] {
-        if (typeof invertMode === 'number') {
-            if (invertMode % 2 === 0) {
-                invertMode = 'even';
-            } else {
-                invertMode = 'odd';
-            }
-        }
+        let invertedPitch: string;
+        let deltaOctave: number;
 
         if (invertMode === 'even' || invertMode === 'odd') {
             let delta = this.semitoneDistance(
@@ -1382,9 +1513,8 @@ export default class KeySignature implements IKeySignature {
             } else if (invertMode === 'odd') {
                 delta = 2 * delta - 1;
             }
-            const [invertedPitch, deltaOctave] = this.semitoneTransform(pitchName, -delta);
-            return [invertedPitch, octave + deltaOctave];
-        } else if (invertMode === 'scalar') {
+            [invertedPitch, deltaOctave] = this.semitoneTransform(pitchName, -delta);
+        } else {
             let delta = this.scalarDistance(
                 pitchName,
                 octave,
@@ -1392,37 +1522,36 @@ export default class KeySignature implements IKeySignature {
                 invertPointOctave
             )[0];
             delta *= 2;
-            const [invertedPitch, deltaOctave] = this.scalarTransform(pitchName, -delta);
-            return [invertedPitch, octave + deltaOctave];
-        } else {
-            console.log(`Unknown invert mode ` + invertMode);
-            return [pitchName, octave];
+            [invertedPitch, deltaOctave] = this.scalarTransform(pitchName, -delta);
         }
+
+        return [invertedPitch, octave + deltaOctave];
     }
 
     /**
-     * Given a target pitch, what is the closest note in the current
-        key signature (key and mode)?
+     * Given a target pitch, what is the closest note in the current key signature (key and mode)?
+     *
      * @param target - target pitch specified as a pitch letter, e.g., c#, fb
-     * @returns 
+     * @returns
+     * An array (4-tuple) of
      *  - The closest pitch to the target pitch in the scale.
-     *  - The scalar index value of the closest pitch in the scale
-            (If the target is midway between two scalar pitches, the
-            lower pitch is returned.)
-         - The distance in semitones (half steps) from the target
-            pitch to the scalar pitch (If the target is higher than
-            the scalar pitch, then distance > 0. If the target is
-            lower than the scalar pitch then distance < 0. If the
-            target matches a scale pitch, then distance = 0.)
-         - error code (0 means success)
+     *  - The scalar index value of the closest pitch in the scale (If the target is midway between
+     *      two scalar pitches, the lower pitch is returned.)
+     *  - The distance in semitones (half steps) from the target pitch to the scalar pitch (If the
+     *      target is higher than the scalar pitch, then distance > 0. If the target is lower than
+     *      the scalar pitch then distance < 0. If the target matches a scale pitch, then distance
+     *      is 0.)
+     *  - Error code (0 means success).
      */
     public closestNote(target: string): [string, number, number, number] {
         target = normalizePitch(target);
-        let originalNotation = this.pitchNameType(target);
-        let preferSharps = target.includes('#');
-        // The calculation is done in the generic note namespace
+
+        const originalNotation = this.pitchNameType(target);
+        const preferSharps = target.includes('#');
+        // The calculation is done in the generic note namespace.
         target = this.convertToGenericNoteName(target)[0];
-        let [strippedTarget, delta] = stripAccidental(target);
+        const [strippedTarget, delta] = stripAccidental(target);
+
         let i: number;
         if (this._noteNames.includes(strippedTarget)) {
             i = this._noteNames.indexOf(strippedTarget);
@@ -1457,6 +1586,7 @@ export default class KeySignature implements IKeySignature {
                     distance = m;
                 }
             }
+
             if (distance < this._numberOfSemitones) {
                 return [
                     this._restoreFormat(closestNote, originalNotation, preferSharps),
@@ -1466,35 +1596,45 @@ export default class KeySignature implements IKeySignature {
                 ];
             }
 
-            console.log(`Closest note to ${target} not found.`);
+            console.debug(`Closest note to ${target} not found.`);
             return [this._restoreFormat(target, originalNotation, preferSharps), 0, 0, -1];
         }
-        console.log(`Note ${target} not found.`);
+
+        console.debug(`Note ${target} not found.`);
         return [this._restoreFormat(target, originalNotation, preferSharps), 0, 0, -1];
     }
 
+    /**
+     * @remarks
+     * Some keys prefer to use sharps rather than flats.
+     *
+     * @param key
+     * @param mode
+     * @returns
+     */
     private _preferSharps(key: string, mode: string): boolean {
-        /*
-        Some keys prefer to use sharps rather than flats.
-        */
         return KeySignature.PREFER_SHARPS.includes(`${key} ${mode}`);
     }
 
+    /**
+     * Returns the key, mode, number of half steps, and the scale.
+     *
+     * @override
+     */
     public toString(): string {
-        /*
-        Return the key, mode, number of half steps, and the scale.
-        */
         const halfSteps: string[] = [];
         for (let i = 0; i < this.halfSteps.length; i++) {
             halfSteps.push(String(this.halfSteps[i]));
         }
         const scale = this.scale.join(' ');
-        let key;
+
+        let key: string;
         if (this.key.length > 1) {
             key = `${this.key[0].toUpperCase()}${this.key.slice(1)}`;
         } else {
             key = this.key.toUpperCase();
         }
+
         return `${key} ${this.mode.toUpperCase()} [${scale}]`;
     }
 }

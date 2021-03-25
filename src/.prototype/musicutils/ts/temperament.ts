@@ -635,4 +635,16 @@ export default class Temperament implements ITemperament {
         }
         return this._baseFrequency;
     }
+
+    /**
+     * Returns the instance's list of frequencies as a string.
+     * @override
+     */
+    public toString() {
+        const freqs: string[] = [];
+        for (const f of this.freqs) {
+            freqs.push((f + 0.005).toFixed(2));
+        }
+        return `this.name temperament:\n\n${freqs.join('\n')}\n`;
+    }
 }

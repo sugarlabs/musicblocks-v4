@@ -397,7 +397,7 @@ export default class Temperament implements ITemperament {
             return this._freqs[0];
         }
         if (i > this._freqs.length - 1) {
-            return this._freqs[-1];
+            return this._freqs[this.freqs.length - 1];
         }
         return this._freqs[Number(i)];
     }
@@ -428,7 +428,7 @@ export default class Temperament implements ITemperament {
      * Thrown if note name does not exist in list of generic note names.
      */
     public getFreqIndexByGenericNoteNameAndOctave(noteName: string, octave: number): number {
-        if (!(noteName in this._genericNoteNames)) {
+        if (!this._genericNoteNames.includes(noteName)) {
             throw Error(`ItemNotFoundError: Note ${noteName} not found in generic note names.`);
         }
 

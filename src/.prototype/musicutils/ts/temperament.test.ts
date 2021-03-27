@@ -22,6 +22,13 @@ describe('class Temperament', () => {
             expect(Number(f[21].toFixed(2))).toBe(55.0);
             expect(t.noteNames.length).toBe(12);
         });
+
+        test("Generate 'equal 1' temperament instance when negative number of octaves is provided, and verify the numbers", () => {
+            const t = new Temperament();
+            t.generateEqualTemperament(-2);
+            expect(t.numberOfSemitonesInOctave).toBe(1);
+            expect(t.numberOfNotesInTemperament).toBe(1);
+        });
         test("Generate 'third comma meantone' temperament instance and verify frequencies", () => {
             const t = new Temperament('third comma meantone');
             const f: number[] = t.freqs;
@@ -55,6 +62,28 @@ describe('class Temperament', () => {
             const f: number[] = t.freqs;
             expect(Number(f[42].toFixed(2))).toBe(55.0); // A1
             expect(t.noteNames.length).toBe(24);
+        });
+
+        test("Generate 'equal 24' temperament instance when Invaid temperament is provided and verify frequencies", () => {
+            const t = new Temperament('Invalid');
+            t.generateEqualTemperament(24);
+            const f: number[] = t.freqs;
+            expect(Number(f[42].toFixed(2))).toBe(55.0); // A1
+            expect(t.noteNames.length).toBe(24);
+        });
+
+        test('Generate custom temperament instance and verify frequencies', () => {
+            const t = new Temperament();
+            const intervals: string[] = ['perfect 1', 'perfect 8'];
+            const ratios: { [key: string]: number } = {
+                'perfect 1': Math.pow(2, 1 / 12),
+                'perfect 8': 2
+            };
+            const name: string = 'custom';
+            t.generateCustom(intervals, ratios, name);
+            expect(t.name).toBe('custom');
+            expect(t.numberOfSemitonesInOctave).toBe(2);
+            expect(t.numberOfNotesInTemperament).toBe(9);
         });
     });
 
@@ -176,10 +205,28 @@ describe('class Temperament', () => {
             const num: number = t.getFreqIndexByGenericNoteNameAndOctave('n10', 1);
             expect(num).toBe(22);
         });
+
+        test('Get freq index 0  when genric Note is n10 octave -1', () => {
+            const num: number = t.getFreqIndexByGenericNoteNameAndOctave('n10', -1);
+            expect(num).toBe(0);
+        });
+
+        test('Get freq index 0  when genric Note is n10 octave 100', () => {
+            const num: number = t.getFreqIndexByGenericNoteNameAndOctave('n10', 100);
+            expect(num).toBe(88);
+        });
         test('Get error when genric note is invalid', () => {
             expect(() => {
                 t.getFreqIndexByGenericNoteNameAndOctave('a', 2);
             }).toThrow(new Error('ItemNotFoundError: Note a not found in generic note names.'));
+        });
+    });
+    describe('get Modal Index and octave from freq index', () => {
+        const t = new Temperament();
+
+        test('get modla Index 2 and octave 0 from freq index 2', () => {
+            const tuple: [number, number] = t.getModalIndexAndOctaveFromFreqIndex(2);
+            expect(tuple).toStrictEqual([2, 0]);
         });
     });
 });

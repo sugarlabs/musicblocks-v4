@@ -397,7 +397,7 @@ export default class Temperament implements ITemperament {
             return this._freqs[0];
         }
         if (i > this._freqs.length - 1) {
-            return this._freqs[-1];
+            return this._freqs[this.freqs.length - 1];
         }
         return this._freqs[Number(i)];
     }

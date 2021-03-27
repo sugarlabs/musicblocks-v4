@@ -6,6 +6,7 @@
  * Licensed under the AGPL-3.0 License.
  */
 
+import { ItemNotFoundError, InvalidArgumentError } from './errors';
 import { IKeySignature, TError } from './@types/keySignature';
 import { Scale } from './scale';
 import {
@@ -415,8 +416,9 @@ export default class KeySignature implements IKeySignature {
      */
     public set customNoteNames(customNames: string[]) {
         if (customNames.length !== this.modeLength) {
-            throw Error(
-                'InvalidArgumentError: A unique name must be assigned to every note in the mode.'
+            throw new InvalidArgumentError<null>(
+                'A unique name must be assigned to every note in the mode.',
+                null
             );
         }
 
@@ -427,12 +429,14 @@ export default class KeySignature implements IKeySignature {
          * previously been parsed (i.e. it is present in the set). If it is a first occurrence, add
          * it to the set (if it is encountered again, it'll be caught in the previous query step
          * when the duplicate string is parsed).
+         *
          */
         const nameSet: Set<string> = new Set<string>();
         for (const name of customNames) {
             if (nameSet.has(name)) {
-                throw Error(
-                    'InvalidArgumentError: A unique name must be assigned to every note in the mode.'
+                throw new InvalidArgumentError<null>(
+                    'A unique name must be assigned to every note in the mode.',
+                    null
                 );
             }
             nameSet.add(name);
@@ -627,8 +631,9 @@ export default class KeySignature implements IKeySignature {
         if (this._numberOfSemitones === 12 || this._numberOfSemitones === 21) {
             this._solfegeNotes = this._modeMapList(SOLFEGE_NAMES);
         } else {
-            throw Error(
-                `ItemNotFoundError: no Solfege for temperaments with ${this._numberOfSemitones} semitones.`
+            throw new ItemNotFoundError<null>(
+                `No Solfege for temperaments with ${this._numberOfSemitones} semitones.`,
+                null
             );
         }
     }
@@ -648,8 +653,9 @@ export default class KeySignature implements IKeySignature {
         if (this._numberOfSemitones === 12 || this._numberOfSemitones === 21) {
             this._eastIndianSolfegeNotes = this._modeMapList(EAST_INDIAN_NAMES);
         } else {
-            throw Error(
-                `ItemNotFoundError: no EI Solfege for temperaments with ${this._numberOfSemitones} semitones.`
+            throw new ItemNotFoundError<null>(
+                `No EI Solfege for temperaments with ${this._numberOfSemitones} semitones.`,
+                null
             );
         }
     }
@@ -668,8 +674,9 @@ export default class KeySignature implements IKeySignature {
         if (this._numberOfSemitones === 12 || this._numberOfSemitones === 21) {
             this._scalarModeNumbers = this._modeMapList(SCALAR_MODE_NUMBERS);
         } else {
-            throw Error(
-                `ItemNotFoundError: no mode numbers for temperaments with ${this._numberOfSemitones} semitones.`
+            throw new ItemNotFoundError<null>(
+                `No mode numbers for temperaments with ${this._numberOfSemitones} semitones.`,
+                null
             );
         }
     }
@@ -684,14 +691,23 @@ export default class KeySignature implements IKeySignature {
     private _nameConverter(pitchName: string, sourceList: string[]): string | null {
         if (sourceList.includes(pitchName)) {
             const i = sourceList.indexOf(pitchName);
-            return this.convertToGenericNoteName(this._scale[i])[0];
+            try {
+                return this.convertToGenericNoteName(this._scale[i])[0];
+            } catch (err) {
+                return err.defaultValue[0];
+            }
         }
 
         let delta: number;
         [pitchName, delta] = stripAccidental(pitchName);
         if (sourceList.includes(pitchName)) {
             let i = sourceList.indexOf(pitchName);
-            const noteName = this.convertToGenericNoteName(this._scale[i])[0];
+            let noteName: string;
+            try {
+                noteName = this.convertToGenericNoteName(this._scale[i])[0];
+            } catch (err) {
+                noteName = err.defaultValue;
+            }
 
             i = this._noteNames.indexOf(noteName);
             i += delta;
@@ -736,6 +752,9 @@ export default class KeySignature implements IKeySignature {
      * @returns An array (2-tuple) of
      *  - Generic note name.
      *  - Error code.
+     *
+     * @throws {ItemNotFoundError}
+     * Thrown when the given pitch name does not match any type
      */
     public convertToGenericNoteName(pitchName: string): [string, TError] {
         pitchName = normalizePitch(pitchName);
@@ -874,8 +893,10 @@ export default class KeySignature implements IKeySignature {
             }
         }
 
-        console.debug(`Pitch name ${pitchName} not found.`);
-        return [pitchName, -1];
+        throw new ItemNotFoundError<[string, number]>(`Pitch name ${pitchName} not found.`, [
+            pitchName,
+            -1
+        ]);
     }
 
     /**
@@ -890,6 +911,12 @@ export default class KeySignature implements IKeySignature {
      * @returns An array (2-tuple) of
      *  - Letter name.
      *  - Error code.
+     *
+     * @throws {InvalidArgumentError}
+     * Thrown when the given note is not a sharp or flat
+     * and the number of semitones in neither 21 nor 12
+     * @throws {ItemNotFoundError}
+     * Thrown when the given note is not a part of notes in the mode
      */
     private _genericNoteNameToLetterName(
         noteName: string,
@@ -911,8 +938,10 @@ export default class KeySignature implements IKeySignature {
         }
 
         if (this._numberOfSemitones !== 12) {
-            console.debug(`Cannot convert ${noteName} to a letter name.`);
-            return [noteName, -1];
+            throw new InvalidArgumentError<[string, number]>(
+                `Cannot convert ${noteName} to a letter name.`,
+                [noteName, -1]
+            );
         }
 
         if (this._noteNames.includes(noteName)) {
@@ -924,8 +953,10 @@ export default class KeySignature implements IKeySignature {
             ];
         }
 
-        console.debug(`Note name ${noteName} not found.`);
-        return [noteName, -1];
+        throw new ItemNotFoundError<[string, number]>(`Note name ${noteName} not found.`, [
+            noteName,
+            -1
+        ]);
     }
 
     /**
@@ -936,6 +967,12 @@ export default class KeySignature implements IKeySignature {
      * @returns An array (2-tuple) of
      *  - Letter name.
      *  - Error code.
+     * @throws {InvalidArgumentError}
+     *  Thrown if note not in list of notes based on temperament
+     *  and number of semitones in not 12
+     * @throws {ItemNotFoundError}
+     *  Thrown if the closet note could not be found, or
+     *  note not a part of list of note names in the mode
      */
     private _convertFromNoteName(noteName: string, targetList: string[]): [string, TError] {
         noteName = normalizePitch(noteName);
@@ -946,19 +983,29 @@ export default class KeySignature implements IKeySignature {
         }
 
         if (this._numberOfSemitones !== 12) {
-            console.debug(`Cannot convert ${noteName} to a letter name.`);
-            return [noteName, -1];
+            throw new InvalidArgumentError<[string, number]>(
+                `Cannot convert ${noteName} to a letter name.`,
+                [noteName, -1]
+            );
         }
 
         if (this._noteNames.includes(noteName)) {
             // First find the corresponding letter name.
             const letterName = CHROMATIC_NOTES_SHARP[this._noteNames.indexOf(noteName)];
             // Next, find the closest note in the scale.
-            const [_, i, distance, error] = this.closestNote(letterName);
+            let res: [string, number, number, TError];
+            try {
+                res = this.closestNote(letterName);
+            } catch (err) {
+                res = err.defaultValue;
+            }
+            const [_, i, distance, error] = res;
             // Use the index to get the corresponding solfege note
             if (error < 0) {
-                console.debug('Cannot find closest note to ' + letterName);
-                return [noteName, -1];
+                throw new ItemNotFoundError<[string, number]>(
+                    'Cannot find closest note to ' + letterName,
+                    [noteName, -1]
+                );
             }
 
             if (distance === 0) {
@@ -972,8 +1019,10 @@ export default class KeySignature implements IKeySignature {
             return [targetNote + ['bb', 'b', '', '#', 'x'][delta + 2], 0];
         }
 
-        console.debug(`Note name ${noteName} not found.`);
-        return [noteName, -1];
+        throw new ItemNotFoundError<[string, number]>(`Note name ${noteName} not found.`, [
+            noteName,
+            -1
+        ]);
     }
 
     /**
@@ -986,6 +1035,9 @@ export default class KeySignature implements IKeySignature {
      * @returns An array (2-tuple) of
      *  - Note name in one of the lists
      *  - Error code.
+     * @throws {InvalidArgumentError}
+     *  Thrown if note not a sharp or flat note and the number of semitones in not 12, or
+     *  Thrown if note not a part of list of note names of the mode
      */
     private _findMoveable(
         noteName: string,
@@ -1004,8 +1056,10 @@ export default class KeySignature implements IKeySignature {
         }
 
         if (this._numberOfSemitones !== 12) {
-            console.debug(`Cannot convert noteName`);
-            return [noteName, -1];
+            throw new InvalidArgumentError<[string, number]>(`Cannot convert noteName`, [
+                noteName,
+                -1
+            ]);
         }
 
         if (this._noteNames.includes(noteName)) {
@@ -1017,8 +1071,10 @@ export default class KeySignature implements IKeySignature {
             ];
         }
 
-        console.debug(`Cannot convert ${noteName}`);
-        return [noteName, -1];
+        throw new InvalidArgumentError<[string, number]>(`Cannot convert ${noteName}`, [
+            noteName,
+            -1
+        ]);
     }
 
     /**
@@ -1038,9 +1094,18 @@ export default class KeySignature implements IKeySignature {
         noteName: string,
         preferSharps: boolean = true
     ): [string, TError] {
-        return this._fixedSolfege
-            ? this._convertFromNoteName(noteName, this._solfegeNotes)
-            : this._findMoveable(noteName, SOLFEGE_SHARP, SOLFEGE_FLAT, preferSharps);
+        let res: [string, TError], res1: [string, TError];
+        try {
+            res = this._convertFromNoteName(noteName, this._solfegeNotes);
+        } catch (err) {
+            res = err.defaultValue;
+        }
+        try {
+            res1 = this._findMoveable(noteName, SOLFEGE_SHARP, SOLFEGE_FLAT, preferSharps);
+        } catch (err) {
+            res1 = err.defaultValue;
+        }
+        return this._fixedSolfege ? res : res1;
     }
 
     /**
@@ -1060,9 +1125,18 @@ export default class KeySignature implements IKeySignature {
         noteName: string,
         preferSharps: boolean = true
     ): [string, TError] {
-        return this._fixedSolfege
-            ? this._convertFromNoteName(noteName, this._eastIndianSolfegeNotes)
-            : this._findMoveable(noteName, EAST_INDIAN_SHARP, EAST_INDIAN_FLAT, preferSharps);
+        let res: [string, TError], res1: [string, TError];
+        try {
+            res = this._convertFromNoteName(noteName, this._eastIndianSolfegeNotes);
+        } catch (err) {
+            res = err.defaultValue;
+        }
+        try {
+            res1 = this._findMoveable(noteName, EAST_INDIAN_SHARP, EAST_INDIAN_FLAT, preferSharps);
+        } catch (err) {
+            res1 = err.defaultValue;
+        }
+        return this._fixedSolfege ? res : res1;
     }
 
     /**
@@ -1082,9 +1156,23 @@ export default class KeySignature implements IKeySignature {
         noteName: string,
         preferSharps: boolean = true
     ): [string, TError] {
-        return this._fixedSolfege
-            ? this._convertFromNoteName(noteName, this._scalarModeNumbers)
-            : this._findMoveable(noteName, SCALAR_NAMES_SHARP, SCALAR_NAMES_FLAT, preferSharps);
+        let res: [string, TError], res1: [string, TError];
+        try {
+            res = this._convertFromNoteName(noteName, this._scalarModeNumbers);
+        } catch (err) {
+            res = err.defaultValue;
+        }
+        try {
+            res1 = this._findMoveable(
+                noteName,
+                SCALAR_NAMES_SHARP,
+                SCALAR_NAMES_FLAT,
+                preferSharps
+            );
+        } catch (err) {
+            res1 = err.defaultValue;
+        }
+        return this._fixedSolfege ? res : res1;
     }
 
     /**
@@ -1100,7 +1188,11 @@ export default class KeySignature implements IKeySignature {
      *  - Error code.
      */
     private _genericNoteNameToCustomNoteName(noteName: string): [string, TError] {
-        return this._convertFromNoteName(noteName, this._customNoteNames);
+        try {
+            return this._convertFromNoteName(noteName, this._customNoteNames);
+        } catch (err) {
+            return err.defaultValue;
+        }
     }
 
     /**
@@ -1139,7 +1231,11 @@ export default class KeySignature implements IKeySignature {
      * @returns `true` if the note is in the scale, `false` otherwise.
      */
     public noteInScale(target: string): boolean {
-        return this.closestNote(target)[2] === 0;
+        try {
+            return this.closestNote(target)[2] === 0;
+        } catch (err) {
+            return err.defaultValue[2] === 0;
+        }
     }
 
     /**
@@ -1180,6 +1276,8 @@ export default class KeySignature implements IKeySignature {
      *  - The pitch that is the number of half steps from the starting pitch.
      *  - The relative change in octave between the starting pitch and the new pitch.
      *  - Error code.
+     * @throws {ItemNotFoundError}
+     * Thrown if the starting pitch not a part of list of note names of the mode
      */
     public semitoneTransform(
         startingPitch: string,
@@ -1206,9 +1304,15 @@ export default class KeySignature implements IKeySignature {
                 }
 
                 const [strippedPitch, delta] = stripAccidental(startingPitch);
+                let res: [string, TError];
+                try {
+                    res = this.convertToGenericNoteName(strippedPitch);
+                } catch (err) {
+                    res = err.defaultValue;
+                }
                 const [noteName, error] = this._noteNames.includes(strippedPitch)
                     ? [strippedPitch, 0]
-                    : this.convertToGenericNoteName(strippedPitch);
+                    : res;
 
                 if (error === 0) {
                     if (this._noteNames.includes(noteName)) {
@@ -1219,11 +1323,19 @@ export default class KeySignature implements IKeySignature {
                     }
                 }
 
-                console.debug(`Cannot find ${startingPitch} in note names.`);
-                return [startingPitch, 0, -1];
+                throw new ItemNotFoundError<[string, number, number]>(
+                    `Cannot find ${startingPitch} in note names.`,
+                    [startingPitch, 0, -1]
+                );
             }
 
-            const [noteName, _] = this.convertToGenericNoteName(startingPitch);
+            let res: [string, TError];
+            try {
+                res = this.convertToGenericNoteName(startingPitch);
+            } catch (err) {
+                res = err.defaultValue;
+            }
+            const [noteName, _] = res;
             const [strippedPitch, delta] = stripAccidental(noteName); // startingPitch
             if (this._noteNames.includes(strippedPitch)) {
                 let i = this._noteNames.indexOf(strippedPitch);
@@ -1266,8 +1378,10 @@ export default class KeySignature implements IKeySignature {
                 return [this._noteNames[i], deltaOctave, 0];
             }
 
-            console.debug(`Cannot find ${startingPitch} in note names.`);
-            return [startingPitch, 0, -1];
+            throw new ItemNotFoundError<[string, number, number]>(
+                `Cannot find ${startingPitch} in note names.`,
+                [startingPitch, 0, -1]
+            );
         }
 
         const [strippedPitch, delta] = stripAccidental(startingPitch);
@@ -1331,8 +1445,10 @@ export default class KeySignature implements IKeySignature {
             return [this._noteNames[i], deltaOctave, 0];
         }
 
-        console.debug(`Cannot find ${startingPitch} in note names.`);
-        return [startingPitch, 0, -1];
+        throw new ItemNotFoundError<[string, number, number]>(
+            `Cannot find ${startingPitch} in note names.`,
+            [startingPitch, 0, -1]
+        );
     }
 
     /**
@@ -1384,9 +1500,20 @@ export default class KeySignature implements IKeySignature {
         const originalNotation: string = this.pitchNameType(startingPitch);
         const preferSharps: boolean = startingPitch.includes('#');
         // The calculation is done in the generic note namespace.
-        const genericPitch: string = this.convertToGenericNoteName(startingPitch)[0];
+        let genericPitch: string;
+        try {
+            genericPitch = this.convertToGenericNoteName(startingPitch)[0];
+        } catch (err) {
+            genericPitch = err.defaultValue[0];
+        }
+        let res: [string, number, number, TError];
+        try {
+            res = this.closestNote(genericPitch);
+        } catch (err) {
+            res = err.defaultValue;
+        }
         // First, we need to find the closest note to our starting pitch.
-        const [_, closestIndex, distance, error] = this.closestNote(genericPitch);
+        const [_, closestIndex, distance, error] = res;
 
         if (error < 0) {
             return [startingPitch, 0, error];
@@ -1496,7 +1623,12 @@ export default class KeySignature implements IKeySignature {
      * @param octave - Corresponding octave
      */
     private _pitchToNoteNumber(pitchName: string, octave: number): number {
-        const genericName = this.convertToGenericNoteName(pitchName)[0];
+        let genericName: string;
+        try {
+            genericName = this.convertToGenericNoteName(pitchName)[0];
+        } catch (err) {
+            genericName = err.defaultValue[0];
+        }
         const ni = this._noteNames.indexOf(genericName);
         const i = octave * this._numberOfSemitones + ni;
         return Math.floor(Number(i));
@@ -1540,8 +1672,18 @@ export default class KeySignature implements IKeySignature {
         pitchB: string,
         octaveB: number
     ): [number, number] {
-        const closest1 = this.closestNote(pitchA);
-        const closest2 = this.closestNote(pitchB);
+        let closest1: [string, number, number, TError];
+        try {
+            closest1 = this.closestNote(pitchA);
+        } catch (err) {
+            closest1 = err.defaultValue;
+        }
+        let closest2: [string, number, number, TError];
+        try {
+            closest2 = this.closestNote(pitchB);
+        } catch (err) {
+            closest2 = err.defaultValue;
+        }
         if (closest1[1] > closest2[1]) {
             return [
                 closest1[1] - closest2[1] + this.modeLength * (octaveA - octaveB),
@@ -1596,7 +1738,11 @@ export default class KeySignature implements IKeySignature {
             } else if (invertMode === 'odd') {
                 delta = 2 * delta - 1;
             }
-            [invertedPitch, deltaOctave] = this.semitoneTransform(pitchName, -delta);
+            try {
+                [invertedPitch, deltaOctave] = this.semitoneTransform(pitchName, -delta);
+            } catch (err) {
+                [invertedPitch, deltaOctave] = err.defaultValue;
+            }
         } else {
             let delta = this.scalarDistance(
                 pitchName,
@@ -1625,6 +1771,10 @@ export default class KeySignature implements IKeySignature {
      *      the scalar pitch then distance < 0. If the target matches a scale pitch, then distance
      *      is 0.)
      *  - Error code.
+     *
+     * @throws {ItemNotFoundError}
+     *  Thrown if distance is not less than number of semitones, or
+     *  Thrown if target note not part of list of note names for the current mode
      */
     public closestNote(target: string): [string, number, number, TError] {
         target = normalizePitch(target);
@@ -1632,7 +1782,11 @@ export default class KeySignature implements IKeySignature {
         const originalNotation = this.pitchNameType(target);
         const preferSharps = target.includes('#');
         // The calculation is done in the generic note namespace.
-        target = this.convertToGenericNoteName(target)[0];
+        try {
+            target = this.convertToGenericNoteName(target)[0];
+        } catch (err) {
+            target = err.defaultValue[0];
+        }
         const [strippedTarget, delta] = stripAccidental(target);
 
         let i: number;
@@ -1679,12 +1833,18 @@ export default class KeySignature implements IKeySignature {
                 ];
             }
 
-            console.debug(`Closest note to ${target} not found.`);
-            return [this._restoreFormat(target, originalNotation, preferSharps), 0, 0, -1];
+            throw new ItemNotFoundError<[string, number, number, TError]>(
+                `Closest note to ${target} not found.`,
+                [this._restoreFormat(target, originalNotation, preferSharps), 0, 0, -1]
+            );
         }
 
-        console.debug(`Note ${target} not found.`);
-        return [this._restoreFormat(target, originalNotation, preferSharps), 0, 0, -1];
+        throw new ItemNotFoundError<[string, number, number, TError]>(`Note ${target} not found.`, [
+            this._restoreFormat(target, originalNotation, preferSharps),
+            0,
+            0,
+            -1
+        ]);
     }
 
     /**

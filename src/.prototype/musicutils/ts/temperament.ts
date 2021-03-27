@@ -1,5 +1,5 @@
 import { ITemperament } from './@types/temperament';
-import { normalizePitch, CHROMATIC_NOTES_SHARP, CHROMATIC_NOTES_FLAT } from './musicutils';
+import { normalizePitch, CHROMATIC_NOTES_SHARP, CHROMATIC_NOTES_FLAT } from './musicUtils';
 
 /**
  * Temperament defines the relationships between notes.

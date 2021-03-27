@@ -1,3 +1,4 @@
+/** Interface for the Scale class. */
 export interface IScale {
     /**
      * Getter that returns the number of notes in the scale.

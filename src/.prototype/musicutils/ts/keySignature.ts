@@ -1,7 +1,3 @@
-/*
- * The KeySignature class defines an object that manages a specific key/mode combination.
- */
-
 // Copyright (c) 2020, 2021 Walter Bender, Sugar Labs
 
 // This program is free software; you can redistribute it and/or
@@ -13,7 +9,7 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, 51 Franklin Street, Suite 500 Boston, MA 02110-1335 USA
 
-import { IKeySignature, TError } from './@types/keysignature';
+import { IKeySignature, TError } from './@types/keySignature';
 import { Scale } from './scale';
 import {
     isAFlat,
@@ -48,9 +44,12 @@ import {
     CUSTOM_NAME,
     CONVERT_UP,
     ALL_NOTES
-} from './musicutils';
+} from './musicUtils';
 
-/** A key signature is a set of sharp, flat, and natural symbols. */
+/**
+ * Defines an object that manages a specific key/mode combination.
+ * A key signature is a set of sharp, flat, and natural symbols.
+ */
 export default class KeySignature implements IKeySignature {
     /**
      * @remarks

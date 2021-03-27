@@ -2,7 +2,7 @@
  * Unit tests for KeySignature
  */
 
-import KeySignature from './keysignature';
+import KeySignature from './keySignature';
 import Temperament from './temperament';
 import {
     CUSTOM_NAME,
@@ -13,7 +13,7 @@ import {
     SCALAR_MODE_NUMBER,
     UNKNOWN_PITCH_NAME,
     EAST_INDIAN_SOLFEGE_NAME
-} from './musicutils';
+} from './musicUtils';
 
 describe('Key Signature', () => {
     test('closest note tests', () => {

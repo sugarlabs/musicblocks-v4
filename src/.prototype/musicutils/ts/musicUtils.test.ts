@@ -7,7 +7,7 @@ import {
     isAFlat,
     findFlatIndex,
     getPitchType
-} from './musicutils';
+} from './musicUtils';
 
 describe('Music utilities', () => {
     describe('Validate stripAccidental', () => {

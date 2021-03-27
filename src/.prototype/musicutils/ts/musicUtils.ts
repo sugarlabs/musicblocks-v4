@@ -1,4 +1,11 @@
 /*
+ * Copyright (c) 2021, Walter Bender. All rights reserved.
+ * Copyright (c) 2021, Anindya Kundu. All rights reserved.
+ *
+ * Licensed under the AGPL-3.0 License.
+ */
+
+/*
  * Utilities and constants retated to musical state as required by other related modules.
  */
 

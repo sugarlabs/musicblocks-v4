@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2021, Walter Bender. All rights reserved.
+ * Copyright (c) 2021, Kumar Saurabh Raj. All rights reserved.
+ * Copyright (c) 2021, Anindya Kundu. All rights reserved.
+ *
+ * Licensed under the AGPL-3.0 License.
+ */
+
 import { ITemperament } from './@types/temperament';
 import { normalizePitch, CHROMATIC_NOTES_SHARP, CHROMATIC_NOTES_FLAT } from './musicUtils';
 

@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2021, Walter Bender. All rights reserved.
+ * Copyright (c) 2021, Kumar Saurabh Raj. All rights reserved.
+ *
+ * Licensed under the AGPL-3.0 License.
+ */
+
 /**
  * Unit tests for KeySignature
  */

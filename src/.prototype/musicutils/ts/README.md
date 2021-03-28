@@ -501,3 +501,103 @@ The Scale object holds the list of notes defined in the scale defined by a key a
 unlikely you'll need to access this object directly, there are public getters available for
 accessing the notes in a scale as an array, the number of notes in the scale, and the octave offsets
 associated with a scale (new octaves always start at `C` regardless of the temperament, key, or mode.
+
+## Music Utilities
+
+The constants and the utilities retated to musical state in [`musicUtils.ts`](musicUtils.ts) are
+required by other related modules.
+
+```typescript
+// Pitch Name types
+const GENERIC_NOTE_NAME = 'generic note name';
+const LETTER_NAME = 'letter name';
+const SOLFEGE_NAME = 'solfege name';
+const EAST_INDIAN_SOLFEGE_NAME = 'east indian solfege name';
+const SCALAR_MODE_NUMBER = 'scalar mode number';
+const CUSTOM_NAME = 'custom name';
+const UNKNOWN_PITCH_NAME = 'unknown';
+
+/**
+ * Removes an accidental and return the number of half steps that would have resulted from its
+ * application to the pitch.
+ *
+ * @param pitch - Upper or lowecase pitch name with accidentals as ASCII or Unicode.
+ * @returns An array (2-tuple) of the normalized pitch name and the change in half steps represented
+ * by the removed accidental.
+ */
+function stripAccidental: (pitch: string) => [string, number];
+
+/**
+ * Returns the normalized pitch nane.
+ *
+ * @remarks
+ * Internally, we use a standardize form for our pitch letter names:
+ * - Lowercase c, d, e, f, g, a, b for letter names.
+ * - #, b, x, and bb for sharp, flat, double sharp, and double flat for accidentals.
+ *
+ * Note names for temperaments with more than 12 semitones are of the form: n0, n1, ...
+ *
+ * @param pitch - Upper or lowecase pitch name with accidentals as ASCII or Unicode.
+ * @returns The normalized pitch name.
+ */
+function normalizePitch: (pitch: string) => string;
+
+/**
+ * Returns a pretty pitch name.
+ *
+ * @remarks
+ * The internal pitch name is converted to unicode, e.g., cb --> C♭.
+ *
+ * @param pitch - Upper or lowecase pitch name with accidentals as ASCII or Unicode.
+ * @returns The prettified pitch name.
+ */
+function displayPitch: (pitch: string) => string;
+
+/**
+ * Returns whether the pitch is a sharp or not flat?
+ *
+ * @param pitchName - The pitch name to test.
+ * @returns Whether the pitch is sharp or flat.
+ */
+function isASharp: (pitchName: string) => boolean;
+
+/**
+ * Returns the index value of the pitch name.
+ *
+ * @param pitchName - The pitch name to test.
+ * @returns Index into the chromatic scale with sharp notes.
+ *
+ * @throws {ItemNotFoundError}
+ * Thrown if pitchName isn't in chromatic scale.
+ */
+function findSharpIndex: (pitchName: string) => number;
+
+/**
+ * Returns whether the pitch is a flat or not sharp?
+ *
+ * @param pitchName - The pitch name to test.
+ * @returns Whether the pitch is flat or sharp.
+ */
+function isAFlat: (pitchName: string) => boolean;
+
+/**
+ * Returns the index value of the pitch name.
+ *
+ * @param pitchName - The pitch name to test.
+ * @returns Index into the chromatic scale with sharp notes.
+ *
+ * @throws {ItemNotFoundError}
+ * Thrown if pitchName isn't in chromatic scale.
+ */
+function findFlatIndex: (pitchName: string) => number;
+
+/**
+ * @remarks
+ * Pitches can be specified as a letter name, a solfege name, etc.
+ *
+ * @param pitchName - The pitch name to test.
+ * @returns The type of the pitch (letter name, solfege name, generic note name,or east indian
+ * solfege name).
+ */
+function getPitchType: (pitchName: string) => string;
+```

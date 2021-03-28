@@ -358,6 +358,7 @@ export function stripAccidental(pitch: string): [string, number] {
  * Note names for temperaments with more than 12 semitones are of the form: n0, n1, ...
  *
  * @param pitch - Upper or lowecase pitch name with accidentals as ASCII or Unicode.
+ * @returns The normalized pitch name.
  */
 export function normalizePitch(pitch: string): string {
     if (typeof pitch === 'number') {
@@ -380,6 +381,7 @@ export function normalizePitch(pitch: string): string {
  * The internal pitch name is converted to unicode, e.g., cb --> C♭.
  *
  * @param pitch - Upper or lowecase pitch name with accidentals as ASCII or Unicode.
+ * @returns The prettified pitch name.
  */
 export function displayPitch(pitch: string): string {
     // Ignore pitch numbers and pitch expressed as Hertz.
@@ -406,6 +408,7 @@ export function displayPitch(pitch: string): string {
  * Returns whether the pitch is a sharp or not flat?
  *
  * @param pitchName - The pitch name to test.
+ * @returns Whether the pitch is sharp or flat.
  */
 export function isASharp(pitchName: string): boolean {
     return pitchName.endsWith('#') || PITCH_LETTERS.includes(pitchName);
@@ -439,6 +442,7 @@ export function findSharpIndex(pitchName: string): number {
  * Returns whether the pitch is a flat or not sharp?
  *
  * @param pitchName - The pitch name to test.
+ * @returns Whether the pitch is flat or sharp.
  */
 export function isAFlat(pitchName: string): boolean {
     return pitchName.endsWith('b') || PITCH_LETTERS.includes(pitchName);

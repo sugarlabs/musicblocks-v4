@@ -535,6 +535,7 @@ export default class Temperament implements ITemperament {
             } else if (this._name == 'pythagorean') {
                 ratios = Temperament.PYTHAGOREAN_RATIOS;
             } else {
+                // Defaulting to 12-tone equal temperament.
                 console.debug(`Unknown temperament ${name}; using equal temperament`);
                 ratios = Temperament.TWELVE_TONE_EQUAL_RATIOS;
             }

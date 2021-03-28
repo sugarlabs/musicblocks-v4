@@ -8,6 +8,7 @@
 
 import { ITemperament } from './@types/temperament';
 import { normalizePitch, CHROMATIC_NOTES_SHARP, CHROMATIC_NOTES_FLAT } from './musicUtils';
+import { ItemNotFoundError } from './errors';
 
 /**
  * Temperament defines the relationships between notes.
@@ -437,7 +438,10 @@ export default class Temperament implements ITemperament {
      */
     public getFreqIndexByGenericNoteNameAndOctave(noteName: string, octave: number): number {
         if (!this._genericNoteNames.includes(noteName)) {
-            throw Error(`ItemNotFoundError: Note ${noteName} not found in generic note names.`);
+            throw new ItemNotFoundError<number>(
+                `Note ${noteName} not found in generic note names.`,
+                0
+            );
         }
 
         const ni: number = this._genericNoteNames.indexOf(noteName);
@@ -460,11 +464,15 @@ export default class Temperament implements ITemperament {
      * @returns The frequency that corresponds to the index and octave (in Hertz).
      */
     public getFreqByGenericNoteNameAndOctave(noteName: string, octave: number): number {
-        if (this._freqs.length === 0) {
-            return 0;
+        let i: number;
+        try {
+            if (this._freqs.length === 0) {
+                return 0;
+            }
+            return this._freqs[this.getFreqIndexByGenericNoteNameAndOctave(noteName, octave)];
+        } catch (err) {
+            return this._freqs[err.defaultValue];
         }
-        const i = this.getFreqIndexByGenericNoteNameAndOctave(noteName, octave);
-        return this._freqs[i];
     }
 
     /**
@@ -527,6 +535,7 @@ export default class Temperament implements ITemperament {
             } else if (this._name == 'pythagorean') {
                 ratios = Temperament.PYTHAGOREAN_RATIOS;
             } else {
+                // Defaulting to 12-tone equal temperament.
                 console.debug(`Unknown temperament ${name}; using equal temperament`);
                 ratios = Temperament.TWELVE_TONE_EQUAL_RATIOS;
             }
@@ -634,7 +643,7 @@ export default class Temperament implements ITemperament {
         } else if (CHROMATIC_NOTES_FLAT.includes(pitchName)) {
             i = CHROMATIC_NOTES_FLAT.indexOf(pitchName);
         } else {
-            throw Error(`ItemNotFoundError: pitch ${pitchName} not found.`);
+            throw new ItemNotFoundError<number>(`Pitch ${pitchName} not found.`, 0);
         }
 
         if (Object.keys(this._ratios).length && this._intervals.length !== 0) {

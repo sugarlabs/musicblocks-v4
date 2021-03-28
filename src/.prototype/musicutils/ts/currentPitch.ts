@@ -123,7 +123,7 @@ export default class CurrentPitch implements ICurrentPitch {
 
     /**
      * Sets current pitch to a new pitch by frequency, index and octave or name. These internal
-     * states are updates: freq, semitoneIndex, genericName, octave, and number.
+     * states are updated: freq, semitoneIndex, genericName, octave, and number.
      *
      * @param pitchName - The new pitch as a frequency (float), or a modal index (int) and octave or
      * note name (str) and octave. Note names can be "n7", "g", "sol", or, if defined, a custom name.
@@ -182,7 +182,7 @@ export default class CurrentPitch implements ICurrentPitch {
 
     /**
      * Updates the current note by applying a semitone transposition. These internal states are
-     * updates: freq, semitoneIndex, genericName, octave, and number.
+     * updated: freq, semitoneIndex, genericName, octave, and number.
      *
      * @param numberOfHalfSteps - The transposition in half steps.
      */
@@ -207,7 +207,7 @@ export default class CurrentPitch implements ICurrentPitch {
 
     /**
      * Updates the current note by applying a scalar transposition. These internal states are
-     * updates: freq, semitoneIndex, genericName, octave, and number.
+     * updated: freq, semitoneIndex, genericName, octave, and number.
      *
      * @param numberOfScalarSteps - The transposition in scalar steps.
      */

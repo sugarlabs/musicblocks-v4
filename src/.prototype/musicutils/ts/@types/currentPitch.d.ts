@@ -14,7 +14,7 @@ export interface ICurrentPitch {
     readonly octave: number;
     /** Getter for the generic name of the current note. */
     readonly genericName: string;
-    /** Getter for that the modal index of the current note. */
+    /** Getter for the modal index of the current note. */
     readonly semitoneIndex: number;
     /**
      * Getter for the index of the current note within the list of all of the notes defined by the

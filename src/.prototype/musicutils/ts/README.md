@@ -149,58 +149,53 @@ There are several ways to access the current pitch:
 - getting the frequency in Hertz, e.g., 392.0
 
     ```typescript
-    freq = cp.freq;
+    const freq: number = cp.freq;
     ```
 
 - getting the "generic" note name, e.g., n7
 
     ```typescript
-    note = cp.genericName;
+    const note: string = cp.genericName;
     ```
 
 - getting the current octave, e.g., 4
 
     ```typescript
-    octave = cp.octave;
+    const octave: number = cp.octave;
     ```
 
 - getting the pitch number, e.g., 55
 
     ```typescript
-    pitchNum = cp.number;
+    const pitchNum: number = cp.number;
     ```
 
 - getting the semitone index, e.g., 7
 
     ```typescript
-    semitoneIdx = cp.semitoneIndex;
+    const semitoneIdx: number = cp.semitoneIndex;
     ```
 
 And you can calculate a frequency based on an interval starting from the current pitch, defined in
 semitone or scalar steps.
 
 ```typescript
-freq = cp.getSemitoneInterval(4);
+const freq: number = cp.getSemitoneInterval(4);
 
-freq = cp.getScalarInterval(2);
+const freq: number = cp.getScalarInterval(2);
 ```
-
 
 ## Temperament
 
 The `Temperament` class in [`temperament.ts`](temperament.ts) allows generation of new Temperaments.
-In musical tuning, temperament is a tuning system that defines the
-notes (semitones) in an octave. Most modern Western musical
-instruments are tuned in the equal temperament system based on the
-1/12 root of 2 (12 semitones per octave). Many traditional
-temperaments are based on ratios.
+In musical tuning, temperament is a tuning system that defines the notes (semitones) in an octave.
+Most modern Western musical instruments are tuned in the equal temperament system based on the 1/12
+root of 2 (12 semitones per octave). Many traditional temperaments are based on ratios.
 
 ### Constructor
 
 ```typescript
 /**
- * Initializes the class.
- *
  * @remarks
  * A temperament will be generated but it can subsequently be overriden.
  *
@@ -233,7 +228,6 @@ numberOfSemitonesInOctave: number;
 /** Getter for the number of notes defined by the temperament. */
 numberOfNotesInTemperament: number;
 ```
-
 
 ### Instance Methods
 
@@ -377,61 +371,56 @@ public generateCustom: (
 public tune: (pitchName: string, octave: number, frequency: number) => number
 ```
 
-
 ### Description
 
-By default, the Temperament object creates an equal temperament based
-on 2^^(1/12), with a starting frequency of C0 == 16.3516 Hz. 9 octaves
-of 12 semitones are generated. Many other predefined temperaments are
-available and equal temperament can also be generated for other powers
-of 2. For example, 2^^(1/24) would produce quarter steps. Also, the
-temperament can be tuned to a different base pitch.
+By default, the Temperament object creates an equal temperament based on 2<sup>1/12</sup>, with a
+starting frequency of C0 = 16.3516 Hz. 9 octaves of 12 semitones are generated. Many other
+predefined temperaments are available and equal temperament can also be generated for other powers
+of 2. For example, 2^^(1/24) would produce quarter steps. Also, the temperament can be tuned to a
+different base pitch.
 
 The built-in temperaments are:
 
-* `"equal"`
-* `"just intonation"`
-* `"pythagorean"`
-* `"third comma meantone"`
-* `"quarter comma meantone"`
+- `"equal"`
+- `"just intonation"`
+- `"pythagorean"`
+- `"third comma meantone"`
+- `"quarter comma meantone"`
 
 ```typescript
-    const t: Temperament = Temperament("equal")
+const t: Temperament = Temperament("equal")
 ```
 
 To tune to a different base frequency:
 
 ```typescript
-    t.tune("a", 4, 441)
+t.tune("a", 4, 441)
 ```
 
-A generic name is defined for each note in the octave.  The convention
-is n0, n1, etc. These notes can be used by the
-getFreqByGenericNoteNameAndOctave method to retrieve a
-frequency by note name and octave.
+A generic name is defined for each note in the octave. The convention is `n0`, `n1`, etc. These
+notes can be used by the getFreqByGenericNoteNameAndOctave method to retrieve a frequency by note
+name and octave.
 
 ```typescript
-    const freq: number = t.getFreqByGenericNoteNameAndOctave("n7", 4)
+const freq: number = t.getFreqByGenericNoteNameAndOctave("n7", 4)
 ```
 
-You may need to know the number of semitones in an octave and
-the number of notes in the temperament.
+You may need to know the number of semitones in an octave and the number of notes in the temperament.
 
 ```typescript
-    const numberOfSemitones: number = t.numberOfSemitonesInOctave
-    const numberOfNotes: number = t.numberOfNotesInTemperament
+const numberOfSemitones: number = t.numberOfSemitonesInOctave
+const numberOfNotes: number = t.numberOfNotesInTemperament
 ```
 
-And the note name from an index...
+And the note name from an index ...
 
 ```typescript
-   const genericName: string = t.getNoteName(semitoneIndex)
+const genericName: string = t.getNoteName(semitoneIndex)
 ```
 
-You can get the pitch number from a frequency and a frequency from
-an index
+You can get the pitch number from a frequency and a frequency from an index.
 
 ```typescript
-   const pitchNumber: number = t.getNearestFreqIndex(freq)
-   const freq: number = t.getFreqByIndex(pitchNumber)
+const pitchNumber: number = t.getNearestFreqIndex(freq)
+const freq: number = t.getFreqByIndex(pitchNumber)
 ```

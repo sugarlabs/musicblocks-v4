@@ -118,7 +118,7 @@
     // MD024/no-duplicate-heading/no-duplicate-header - Multiple headings with the same content
     "MD024": {
         // Only check sibling headings
-        "allow_different_nesting": false,
+        "allow_different_nesting": true,
         // Only check sibling headings
         "siblings_only": false
     },
@@ -173,7 +173,7 @@
     // MD033/no-inline-html - Inline HTML
     "MD033": {
         // Allowed elements
-        "allowed_elements": []
+        "allowed_elements": ["sup"]
     },
 
     // MD034/no-bare-urls - Bare URL used

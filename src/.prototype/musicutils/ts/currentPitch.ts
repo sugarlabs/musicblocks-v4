@@ -43,17 +43,23 @@ export default class CurrentPitch implements ICurrentPitch {
      * @param i - Index into semitones defined by temperament; defaults to `7`, which maps to g
      * (sol) in an equal temperament tuning.
      * @param octave - Initial octave for the pitch. Defaults to Octave 4.
+     *
+     * @throws {ItemNotFoundError}
+     * Thrown if solfeges / east indian solfeges / mode numbers do not exist for the temperament's
+     * semitone count.
      */
     constructor(
-        keySignature: KeySignature = null,
-        temperament: Temperament = null,
+        keySignature?: KeySignature,
+        temperament?: Temperament,
         i: number = 7,
         octave: number = 4
     ) {
-        this._t = !temperament ? new Temperament() : temperament;
-        this._ks = !keySignature
-            ? new KeySignature('major', 'c', this._t.numberOfSemitonesInOctave)
-            : keySignature;
+        this._t = temperament === undefined ? new Temperament() : temperament;
+        this._ks =
+            keySignature === undefined
+                ? // Instantiation may throw Error.
+                  new KeySignature('major', 'c', this._t.numberOfSemitonesInOctave)
+                : keySignature;
         this._semitoneIndex = i;
         this._octave = octave;
 
@@ -132,10 +138,10 @@ export default class CurrentPitch implements ICurrentPitch {
             // pitchName is int
             else {
                 /*
-                 * A few assumptions here: If the int > number of defined in the temperament, assume it
-                 * is a frequency. If the int < number of semitones in an octave, assume it is a
-                 * semitone index. Otherwise, assume it is an index in the list of frequencies (a pitch
-                 * number).
+                 * A few assumptions here: If the int > number of defined in the temperament, assume
+                 * it is a frequency. If the int < number of semitones in an octave, assume it is a
+                 * semitone index. Otherwise, assume it is an index in the list of frequencies (a
+                 * pitch number).
                  */
                 if (pitchName > this._t.numberOfNotesInTemperament) {
                     this._defineByFrequency(pitchName);
@@ -162,7 +168,11 @@ export default class CurrentPitch implements ICurrentPitch {
             }
         } else if (typeof pitchName === 'string') {
             // Assume it is a name of some sort.
-            this._genericName = this._ks.convertToGenericNoteName(pitchName)[0];
+            try {
+                this._genericName = this._ks.convertToGenericNoteName(pitchName)[0];
+            } catch (err) {
+                this._genericName = err.defaultValue[0];
+            }
             this._semitoneIndex = this._t.getModalIndex(this._genericName);
             this._octave = octave;
             this._freq = this._t.getFreqByModalIndexAndOctave(this._semitoneIndex, this._octave);
@@ -177,10 +187,18 @@ export default class CurrentPitch implements ICurrentPitch {
      * @param numberOfHalfSteps - The transposition in half steps.
      */
     public applySemitoneTransposition(numberOfHalfSteps: number): void {
-        const [_genericName, deltaOctave] = this._ks
-            .semitoneTransform(this._genericName, numberOfHalfSteps)
-            .slice(0, 2) as [string, number];
-        this._genericName = _genericName;
+        let genericName: string;
+        let deltaOctave: number;
+        try {
+            [genericName, deltaOctave] = this._ks.semitoneTransform(
+                this._genericName,
+                numberOfHalfSteps
+            );
+        } catch (err) {
+            [genericName, deltaOctave] = err.defaultValue;
+        }
+
+        this._genericName = genericName;
         this._octave += deltaOctave;
         this._semitoneIndex = this._t.getModalIndex(this._genericName);
         this._freq = this._t.getFreqByModalIndexAndOctave(this._semitoneIndex, this._octave);
@@ -211,9 +229,17 @@ export default class CurrentPitch implements ICurrentPitch {
      * @returns The frequency of the note at the specified interval.
      */
     public getSemitoneInterval(numberOfHalfSteps: number): number {
-        const [genericName, deltaOctave] = this._ks
-            .semitoneTransform(this._genericName, numberOfHalfSteps)
-            .slice(0, 2) as [string, number];
+        let genericName: string;
+        let deltaOctave: number;
+        try {
+            [genericName, deltaOctave] = this._ks.semitoneTransform(
+                this._genericName,
+                numberOfHalfSteps
+            );
+        } catch (err) {
+            [genericName, deltaOctave] = err.defaultValue;
+        }
+
         const semitoneIndex = this._t.getModalIndex(genericName);
         const octave = this._octave + deltaOctave;
         return this._t.getFreqByModalIndexAndOctave(semitoneIndex, octave);

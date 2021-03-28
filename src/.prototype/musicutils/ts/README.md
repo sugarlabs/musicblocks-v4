@@ -184,3 +184,254 @@ freq = cp.getSemitoneInterval(4);
 
 freq = cp.getScalarInterval(2);
 ```
+
+
+## Temperament
+
+The `Temperament` class in [`temperament.ts`](temperament.ts) allows generation of new Temperaments.
+In musical tuning, temperament is a tuning system that defines the
+notes (semitones) in an octave. Most modern Western musical
+instruments are tuned in the equal temperament system based on the
+1/12 root of 2 (12 semitones per octave). Many traditional
+temperaments are based on ratios.
+
+### Constructor
+
+```typescript
+/**
+ * Initializes the class.
+ *
+ * @remarks
+ * A temperament will be generated but it can subsequently be overriden.
+ *
+ * @param name - The name of a temperament, e.g., "equal", "just intonation". etc.
+ */
+constructor(name: string = 'equal')
+```
+
+### Instance Variables
+
+```typescript
+/** Setter and Getter for the base frequency (in Hertz) used to seed the calculations. */
+baseFrequency: number;
+
+/** Setter and Getter for the number of octaves in the temperament. */
+numberOfOctaves: number;
+
+/** Getter for the name of the temperament. */
+name: string;
+
+/** Getter for the list of all of the frequencies in the temperament. */
+freqs: number[];
+
+/** Getter for the list of generic note names. */
+noteNames: string[];
+
+/** Getter for the number of notes defined per octave. */
+numberOfSemitonesInOctave: number;
+
+/** Getter for the number of notes defined by the temperament. */
+numberOfNotesInTemperament: number;
+```
+
+
+### Instance Methods
+
+```typescript
+/**
+ * Finds the index of the frequency nearest to the target.
+ *
+ * @param target - The target frequency we are looking for.
+ * @returns The index into the freqs array for the entry nearest to the target.
+ */
+public getNearestFreqIndex: (target: number) => number;
+
+/**
+ * Returns the generic note name associated with an index.
+ *
+ * @param semitoneIndex - Index into generic note names that define an octave.
+ * @returns The corresponding note name.
+ */
+public getNoteName: (semitoneIndex: number) => string;
+
+/**
+ * Returns the index associated with a generic note name.
+ *
+ * @param noteName - The corresponding note name.
+ * @returns Index into generic note names that define an octave.
+ */
+public getModalIndex: (noteName: string) => number;
+
+/**
+ * Returns the frequency by an index into the frequency list.
+ *
+ * @param pitchIndex - The index into the frequency list.
+ * @returns The frequency (in Hertz) of a note by index.
+ */
+public getFreqByIndex: (pitchIndex: number) => number;
+
+/**
+ * Converts an index into the frequency list into a modal index and an octave.
+ *
+ * @param pitchIndex - The index into the frequency list.
+ * @returns An array (2-tuple) of the modal index in the scale and the octave.
+ */
+public getModalIndexAndOctaveFromFreqIndex: (pitchIndex: number) => [number, number];
+
+/**
+ * Returns the frequency that corresponds to the index and octave (in Hertz).
+ *
+ * @remarks
+ * Modal index is an index into the notes in a octave.
+ *
+ * @param modalIndex - The index of the note within an octave.
+ * @param octave - Which octave to access.
+ */
+public getFreqByModalIndexAndOctave: (modalIndex: number, octave: number) => number;
+
+/**
+ * @remarks
+ * Note name can be used to calculate an index the notes in an octave.
+ *
+ * @param idx - The index into the frequency list.
+ * @returns An array (2-tuple) of the name of the note and which octave to access.
+ */
+public getGenericNoteNameAndOctaveByFreqIndex: (idx: number) => [string, number];
+
+/**
+ * @remarks
+ * Note name can be used to calculate an index the notes in an octave.
+ *
+ * @param noteName - The name of the note.
+ * @param octave - Which octave to access.
+ * @returns The index into the frequency list.
+ *
+ * @throws {ItemNotFoundError}
+ * Thrown if note name does not exist in list of generic note names.
+ */
+public getFreqIndexByGenericNoteNameAndOctave: (noteName: string, octave: number) => number;
+
+/**
+ * @remarks
+ * Note name can be used to calculate an index the notes in an octave.
+ *
+ * @param noteName - The name of the note.
+ * @param octave - Which octave to access.
+ * @returns The frequency that corresponds to the index and octave (in Hertz).
+ */
+public getFreqByGenericNoteNameAndOctave: (noteName: string, octave: number) => number;
+
+/**
+ * Creates one of the predefined temperaments based on the rules for generating the frequencies
+ * and the selected intervals used to determine which frequencies to include in the temperament.
+ * A rule might be to use a series of ratios between steps, as in the Pythagorean temperament,
+ * or to use a fixed ratio, such as the twelth root of two when calculating equal temperament.
+ *
+ * - The base frequency used when applying the rules is defined in `this._baseFrequency`.
+ * - The number of times to apply the rules is determined by `this._numberOfOctaves`.
+ * - The resultant frequencies are stored in `this._freqs`.
+ * - The resultant number of notes per octave is stored in `this._octaveLength`.
+ *
+ * @param name - The name of one of the predefined temperaments.
+ */
+public generate: (name: string) => void;
+
+/**
+ * @remarks
+ * Equal temperaments can be generated for different numbers of steps between the notes in an
+ * octave. The predefined equal temperament defines 12 steps per octave, which is perhaps the
+ * most common tuning system in modern Western music. But any number of steps can be used.
+ *
+ * @param numberOfSteps - The number of equal steps into which to divide an octave.
+ */
+public generateEqualTemperament: (numberOfSteps: number) => void
+
+/**
+ * @remarks
+ * A custom temperament can be defined with arbitrary rules.
+ *
+ * @param intervals - An ordered list of interval names to define per octave.
+ * @param ratios - A dictionary of ratios to apply when generating the note frequencies in an
+     octave. The dictionary keys are defined in the intervals list. Each ratio (between 1 and 2)
+    is applied to the base frequency of the octave. The final frequency should always be equal to
+    2.
+    * @param name - The name associated with the custom temperament.
+    */
+public generateCustom: (
+    intervals: string[],
+    ratios: { [key: string]: number },
+    name: string = 'custom'
+) => void
+
+/**
+ * Calculates a base frequency based on a pitch and frequency.
+ *
+ * @param pitchName - Pitch name, e.g. A#.
+ * @param octave - Octave.
+ * @param frequency - Frequency from which to calculate the new base frequency.
+ * @returns New base frequency for C0.
+ *
+ * @throws {ItemNotFoundError}
+ * Thrown if normalized pitch name does not exist in list of chromatic sharp/flat notes.
+ */
+public tune: (pitchName: string, octave: number, frequency: number) => number
+```
+
+
+### Description
+
+By default, the Temperament object creates an equal temperament based
+on 2^^(1/12), with a starting frequency of C0 == 16.3516 Hz. 9 octaves
+of 12 semitones are generated. Many other predefined temperaments are
+available and equal temperament can also be generated for other powers
+of 2. For example, 2^^(1/24) would produce quarter steps. Also, the
+temperament can be tuned to a different base pitch.
+
+The built-in temperaments are:
+
+* `"equal"`
+* `"just intonation"`
+* `"pythagorean"`
+* `"third comma meantone"`
+* `"quarter comma meantone"`
+
+```typescript
+    const t: Temperament = Temperament("equal")
+```
+
+To tune to a different base frequency:
+
+```typescript
+    t.tune("a", 4, 441)
+```
+
+A generic name is defined for each note in the octave.  The convention
+is n0, n1, etc. These notes can be used by the
+getFreqByGenericNoteNameAndOctave method to retrieve a
+frequency by note name and octave.
+
+```typescript
+    const freq: number = t.getFreqByGenericNoteNameAndOctave("n7", 4)
+```
+
+You may need to know the number of semitones in an octave and
+the number of notes in the temperament.
+
+```typescript
+    const numberOfSemitones: number = t.numberOfSemitonesInOctave
+    const numberOfNotes: number = t.numberOfNotesInTemperament
+```
+
+And the note name from an index...
+
+```typescript
+   const genericName: string = t.getNoteName(semitoneIndex)
+```
+
+You can get the pitch number from a frequency and a frequency from
+an index
+
+```typescript
+   const pitchNumber: number = t.getNearestFreqIndex(freq)
+   const freq: number = t.getFreqByIndex(pitchNumber)
+```

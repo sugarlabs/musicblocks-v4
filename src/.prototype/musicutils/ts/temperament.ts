@@ -8,7 +8,7 @@
 
 import { ITemperament } from './@types/temperament';
 import { normalizePitch, CHROMATIC_NOTES_SHARP, CHROMATIC_NOTES_FLAT } from './musicUtils';
-import { ItemNotFoundError } from './errors';
+import { ItemNotFoundDefaultError } from './errors';
 
 /**
  * Temperament defines the relationships between notes.
@@ -438,7 +438,7 @@ export default class Temperament implements ITemperament {
      */
     public getFreqIndexByGenericNoteNameAndOctave(noteName: string, octave: number): number {
         if (!this._genericNoteNames.includes(noteName)) {
-            throw new ItemNotFoundError<number>(
+            throw new ItemNotFoundDefaultError<number>(
                 `Note ${noteName} not found in generic note names.`,
                 0
             );
@@ -643,7 +643,7 @@ export default class Temperament implements ITemperament {
         } else if (CHROMATIC_NOTES_FLAT.includes(pitchName)) {
             i = CHROMATIC_NOTES_FLAT.indexOf(pitchName);
         } else {
-            throw new ItemNotFoundError<number>(`Pitch ${pitchName} not found.`, 0);
+            throw new ItemNotFoundDefaultError<number>(`Pitch ${pitchName} not found.`, 0);
         }
 
         if (Object.keys(this._ratios).length && this._intervals.length !== 0) {

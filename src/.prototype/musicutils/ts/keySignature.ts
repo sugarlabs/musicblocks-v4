@@ -121,15 +121,6 @@ export default class KeySignature implements IKeySignature {
         'ajam maqam': 'bb'
     };
 
-    static readonly MODE_MAPPER: { [key: string]: string } = {
-        'ionian': 'major',
-        'aeolian': 'minor',
-        'natural minor': 'minor',
-        'harmonic minor': 'minor',
-        'major': 'major',
-        'minor': 'minor'
-    };
-
     /** These key signatures (and their equivalents) prefer sharps over flats. */
     static readonly PREFER_SHARPS: string[] = [
         'c major',

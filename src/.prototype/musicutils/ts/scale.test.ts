@@ -35,12 +35,10 @@ describe('class Scale', () => {
             ).toEqual(['c', 'd', 'e', 'f', 'g', 'a', 'b', 'c']);
         });
 
-        test('Generate scale for C Major with pitch format not matching with number of semitones and verify', () => {
+        test('Generate scale for C Major with pitch format not matching with number of semitones and expect error', () => {
             expect(() => {
                 sCMaj.getScale(['c', 'c#', 'd', 'd#', 'e', 'f', 'f#', 'g', 'g#', 'a']);
-            }).toThrow(
-                new Error('FormatMismatchError: pitch format does not match number of semitones')
-            );
+            }).toThrowError('pitch format does not match number of semitones');
         });
 
         const sGMaj = new Scale([2, 2, 1, 2, 2, 2, 1], 7);
@@ -70,6 +68,7 @@ describe('class Scale', () => {
                 'n0'
             ]);
         });
+
         const semiTones21 = new Scale([2, 2, 1, 2, 2, 2, 1], 7, 21);
         test('Generate scale for C Major when number of semitones are 21 and verify', () => {
             expect(semiTones21.getScale()).toEqual([

@@ -694,9 +694,9 @@ export default class KeySignature implements IKeySignature {
         if (sourceList.includes(pitchName)) {
             const i = sourceList.indexOf(pitchName);
             try {
-                return this.convertToGenericNoteName(this._scale[i])[0];
+                return this.convertToGenericNoteName(this._scale[i]);
             } catch (err) {
-                return err.defaultValue[0];
+                return err.defaultValue;
             }
         }
 
@@ -706,9 +706,9 @@ export default class KeySignature implements IKeySignature {
             let i = sourceList.indexOf(pitchName);
             let noteName: string;
             try {
-                noteName = this.convertToGenericNoteName(this._scale[i])[0];
+                noteName = this.convertToGenericNoteName(this._scale[i]);
             } catch (err) {
-                noteName = err.defaultValue[0];
+                noteName = err.defaultValue;
             }
 
             i = this._noteNames.indexOf(noteName);
@@ -758,49 +758,45 @@ export default class KeySignature implements IKeySignature {
      * @throws {ItemNotFoundDefaultError<[string]>}
      * Thrown if the supplied pitch name does not match any type.
      */
-    public convertToGenericNoteName(pitchName: string): [string] {
+    public convertToGenericNoteName(pitchName: string): string {
         pitchName = normalizePitch(pitchName);
         const originalNotation = this.pitchNameType(pitchName);
 
         // Maybe it is already a generic name.
         if (originalNotation === GENERIC_NOTE_NAME) {
-            return [pitchName];
+            return pitchName;
         }
 
         if (this._numberOfSemitones === 21) {
             if (ALL_NOTES.includes(pitchName)) {
-                return [this._noteNames[ALL_NOTES.indexOf(pitchName)]];
+                return this._noteNames[ALL_NOTES.indexOf(pitchName)];
             }
         }
 
         if (originalNotation === LETTER_NAME) {
             // Look for a letter name, e.g., g# or ab.
             if (pitchName.includes('#') && isASharp(pitchName)) {
-                return [this._noteNames[findSharpIndex(pitchName)]];
+                return this._noteNames[findSharpIndex(pitchName)];
             }
 
             if (isAFlat(pitchName)) {
-                return [this._noteNames[findFlatIndex(pitchName)]];
+                return this._noteNames[findFlatIndex(pitchName)];
             }
 
             // Catch cb, bx, etc.
             if (pitchName in EQUIVALENT_SHARPS) {
-                return [
-                    this._noteNames[CHROMATIC_NOTES_SHARP.indexOf(EQUIVALENT_SHARPS[pitchName])]
-                ];
+                return this._noteNames[CHROMATIC_NOTES_SHARP.indexOf(EQUIVALENT_SHARPS[pitchName])];
             }
 
             if (pitchName in EQUIVALENT_FLATS) {
-                return [this._noteNames[findFlatIndex(EQUIVALENT_FLATS[pitchName])]];
+                return this._noteNames[findFlatIndex(EQUIVALENT_FLATS[pitchName])];
             }
 
             if (pitchName in EQUIVALENTS) {
-                return [
-                    this._noteNames[
-                        EQUIVALENTS[pitchName][0].includes('#')
-                            ? findSharpIndex(EQUIVALENTS[pitchName][0])
-                            : findFlatIndex(EQUIVALENTS[pitchName][0])
-                    ]
+                return this._noteNames[
+                    EQUIVALENTS[pitchName][0].includes('#')
+                        ? findSharpIndex(EQUIVALENTS[pitchName][0])
+                        : findFlatIndex(EQUIVALENTS[pitchName][0])
                 ];
             }
         }
@@ -810,15 +806,15 @@ export default class KeySignature implements IKeySignature {
             if (this._fixedSolfege) {
                 const noteName = this._nameConverter(pitchName, this._solfegeNotes);
                 if (noteName !== null) {
-                    return [noteName];
+                    return noteName;
                 }
             } else {
                 if (pitchName.includes('#') && SOLFEGE_SHARP.includes(pitchName)) {
-                    return [this._noteNames[SOLFEGE_SHARP.indexOf(pitchName)]];
+                    return this._noteNames[SOLFEGE_SHARP.indexOf(pitchName)];
                 }
 
                 if (SOLFEGE_FLAT.includes(pitchName)) {
-                    return [this._noteNames[SOLFEGE_FLAT.indexOf(pitchName)]];
+                    return this._noteNames[SOLFEGE_FLAT.indexOf(pitchName)];
                 }
             }
         }
@@ -828,7 +824,7 @@ export default class KeySignature implements IKeySignature {
             if (this._customNoteNames.length > 0) {
                 const noteName = this._nameConverter(pitchName, this._customNoteNames);
                 if (noteName !== null) {
-                    return [noteName];
+                    return noteName;
                 }
             }
 
@@ -836,7 +832,7 @@ export default class KeySignature implements IKeySignature {
                 const strippedPitch = stripAccidental(pitchName)[0];
                 const noteName = this._nameConverter(strippedPitch, this._customNoteNames);
                 if (noteName !== null) {
-                    return [noteName];
+                    return noteName;
                 }
             } else {
                 const strippedPitch = stripAccidental(pitchName)[0];
@@ -845,14 +841,14 @@ export default class KeySignature implements IKeySignature {
                     if (i > this._noteNames.length) {
                         i = 0;
                     }
-                    return [this._noteNames[i]];
+                    return this._noteNames[i];
                 }
                 if (SCALAR_NAMES_FLAT.includes(pitchName)) {
                     let i = this._customNoteNames.indexOf(strippedPitch) - 1;
                     if (i > 0) {
                         i = this._noteNames.length;
                     }
-                    return [this._noteNames[i]];
+                    return this._noteNames[i];
                 }
             }
         }
@@ -862,15 +858,15 @@ export default class KeySignature implements IKeySignature {
             if (this._fixedSolfege) {
                 const noteName = this._nameConverter(pitchName, this._eastIndianSolfegeNotes);
                 if (noteName !== null) {
-                    return [noteName];
+                    return noteName;
                 }
             } else {
                 if (pitchName.includes('#') && EAST_INDIAN_SHARP.includes(pitchName)) {
-                    return [this._noteNames[EAST_INDIAN_SHARP.indexOf(pitchName)]];
+                    return this._noteNames[EAST_INDIAN_SHARP.indexOf(pitchName)];
                 }
 
                 if (EAST_INDIAN_FLAT.includes(pitchName)) {
-                    return [this._noteNames[EAST_INDIAN_FLAT.indexOf(pitchName)]];
+                    return this._noteNames[EAST_INDIAN_FLAT.indexOf(pitchName)];
                 }
             }
         }
@@ -880,15 +876,15 @@ export default class KeySignature implements IKeySignature {
             if (this._fixedSolfege) {
                 const noteName = this._nameConverter(pitchName, this._scalarModeNumbers);
                 if (noteName !== null) {
-                    return [noteName];
+                    return noteName;
                 }
             } else {
                 if (pitchName.includes('#') && SCALAR_NAMES_SHARP.includes(pitchName)) {
-                    return [this._noteNames[SCALAR_NAMES_SHARP.indexOf(pitchName)]];
+                    return this._noteNames[SCALAR_NAMES_SHARP.indexOf(pitchName)];
                 }
 
                 if (SCALAR_NAMES_FLAT.includes(pitchName)) {
-                    return [this._noteNames[SCALAR_NAMES_FLAT.indexOf(pitchName)]];
+                    return this._noteNames[SCALAR_NAMES_FLAT.indexOf(pitchName)];
                 }
             }
         }
@@ -1278,8 +1274,8 @@ export default class KeySignature implements IKeySignature {
                 const [strippedPitch, delta] = stripAccidental(startingPitch);
                 let res: [string];
                 try {
-                    const [noteName] = this._noteNames.includes(strippedPitch)
-                        ? [strippedPitch]
+                    const noteName = this._noteNames.includes(strippedPitch)
+                        ? strippedPitch
                         : this.convertToGenericNoteName(strippedPitch);
                     if (this._noteNames.includes(noteName)) {
                         let i = this._noteNames.indexOf(noteName);
@@ -1295,13 +1291,13 @@ export default class KeySignature implements IKeySignature {
                 }
             }
 
-            let res: [string];
+            let res: string;
             try {
                 res = this.convertToGenericNoteName(startingPitch);
             } catch (err) {
                 res = err.defaultValue;
             }
-            const [noteName] = res;
+            const noteName = res;
             const [strippedPitch, delta] = stripAccidental(noteName); // startingPitch
             if (this._noteNames.includes(strippedPitch)) {
                 let i = this._noteNames.indexOf(strippedPitch);
@@ -1462,9 +1458,9 @@ export default class KeySignature implements IKeySignature {
         // The calculation is done in the generic note namespace.
         let genericPitch: string;
         try {
-            genericPitch = this.convertToGenericNoteName(startingPitch)[0];
+            genericPitch = this.convertToGenericNoteName(startingPitch);
         } catch (err) {
-            genericPitch = err.defaultValue[0];
+            genericPitch = err.defaultValue;
         }
         let res: [string, number, number];
         try {
@@ -1584,9 +1580,9 @@ export default class KeySignature implements IKeySignature {
     private _pitchToNoteNumber(pitchName: string, octave: number): number {
         let genericName: string;
         try {
-            genericName = this.convertToGenericNoteName(pitchName)[0];
+            genericName = this.convertToGenericNoteName(pitchName);
         } catch (err) {
-            genericName = err.defaultValue[0];
+            genericName = err.defaultValue;
         }
         const ni = this._noteNames.indexOf(genericName);
         const i = octave * this._numberOfSemitones + ni;
@@ -1742,9 +1738,9 @@ export default class KeySignature implements IKeySignature {
         const preferSharps = target.includes('#');
         // The calculation is done in the generic note namespace.
         try {
-            target = this.convertToGenericNoteName(target)[0];
+            target = this.convertToGenericNoteName(target);
         } catch (err) {
-            target = err.defaultValue[0];
+            target = err.defaultValue;
         }
         const [strippedTarget, delta] = stripAccidental(target);
 

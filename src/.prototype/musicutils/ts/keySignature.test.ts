@@ -78,7 +78,7 @@ describe('Key Signature', () => {
         const t = new Temperament();
         expect(
             Math.floor(
-                t.getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('a')[0], 4) + 0.5
+                t.getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('a'), 4) + 0.5
             )
         ).toBe(440);
 
@@ -161,18 +161,18 @@ describe('Key Signature', () => {
         expect(ks.solfegeNotes[3]).toBe('meb');
 
         ks = new KeySignature();
-        expect(ks.convertToGenericNoteName('g')[0]).toBe('n7');
-        expect(ks.convertToGenericNoteName('sol')[0]).toBe('n7');
-        expect(ks.convertToGenericNoteName('5')[0]).toBe('n7');
-        expect(ks.convertToGenericNoteName('pa')[0]).toBe('n7');
-        expect(ks.convertToGenericNoteName('g#')[0]).toBe('n8');
-        expect(ks.convertToGenericNoteName('sol#')[0]).toBe('n8');
-        expect(ks.convertToGenericNoteName('5#')[0]).toBe('n8');
-        expect(ks.convertToGenericNoteName('pa#')[0]).toBe('n8');
+        expect(ks.convertToGenericNoteName('g')).toBe('n7');
+        expect(ks.convertToGenericNoteName('sol')).toBe('n7');
+        expect(ks.convertToGenericNoteName('5')).toBe('n7');
+        expect(ks.convertToGenericNoteName('pa')).toBe('n7');
+        expect(ks.convertToGenericNoteName('g#')).toBe('n8');
+        expect(ks.convertToGenericNoteName('sol#')).toBe('n8');
+        expect(ks.convertToGenericNoteName('5#')).toBe('n8');
+        expect(ks.convertToGenericNoteName('pa#')).toBe('n8');
 
         ks.customNoteNames = ['charlie', 'delta', 'echo', 'foxtrot', 'golf', 'alfa', 'bravo'];
-        expect(ks.convertToGenericNoteName('golf')[0]).toBe('n7');
-        expect(ks.convertToGenericNoteName('golf#')[0]).toBe('n8');
+        expect(ks.convertToGenericNoteName('golf')).toBe('n7');
+        expect(ks.convertToGenericNoteName('golf#')).toBe('n8');
 
         expect(ks.semitoneTransform('g', 3)[0]).toBe('a#');
         expect(ks.semitoneTransform('n7', 3)[0]).toBe('n10');
@@ -221,10 +221,10 @@ describe('Key Signature', () => {
     test('fixed solfege', () => {
         const ks = new KeySignature('major', 'g');
         expect(ks.genericNoteNameConvertToType('n7', SOLFEGE_NAME)).toBe('sol');
-        expect(ks.convertToGenericNoteName('sol')[0]).toBe('n7');
+        expect(ks.convertToGenericNoteName('sol')).toBe('n7');
         ks.fixedSolfege = true;
         expect(ks.genericNoteNameConvertToType('n7', SOLFEGE_NAME)).toBe('do');
-        expect(ks.convertToGenericNoteName('do')[0]).toBe('n7');
+        expect(ks.convertToGenericNoteName('do')).toBe('n7');
     });
 
     test('frequency conversion', () => {
@@ -234,36 +234,30 @@ describe('Key Signature', () => {
 
         expect(
             Number(
-                t
-                    .getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('g')[0], 4)
-                    .toFixed(2)
+                t.getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('g'), 4).toFixed(2)
             )
         ).toBe(392.0);
         expect(
             Number(
                 t
-                    .getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('sol')[0], 4)
+                    .getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('sol'), 4)
                     .toFixed(2)
             )
         ).toBe(392.0);
         expect(
             Number(
-                t
-                    .getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('5')[0], 4)
-                    .toFixed(2)
+                t.getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('5'), 4).toFixed(2)
+            )
+        ).toBe(392.0);
+        expect(
+            Number(
+                t.getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('pa'), 4).toFixed(2)
             )
         ).toBe(392.0);
         expect(
             Number(
                 t
-                    .getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('pa')[0], 4)
-                    .toFixed(2)
-            )
-        ).toBe(392.0);
-        expect(
-            Number(
-                t
-                    .getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('golf')[0], 4)
+                    .getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('golf'), 4)
                     .toFixed(2)
             )
         ).toBe(392.0);

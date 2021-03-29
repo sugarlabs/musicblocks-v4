@@ -37,7 +37,7 @@ export interface IKeySignature {
      * Converts from a letter name used by 12-semitone temperaments to a generic note name as
      * defined by the temperament.
      */
-    convertToGenericNoteName: (pitchName: string) => [string];
+    convertToGenericNoteName: (pitchName: string) => string;
     /** Returns the corresponding pitch in the scale (and any change in octave). */
     modalPitchToLetter: (modalIndex: number) => [string, number];
     /** Checks to see if target note is in the scale. */

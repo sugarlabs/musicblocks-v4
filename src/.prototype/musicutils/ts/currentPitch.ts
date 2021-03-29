@@ -169,9 +169,9 @@ export default class CurrentPitch implements ICurrentPitch {
         } else if (typeof pitchName === 'string') {
             // Assume it is a name of some sort.
             try {
-                this._genericName = this._ks.convertToGenericNoteName(pitchName)[0];
+                this._genericName = this._ks.convertToGenericNoteName(pitchName);
             } catch (err) {
-                this._genericName = err.defaultValue[0];
+                this._genericName = err.defaultValue;
             }
             this._semitoneIndex = this._t.getModalIndex(this._genericName);
             this._octave = octave;

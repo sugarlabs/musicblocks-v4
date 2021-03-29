@@ -137,7 +137,7 @@ describe('Music utilities', () => {
         test('Generate index of sharp in pitch db and expect a could not find sharp index error', () => {
             expect(() => {
                 findSharpIndex('db');
-            }).toThrowError('ItemNotFoundError: Could not find sharp index for db');
+            }).toThrowError('Could not find sharp index for db');
         });
     });
 
@@ -175,7 +175,7 @@ describe('Music utilities', () => {
         test('Generate index of sharp in pitch c# and expect a could not find flat index error', () => {
             expect(() => {
                 findFlatIndex('c#');
-            }).toThrowError('ItemNotFoundError: Could not find flat index for c#');
+            }).toThrowError('Could not find flat index for c#');
         });
     });
 

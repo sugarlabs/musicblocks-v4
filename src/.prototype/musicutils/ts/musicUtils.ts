@@ -5,6 +5,8 @@
  * Licensed under the AGPL-3.0 License.
  */
 
+import { ItemNotFoundError } from './errors';
+
 /*
  * Utilities and constants retated to musical state as required by other related modules.
  */
@@ -435,7 +437,7 @@ export function findSharpIndex(pitchName: string): number {
         }
     }
 
-    throw Error(`ItemNotFoundError: Could not find sharp index for ${pitchName}`);
+    throw new ItemNotFoundError(`Could not find sharp index for ${pitchName}`);
 }
 
 /**
@@ -469,7 +471,7 @@ export function findFlatIndex(pitchName: string): number {
         }
     }
 
-    throw Error(`ItemNotFoundError: Could not find flat index for ${pitchName}`);
+    throw new ItemNotFoundError(`Could not find flat index for ${pitchName}`);
 }
 
 /**

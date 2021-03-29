@@ -7,10 +7,10 @@
 
 /** Interface for the Scale class. */
 export interface IScale {
-    /** Getter that returns the number of notes in the scale. */
-    numberOfSemitones: number;
-    /** Getter that returns the notes defined by the temperament. */
-    noteNames: string[];
+    /** Getter for the number of notes in the scale. */
+    readonly numberOfSemitones: number;
+    /** Getter for the notes defined by the temperament. */
+    readonly noteNames: string[];
 
     /**
      * Returns the notes in the scale.

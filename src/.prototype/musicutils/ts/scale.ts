@@ -123,7 +123,7 @@ export class Scale implements IScale {
      *
      * @readonly
      */
-    public get numberOfSemitones() {
+    public get numberOfSemitones(): number {
         return this._noteNames.length;
     }
 
@@ -135,7 +135,7 @@ export class Scale implements IScale {
      *
      * @readonly
      */
-    public get noteNames() {
+    public get noteNames(): string[] {
         return this._noteNames;
     }
 

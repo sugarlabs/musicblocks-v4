@@ -424,3 +424,80 @@ You can get the pitch number from a frequency and a frequency from an index.
 const pitchNumber: number = t.getNearestFreqIndex(freq);
 const freq: number = t.getFreqByIndex(pitchNumber);
 ```
+
+## Scale
+
+The `Scale` class in [`scale.ts`](scale.ts) allows defining a scale. A scale is a selection of notes
+in an octave.
+
+### Constructor
+
+```typescript
+/**
+ * @remarks
+ * When defining a scale, we need the half steps pattern that defines the selection and a starting
+ * note, e.g., C or F#.
+ *
+ * @param halfStepsPattern - A list of integer values that define how many half steps to take
+ * between each note in the scale, e.g., [2, 2, 1, 2, 2, 2, 1] defines the steps for a Major scale.
+ * @param startingIndex - An index into the half steps defining an octave that determines from where
+ * to start building the scale, e.g., 0 for C and 7 for G in a 12-step temperament. Defaults to `0`.
+ * @param numberOfSemitones - If the `halfStepsPattern` is an empty list, then use the number of
+ * semitones instead. (Or trigger a mapping from 12 to 21.) Defaults to `12`.
+ * @param preferSharps - If we are mapping from 12 to 21 semitones, we need to know whether or not
+ * to prefer sharps or flats. Defaults to `true`.
+ */
+constructor(
+    halfStepsPattern: number[] | null = null,
+    startingIndex: number = 0,
+    numberOfSemitones: number = 12,
+    preferSharps: boolean = true
+)
+```
+
+### Instance Variables
+
+```typescript
+/** Getter for the number of notes in the scale. */
+numberOfSemitones: number;
+
+/** Getter for the notes defined by the temperament. */
+noteNames: string[];
+```
+
+### Instance Methods
+
+```typescript
+/**
+ * Returns the notes in the scale.
+ *
+ * @param pitchFormat - Array of letter names in the teperament.
+ *
+ * @throws {FormatMismatchError}
+ * Thrown if `pitchFormat` length does not match number of semitones.
+ */
+getScale: (pitchFormat?: string[]) => string[];
+
+/**
+ * Returns the notes in the scale and the octave deltas.
+ *
+ * @remarks
+ * The notes in the scale are a subset of the notes defined by the temperament.
+ * The octave deltas (either 0 or 1) are used to mark notes above B#, which would be in the next
+ * octave, e.g., G3, A3, B3, C4...
+ *
+ * @param pitchFormat - Array of letter names in the teperament.
+ * @returns an array (2-tuple) of the notes in the scale and the octave deltas.
+ *
+ * @throws {FormatMismatchError}
+ * Thrown if `pitchFormat` length does not match number of semitones.
+ */
+getScaleAndOctaveDeltas: (pitchFormat?: string[]) => [string[], number[]];
+```
+
+### Description
+
+The Scale object holds the list of notes defined in the scale defined by a key and mode. While it is
+unlikely you'll need to access this object directly, there are public getters available for
+accessing the notes in a scale as an array, the number of notes in the scale, and the octave offsets
+associated with a scale (new octaves always start at `C` regardless of the temperament, key, or mode.

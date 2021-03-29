@@ -888,3 +888,56 @@ function findFlatIndex: (pitchName: string) => number;
  */
 function getPitchType: (pitchName: string) => string;
 ```
+
+## Example
+
+Putting it all together ...
+
+```typescript
+import Temperament from './temperament';
+import KeySignature from './keySignature';
+import CurrentPitch from './currentPitch';
+
+// Use the default tuning (Equal temperament) and the default key and mode (C Major).
+let cp = new CurrentPitch();
+console.log(cp.freq, '\n');
+
+// Use Pythagorean tuning and G Major.
+const t = new Temperament('pythagorean');
+const ks = new KeySignature('major', 'g');
+cp = new CurrentPitch(ks, t);
+console.log(cp.freq, '\n');
+
+// Walk through the scale.
+const modeLength = ks.modeLength;
+console.log(cp.freq);
+for (let i = 0; i < modeLength; i++) {
+    cp.applyScalarTransposition(1);
+    console.log(cp.freq);
+}
+console.log('\n');
+
+// Set the current pitch to G4.
+cp.setPitch('g', 4);
+console.log(cp.toString());
+```
+
+The default settings are Equal temperament, C Major, and G4. This results in a frequency of
+`391.99548797210804`.
+
+Switching to Pythagorean tuning results in G4 mapping to `403.21972995787394`.
+
+The frequencies in G Major (Octave 4) are:
+
+```typescript
+403.21972995787394
+453.62219620260817
+510.3249707279342
+268.8131533052493
+302.4147974684054
+335.6374564664841
+377.59213852479456
+806.439459915748
+```
+
+Setting the current note back to G4: `n7 403.21972995787394`

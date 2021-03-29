@@ -259,4 +259,12 @@ export default class CurrentPitch implements ICurrentPitch {
         const octave = this._octave + deltaOctave;
         return this._t.getFreqByModalIndexAndOctave(semitoneIndex, octave);
     }
+
+    /**
+     * Returns the generic note name and the frequency of the current pitch.
+     * @override
+     */
+    public toString() {
+        return `${this._genericName} ${this._freq}`;
+    }
 }

@@ -502,13 +502,296 @@ unlikely you'll need to access this object directly, there are public getters av
 accessing the notes in a scale as an array, the number of notes in the scale, and the octave offsets
 associated with a scale (new octaves always start at `C` regardless of the temperament, key, or mode.
 
-## Music Utilities
+## Music Utils
 
 The constants and the utilities retated to musical state in [`musicUtils.ts`](musicUtils.ts) are
 required by other related modules.
 
+### Constants
+
 ```typescript
-// Pitch Name types
+const SHARP: string = '♯';
+const FLAT: string = '♭';
+const NATURAL: string = '♮';
+const DOUBLESHARP: string = '𝄪';
+const DOUBLEFLAT: string = '𝄫';
+
+const CHROMATIC_NOTES_SHARP: string[] = [
+    'c',
+    'c#',
+    'd',
+    'd#',
+    'e',
+    'f',
+    'f#',
+    'g',
+    'g#',
+    'a',
+    'a#',
+    'b'
+];
+
+const CHROMATIC_NOTES_FLAT: string[] = [
+    'c',
+    'db',
+    'd',
+    'eb',
+    'e',
+    'f',
+    'gb',
+    'g',
+    'ab',
+    'a',
+    'bb',
+    'b'
+];
+
+/**
+ * @remarks
+ * Meantone temperaments use 21 notes.
+ */
+const ALL_NOTES: string[] = [
+    'c',
+    'c#',
+    'db',
+    'd',
+    'd#',
+    'eb',
+    'e',
+    'e#',
+    'fb',
+    'f',
+    'f#',
+    'gb',
+    'g',
+    'g#',
+    'ab',
+    'a',
+    'a#',
+    'bb',
+    'b',
+    'b#',
+    'cb'
+];
+
+const SCALAR_MODE_NUMBERS: string[] = ['1', '2', '3', '4', '5', '6', '7'];
+
+const SOLFEGE_NAMES: string[] = ['do', 're', 'me', 'fa', 'sol', 'la', 'ti'];
+
+const EAST_INDIAN_NAMES: string[] = ['sa', 're', 'ga', 'ma', 'pa', 'dha', 'ni'];
+
+const EQUIVALENT_FLATS: { [key: string]: string } = {
+    'c#': 'db',
+    'd#': 'eb',
+    'f#': 'gb',
+    'g#': 'ab',
+    'a#': 'bb',
+    'e#': 'f',
+    'b#': 'c',
+    'cb': 'cb',
+    'fb': 'fb'
+};
+
+const EQUIVALENT_SHARPS: { [key: string]: string } = {
+    'db': 'c#',
+    'eb': 'd#',
+    'gb': 'f#',
+    'ab': 'g#',
+    'bb': 'a#',
+    'cb': 'b',
+    'fb': 'e',
+    'e#': 'e#',
+    'b#': 'b#'
+};
+
+/**
+ * @remarks
+ * This notation only applies to temperaments with 12 semitones.
+ */
+const PITCH_LETTERS: string[] = ['c', 'd', 'e', 'f', 'g', 'a', 'b'];
+
+/**
+ * @remarks
+ * These defintions are only relevant to equal temperament.
+ */
+const SOLFEGE_SHARP: string[] = [
+    'do',
+    'do#',
+    're',
+    're#',
+    'me',
+    'fa',
+    'fa#',
+    'sol',
+    'sol#',
+    'la',
+    'la#',
+    'ti'
+];
+
+const SOLFEGE_FLAT: string[] = [
+    'do',
+    'reb',
+    're',
+    'meb',
+    'me',
+    'fa',
+    'solb',
+    'sol',
+    'lab',
+    'la',
+    'tib',
+    'ti'
+];
+
+const EAST_INDIAN_SHARP: string[] = [
+    'sa',
+    'sa#',
+    're',
+    're#',
+    'ga',
+    'ma',
+    'ma#',
+    'pa',
+    'pa#',
+    'dha',
+    'dha#',
+    'ni'
+];
+
+const EAST_INDIAN_FLAT: string[] = [
+    'sa',
+    'reb',
+    're',
+    'gab',
+    'ga',
+    'ma',
+    'pab',
+    'pa',
+    'dhab',
+    'dha',
+    'nib',
+    'ni'
+];
+
+const SCALAR_NAMES_SHARP: string[] = [
+    '1',
+    '1#',
+    '2',
+    '2#',
+    '3',
+    '4',
+    '4#',
+    '5',
+    '5#',
+    '6',
+    '6#',
+    '7'
+];
+
+const SCALAR_NAMES_FLAT: string[] = [
+    '1',
+    '2b',
+    '2',
+    '3b',
+    '3',
+    '4',
+    '4b',
+    '5',
+    '6b',
+    '6',
+    '7b',
+    '7'
+];
+
+const EQUIVALENTS: { [key: string]: string[] } = {
+    'ax': ['b', 'cb'],
+    'a#': ['bb'],
+    'a': ['a', 'bbb', 'gx'],
+    'ab': ['g#'],
+    'abb': ['g', 'fx'],
+    'bx': ['c#'],
+    'b#': ['c', 'dbb'],
+    'b': ['b', 'cb', 'ax'],
+    'bb': ['a#'],
+    'bbb': ['a', 'gx'],
+    'cx': ['d'],
+    'c#': ['db'],
+    'c': ['c', 'dbb', 'b#'],
+    'cb': ['b'],
+    'cbb': ['bb', 'a#'],
+    'dx': ['e', 'fb'],
+    'd#': ['eb', 'fbb'],
+    'd': ['d', 'ebb', 'cx'],
+    'db': ['c#', 'bx'],
+    'dbb': ['c', 'b#'],
+    'ex': ['f#', 'gb'],
+    'e#': ['f', 'gbb'],
+    'e': ['e', 'fb', 'dx'],
+    'eb': ['d#', 'fbb'],
+    'ebb': ['d', 'cx'],
+    'fx': ['g', 'abb'],
+    'f#': ['gb', 'ex'],
+    'f': ['f', 'e#', 'gbb'],
+    'fb': ['e', 'dx'],
+    'fbb': ['eb', 'd#'],
+    'gx': ['a', 'bbb'],
+    'g#': ['ab'],
+    'g': ['g', 'abb', 'fx'],
+    'gb': ['f#', 'ex'],
+    'gbb': ['f', 'e#']
+};
+
+const CONVERT_DOWN: { [key: string]: string } = {
+    c: 'b#',
+    cb: 'b',
+    cbb: 'a#',
+    d: 'cx',
+    db: 'c#',
+    dbb: 'c',
+    e: 'dx',
+    eb: 'd#',
+    ebb: 'd',
+    f: 'e#',
+    fb: 'e',
+    fbb: 'd#',
+    g: 'fx',
+    gb: 'f#',
+    gbb: 'f',
+    a: 'gx',
+    ab: 'g#',
+    abb: 'g',
+    b: 'ax',
+    bb: 'a#',
+    bbb: 'a'
+};
+
+const CONVERT_UP: { [key: string]: string } = {
+    'cx': 'd',
+    'c#': 'db',
+    'c': 'dbb',
+    'dx': 'e',
+    'd#': 'eb',
+    'd': 'ebb',
+    'ex': 'f#',
+    'e#': 'f',
+    'e': 'fb',
+    'fx': 'g',
+    'f#': 'gb',
+    'f': 'gbb',
+    'gx': 'a',
+    'g#': 'ab',
+    'g': 'abb',
+    'ax': 'b',
+    'a#': 'bb',
+    'a': 'bbb',
+    'bx': 'c#',
+    'b#': 'c',
+    'b': 'cb'
+};
+
+// Pitch name types
+
 const GENERIC_NOTE_NAME = 'generic note name';
 const LETTER_NAME = 'letter name';
 const SOLFEGE_NAME = 'solfege name';
@@ -516,7 +799,11 @@ const EAST_INDIAN_SOLFEGE_NAME = 'east indian solfege name';
 const SCALAR_MODE_NUMBER = 'scalar mode number';
 const CUSTOM_NAME = 'custom name';
 const UNKNOWN_PITCH_NAME = 'unknown';
+```
 
+### Functions
+
+```typescript
 /**
  * Removes an accidental and return the number of half steps that would have resulted from its
  * application to the pitch.

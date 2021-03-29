@@ -7,11 +7,6 @@
  */
 
 /**
- * Enumerations used for returning success/failure status &mdash; `0` is success, `-1` is failure.
- */
-export type TError = 0 | -1;
-
-/**
  * Interface for the KeySignature class.
  */
 export interface IKeySignature {
@@ -42,7 +37,7 @@ export interface IKeySignature {
      * Converts from a letter name used by 12-semitone temperaments to a generic note name as
      * defined by the temperament.
      */
-    convertToGenericNoteName: (pitchName: string) => [string, TError];
+    convertToGenericNoteName: (pitchName: string) => string;
     /** Returns the corresponding pitch in the scale (and any change in octave). */
     modalPitchToLetter: (modalIndex: number) => [string, number];
     /** Checks to see if target note is in the scale. */
@@ -51,18 +46,12 @@ export interface IKeySignature {
      * Given a starting pitch, add a semitone transform and return the resultant pitch (and any
      * change in octave).
      */
-    semitoneTransform: (
-        startingPitch: string,
-        numberOfHalfSteps: number
-    ) => [string, number, TError];
+    semitoneTransform: (startingPitch: string, numberOfHalfSteps: number) => [string, number];
     /**
      * Given a starting pitch, adds a scalar transform and returns the resultant pitch (and any
      * change in octave).
      */
-    scalarTransform: (
-        startingPitch: string,
-        numberOfScalarSteps: number
-    ) => [string, number, TError];
+    scalarTransform: (startingPitch: string, numberOfScalarSteps: number) => [string, number];
     /** Converts a generic note name to a pitch name type. */
     genericNoteNameConvertToType: (
         pitchName: string,
@@ -89,7 +78,7 @@ export interface IKeySignature {
     /**
      * Given a target pitch, returns the closest note in the current key signature (key and mode).
      */
-    closestNote: (target: string) => [string, number, number, number];
+    closestNote: (target: string) => [string, number, number];
     /** Returns the key, mode, number of half steps, and the scale. */
     toString: () => string;
 }

@@ -7,24 +7,19 @@
 
 /** Interface for the Scale class. */
 export interface IScale {
-    /**
-     * Getter that returns the number of notes in the scale.
-     * @readonly
-     * */
+    /** Getter that returns the number of notes in the scale. */
     numberOfSemitones: number;
-    /**
-     * Getter that returns the notes defined by the temperament.
-     * @readonly
-     */
+    /** Getter that returns the notes defined by the temperament. */
     noteNames: string[];
+
     /**
      * Returns the notes in the scale.
-     * @throws {FormatMismatchError}
+     * @throws {InvalidArgumentError}
      */
     getScale: (pitchFormat?: string[]) => string[];
     /**
      * Returns the notes in the scale and the octave deltas.
-     * @throws {FormatMismatchError}
+     * @throws {InvalidArgumentError}
      */
     getScaleAndOctaveDeltas: (pitchFormat?: string[]) => [string[], number[]];
 }

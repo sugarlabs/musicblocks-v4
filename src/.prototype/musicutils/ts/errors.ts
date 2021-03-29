@@ -54,7 +54,7 @@ abstract class DefaultError<T> extends NamedError implements IDefaultError<T> {
  * Sub-class of Error whose instance is thrown when a method is supposed to expect or return an item
  * which it can't find (or doesn't exist).
  */
-export class ItemNotFoundError<T> extends NamedError {
+export class ItemNotFoundError extends NamedError {
     /**
      * @param message - Error message.
      */

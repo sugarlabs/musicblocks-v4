@@ -6,6 +6,7 @@
  */
 
 import { IScale } from './@types/scale';
+import { InvalidArgumentError } from './errors';
 
 /**
  * A scale is a selection of notes in an octave.
@@ -143,7 +144,7 @@ export class Scale implements IScale {
      *
      * @param pitchFormat - Array of letter names in the teperament.
      *
-     * @throws {FormatMismatchError}
+     * @throws {InvalidArgumentError}
      * Thrown if `pitchFormat` length does not match number of semitones.
      */
     public getScale(pitchFormat?: string[]) {
@@ -159,7 +160,7 @@ export class Scale implements IScale {
             return scale;
         }
 
-        throw Error('FormatMismatchError: pitch format does not match number of semitones');
+        throw new InvalidArgumentError('pitch format does not match number of semitones');
     }
 
     /**
@@ -173,7 +174,7 @@ export class Scale implements IScale {
      * @param pitchFormat - Array of letter names in the teperament.
      * @returns an array (2-tuple) of the notes in the scale and the octave deltas.
      *
-     * @throws {FormatMismatchError}
+     * @throws {InvalidArgumentError}
      * Thrown if `pitchFormat` length does not match number of semitones.
      */
     public getScaleAndOctaveDeltas(pitchFormat?: string[]): [string[], number[]] {

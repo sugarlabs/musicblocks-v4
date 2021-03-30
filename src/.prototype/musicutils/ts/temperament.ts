@@ -402,13 +402,7 @@ export default class Temperament implements ITemperament {
         }
 
         const i: number = Math.floor(octave) * this._octaveLength + modalIndex;
-        if (i < 0) {
-            return this._freqs[0];
-        }
-        if (i > this._freqs.length - 1) {
-            return this._freqs[this.freqs.length - 1];
-        }
-        return this._freqs[Number(i)];
+        return this._freqs[Math.max(0, Math.min(i, this._freqs.length - 1))];
     }
 
     /**

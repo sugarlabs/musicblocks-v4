@@ -402,13 +402,7 @@ export default class Temperament implements ITemperament {
         }
 
         const i: number = Math.floor(octave) * this._octaveLength + modalIndex;
-        if (i < 0) {
-            return this._freqs[0];
-        }
-        if (i > this._freqs.length - 1) {
-            return this._freqs[this.freqs.length - 1];
-        }
-        return this._freqs[Number(i)];
+        return this._freqs[Math.max(0, Math.min(i, this._freqs.length - 1))];
     }
 
     /**
@@ -439,7 +433,7 @@ export default class Temperament implements ITemperament {
     public getFreqIndexByGenericNoteNameAndOctave(noteName: string, octave: number): number {
         if (!this._genericNoteNames.includes(noteName)) {
             throw new ItemNotFoundDefaultError<number>(
-                `Note ${noteName} not found in generic note names.`,
+                `Note '${noteName}' not found in generic note names.`,
                 0
             );
         }
@@ -643,7 +637,7 @@ export default class Temperament implements ITemperament {
         } else if (CHROMATIC_NOTES_FLAT.includes(pitchName)) {
             i = CHROMATIC_NOTES_FLAT.indexOf(pitchName);
         } else {
-            throw new ItemNotFoundDefaultError<number>(`Pitch ${pitchName} not found.`, 0);
+            throw new ItemNotFoundDefaultError<number>(`Pitch '${pitchName}' not found.`, 0);
         }
 
         if (Object.keys(this._ratios).length && this._intervals.length !== 0) {

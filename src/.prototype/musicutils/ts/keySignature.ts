@@ -223,7 +223,7 @@ export default class KeySignature implements IKeySignature {
      * In defining a scale, we need to know the key, the mode, and the number of notes in the
      * temperament used to define the scale.
      *
-     * @param mode - One of the modes defined in `this.MUSICAL_MODES`.
+     * @param modeArg - One of the modes defined in `this.MUSICAL_MODES`.
      * @param key - Any pitch defined by the temperament. (Note that currently the only notation
      * supported is for temperaments with up to 12 steps.
      * @param numberOfSemitones - The number of semitones defined in the temperament.
@@ -755,7 +755,7 @@ export default class KeySignature implements IKeySignature {
      *  - Generic note name.
      *  - Error code.
      *
-     * @throws {ItemNotFoundDefaultError<[string]>}
+     * @throws {ItemNotFoundDefaultError<string>}
      * Thrown if the supplied pitch name does not match any type.
      */
     public convertToGenericNoteName(pitchName: string): string {

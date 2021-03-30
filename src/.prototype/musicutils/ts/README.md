@@ -17,8 +17,8 @@ note within a scale and temperament (tuning system).
  * We need to define a key signature and temperament and a starting point within the scale (and an
  * initial octave value.
  *
- * @param keySignature - `KeySignature` object; defaults to KeySignature(key="c", mode="major").
- * @param temperament - `Temperament` object; defaults to Temperament(name="equal").
+ * @param keySignature - `KeySignature` object; defaults to KeySignature(key='c', mode='major').
+ * @param temperament - `Temperament` object; defaults to Temperament(name='equal').
  * @param i - Index into semitones defined by temperament; defaults to `7`, which maps to g
  * (sol) in an equal temperament tuning.
  * @param octave - Initial octave for the pitch. Defaults to Octave 4.
@@ -65,7 +65,7 @@ number: number;
  * are updated: freq, semitoneIndex, genericName, octave, and number.
  *
  * @param pitchName - The new pitch as a frequency (float), or a modal index (int) and octave or
- * note name (str) and octave. Note names can be "n7", "g", "sol", or, if defined, a custom name.
+ * note name (str) and octave. Note names can be 'n7', 'g', 'sol', or, if defined, a custom name.
  * @param octave - The new octave (not needed when pitch is specified by frequency).
  */
 public setPitch: (pitchName: number | string, octave: number) => void;
@@ -117,11 +117,11 @@ There are three ways to change the current pitch:
 - assigning a new pitch explicitly
 
     ```typescript
-    cp.setPitch("g", 4);
+    cp.setPitch('g', 4);
 
-    cp.setPitch("sol", 4);
+    cp.setPitch('sol', 4);
 
-    cp.setPitch("n7", 4);
+    cp.setPitch('n7', 4);
 
     cp.setPitch(7, 4);
 
@@ -152,7 +152,7 @@ There are several ways to access the current pitch:
     const freq: number = cp.freq;
     ```
 
-- getting the "generic" note name, e.g., n7
+- getting the 'generic' note name, e.g., n7
 
     ```typescript
     const note: string = cp.genericName;
@@ -199,7 +199,7 @@ root of 2 (12 semitones per octave). Many traditional temperaments are based on 
  * @remarks
  * A temperament will be generated but it can subsequently be overriden.
  *
- * @param name - The name of a temperament, e.g., "equal", "just intonation". etc.
+ * @param name - The name of a temperament, e.g., 'equal', 'just intonation'. etc.
  */
 constructor(name: string = 'equal')
 ```
@@ -381,20 +381,20 @@ different base pitch.
 
 The built-in temperaments are:
 
-- `"equal"`
-- `"just intonation"`
-- `"pythagorean"`
-- `"third comma meantone"`
-- `"quarter comma meantone"`
+- `'equal'`
+- `'just intonation'`
+- `'pythagorean'`
+- `'third comma meantone'`
+- `'quarter comma meantone'`
 
 ```typescript
-const t: Temperament = new Temperament("equal");
+const t: Temperament = new Temperament('equal');
 ```
 
 To tune to a different base frequency:
 
 ```typescript
-t.tune("a", 4, 441);
+t.tune('a', 4, 441);
 ```
 
 A generic name is defined for each note in the octave. The convention is `n0`, `n1`, etc. These
@@ -402,7 +402,7 @@ notes can be used by the getFreqByGenericNoteNameAndOctave method to retrieve a 
 name and octave.
 
 ```typescript
-const freq: number = t.getFreqByGenericNoteNameAndOctave("n7", 4);
+const freq: number = t.getFreqByGenericNoteNameAndOctave('n7', 4);
 ```
 
 You may need to know the number of semitones in an octave and the number of notes in the temperament.
@@ -427,8 +427,8 @@ const freq: number = t.getFreqByIndex(pitchNumber);
 
 ## Scale
 
-The `Scale` class in [`scale.ts`](scale.ts) allows defining a scale. A scale is a selection of notes
-in an octave.
+The `Scale` class in [`scale.ts`](scale.ts) allows defining a scale. A scale is a selection
+of notes in an octave.
 
 ### Constructor
 
@@ -476,7 +476,7 @@ noteNames: string[];
  * @throws {FormatMismatchError}
  * Thrown if `pitchFormat` length does not match number of semitones.
  */
-getScale: (pitchFormat?: string[]) => string[];
+public getScale: (pitchFormat?: string[]) => string[];
 
 /**
  * Returns the notes in the scale and the octave deltas.
@@ -492,7 +492,7 @@ getScale: (pitchFormat?: string[]) => string[];
  * @throws {FormatMismatchError}
  * Thrown if `pitchFormat` length does not match number of semitones.
  */
-getScaleAndOctaveDeltas: (pitchFormat?: string[]) => [string[], number[]];
+public getScaleAndOctaveDeltas: (pitchFormat?: string[]) => [string[], number[]];
 ```
 
 ### Description
@@ -501,6 +501,308 @@ The Scale object holds the list of notes defined in the scale defined by a key a
 unlikely you'll need to access this object directly, there are public getters available for
 accessing the notes in a scale as an array, the number of notes in the scale, and the octave offsets
 associated with a scale (new octaves always start at `C` regardless of the temperament, key, or mode.
+
+## KeySignature
+
+The `KeySignature` class in [`keysignature.ts`](keysignature.ts) allows defining a scale. A key
+signature is a set of _sharp_, _flat_, and _natural_ symbols.
+
+### Constructor
+
+```typescript
+/**
+ * @remarks
+ * In defining a scale, we need to know the key, the mode, and the number of notes in the
+ * temperament used to define the scale.
+ *
+ * @param modeArg - One of the modes defined in `this.MUSICAL_MODES`.
+ * @param key - Any pitch defined by the temperament. (Note that currently the only notation
+ * supported is for temperaments with up to 12 steps.
+ * @param numberOfSemitones - The number of semitones defined in the temperament.
+ *
+ * @throws {ItemNotFoundError}
+ * Thrown if solfeges / east indian solfeges / mode numbers do not exist for temperaments with
+ * `numberOfSemitones` semitones.
+ */
+constructor(
+    modeArg: string | number[] = 'major',
+    key: string = 'c',
+    numberOfSemitones: number = 12
+)
+```
+
+### Instance Variables
+
+```typescript
+/** Getter for the pitch currently defined by the temperament. */
+readonly key: string;
+
+/** Getter for the current temperament mode. */
+readonly mode: string;
+
+/** Getter for the current "key mode" pair. */
+readonly keySignature: string;
+
+/** Getter for the list of notes in the scale. */
+readonly scale: string[];
+
+/** Setter and Getter for the state of fixed solfege. */
+fixedSolfege: boolean;
+
+/** Getter for the solfege notes in mode. */
+readonly solfegeNotes: string[];
+
+/** Getter for the number of (scalar) notes are in the scale? */
+readonly modeLength: number;
+
+/** Getter for the number of semitones (half-steps) in the temperament. */
+readonly numberOfSemitones: number;
+
+/** Getter and Setter for custom note names defined by the user. */
+customNoteNames: string[];
+```
+
+### Instance Methods
+
+```typescript
+/**
+ * Normalizes the scale by converting double sharps and double flats.
+ *
+ * @param scale - The notes in a scale.
+ * @returns The same scale where the notes have been converted to just sharps, flats, and naturals.
+ */
+pubilc normalizeScale: (scale: string[]) => string[];
+
+/**
+ * Checks pitch type, including test for custom names.
+ *
+ * @param pitchName - pitch name to test
+ * @returns pitch type, e.g., LETTER_NAME, SOLFEGE_NAME, etc.
+ */
+public pitchNameType: (pitchName: string) => string;
+
+/**
+ * Converts from a letter name used by 12-semitone temperaments to a generic note name as defined by
+ * the temperament.
+ *
+ * @remarks
+ * Only for temperaments with 12 semitones.
+ *
+ * @param pitchName - name of pitch.
+ * @returns An array (2-tuple) of
+ *  - Generic note name.
+ *  - Error code.
+ *
+ * @throws {ItemNotFoundDefaultError<string>}
+ * Thrown if the supplied pitch name does not match any type.
+ */
+public convertToGenericNoteName: (pitchName: string) => string;
+
+/**
+ * Given a modal number, returns the corresponding pitch in the scale (and any change in octave).
+ *
+ * @param modalIndex - The modal index specifies an index into the scale.
+ * If the index is >= mode length or < 0, a relative change in octaveis also calculated.
+ * @returns
+ * An array (2-tuple) of
+ *  - The pitch that is the result of indexing the scale by the modal index.
+ *  - The relative change in octave due to mapping the modal index to the mode length.
+ */
+public modalPitchToLetter: (modalIndex: number) => [string, number];
+
+/**
+ * Given a pitch, checks to see if it is in the scale.
+ *
+ * @param target - The target pitch specified as a pitch letter, e.g., c#, fb.
+ * @returns `true` if the note is in the scale, `false` otherwise.
+ */
+public noteInScale: (target: string) => boolean;
+
+/**
+ * Given a starting pitch, adds a semitone transform and return the resultant pitch (and any
+ * change in octave).
+ *
+ * @param startingPitch - The starting pitch specified as a pitch letter, e.g., c#, fb.
+ * @param numberOfHalfSteps - Half steps are steps in the notes defined by the temperament.
+ * @returns
+ * An array (3-tuple) of
+ *  - The pitch that is the number of half steps from the starting pitch.
+ *  - The relative change in octave between the starting pitch and the new pitch.
+ *  - Error code.
+ *
+ * @throws {ItemNotFoundDefaultError<[string, number]>}
+ * Thrown if the starting pitch is not a part of list of note names of the mode.
+ */
+public semitoneTransform: (startingPitch: string, numberOfHalfSteps: number) => [string, number];
+
+/**
+ * Given a starting pitch, adds a scalar transform and returns the resultant pitch (and any
+ * change in octave).
+ *
+ * @param startingPitch - The starting pitch specified as a pitch letter, e.g., c#, fb.
+ * Note that the starting pitch may or may not be in the scale.
+ * @param numberOfScalarSteps - Scalar steps are steps in the scale (as opposed to half-steps).
+ * @returns
+ * An array (3-tuple) of
+ *  - The pitch that is the number of scalar steps from the starting pitch.
+ *  - The relative change in octave between the starting pitch and the new pitch.
+ *  - Error code.
+ */
+public scalarTransform: (startingPitch: string, numberOfScalarSteps: number) => [string, number];
+
+/**
+ * Given a generic note name, converts it to a pitch name type.
+ *
+ * @param pitchName - Source generic note name.
+ * @param targetType - One of the predefined types, e.g., LETTER_NAME, SOLFEGE_NAME, etc.
+ * @param preferSharps - If there is a choice, should we use a sharp or a flat?
+ * @returns Converted note name.
+ */
+public genericNoteNameConvertToType: (
+    pitchName: string,
+    targetType: string,
+    preferSharps: boolean
+) => string;
+
+/**
+ * Calculates the distance between two notes in semitone steps.
+ *
+ * @param pitchA - Pitch name one of two.
+ * @param octaveA - Octave number one of two.
+ * @param pitchB - Pitch name two of two.
+ * @param octaveB - Octave number two of two.
+ * @returns Distance calculated in scalar steps.
+ */
+public semitoneDistance: (pitchA: string, octaveA: number, pitchB: string, octaveB: number) => number;
+
+/**
+ * Calculates the distance between two notes in scalar steps.
+ *
+ * @param pitchA - Pitch name one of two.
+ * @param octaveA - Octave number one of two.
+ * @param pitchB - Pitch name two of two.
+ * @param octaveB - Octave number two of two.
+ * @returns
+ * An array (2-tuple) of
+ *  - Distance calculated in scalar steps.
+ *  - Any semitone rounding error in the calculation.
+ */
+public scalarDistance: (
+    pitchA: string,
+    octaveA: number,
+    pitchB: string,
+    octaveB: number
+) => [number, number];
+
+/**
+ * Rotates a series of notes around an invert point.
+ *
+ * @param pitchName - The pitch name of the note to be rotated.
+ * @param octave - The octave of the note to be rotated.
+ * @param invertPointPitch - The pitch name of the axis of inversion.
+ * @param invertPointOctave - The octave of the axis of inversion.
+ * @param invertMode - There are three different invert modes:
+ * `even`, `odd`, and `scalar`. In even and odd modes, the rotation is based on half steps. In
+ * even and scalar mode, the point of rotation is the given note. In odd mode, the point of
+ * rotation is shifted up by a 1/4 step, enabling rotation around a point between two notes. In
+ * scalar mode, the scalar interval is preserved around the point of rotation.
+ * @returns
+ * An array (2-tuple)
+ *  - Pitch name of the inverted note.
+ *  - Octave of the inverted note.
+ */
+public invert: (
+    pitchName: string,
+    octave: number,
+    invertPointPitch: string,
+    invertPointOctave: number,
+    invertMode: 'even' | 'odd' | 'scalar'
+) => [string, number];
+
+/**
+ * Given a target pitch, what is the closest note in the current key signature (key and mode)?
+ *
+ * @param target - target pitch specified as a pitch letter, e.g., c#, fb
+ * @returns
+ * An array (4-tuple) of
+ *  - The closest pitch to the target pitch in the scale.
+ *  - The scalar index value of the closest pitch in the scale (If the target is midway between
+ *      two scalar pitches, the lower pitch is returned.)
+ *  - The distance in semitones (half steps) from the target pitch to the scalar pitch (If the
+ *      target is higher than the scalar pitch, then distance > 0. If the target is lower than
+ *      the scalar pitch then distance < 0. If the target matches a scale pitch, then distance
+ *      is 0.)
+ *
+ * @throws {ItemNotFoundDefaultError<[string, number, number]>}
+ * Thrown if distance is not less than number of semitones, or target note not part of list of note
+ * names for the current mode.
+ */
+public closestNote: (target: string) => [string, number, number];
+```
+
+### Description
+
+Key Signatures are defined by a key and a mode, e.g. `C Major`. This is used to define which
+semitones (half steps) in an octave are in the scale.
+
+```typescript
+const ks: KeySignature = new KeySignature('major', 'c');
+```
+
+By default, the Key Signature object assumes that there are 12 semitones per octave, but this can be
+overriden for temperaments with other configurations, e.g. the meantone temperaments.
+
+```typescript
+const ks: KeySignature = new KeySignature('major', 'c', 12);
+```
+
+Within each Key Signature object is a Scale object, which is defined by the key and mode at the time
+of instantiation.
+
+```typescript
+const scale: string[] = ks.scale;
+```
+
+Key Signature supports a variety of naming schemes, including the generic note names used by the
+`Temperament` object, letter names, both fixed and moveable Solfege, East Indian Solfege, scale
+degree, and custom defined names (The pitch name types are defined in `musicutils.ts`).
+
+```typescript
+ks.customNoteNames = ['charlie', 'delta', 'echo', 'foxtrot', 'golf', 'alfa', 'bravo'];
+
+let genericName: string;
+genericName = ks.convertToGenericNoteName('g')
+genericName = ks.convertToGenericNoteName('sol')
+genericName = ks.convertToGenericNoteName('5')
+genericName = ks.convertToGenericNoteName('pa')
+genericName = ks.convertToGenericNoteName('golf')
+
+const letterName: string = ks.genericNoteNameConvertToType('n7', LETTER_NAME); // 'g'
+const solfegeName: string = ks.genericNoteNameConvertToType('n7', SOLFEGE_NAME); // 'sol'
+const eiSolfegeName: string = ks.genericNoteNameConvertToType('n7', EAST_INDIAN_SOLFEGE_NAME); // 'pa'
+const customName: string = ks.genericNoteNameConvertToType('n7', CUSTOM_NAME); // 'golf'
+const scalarModeNumber: string = ks.genericNoteNameConvertToType('n7', SCALAR_MODE_NUMBER) // '5';
+```
+
+Fixed Solfege means that the mapping between Solfege and letter names is fixed: do == c, re == d, ...
+
+Moveable (not fixed) Solfege means that do == the first note in the scale, etc.
+
+```typescript
+const ks: KeySignature = KeySignature('major', 'g');
+let genericName: string;
+genericName = ks.convertToGenericNoteName('sol')[0]; // 'n7'
+ks.fixedSolfege = false; // Moveable
+genericName = ks.convertToGenericNoteName('do')[0]; // 'n7'
+```
+
+The Key Signature is used to navigate the scale, either by scalar or semitone steps.
+
+```typescript
+let genericName: string, deltaOctave: number;
+[genericName, deltaOctave] = ks.semitoneTransform(startingPitch, numberOfHalfSteps);
+[genericName, deltaOctave] = ks.scalarTransform(startingPitch, numberOfScalarSteps);
+```
 
 ## Music Utils
 

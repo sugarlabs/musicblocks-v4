@@ -6,9 +6,7 @@
  * Licensed under the AGPL-3.0 License.
  */
 
-/**
- * Interface for the KeySignature class.
- */
+/** Interface for the KeySignature class. */
 export interface IKeySignature {
     /** Getter for the pitch currently defined by the temperament. */
     readonly key: string;
@@ -26,7 +24,7 @@ export interface IKeySignature {
     readonly modeLength: number;
     /** Getter for the number of semitones (half-steps) in the temperament. */
     readonly numberOfSemitones: number;
-    /** Custom note names defined by the user. */
+    /** Getter and Setter for custom note names defined by the user. */
     customNoteNames: string[];
 
     /** Normalizes the scale by converting double sharps and double flats. */

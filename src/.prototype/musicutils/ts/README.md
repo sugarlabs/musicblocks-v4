@@ -39,22 +39,22 @@ constructor(
 
 ```typescript
 /** Getter for the frequency of the current note in Hertz. */
-freq: number;
+readonly freq: number;
 
 /** Getter for the octave of the current note. */
-octave: number;
+readonly octave: number;
 
 /** Getter for the generic name of the current note. */
-genericName: string;
+readonly genericName: string;
 
 /** Getter for the modal index of the current note. */
-semitoneIndex: number;
+readonly semitoneIndex: number;
 
 /**
  * Getter for the index of the current note within the list of all of the notes defined by the
  * temperament.
  */
-number: number;
+readonly number: number;
 ```
 
 ### Instance Methods
@@ -214,19 +214,19 @@ baseFrequency: number;
 numberOfOctaves: number;
 
 /** Getter for the name of the temperament. */
-name: string;
+readonly name: string;
 
 /** Getter for the list of all of the frequencies in the temperament. */
-freqs: number[];
+readonly freqs: number[];
 
 /** Getter for the list of generic note names. */
-noteNames: string[];
+readonly noteNames: string[];
 
 /** Getter for the number of notes defined per octave. */
-numberOfSemitonesInOctave: number;
+readonly numberOfSemitonesInOctave: number;
 
 /** Getter for the number of notes defined by the temperament. */
-numberOfNotesInTemperament: number;
+readonly numberOfNotesInTemperament: number;
 ```
 
 ### Instance Methods
@@ -459,10 +459,10 @@ constructor(
 
 ```typescript
 /** Getter for the number of notes in the scale. */
-numberOfSemitones: number;
+readonly numberOfSemitones: number;
 
 /** Getter for the notes defined by the temperament. */
-noteNames: string[];
+readonly noteNames: string[];
 ```
 
 ### Instance Methods

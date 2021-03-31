@@ -262,10 +262,10 @@ class MusicUtilsTestCase(unittest.TestCase):
         self.assertEqual(ks.semitone_distance("g", 3, "c", 4), 5)
         self.assertEqual(ks.semitone_distance("c", 4, "g", 3), -5)
 
-        self.assertEqual(ks.scalar_distance("g", 4, "c", 4)[0], 4)
-        self.assertEqual(ks.scalar_distance("c", 4, "g", 4)[0], 3)
-        self.assertEqual(ks.scalar_distance("g", 3, "c", 4)[0], -3)
-        self.assertEqual(ks.scalar_distance("c", 4, "g", 3)[0], 10)
+        self.assertEqual(ks.scalar_distance("g", 4, "c", 4)[0], -4)
+        self.assertEqual(ks.scalar_distance("c", 4, "g", 4)[0], 4)
+        self.assertEqual(ks.scalar_distance("g", 3, "c", 4)[0], 3)
+        self.assertEqual(ks.scalar_distance("c", 4, "g", 3)[0], -3)
 
         # Test the scalar and semitone transforms and test for wrap around.
         print("scalar transforms")

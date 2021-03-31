@@ -1260,16 +1260,9 @@ class KeySignature:
         """
         closest1 = self.closest_note(pitch_a)
         closest2 = self.closest_note(pitch_b)
-        if closest1[1] > closest2[1]:
-            return (closest1[1] - closest2[1]) + self.get_mode_length() * (
-                octave_a - octave_b
-            ), closest1[2] + closest2[2]
-        else:
-            return (
-                self.get_mode_length() - (closest2[1] - closest1[1])
-            ) + self.get_mode_length() * (octave_a - octave_b), closest1[2] + closest2[
-                2
-            ]
+        a = closest1[1] + octave_a * self.get_mode_length()
+        b = closest2[1] + octave_b * self.get_mode_length()
+        return b - a, closest1[2] + closest2[2]
 
     def invert(
         self, pitch_name, octave, invert_point_pitch, invert_point_octave, invert_mode
@@ -1322,7 +1315,7 @@ class KeySignature:
             return inverted_pitch, octave + delta_octave
         elif invert_mode == "scalar":
             delta = self.scalar_distance(
-                pitch_name, octave, invert_point_pitch, invert_point_octave
+                invert_point_pitch, invert_point_octave, pitch_name, octave
             )[0]
             delta *= 2
             inverted_pitch, delta_octave = self.scalar_transform(pitch_name, -delta)[

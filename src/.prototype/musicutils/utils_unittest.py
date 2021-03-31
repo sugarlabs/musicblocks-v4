@@ -176,10 +176,11 @@ class MusicUtilsTestCase(unittest.TestCase):
 
         # Test normalize_scale
         ks = KeySignature()
-        normalized_scale = ks.normalize_scale(["c", "cx", "fbb", "f", "g", "a", "b", "c"])
+        normalized_scale = ks.normalize_scale(
+            ["c", "cx", "fbb", "f", "g", "a", "b", "c"]
+        )
         self.assertEqual(normalized_scale[1], "d")
         self.assertEqual(normalized_scale[2], "eb")
-
 
     def test_temperament(self):
         print("TEMPERAMENT TESTS")
@@ -503,8 +504,12 @@ class MusicUtilsTestCase(unittest.TestCase):
 
         self.assertEqual(ks.generic_note_name_convert_to_type("n7", SOLFEGE_NAME), "do")
         self.assertEqual(ks.convert_to_generic_note_name("do")[0], "n7")
-        self.assertEqual(ks._generic_note_name_to_letter_name("n6", prefer_sharps=True)[0], "f#")
-        self.assertEqual(ks._generic_note_name_to_solfege("n6", prefer_sharps=True)[0], "ti")
+        self.assertEqual(
+            ks._generic_note_name_to_letter_name("n6", prefer_sharps=True)[0], "f#"
+        )
+        self.assertEqual(
+            ks._generic_note_name_to_solfege("n6", prefer_sharps=True)[0], "ti"
+        )
         self.assertEqual(ks._convert_from_note_name("n7", ks.solfege_notes)[0], "do")
         self.assertEqual(ks._generic_note_name_to_east_indian_solfege("n7")[0], "sa")
         self.assertEqual(ks._generic_note_name_to_scalar_mode_number("n7")[0], "1")

@@ -1232,7 +1232,9 @@ class KeySignature:
         int
             Distance calculated in semitone steps
         """
-        return self._pitch_to_note_number(pitch_b, octave_b) - self._pitch_to_note_number(pitch_a, octave_a)
+        return self._pitch_to_note_number(
+            pitch_b, octave_b
+        ) - self._pitch_to_note_number(pitch_a, octave_a)
 
     def scalar_distance(self, pitch_a, octave_a, pitch_b, octave_b):
         """

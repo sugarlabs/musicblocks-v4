@@ -30,6 +30,9 @@ from musicutils import (
     SCALAR_MODE_NUMBER,
     CUSTOM_NAME,
     UNKNOWN_PITCH_NAME,
+    SOLFEGE_NAMES,
+    EAST_INDIAN_NAMES,
+    SCALAR_MODE_NUMBERS,
 )
 
 
@@ -171,6 +174,13 @@ class MusicUtilsTestCase(unittest.TestCase):
         self.assertTrue(strip_accidental("b")[0] == "b")
         self.assertTrue(strip_accidental("b")[1] == 0)
 
+        # Test normalize_scale
+        ks = KeySignature()
+        normalized_scale = ks.normalize_scale(["c", "cx", "fbb", "f", "g", "a", "b", "c"])
+        self.assertEqual(normalized_scale[1], "d")
+        self.assertEqual(normalized_scale[2], "eb")
+
+
     def test_temperament(self):
         print("TEMPERAMENT TESTS")
         print("equal 12")
@@ -227,6 +237,9 @@ class MusicUtilsTestCase(unittest.TestCase):
     def test_key_signature(self):
         print("KEY SIGNATURE TESTS")
         ks = KeySignature(mode="major", key="c")
+        self.assertEqual(ks.get_mode_length(), 7)
+        self.assertEqual(ks.get_number_of_semitones(), 12)
+
         print("closest note tests")
         self.assertEqual(ks.closest_note("c")[0], "c")
         self.assertTrue(ks.note_in_scale("c"))
@@ -242,6 +255,16 @@ class MusicUtilsTestCase(unittest.TestCase):
         self.assertEqual(ks.closest_note("n10x")[0], "n0")
         self.assertEqual(ks.closest_note("sol")[0], "sol")
         self.assertEqual(ks.closest_note("pa")[0], "pa")
+
+        self.assertEqual(ks.semitone_distance("g", 4, "c", 4), -7)
+        self.assertEqual(ks.semitone_distance("c", 4, "g", 4), 7)
+        self.assertEqual(ks.semitone_distance("g", 3, "c", 4), 5)
+        self.assertEqual(ks.semitone_distance("c", 4, "g", 3), -5)
+
+        self.assertEqual(ks.scalar_distance("g", 4, "c", 4)[0], 4)
+        self.assertEqual(ks.scalar_distance("c", 4, "g", 4)[0], 3)
+        self.assertEqual(ks.scalar_distance("g", 3, "c", 4)[0], -3)
+        self.assertEqual(ks.scalar_distance("c", 4, "g", 3)[0], 10)
 
         # Test the scalar and semitone transforms and test for wrap around.
         print("scalar transforms")
@@ -264,6 +287,8 @@ class MusicUtilsTestCase(unittest.TestCase):
         self.assertEqual(ks.semitone_transform("n1b", -1)[1], -1)  # decrement octave
         self.assertEqual(ks.semitone_transform("n11x", 1)[0], "n2")
         self.assertEqual(ks.semitone_transform("n11x", 1)[1], 1)  # increment octave
+
+        self.assertEqual(ks._map_to_semitone_range(13, 0)[0], 1)
 
         print("invert transforms")
         self.assertEqual(ks.invert("f", 5, "c", 5, "even")[0], "g")
@@ -289,11 +314,15 @@ class MusicUtilsTestCase(unittest.TestCase):
         )
 
         ks = KeySignature(mode="chromatic", key="c")
+        self.assertEqual(ks.get_mode_length(), 12)
+        self.assertEqual(ks.get_number_of_semitones(), 12)
         self.assertEqual(ks.scalar_transform("c", 2)[0], "d")
         self.assertEqual(ks.scalar_transform("c#", 2)[0], "d#")
         self.assertEqual(ks.semitone_transform("c", 2)[0], "d")
         self.assertEqual(ks.semitone_transform("c#", 2)[0], "d#")
         self.assertEqual(ks.semitone_transform("b", 1)[0], "c")
+
+        self.assertEqual(ks._map_to_scalar_range(13, 0)[0], 1)
 
         t = Temperament(name="third comma meantone")
         ks = KeySignature(
@@ -301,6 +330,8 @@ class MusicUtilsTestCase(unittest.TestCase):
             # number_of_semitones=t.get_number_of_semitones_in_octave(),
             mode=[2, 2, 1, 2, 2, 2, 7, 1],
         )
+        self.assertEqual(ks.get_mode_length(), 8)
+        self.assertEqual(ks.get_number_of_semitones(), 19)
         self.assertEqual(len(ks.get_scale()), 8)
         self.assertEqual(ks.get_scale()[7], "n18")
         self.assertEqual(ks.closest_note("n12")[0], "n11")
@@ -380,9 +411,13 @@ class MusicUtilsTestCase(unittest.TestCase):
         self.assertEqual(ks.convert_to_generic_note_name("5#")[0], "n8")
         self.assertEqual(ks.convert_to_generic_note_name("pa#")[0], "n8")
 
+        self.assertEqual(ks._name_converter("sol", ks.solfege_notes), "n7")
+        self.assertEqual(ks._name_converter("pa", ks.east_indian_solfege_notes), "n7")
+
         ks.set_custom_note_names(
             ["charlie", "delta", "echo", "foxtrot", "golf", "alfa", "bravo"]
         )
+        self.assertEqual(ks.get_custom_note_names()[4], "golf")
         self.assertEqual(ks.convert_to_generic_note_name("golf")[0], "n7")
         self.assertEqual(ks.convert_to_generic_note_name("golf#")[0], "n8")
 
@@ -394,6 +429,18 @@ class MusicUtilsTestCase(unittest.TestCase):
         self.assertEqual(ks.semitone_transform("golf", 3)[0], "n10")
 
         print("type conversions")
+        self.assertEqual(ks._mode_map_list(SOLFEGE_NAMES)[4], "sol")
+        ks._assign_solfege_note_names()
+        self.assertEqual(ks.solfege_notes[4], "sol")
+
+        self.assertEqual(ks._mode_map_list(EAST_INDIAN_NAMES)[4], "pa")
+        ks._assign_east_indian_solfege_note_names()
+        self.assertEqual(ks.east_indian_solfege_notes[4], "pa")
+
+        self.assertEqual(ks._mode_map_list(SCALAR_MODE_NUMBERS)[4], "5")
+        ks._assign_scalar_mode_numbers()
+        self.assertEqual(ks.scalar_mode_numbers[4], "5")
+
         self.assertEqual(ks.generic_note_name_convert_to_type("n7", LETTER_NAME), "g")
         self.assertEqual(
             ks.generic_note_name_convert_to_type("n7", SOLFEGE_NAME), "sol"
@@ -412,6 +459,15 @@ class MusicUtilsTestCase(unittest.TestCase):
             ks.generic_note_name_convert_to_type("n7", CUSTOM_NAME), "golf"
         )
 
+        self.assertEqual(ks._restore_format("n7", SOLFEGE_NAME, True), "sol")
+        self.assertEqual(ks._restore_format("n8", SOLFEGE_NAME, True), "sol#")
+        self.assertEqual(ks._restore_format("n8", SOLFEGE_NAME, False), "lab")
+
+        self.assertEqual(ks._pitch_to_note_number("a", 4), 57)
+
+        # Modal pitch starts at 0
+        self.assertEqual(ks.modal_pitch_to_letter(4)[0], "g")
+
         print("pitch type check")
         self.assertEqual(ks.pitch_name_type("g"), LETTER_NAME)
         self.assertEqual(ks.pitch_name_type("c#"), LETTER_NAME)
@@ -422,6 +478,8 @@ class MusicUtilsTestCase(unittest.TestCase):
         self.assertEqual(ks.pitch_name_type("pa"), EAST_INDIAN_SOLFEGE_NAME)
         self.assertEqual(ks.pitch_name_type("5"), SCALAR_MODE_NUMBER)
         self.assertEqual(ks.pitch_name_type("golf"), CUSTOM_NAME)
+        self.assertEqual(ks._generic_note_name_to_custom_note_name("n7")[0], "golf")
+
         self.assertEqual(ks.pitch_name_type("foobar"), UNKNOWN_PITCH_NAME)
         self.assertEqual(get_pitch_type("g"), LETTER_NAME)
         self.assertEqual(get_pitch_type("c#"), LETTER_NAME)
@@ -441,8 +499,15 @@ class MusicUtilsTestCase(unittest.TestCase):
         )
         self.assertEqual(ks.convert_to_generic_note_name("sol")[0], "n7")
         ks.set_fixed_solfege(True)
+        self.assertTrue(ks.get_fixed_solfege())
+
         self.assertEqual(ks.generic_note_name_convert_to_type("n7", SOLFEGE_NAME), "do")
         self.assertEqual(ks.convert_to_generic_note_name("do")[0], "n7")
+        self.assertEqual(ks._generic_note_name_to_letter_name("n6", prefer_sharps=True)[0], "f#")
+        self.assertEqual(ks._generic_note_name_to_solfege("n6", prefer_sharps=True)[0], "ti")
+        self.assertEqual(ks._convert_from_note_name("n7", ks.solfege_notes)[0], "do")
+        self.assertEqual(ks._generic_note_name_to_east_indian_solfege("n7")[0], "sa")
+        self.assertEqual(ks._generic_note_name_to_scalar_mode_number("n7")[0], "1")
 
         print("frequency conversion")
         t = Temperament()
@@ -499,6 +564,8 @@ class MusicUtilsTestCase(unittest.TestCase):
 
         print("Testing meantone scales")
         ks = KeySignature(mode=[], number_of_semitones=21)
+        self.assertEqual(ks.get_mode_length(), 21)
+        self.assertEqual(ks.get_number_of_semitones(), 21)
         self.assertEqual(ks.closest_note("cb")[0], "cb")
         self.assertEqual(ks.semitone_transform("gb", 1)[0], "g")
         self.assertEqual(ks.semitone_transform("cb", 3)[0], "d")

@@ -122,15 +122,6 @@ class KeySignature:
         "ajam maqam": "bb",
     }
 
-    MODE_MAPPER = {
-        "ionian": "major",
-        "aeolian": "minor",
-        "natural minor": "minor",
-        "harmonic minor": "minor",
-        "major": "major",
-        "minor": "minor",
-    }
-
     # These key signaturs (and their equivalents) prefer sharps over flats.
     PREFER_SHARPS = [
         "c major",
@@ -1021,7 +1012,8 @@ class KeySignature:
 
         def __calculate_increment(delta, j):
             """
-            Do we skip the accidental?
+            When there both sharps and flats in a scale, we skip some of the
+            accidental as we navigate the semitones.
             """
             if delta == 0 and j % 3 == 2:
                 return 2
@@ -1240,9 +1232,7 @@ class KeySignature:
         int
             Distance calculated in semitone steps
         """
-        number1 = self._pitch_to_note_number(pitch_a, octave_a)
-        number2 = self._pitch_to_note_number(pitch_b, octave_b)
-        return number1 - number2
+        return self._pitch_to_note_number(pitch_b, octave_b) - self._pitch_to_note_number(pitch_a, octave_a)
 
     def scalar_distance(self, pitch_a, octave_a, pitch_b, octave_b):
         """
@@ -1318,7 +1308,7 @@ class KeySignature:
 
         if invert_mode == "even" or invert_mode == "odd":
             delta = self.semitone_distance(
-                pitch_name, octave, invert_point_pitch, invert_point_octave
+                invert_point_pitch, invert_point_octave, pitch_name, octave
             )
             if invert_mode == "even":
                 delta *= 2

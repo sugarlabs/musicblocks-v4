@@ -1635,9 +1635,9 @@ export default class KeySignature implements IKeySignature {
         } catch (err) {
             closest2 = err.defaultValue;
         }
-	const a = closest1[1] + this.modeLength * octaveA;
-	const b = closest2[1] + this.modeLength * octaveB;
-	return [b - a, closest1[2] + closest2[2]];
+        const a = closest1[1] + this.modeLength * octaveA;
+        const b = closest2[1] + this.modeLength * octaveB;
+        return [b - a, closest1[2] + closest2[2]];
     }
 
     /**

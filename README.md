@@ -62,6 +62,12 @@ Windows) this repository using
     docker-compose up -d
     ```
 
+    or (for _Docker v1.28_ and above)
+
+    ```bash
+    docker compose up -d
+    ```
+
     If you haven't pulled the image from the _GitHub Container Registry_ (_GHCR_), it'll first build
     the image using the `Dockerfile`, then launch the _docker network_. If an image already exists
     locally, it'll not be rebuilt. To force a rebuild from the `Dockerfile` before launching the
@@ -93,10 +99,17 @@ spawned and standard input/output is connected to the terminal.
     v9.1.1
     ```
 
-7. To shut down the _docker network_, run (in the terminal where you ran `docker-compose up -d`)
+7. To shut down the _docker network_, run (in the terminal where you ran `docker-compose up -d` or
+`docker compose up -d`)
 
     ```bash
     docker-compose down
+    ```
+
+    or (for _Docker v1.28_ and above)
+
+    ```bash
+    docker compose down
     ```
 
 8. To install all the dependencies (in `package.json`), run

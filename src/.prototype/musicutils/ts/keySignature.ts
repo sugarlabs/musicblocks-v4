@@ -1602,9 +1602,7 @@ export default class KeySignature implements IKeySignature {
         pitchB: string,
         octaveB: number
     ): number {
-        const number1 = this._pitchToNoteNumber(pitchA, octaveA);
-        const number2 = this._pitchToNoteNumber(pitchB, octaveB);
-        return number1 - number2;
+        return this._pitchToNoteNumber(pitchB, octaveB) - this._pitchToNoteNumber(pitchA, octaveA);
     }
 
     /**
@@ -1637,19 +1635,9 @@ export default class KeySignature implements IKeySignature {
         } catch (err) {
             closest2 = err.defaultValue;
         }
-        if (closest1[1] > closest2[1]) {
-            return [
-                closest1[1] - closest2[1] + this.modeLength * (octaveA - octaveB),
-                closest1[2] + closest2[2]
-            ];
-        } else {
-            return [
-                this.modeLength -
-                    (closest2[1] - closest1[1]) +
-                    this.modeLength * (octaveA - octaveB),
-                closest1[2] + closest2[2]
-            ];
-        }
+        const a = closest1[1] + this.modeLength * octaveA;
+        const b = closest2[1] + this.modeLength * octaveB;
+        return [b - a, closest1[2] + closest2[2]];
     }
 
     /**
@@ -1681,10 +1669,10 @@ export default class KeySignature implements IKeySignature {
 
         if (invertMode === 'even' || invertMode === 'odd') {
             let delta = this.semitoneDistance(
-                pitchName,
-                octave,
                 invertPointPitch,
-                invertPointOctave
+                invertPointOctave,
+                pitchName,
+                octave
             );
             if (invertMode === 'even') {
                 delta *= 2;
@@ -1698,10 +1686,10 @@ export default class KeySignature implements IKeySignature {
             }
         } else {
             let delta = this.scalarDistance(
-                pitchName,
-                octave,
                 invertPointPitch,
-                invertPointOctave
+                invertPointOctave,
+                pitchName,
+                octave
             )[0];
             delta *= 2;
             [invertedPitch, deltaOctave] = this.scalarTransform(pitchName, -delta);

@@ -10,11 +10,24 @@
   },
   "plugins": ["@typescript-eslint"],
   "rules": {
+    "@typescript-eslint/no-inferrable-types": "off",
     "no-mixed-spaces-and-tabs": "warn",
-    "no-unused-vars": "warn",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "varsIgnorePattern": "_"
+      }
+    ],
     "no-use-before-define": "off",
     "@typescript-eslint/no-use-before-define": ["error"],
-    "quotes": ["warn", "single", { "avoidEscape": true }],
+    "quotes": [
+      "warn",
+      "single",
+      {
+        "avoidEscape": true
+      }
+    ],
     "semi": ["error", "always"],
     "prefer-const": ["warn"],
     // "no-console": "warn",
@@ -28,7 +41,13 @@
         "ignoreTemplateLiterals": true
       }
     ],
-    "no-trailing-spaces": ["warn", { "skipBlankLines": true, "ignoreComments": true }],
+    "no-trailing-spaces": [
+      "warn",
+      {
+        "skipBlankLines": true,
+        "ignoreComments": true
+      }
+    ],
     "no-duplicate-case": "error",
     "no-irregular-whitespace": "warn"
   },

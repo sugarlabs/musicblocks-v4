@@ -264,7 +264,7 @@ export default class CurrentPitch implements ICurrentPitch {
      * Returns the generic note name and the frequency of the current pitch.
      * @override
      */
-    public toString() {
+    public toString(): string {
         return `${this._genericName} ${this._freq}`;
     }
 }

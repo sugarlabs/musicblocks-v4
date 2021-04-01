@@ -147,7 +147,7 @@ export class Scale implements IScale {
      * @throws {InvalidArgumentError}
      * Thrown if `pitchFormat` length does not match number of semitones.
      */
-    public getScale(pitchFormat?: string[]) {
+    public getScale(pitchFormat?: string[]): string[] {
         if (pitchFormat === undefined) {
             return this._scale;
         }

@@ -497,7 +497,7 @@ export default class KeySignature implements IKeySignature {
             // For Latin scales, we cannot skip notes.
             if (scale.length === 8) {
                 for (let i = 0; i < scale.length - 1; i++) {
-                    let idx1: number = PITCH_LETTERS.indexOf(scale[i][0]);
+                    const idx1: number = PITCH_LETTERS.indexOf(scale[i][0]);
                     let idx2: number = PITCH_LETTERS.indexOf(scale[i + 1][0]);
                     if (idx2 < idx1) {
                         idx2 += 7;
@@ -987,10 +987,9 @@ export default class KeySignature implements IKeySignature {
                     return [targetList[i]];
                 }
                 // Remove any accidental.
-                let [targetNote, delta] = stripAccidental(targetList[i]);
+                const [targetNote, delta] = stripAccidental(targetList[i]);
                 // Add back in the appropriate accidental.
-                delta += distance;
-                return [targetNote + ['bb', 'b', '', '#', 'x'][delta + 2]];
+                return [targetNote + ['bb', 'b', '', '#', 'x'][delta + distance + 2]];
             } catch (err) {
                 throw new ItemNotFoundDefaultError<[string]>(
                     'Cannot find closest note to ' + letterName,
@@ -1036,7 +1035,7 @@ export default class KeySignature implements IKeySignature {
         }
 
         if (this._numberOfSemitones !== 12) {
-            throw new InvalidArgumentDefaultError<[string]>(`Cannot convert noteName`, [noteName]);
+            throw new InvalidArgumentDefaultError<[string]>('Cannot convert noteName', [noteName]);
         }
 
         if (this._noteNames.includes(noteName)) {
@@ -1272,7 +1271,6 @@ export default class KeySignature implements IKeySignature {
                 }
 
                 const [strippedPitch, delta] = stripAccidental(startingPitch);
-                let res: [string];
                 try {
                     const noteName = this._noteNames.includes(strippedPitch)
                         ? strippedPitch
@@ -1764,7 +1762,6 @@ export default class KeySignature implements IKeySignature {
             // Look up for a note in the scale.
             let distance = this._numberOfSemitones; // max distance
             let closestNote: string = '';
-            let n = 0;
             for (let i = 0; i < this.modeLength; i++) {
                 const ii = this._noteNames.indexOf(this._genericScale[i]);
                 const n = ii - idx;

@@ -458,7 +458,6 @@ export default class Temperament implements ITemperament {
      * @returns The frequency that corresponds to the index and octave (in Hertz).
      */
     public getFreqByGenericNoteNameAndOctave(noteName: string, octave: number): number {
-        let i: number;
         try {
             if (this._freqs.length === 0) {
                 return 0;
@@ -651,7 +650,7 @@ export default class Temperament implements ITemperament {
      * Returns the instance's list of frequencies as a string.
      * @override
      */
-    public toString() {
+    public toString(): string {
         const freqs: string[] = [];
         for (const f of this.freqs) {
             freqs.push((f + 0.005).toFixed(2));

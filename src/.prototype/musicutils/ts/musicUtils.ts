@@ -430,7 +430,7 @@ export function findSharpIndex(pitchName: string): number {
         return CHROMATIC_NOTES_SHARP.indexOf(pitchName);
     }
 
-    if (CONVERT_UP.hasOwnProperty(pitchName)) {
+    if (pitchName in CONVERT_UP) {
         const newPitchName = CONVERT_UP[pitchName];
         if (CHROMATIC_NOTES_SHARP.includes(newPitchName)) {
             return CHROMATIC_NOTES_SHARP.indexOf(newPitchName);
@@ -464,7 +464,7 @@ export function findFlatIndex(pitchName: string): number {
         return CHROMATIC_NOTES_FLAT.indexOf(pitchName);
     }
 
-    if (CONVERT_DOWN.hasOwnProperty(pitchName)) {
+    if (pitchName in CONVERT_DOWN) {
         const newPitchName = CONVERT_DOWN[pitchName];
         if (CHROMATIC_NOTES_FLAT.includes(newPitchName)) {
             return CHROMATIC_NOTES_FLAT.indexOf(newPitchName);
@@ -491,10 +491,10 @@ export function getPitchType(pitchName: string): string {
     if (CHROMATIC_NOTES_FLAT.includes(pitchName)) {
         return LETTER_NAME;
     }
-    if (EQUIVALENT_SHARPS.hasOwnProperty(pitchName)) {
+    if (pitchName in EQUIVALENT_SHARPS) {
         return LETTER_NAME;
     }
-    if (EQUIVALENT_FLATS.hasOwnProperty(pitchName)) {
+    if (pitchName in EQUIVALENT_FLATS) {
         return LETTER_NAME;
     }
 

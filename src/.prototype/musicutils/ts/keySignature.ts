@@ -1348,7 +1348,8 @@ export default class KeySignature implements IKeySignature {
          */
         if (this._numberOfSemitones === 21) {
             /**
-             * Do we skip the accidental?
+             * When there both sharps and flats in a scale, we skip some of the accidental as we
+             * navigate the semitones.
              *
              * @todo Describe what this is doing.
              *

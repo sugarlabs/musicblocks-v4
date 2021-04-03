@@ -12,9 +12,9 @@
 import KeySignature from './keySignature';
 import Temperament from './temperament';
 import {
+    getPitchType,
     CUSTOM_NAME,
     LETTER_NAME,
-    getPitchType,
     SOLFEGE_NAME,
     GENERIC_NOTE_NAME,
     SCALAR_MODE_NUMBER,
@@ -23,6 +23,12 @@ import {
 } from './musicUtils';
 
 describe('Key Signature', () => {
+    test('instantiation', () => {
+        const ks = new KeySignature('major', 'c');
+        expect(ks.modeLength).toBe(7);
+        expect(ks.numberOfSemitones).toBe(12);
+    });
+
     test('closest note tests', () => {
         const ks: KeySignature = new KeySignature('major', 'c');
         expect(ks.closestNote('c')[0]).toBe('c');
@@ -40,11 +46,29 @@ describe('Key Signature', () => {
         expect(ks.closestNote('sol')[0]).toBe('sol');
         expect(ks.closestNote('pa')[0]).toBe('pa');
     });
+
+    test('scalar distance', () => {
+        const ks = new KeySignature('major', 'c');
+        expect(ks.scalarDistance('g', 4, 'c', 4)[0]).toBe(-4);
+        expect(ks.scalarDistance('c', 4, 'g', 4)[0]).toBe(4);
+        expect(ks.scalarDistance('g', 3, 'c', 4)[0]).toBe(3);
+        expect(ks.scalarDistance('c', 4, 'g', 3)[0]).toBe(-3);
+    });
+
+    test('semitone distance', () => {
+        const ks = new KeySignature('major', 'c');
+        expect(ks.semitoneDistance('g', 4, 'c', 4)).toBe(-7);
+        expect(ks.semitoneDistance('c', 4, 'g', 4)).toBe(7);
+        expect(ks.semitoneDistance('g', 3, 'c', 4)).toBe(5);
+        expect(ks.semitoneDistance('c', 4, 'g', 3)).toBe(-5);
+    });
+
     test('scalar transforms', () => {
         const ks: KeySignature = new KeySignature('major', 'c');
         expect(ks.scalarTransform('c', 2)[0]).toBe('e');
         expect(ks.scalarTransform('c#', 2)[0]).toBe('f');
     });
+
     test('semitone transforms', () => {
         const ks: KeySignature = new KeySignature('major', 'c');
         expect(ks.semitoneTransform('c', 2)[0]).toBe('d');
@@ -62,6 +86,7 @@ describe('Key Signature', () => {
         expect(ks.semitoneTransform('n11x', 1)[0]).toBe('n2');
         expect(ks.semitoneTransform('n11x', 1)[1]).toBe(1); // increment octave
     });
+
     test('invert transforms', () => {
         const ks: KeySignature = new KeySignature('major', 'c');
         expect(ks.invert('f', 5, 'c', 5, 'even')[0]).toBe('g');
@@ -83,6 +108,8 @@ describe('Key Signature', () => {
         ).toBe(440);
 
         const ks1 = new KeySignature('chromatic', 'c');
+        expect(ks1.modeLength).toBe(12);
+        expect(ks1.numberOfSemitones).toBe(12);
         expect(ks1.scalarTransform('c', 2)[0]).toBe('d');
         expect(ks1.scalarTransform('c#', 2)[0]).toBe('d#');
         expect(ks1.semitoneTransform('c', 2)[0]).toBe('d');
@@ -91,6 +118,8 @@ describe('Key Signature', () => {
 
         // const t1 = new Temperament('third comma meantone');
         const ks2 = new KeySignature([2, 2, 1, 2, 2, 2, 7, 1], 'n0');
+        expect(ks2.modeLength).toBe(8);
+        expect(ks2.numberOfSemitones).toBe(19);
         expect(ks2.scale.length).toBe(8);
         expect(ks2.scale[7]).toBe('n18');
         expect(ks2.closestNote('n12')[0]).toBe('n11');
@@ -192,6 +221,9 @@ describe('Key Signature', () => {
         expect(ks.genericNoteNameConvertToType('n7', EAST_INDIAN_SOLFEGE_NAME)).toBe('pa');
         expect(ks.genericNoteNameConvertToType('n7', SCALAR_MODE_NUMBER)).toBe('5');
         expect(ks.genericNoteNameConvertToType('n7', CUSTOM_NAME)).toBe('golf');
+
+        // Modal pitch starts at 0
+        expect(ks.modalPitchToLetter(4)[0]).toBe('g');
     });
 
     test('pitch type check', () => {
@@ -223,6 +255,7 @@ describe('Key Signature', () => {
         expect(ks.genericNoteNameConvertToType('n7', SOLFEGE_NAME)).toBe('sol');
         expect(ks.convertToGenericNoteName('sol')).toBe('n7');
         ks.fixedSolfege = true;
+        expect(ks.fixedSolfege).toBe(true);
         expect(ks.genericNoteNameConvertToType('n7', SOLFEGE_NAME)).toBe('do');
         expect(ks.convertToGenericNoteName('do')).toBe('n7');
     });
@@ -265,6 +298,8 @@ describe('Key Signature', () => {
 
     test('Testing meantone scales', () => {
         let ks = new KeySignature([], 'c', 21);
+        expect(ks.modeLength).toBe(21);
+        expect(ks.numberOfSemitones).toBe(21);
         expect(ks.closestNote('cb')[0]).toBe('cb');
         expect(ks.semitoneTransform('gb', 1)[0]).toBe('g');
         expect(ks.semitoneTransform('cb', 3)[0]).toBe('d');

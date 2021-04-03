@@ -171,7 +171,7 @@
     // MD033/no-inline-html - Inline HTML
     "MD033": {
         // Allowed elements
-        "allowed_elements": []
+        "allowed_elements": ["sup"]
     },
 
     // MD034/no-bare-urls - Bare URL used

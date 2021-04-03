@@ -9,8 +9,8 @@
  * Unit tests for KeySignature
  */
 
-import KeySignature from './keySignature';
-import Temperament from './temperament';
+import KeySignature from '../keySignature';
+import Temperament from '../temperament';
 import {
     getPitchType,
     CUSTOM_NAME,
@@ -20,7 +20,7 @@ import {
     SCALAR_MODE_NUMBER,
     UNKNOWN_PITCH_NAME,
     EAST_INDIAN_SOLFEGE_NAME
-} from './musicUtils';
+} from '../musicUtils';
 
 describe('Key Signature', () => {
     test('instantiation', () => {

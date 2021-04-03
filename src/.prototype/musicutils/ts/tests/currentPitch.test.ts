@@ -5,7 +5,7 @@
  * Licensed under the AGPL-3.0 License.
  */
 
-import CurrentPitch from './currentPitch';
+import CurrentPitch from '../currentPitch';
 
 describe('class CurrentPitch', () => {
     test("Instantiate with no arguments and expect generic note name and frequency to be 'n7' and 392 Hz, respectively", () => {

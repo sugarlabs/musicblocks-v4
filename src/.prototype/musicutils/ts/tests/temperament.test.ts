@@ -6,7 +6,7 @@
  * Licensed under the AGPL-3.0 License.
  */
 
-import Temperament from './temperament';
+import Temperament from '../temperament';
 
 describe('class Temperament', () => {
     describe('Temperament generation', () => {

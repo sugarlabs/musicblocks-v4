@@ -5,7 +5,7 @@
  * Licensed under the AGPL-3.0 License.
  */
 
-import { Scale } from './scale';
+import { Scale } from '../scale';
 
 describe('class Scale', () => {
     describe('Validate scale generation', () => {

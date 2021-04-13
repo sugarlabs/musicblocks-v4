@@ -1,11 +1,11 @@
 {
-  "name": "musicblocks.js",
+  "name": "musicblocks-v4-lib",
   "version": "0.1.0",
-  "description": "The core of the new Music Blocks 2 application",
+  "description": "The core of the new Music Blocks (v4) application",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/meganindya/musicblocks.js.git"
+    "url": "git+https://github.com/meganindya/musicblocks-v4-lib.git"
   },
   "keywords": [
     "musicblocks"

@@ -81,7 +81,7 @@ to help issue tracking. More often than not, take time to add meaningful commit 
 5. At any point, when new components are created or existing components are modified, unit tests
 (passing) reflecting the changes need to be part of the PR before being reviewed.
 
-6. Two workflows &mdash; a _Continuous Integration_ (_CI_) and a _Linter_ (_Super Linter_) has been
+6. Two workflows &mdash; a _Continuous Integration_ (_CI_) and a _Linter_ (_Super Linter_), have been
 configured. Each PR must pass the checks before being reviewed.
 
 7. For any new functions/methods or classes, add extensive [TSDoc](https://tsdoc.org/) documentation.

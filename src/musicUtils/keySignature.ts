@@ -43,7 +43,6 @@ import {
     ALL_NOTES
 } from './musicUtils';
 import {
-    ItemNotFoundError,
     ItemNotFoundDefaultError,
     InvalidArgumentError,
     InvalidArgumentDefaultError
@@ -211,12 +210,34 @@ export default class KeySignature implements IKeySignature {
     private _halfSteps: number[];
     /** List of generic notes in the scale. */
     private _genericScale: string[];
-    /** Solfege notes in mode. */
+    /**
+     * Solfege notes in mode.
+     *
+     * @example
+     * Major: ['do', 're', 'me', 'fa', 'sol', 'la', 'ti', 'do']
+     * Major Pentatonic: ['do', 're', 'me', 'sol', 'la', 'do']
+     * Minor Pentatonic: ['do', 'me', 'fa', 'sol', 'ti', 'do']
+     * Whole Tone: ['do', 're', 'me', 'sol', 'la', 'ti', 'do']
+     *
+     * @remarks
+     * Solfege assignment only works for temperaments of 12 semitones.
+     */
     private _solfegeNotes: string[];
-    /** Scalar mode numbers in current mode. */
-    private _scalarModeNumbers: string[];
-    /** East Indian solfeges in current mode. */
+    /**
+     * East Indian solfeges in current mode.
+     *
+     * @remarks
+     * Solfege assignment only works for temperaments of 12 semitones.
+     */
     private _eastIndianSolfegeNotes: string[];
+    /**
+     * Scalar mode numbers in current mode.
+     *
+     * @remarks
+     * - Scalar mode numbers refer to the available notes in the mode.
+     * - Assignment only works for temperaments of 12 semitones.
+     */
+    private _scalarModeNumbers: string[];
 
     /**
      * @remarks
@@ -227,10 +248,6 @@ export default class KeySignature implements IKeySignature {
      * @param key - Any pitch defined by the temperament. (Note that currently the only notation
      * supported is for temperaments with up to 12 steps.
      * @param numberOfSemitones - The number of semitones defined in the temperament.
-     *
-     * @throws {ItemNotFoundError}
-     * Thrown if solfeges / east indian solfeges / mode numbers do not exist for temperaments with
-     * `numberOfSemitones` semitones.
      */
     constructor(
         modeArg: string | number[] = 'major',
@@ -314,13 +331,9 @@ export default class KeySignature implements IKeySignature {
             scale[scale.length - 1] = this._key;
             this._scale = this.normalizeScale(scale);
 
-            /*
-             * The following assignments may throw error. It isn't handled here, instead it is to be
-             * handled where this class is instantiated.
-             */
-            this._assignSolfegeNoteNames();
-            this._assignEastIndianSolfegeNoteNames();
-            this._assignScalarModeNumbers();
+            this._solfegeNotes = this._modeMapList(SOLFEGE_NAMES);
+            this._eastIndianSolfegeNotes = this._modeMapList(EAST_INDIAN_NAMES);
+            this._scalarModeNumbers = this._modeMapList(SCALAR_MODE_NUMBERS);
         } else {
             this._noteNames = this._scaleObj.noteNames;
             this._scale =
@@ -613,74 +626,6 @@ export default class KeySignature implements IKeySignature {
         }
         returnList[returnList.length - 1] = returnList[0];
         return returnList;
-    }
-
-    /**
-     * Create a Solfege mapping of the scale ("fixed Solfege == true")
-     *
-     * @example
-     * Major: ['do', 're', 'me', 'fa', 'sol', 'la', 'ti', 'do']
-     * Major Pentatonic: ['do', 're', 'me', 'sol', 'la', 'do']
-     * Minor Pentatonic: ['do', 'me', 'fa', 'sol', 'ti', 'do']
-     * Whole Tone: ['do', 're', 'me', 'sol', 'la', 'ti', 'do']
-     *
-     * @remarks
-     * Solfege assignment only works for temperaments of 12 semitones.
-     *
-     * @throws {ItemNotFoundError}
-     * Thrown if solfeges for temperaments with `this._numberOfSemitones` do not exist.
-     */
-    private _assignSolfegeNoteNames() {
-        this._solfegeNotes = [];
-
-        if (this._numberOfSemitones === 12 || this._numberOfSemitones === 21) {
-            this._solfegeNotes = this._modeMapList(SOLFEGE_NAMES);
-        } else {
-            throw new ItemNotFoundError(
-                `No Solfege for temperaments with ${this._numberOfSemitones} semitones.`
-            );
-        }
-    }
-
-    /**
-     * East Indian Solfege.
-     *
-     * @remarks
-     * Solfege assignment only works for temperaments of 12 semitones.
-     *
-     * @throws {ItemNotFoundError}
-     * Thrown if East Indian solfeges for temperaments with `this._numberOfSemitones` do not exist.
-     */
-    private _assignEastIndianSolfegeNoteNames(): void {
-        this._eastIndianSolfegeNotes = [];
-
-        if (this._numberOfSemitones === 12 || this._numberOfSemitones === 21) {
-            this._eastIndianSolfegeNotes = this._modeMapList(EAST_INDIAN_NAMES);
-        } else {
-            throw new ItemNotFoundError(
-                `No East Indian Solfege for temperaments with ${this._numberOfSemitones} semitones.`
-            );
-        }
-    }
-
-    /**
-     * @remarks
-     * - Scalar mode numbers refer to the available notes in the mode.
-     * - Assignment only works for temperaments of 12 semitones.
-     *
-     * @throws {ItemNotFoundError}
-     * Thrown if mode numbers for temperaments with `this._numberOfSemitones` do not exist.
-     */
-    private _assignScalarModeNumbers(): void {
-        this._scalarModeNumbers = [];
-
-        if (this._numberOfSemitones === 12 || this._numberOfSemitones === 21) {
-            this._scalarModeNumbers = this._modeMapList(SCALAR_MODE_NUMBERS);
-        } else {
-            throw new ItemNotFoundError(
-                `No mode numbers for temperaments with ${this._numberOfSemitones} semitones.`
-            );
-        }
     }
 
     /**

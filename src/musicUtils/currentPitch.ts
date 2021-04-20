@@ -43,10 +43,6 @@ export default class CurrentPitch implements ICurrentPitch {
      * @param i - Index into semitones defined by temperament; defaults to `7`, which maps to g
      * (sol) in an equal temperament tuning.
      * @param octave - Initial octave for the pitch. Defaults to Octave 4.
-     *
-     * @throws {ItemNotFoundError}
-     * Thrown if solfeges / east indian solfeges / mode numbers do not exist for the temperament's
-     * semitone count.
      */
     constructor(
         keySignature?: KeySignature,
@@ -57,8 +53,7 @@ export default class CurrentPitch implements ICurrentPitch {
         this._t = temperament === undefined ? new Temperament() : temperament;
         this._ks =
             keySignature === undefined
-                ? // Instantiation may throw Error.
-                  new KeySignature('major', 'c', this._t.numberOfSemitonesInOctave)
+                ? new KeySignature('major', 'c', this._t.numberOfSemitonesInOctave)
                 : keySignature;
         this._semitoneIndex = i;
         this._octave = octave;

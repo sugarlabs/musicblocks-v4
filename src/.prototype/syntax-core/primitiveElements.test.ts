@@ -381,6 +381,98 @@ describe('operations on type elements', () => {
         });
     });
 
+    describe('class TString', () => {
+        test('test to check lenghth of string `"Hello World"` to be 11', () => {
+            const myString = new TString("hello world");
+            expect(myString.length().value).toBe(11);
+        });
+
+        test('test to find the character at index 3 for string `"hello world"`', () => {
+            const myString = new TString("hello world");
+            const index = new TInt(3);
+            expect(myString.charAt(index).value).toBe("l");
+        });
+
+        test('test to find the index of character `"e"` in string `"hello world"`', () => {
+            const myString = new TString("hello world");
+            const indexS = new TString("e");
+            expect(myString.indexOf(indexS).value).toBe(1);
+        });
+
+        test('test for substring method that starts at index 1', () => {
+            const myString = new TString("hello world");
+            const index = new TInt(1);
+            expect(myString.substring(index).value).toBe("ello world");
+        });
+
+        test('test for substring method that starts at index 1 to index 4', () => {
+            const myString = new TString("hello world");
+            const index = new TInt(1);
+            const endIndex = new TInt(4);
+            expect(myString.substring(index, endIndex).value).toBe("ell");
+        });
+
+        test('test to compare equality of two strings using equals method to return true', () => {
+            const myString = new TString("hello world");
+            const MyString = new TString("hello world");
+            expect(myString.equals(MyString).value).toBe(true);
+        });
+
+        test('test to compare equality of two strings using equals method to return false', () => {
+            const myString = new TString("hello world");
+            const MyString = new TString("llo world");
+            expect(myString.equals(MyString).value).toBe(false);
+        });
+
+        test('test to compare equality of two strings using equals method to return true using static method', () => {
+            const myString = new TString("hello world");
+            const MyString = new TString("hello world");
+            expect(TString.equals(myString, MyString).value).toBe(true);
+        });
+
+        test('test to compare equality of two strings using equals method to return false using static method', () => {
+            const myString = new TString("hello world");
+            const MyString = new TString("llo world");
+            expect(TString.equals(myString, MyString).value).toBe(false);
+        });
+
+        test('test to compare two strings using compareTo method and expect -2', () => {
+            const myString = new TString("llo world");
+            const MyString = new TString("hello world");
+            expect(myString.compareTo(MyString).value).toBe(-2);
+        });
+
+        test('test to compare two strings using compareTo method and expect 0', () => {
+            const myString = new TString("hello world");
+            const MyString = new TString("hello world");
+            expect(myString.compareTo(MyString).value).toBe(0);
+        });
+
+        test('test to compare two strings using compareTo method and expect 1', () => {
+            const myString = new TString("hello worldd");
+            const MyString = new TString("hello world");
+            expect(myString.compareTo(MyString).value).toBe(1);
+        });
+
+        test('test to compare two strings using static compare method and expect -2', () => {
+            const myString = new TString("llo world");
+            const MyString = new TString("hello world");
+            expect(TString.compare(myString, MyString).value).toBe(-2);
+        });
+
+        test('test to compare two strings using static compare method and expect 0', () => {
+            const myString = new TString("hello world");
+            const MyString = new TString("hello world");
+            expect(TString.compare(myString, MyString).value).toBe(0);
+        });
+
+        test('test to compare two strings using static compare method and expect 1', () => {
+            const myString = new TString("hello worldd");
+            const MyString = new TString("hello world");
+            expect(TString.compare(myString, MyString).value).toBe(1);
+        });
+    });
+
     const operand_4 = new TBoolean(true);
     const operand_5 = new TBoolean(false);
 

@@ -343,6 +343,64 @@ export class TString extends PrimitiveElement<string> {
             return new TString(primitive.value.toString());
         }
     }
+
+
+    length(): TInt {
+        return new TInt(this.value.length);
+}
+
+    charAt(index: TInt): TChar {
+        const thisStr = this.value;
+        const indxInt = index.value;
+        if (indxInt < 0 || indxInt >= thisStr.length) {
+            throw Error(`String index "${indxInt}" out of bounds`);
+        }
+        return new TChar(thisStr.charAt(indxInt));
+    };
+
+    indexOf(substring: TChar | TString): TInt {
+        const thisStr = this.value;
+        return new TInt(thisStr.indexOf(substring.value.toString()));
+    };
+
+    substring(startIndex: TInt, length?: TInt): TString {
+        const thisStr = this.value;
+        const indxInt = startIndex.value;
+        if (typeof length === "undefined"){
+            if (indxInt < 0 || indxInt >= thisStr.length) {
+            throw Error(`String index "${indxInt}" out of bounds`);
+        }
+        return new TString(thisStr.substring(indxInt));
+        }
+        else {
+            const endInt = length.value;
+            if (indxInt < 0 || endInt >= thisStr.length){
+                throw Error(`String index "${endInt}" out of bounds or "${indxInt} is less than 0"`);
+            }
+                return new TString(thisStr.substring(indxInt, endInt));
+            }
+    };
+
+    equals(operand: TChar | TString): TBoolean{
+        const thisStr = this.value;
+        return new TBoolean(thisStr === operand.value.toString());
+    };
+
+    static equals(operand_1: TChar | TString, operand_2: TChar | TString): TBoolean{
+        const operand1 = operand_1.value.toString();
+        const operand2 = operand_2.value.toString();
+        return new TBoolean(operand1 === operand2);
+    };
+
+    compareTo(operand: TChar | TString): TInt{
+        return new TInt(this.value.length - operand.value.length);
+    };
+
+    static compare(operand_1: TChar | TString, operand_2: TChar | TString): TInt{
+        const operand1 = operand_1.value.toString();
+        const operand2 = operand_2.value.toString();
+        return new TInt(operand1.length - operand2.length);
+    };
 }
 
 /**

@@ -93,9 +93,9 @@ Windows) this repository using
     in the second terminal. Output should look like
 
     ```bash
-    v14.15.3
-    6.14.10
-    Version 4.1.3
+    v14.16.1
+    7.9.0
+    Version 4.2.4
     v9.1.1
     ```
 

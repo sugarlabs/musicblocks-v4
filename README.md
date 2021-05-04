@@ -35,7 +35,7 @@ _This project is containerized using [**docker**](https://www.docker.com/). Ther
     - For _Windows_ or _Mac_ (_x86_64 / amd64_),
     [install _Docker Desktop_](https://www.docker.com/products/docker-desktop).
 
-2. Open a teminal and navigate to working directory (where the source code will reside).
+2. Open a terminal and navigate to working directory (where the source code will reside).
 
 3. _Git Clone_ (additional [installation](https://git-scm.com/downloads) of _Git_ required on
 Windows) this repository using
@@ -73,16 +73,16 @@ Windows) this repository using
     locally, it'll not be rebuilt. To force a rebuild from the `Dockerfile` before launching the
     _docker network_, add the `--build` flag.
 
-5. In another terminal, run
+5. In a second terminal, run
 
     ```bash
     docker attach musicblocks
     ```
 
-6. The _Linux Debian 10.7_ (_buster_) _shell_ in the _docker container_ named _musicblocks_ is
-spawned and standard input/output is connected to the terminal.
+    The _Linux Debian 10.7_ (_buster_) _shell_ in the _docker container_ named _musicblocks_ is
+    spawned and standard input/output is connected to the terminal.
 
-    _**Node**_ (_Node.js Runtime_), _**npm**_ (_Node Package Manager_), _**tsc**_ (_TypeScript
+6. _**Node**_ (_Node.js Runtime_), _**npm**_ (_Node Package Manager_), _**tsc**_ (_TypeScript
     Compiler_), and _**ts-node**_ (_Node executable for TypeScript_) should be installed. Check
     using
 
@@ -90,17 +90,70 @@ spawned and standard input/output is connected to the terminal.
     node --version && npm --version && tsc --version && ts-node --version
     ```
 
-    Output should look like
+    in the second terminal. Output should look like
 
     ```bash
-    v14.16.1
-    7.9.0
-    Version 4.2.4
+    v14.15.3
+    6.14.10
+    Version 4.1.3
     v9.1.1
     ```
 
-7. To shut down the _docker network_, run (in the terminal where you ran `docker-compose up -d` or
-`docker compose up -d`)
+The steps you take from here depend on what you want to do:
+
+
+- **Run test suites and run a development server**
+
+    1. To install all the dependencies (in `package.json`), run
+
+        ```bash
+        npm ci
+        ```
+
+    2. Run _React scripts_.
+
+        - For unoptimized development serving, run
+
+            ```bash
+            npm start
+            ```
+
+            This is spawned on `127.0.0.1:3000` inside the container, but mapped to `localhost:5000` on
+            host. Visit `localhost:5000` in a browser to view the webpage served.
+
+            Currently this will open a page with a "Hello world!" message.
+
+        - For testing, run
+
+            ```bash
+            npm run test
+            ```
+
+        - For generating a production build, run
+
+            ```bash
+            npm run build
+            ```
+
+        _**Note:**_ If you're running using _Docker Desktop_ on _Windows_ or _Mac_, you might experience
+        longer execution times for these scripts. This happens due to cross-file-system communication.
+        Duration varies across machines; duration primarily depends on hard drive read/write speed.
+
+- **HTTP server**
+
+    - To spawn an _HTTP Server_ (uses _Python 3_'s `http.server`), run
+
+    ```bash
+    npm run serve
+    ```
+
+    This is spawned on `0.0.0.0:80` inside the container, but mapped to `localhost:5001` on host.
+    Visit `localhost:5001` in a browser to view the webpage served.
+
+- **Shut down docker network**
+
+    To shut down the _docker network_, run (in the terminal where you ran `docker-compose up -d` or
+    `docker compose up -d`)
 
     ```bash
     docker-compose down
@@ -112,49 +165,7 @@ spawned and standard input/output is connected to the terminal.
     docker compose down
     ```
 
-8. To install all the dependencies (in `package.json`), run
-
-    ```bash
-    npm ci
-    ```
-
-9. To spawn a _HTTP Server_ (uses _Python 3_'s `http.server`), run
-
-    ```bash
-    npm run serve
-    ```
-
-    This is spawned on `0.0.0.0:80` inside the container, but mapped to `localhost:5001` on host.
-    Visit `localhost:5001` in a browser to view the webpage served.
-
-10. Run _React scripts_.
-
-    - For unoptimized development serving, run
-
-        ```bash
-        npm start
-        ```
-
-        This is spawned on `127.0.0.1:3000` inside the container, but mapped to `localhost:5000` on
-        host. Visit `localhost:5000` in a browser to view the webpage served.
-
-    - For testing, run
-
-        ```bash
-        npm run test
-        ```
-
-    - For generating a production build, run
-
-        ```bash
-        npm run build
-        ```
-
-    _**Note:**_ If you're running using _Docker Desktop_ on _Windows_ or _Mac_, you might experience
-    longer execution times for these scripts. This happens due to cross-file-system communication.
-    Duration varies across machines; duration primarily depends on hard drive read/write speed.
-
-11. Miscellaneous commands.
+- **Miscellaneous commands**
 
     - To launch the _Node runtime_, run
 

@@ -1,15 +1,8 @@
-FROM debian:buster-slim
+# base from official Node (Alpine LTS) image
+FROM node:lts-alpine
 
-# install node.js:14.x
-RUN apt update --no-install-recommends -yq \
-    && apt-get install curl gnupg -yq \
-    && curl -sL https://deb.nodesource.com/setup_14.x | bash \
-    && apt-get install nodejs -yq \
-    && apt-get clean -y \
-    && rm -rf /var/lib/apt/lists/*
-
-# update npm
-RUN npm install -g npm
+# install simple http server for serving static content
+RUN npm install -g http-server
 
 # install typescript compiler
 RUN npm install -g typescript
@@ -17,10 +10,16 @@ RUN npm install -g typescript
 # install ts-node (to run/debug .ts files without manual transpiling)
 RUN npm install -g ts-node
 
-LABEL org.opencontainers.image.description='An initial development image based on a slimmed Debian \
-10.7 (buster), and further configured with Node.js v14, TypeScript compiler, and ts-node. This \
-does not contain any source files.'
-
+# set /app as working directory (in development mode for mounting source code)
 WORKDIR /app
 
-EXPOSE 5000 9000
+# override default CMD for image ("node"): launch the shell
+CMD sh
+
+# Listen on ports
+EXPOSE 80 3000
+
+# Add label for GitHub container registry
+LABEL org.opencontainers.image.description='An initial development image based on the official \
+    Node.js (on Alpine LTS) image, and further configured with a HTTP server, TypeScript compiler, \
+    and ts-node. This is merely to provide an execution sandbox and does not contain source files.'

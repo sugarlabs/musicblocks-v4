@@ -35,7 +35,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "serve": "python3 -m http.server 80"
+    "serve": "http-server . -p 80"
   },
   "eslintConfig": {
     "extends": [

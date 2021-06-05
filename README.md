@@ -47,13 +47,13 @@ Windows) this repository using
 4. Build _docker image_ and launch _docker network_.
 
     _**Note:**_ A
-    [built initial development image](https://github.com/orgs/sugarlabs/packages/container/musicblocks/531083)
+    [built initial development image](https://github.com/orgs/sugarlabs/packages/container/musicblocks/2948273?tag=4.0.0-dev)
     has been published to
     [_Sugar Labs GitHub Container Registry_ (_GHCR_)](https://github.com/orgs/sugarlabs/packages?ecosystem=container),
     which can be pulled directly, so you don't have to build it again. Pull using
 
     ```bash
-    docker pull ghcr.io/sugarlabs/musicblocks:initial
+    docker pull ghcr.io/sugarlabs/musicblocks:4.0.0-dev
     ```
 
     Nagivate inside the project directory and launch the _docker network_ using

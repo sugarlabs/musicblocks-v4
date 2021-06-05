@@ -101,7 +101,6 @@ Windows) this repository using
 
 The steps you take from here depend on what you want to do:
 
-
 - **Run test suites and run a development server**
 
     1. To install all the dependencies (in `package.json`), run
@@ -118,8 +117,8 @@ The steps you take from here depend on what you want to do:
             npm start
             ```
 
-            This is spawned on `127.0.0.1:3000` inside the container, but mapped to `localhost:5000` on
-            host. Visit `localhost:5000` in a browser to view the webpage served.
+            This is spawned on `127.0.0.1:3000` inside the container, but mapped to `localhost:5000`
+            on host. Visit `localhost:5000` in a browser to view the webpage served.
 
             Currently this will open a page with a "Hello world!" message.
 
@@ -141,7 +140,7 @@ The steps you take from here depend on what you want to do:
 
 - **HTTP server**
 
-    - To spawn an _HTTP Server_ (uses _Python 3_'s `http.server`), run
+    To spawn an _HTTP Server_ (uses _Python 3_'s `http.server`), run
 
     ```bash
     npm run serve

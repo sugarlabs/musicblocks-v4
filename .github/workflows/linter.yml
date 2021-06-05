@@ -50,6 +50,10 @@ jobs:
         uses: github/super-linter@v3
         env:
           DEFAULT_BRANCH: main
+          LINTER_RULES_PATH: /
+          JAVASCRIPT_ES_CONFIG_FILE: .eslintrc.json
+          TYPESCRIPT_ES_CONFIG_FILE: .eslintrc.json
+          MARKDOWN_CONFIG_FILE: .markdownlint.jsonc
           VALIDATE_ALL_CODEBASE: false
           VALIDATE_CSS: false
           VALIDATE_DOCKERFILE: false

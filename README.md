@@ -47,13 +47,13 @@ Windows) this repository using
 4. Build _docker image_ and launch _docker network_.
 
     _**Note:**_ A
-    [built initial development image](https://github.com/orgs/sugarlabs/packages/container/musicblocks/531083)
+    [built initial development image](https://github.com/orgs/sugarlabs/packages/container/musicblocks/2948273?tag=4.0.0-dev)
     has been published to
     [_Sugar Labs GitHub Container Registry_ (_GHCR_)](https://github.com/orgs/sugarlabs/packages?ecosystem=container),
     which can be pulled directly, so you don't have to build it again. Pull using
 
     ```bash
-    docker pull ghcr.io/sugarlabs/musicblocks:initial
+    docker pull ghcr.io/sugarlabs/musicblocks:4.0.0-dev
     ```
 
     Nagivate inside the project directory and launch the _docker network_ using
@@ -76,27 +76,28 @@ Windows) this repository using
 5. In a second terminal, run
 
     ```bash
-    docker attach musicblocks
+    docker attach musicblocks-4.0.0-dev
     ```
 
-    The _Linux Debian 10.7_ (_buster_) _shell_ in the _docker container_ named _musicblocks_ is
-    spawned and standard input/output is connected to the terminal.
+    The _Alpine shell_ in the _docker container_ named _musicblocks-4.0.0-dev_ is spawned and
+    standard input/output is connected to the terminal.
 
 6. _**Node**_ (_Node.js Runtime_), _**npm**_ (_Node Package Manager_), _**tsc**_ (_TypeScript
-    Compiler_), and _**ts-node**_ (_Node executable for TypeScript_) should be installed. Check
-    using
+    Compiler_), _**ts-node**_ (_Node executable for TypeScript_), and _**http-server**_ (_a HTTP
+    server program_) should be installed. Check using
 
     ```bash
-    node --version && npm --version && tsc --version && ts-node --version
+    node -v && npm -v && tsc -v && ts-node -v && http-server -v
     ```
 
-    in the second terminal. Output should look like
+    Output should look like
 
     ```bash
-    v14.16.1
-    7.9.0
-    Version 4.2.4
-    v9.1.1
+    v14.17.0
+    6.14.13
+    Version 4.3.2
+    v10.0.0
+    v0.12.3
     ```
 
 The steps you take from here depend on what you want to do:

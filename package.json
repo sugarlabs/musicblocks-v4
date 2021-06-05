@@ -1,6 +1,6 @@
 {
-  "name": "musicblocks-v4",
-  "version": "0.1.0",
+  "name": "musicblocks",
+  "version": "4.0.0",
   "description": "A complete overhaul of Music Blocks",
   "private": true,
   "repository": {

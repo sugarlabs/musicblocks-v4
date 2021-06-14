@@ -1,6 +1,6 @@
 // button in each section
 export const buttonList = [
-    ["rhythm", "meter", "pitch"],
+    ["rhythm", "meter", "pitch", "Intervals", "Tone", "Ornament", "Volume", "Drum", "Widgets"],
     [
         "flow",
         "action",
@@ -18,9 +18,9 @@ export const buttonList = [
 // advance palette
 export const SKIPPALETTES = ["heap", "dictionary", "extras", "program"];
 // section list
-export const MULTIPALETTEICONS = ["music", "logic", "artwork"];
+export const category = ["music", "logic", "artwork"];
 
-let blockList: { [button: string]: string[] } = {};
+export let blockList: { [button: string]: string[] } = {};
 
 blockList.rhythm = ["note", "note value drum", "silence", "note value"];
 blockList.meter = [
@@ -43,4 +43,20 @@ blockList.pitch = [
     "pitch number",
     "scalar change in pitch",
     "change in pitch"
+];
+
+blockList.flow = ["repeat", "forever", "if then", "if then else", "backward"];
+
+blockList.graphics = [
+    "forward",
+    "back",
+    "left",
+    "right",
+    "set xy",
+    "set heading",
+    "arc",
+    "scroll xy",
+    "x",
+    "y",
+    "heading"
 ];

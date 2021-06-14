@@ -23,7 +23,6 @@ const PaletteContoller: React.FC = () => {
   const onClickSubCategory = (text: string) => {
     SetShowBlocks(true);
     SetSelectedSubCategory(text);
-    // console.log(blockList[text]);
   };
 
   const removeBlocks = () => {

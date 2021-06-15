@@ -1,0 +1,18 @@
+.side-nav{
+  background-color: #444B54;
+  height: calc(100vh - 48px);
+  width: 96px;
+  float: right;
+  
+  li{
+    list-style: none;
+    padding: 16px 0px;
+    cursor: pointer;
+    text-align: center;
+    color: #fff;
+  }
+}
+
+.side-nav-inactive{
+  display: none;
+}

@@ -1,6 +1,5 @@
 import "./App.scss";
-import Landing from "./view/web/Landing";
-
+import MenuControl from "./controller/MenuControl";
 export default function App(): JSX.Element {
-  return <Landing />;
+  return <MenuControl />;
 }

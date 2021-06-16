@@ -1,55 +1,61 @@
-import React, { useState } from "react";
-import { blockList, buttonList, category } from "../dummyEngine";
+import React, { useReducer } from "react";
+import { paletteModel } from "../models/Palette/PaletteModel";
+import { Action, State } from "../types/State";
 import BlockView from "../view/Palette/BlockView";
 import PaletteView from "../view/Palette/PaletteView";
 import SubCategoryView from "../view/Palette/SubCategoryView";
 
-const PaletteContoller: React.FC = () => {
-  const [showMenu, SetShowMenu] = useState(false);
-  const [selectedCategory, SetSelectedCategory] = useState<string>("");
-  const [showBlocks, SetShowBlocks] = useState(false);
-  const [selectedSubCategory, SetSelectedSubCategory] = useState<string>("");
+const reducer = (state: State, action: Action): State => {
+  switch (action.type) {
+    case "showSubCategory":
+      return { ...state, showSubCategory: true, selectedSubCategory: action.payload };
+    case "hideSubCategory":
+      return { ...state, showSubCategory: false, selectedSubCategory: "" };
+    case "openSubCategory":
+      return { ...state, showBlocks: true, selectedBlock: action.payload };
+    case "removeBlocks":
+      return { ...state, showBlocks: false, selectedBlock: "" };
+    default:
+      return state;
+  }
+};
 
-  const onClickCategory = (text: string) => {
-    SetShowMenu(true);
-    SetShowBlocks(false);
-    SetSelectedCategory(text);
+const PaletteContoller: React.FC = () => {
+  const [model, dispatch] = useReducer(reducer, paletteModel);
+
+  const handleShowSubCategory = (text: string) => {
+    dispatch({ type: "showSubCategory", payload: text });
   };
 
   const removeSubCategory = () => {
-    SetShowMenu(false);
+    dispatch({ type: "hideSubCategory" });
   };
 
   const onClickSubCategory = (text: string) => {
-    SetShowBlocks(true);
-    SetSelectedSubCategory(text);
+    dispatch({ type: "openSubCategory", payload: text });
   };
 
   const removeBlocks = () => {
-    SetShowBlocks(false);
+    dispatch({ type: "removeBlocks" });
   };
 
   return (
     <div>
       <PaletteView
-        openSubCategories={onClickCategory}
-        showMenu={showMenu}
+        model={model}
+        onCategoryClick={handleShowSubCategory}
         removeSubCategory={removeSubCategory}
       />
 
-      {showMenu ? (
+      {model.showSubCategory ? (
         <SubCategoryView
-          buttonList={buttonList[category.indexOf(selectedCategory)]}
+          buttonList={model.subCategory[model.category.indexOf(model.selectedSubCategory)]}
           openblocks={onClickSubCategory}
         />
       ) : null}
 
-      {showMenu && showBlocks ? (
-        <BlockView
-          blockList={blockList[selectedSubCategory]}
-          showBlocks={showBlocks}
-          removeBlocks={removeBlocks}
-        />
+      {model.showSubCategory && model.showBlocks ? (
+        <BlockView blockList={model.blocks[model.selectedBlock]} removeBlocks={removeBlocks} />
       ) : null}
     </div>
   );

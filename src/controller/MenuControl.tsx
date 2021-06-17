@@ -1,7 +1,18 @@
-import React from "react";
+import React, { useReducer, useRef } from "react";
+import {MenuModel} from "../models/menuModel";
+import { MenuModelState, ActionState } from "../types/MenuState";
 import Menu from "../view/Menu/Menu";
 
+const reducer = (state: MenuModelState, action: ActionState): MenuModelState => {
+  switch(action.type){
+    case "updateLanguage":
+      return {...state, selectedLanguage: action.payload};
+  }
+};
+
 export default function MenuControl(): JSX.Element {
+  const [menumodel, dispatch] = useReducer(reducer, MenuModel);
+
   const playFast = () => {
     console.log("Play Project Fast");
   };
@@ -34,8 +45,10 @@ export default function MenuControl(): JSX.Element {
     console.log("Restore recently deleted block");
   };
 
-  const languageSelect = () => {
-    console.log("Select a language");
+  const languageSelect = (text: string) => {
+    console.log("called");
+    dispatch({ type: "updateLanguage", payload: text});
+    console.log("Select a language: " + text);
   };
 
   return (
@@ -50,6 +63,7 @@ export default function MenuControl(): JSX.Element {
         onEnable={enableScroll}
         onRestore={restore}
         onLangSelect={languageSelect}
+        model={menumodel}
       />
     </div>
   );

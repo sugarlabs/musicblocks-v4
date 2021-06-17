@@ -1,7 +1,20 @@
-import React from "react";
+import { CanvasView } from "../view/canvas/CanvasView";
 
-const CanvasController = () => {
+export class CanvasController {
 
-}
+  public canvasView: CanvasView;
 
-export default CanvasController;
+  constructor(canvasView: CanvasView){
+    this.canvasView = canvasView;
+  };
+  
+  refreshCanvas = (): void => {
+    this.canvasView.refreshCanvas();
+  };
+
+  isCanvasBlank = (): boolean => {
+    return (this.canvasView.isCanvasBlank());
+  }
+
+};
+

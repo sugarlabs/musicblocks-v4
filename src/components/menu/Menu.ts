@@ -10,8 +10,8 @@ import Menu from '../../views/menu/Menu';
  * ViewModel of the Menu component.
  */
 export default function (): JSX.Element {
-    const [title, updateTitle] = useState('Menu');
-    setTimeout(() => updateTitle('Menubar'), 2000);
+    const [title, updateTitle] = useState('Menubar');
+    setTimeout(() => updateTitle('Menu'), 2000);
 
     return Menu({ title });
 }

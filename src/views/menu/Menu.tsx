@@ -1,9 +1,23 @@
+// -- types ----------------------------------------------------------------------------------------
+
+import { IMenuProps } from '../../@types/menu';
+
+// -- stylesheet -----------------------------------------------------------------------------------
+
 import './Menu.scss';
 
-export default function (): JSX.Element {
+// -- view component definition --------------------------------------------------------------------
+
+/**
+ * View of the Menu component.
+ *
+ * @param props - React props (title)
+ * @returns root JSX element
+ */
+export default function (props: IMenuProps): JSX.Element {
   return (
     <div id="menu-wrapper">
-      <h4>Menu</h4>
+      <h4>{props.title}</h4>
     </div>
   );
 }

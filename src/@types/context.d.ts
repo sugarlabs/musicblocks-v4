@@ -1,5 +1,5 @@
 /**
- * Interface for the top level configurations context.
+ * Interface for the top-level configurations context.
  */
 export interface IContextConfig {
     /** UI theme */

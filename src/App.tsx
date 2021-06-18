@@ -16,7 +16,7 @@ import Palette from './components/palette/Palette';
 
 import './App.scss';
 
-// -- component ------------------------------------------------------------------------------------
+// -- component definition -------------------------------------------------------------------------
 
 export default function App(): JSX.Element {
   const [config] = useState<IContextConfig>(ContextConfigDefaults);

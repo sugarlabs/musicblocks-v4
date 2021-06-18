@@ -1,4 +1,4 @@
-import "./Landing.scss";
+import './Landing.scss';
 
 export default function (): JSX.Element {
   return (

@@ -1,0 +1,15 @@
+@import '../../scss/colors';
+
+#artboard-wrapper {
+  position: absolute;
+  z-index: 1;
+  width: inherit;
+  height: inherit;
+  background: $artboard-background;
+
+  h4 {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}

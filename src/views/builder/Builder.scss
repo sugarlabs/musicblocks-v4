@@ -1,0 +1,18 @@
+@import '../../scss/colors';
+
+#builder-wrapper {
+  position: absolute;
+  z-index: 100;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  height: 90vh;
+  background: $builder-background;
+
+  h4 {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}

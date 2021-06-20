@@ -14,7 +14,6 @@
     "no-unused-vars": "warn",
     "no-use-before-define": "off",
     "@typescript-eslint/no-use-before-define": ["error"],
-    "quotes": ["warn", "double", { "avoidEscape": true }],
     "semi": ["error", "always"],
     "prefer-const": ["off"],
     "no-console": "warn",
@@ -32,5 +31,9 @@
     "no-duplicate-case": "error",
     "no-irregular-whitespace": "warn"
   },
-  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"]
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended"
+  ]
 }

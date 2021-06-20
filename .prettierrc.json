@@ -3,15 +3,23 @@
   "tabWidth": 4,
   "useTabs": false,
   "semi": true,
-  "singleQuote": false,
+  "singleQuote": true,
   "quoteProps": "consistent",
-  "trailingComma": "none",
+  "trailingComma": "all",
   "bracketSpacing": true,
   "arrowParens": "always",
   "endOfLine": "lf",
   "overrides": [
     {
-      "files": ["*.json", "*.jsonc", "*.yml", "*.html", "*.css", "*.scss", "*.tsx"],
+      "files": [
+        "*.json",
+        "*.jsonc",
+        "*.yml",
+        "*.html",
+        "*.css",
+        "*.scss",
+        "*.tsx"
+      ],
       "options": {
         "tabWidth": 2
       }

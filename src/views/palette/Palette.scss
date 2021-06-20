@@ -1,0 +1,19 @@
+@import '../../scss/colors';
+
+#palette-wrapper {
+  position: absolute;
+  z-index: 900;
+  top: 50%;
+  left: 0.5rem;
+  width: 8rem;
+  height: 40rem;
+  transform: translateY(-50%);
+  background-color: $palette-background;
+
+  h4 {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}

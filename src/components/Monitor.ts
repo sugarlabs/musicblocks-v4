@@ -20,6 +20,59 @@ class Palette implements IPalette {
         };
         return fetchPaletteSections();
     }
+
+    /**
+     * Fetches the list of paletteSubSection and returns it.
+     *
+     * @returns `Promise` instance corresponding to the subSection list of the selected palette.
+     */
+    getSubSection(index: number): Promise<string[]> {
+        // dummy logic
+        const fetchSubSections = (i: number) => {
+            if (i === 0) {
+                return new Promise<string[]>((res) =>
+                    setTimeout(() =>
+                        res([
+                            'rhythm',
+                            'meter',
+                            'pitch',
+                            'Intervals',
+                            'Tone',
+                            'Ornament',
+                            'Volume',
+                            'Drum',
+                            'Widgets',
+                        ]),
+                    ),
+                );
+            } else if (i === 1) {
+                return new Promise<string[]>((res) =>
+                    setTimeout(() =>
+                        res([
+                            'flow',
+                            'action',
+                            'boxes',
+                            'number',
+                            'boolean',
+                            'heap',
+                            'dictionary',
+                            'extras',
+                            'program',
+                            'myblocks',
+                        ]),
+                    ),
+                );
+            } else if (i === 2) {
+                return new Promise<string[]>((res) =>
+                    setTimeout(() => res(['graphics', 'pen', 'media', 'sensors', 'ensemble'])),
+                );
+            } else {
+                return new Promise<string[]>((res) => setTimeout(() => res([])));
+            }
+        };
+
+        return fetchSubSections(index);
+    }
 }
 
 // -- component definition -------------------------------------------------------------------------

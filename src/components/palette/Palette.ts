@@ -20,21 +20,31 @@ import Palette from '../../views/palette/Palette';
 export default function (): JSX.Element {
     const [sections, setSections] = useState<string[]>([]);
     const [subSections, setSubSections] = useState<string[]>([]);
-    const [selectedSection, setSelectedSection] = useState<number>(1);
+    const [selectedSection, setSelectedSection] = useState<number>(0);
     const [hideSubSection, setHideSubSection] = useState<boolean>(true);
+    const [openedSection, setOpenedSection] = useState<number>(0);
     useEffect(() => {
         (async () => setSections(await Monitor.palette.getSections()))();
-        (async () => setSubSections(await Monitor.palette.getSubSection(selectedSection)))();
     }, []);
+
+    useEffect(() => {
+        (async () => setSubSections(await Monitor.palette.getSubSection(selectedSection)))();
+    }, [selectedSection]);
     const toggleHideSubSection = (flag: boolean) => {
         PaletteModel.toggleHideSubSection(flag);
         setHideSubSection(PaletteModel.hideSubSection);
     };
     const changeSelectedSection = (index: number) => {
-        setSelectedSection(index);
-        PaletteModel.changeSelectedSection(index);
-        setSelectedSection(PaletteModel.selectedSection);
-        toggleHideSubSection(false);
+        if (openedSection === index) {
+            toggleHideSubSection(true);
+            /** Here -1 shows that no subSection is opened */
+            setOpenedSection(-1);
+        } else {
+            PaletteModel.changeSelectedSection(index);
+            setSelectedSection(PaletteModel.selectedSection);
+            setOpenedSection(PaletteModel.selectedSection);
+            toggleHideSubSection(false);
+        }
     };
     return Palette({
         sections,
@@ -43,5 +53,6 @@ export default function (): JSX.Element {
         selectedSection,
         changeSelectedSection,
         toggleHideSubSection,
+        openedSection,
     });
 }

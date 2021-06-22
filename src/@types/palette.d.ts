@@ -7,8 +7,26 @@ export interface IPaletteProps {
     subSections: string[];
     selectedSection: number;
     hideSubSection: boolean;
+    openedSection: number;
     changeSelectedSection: (arg: number) => void;
     toggleHideSubSection: (arg: boolean) => void;
+}
+/**
+ * Interface for the Palette's section View props
+ */
+export interface ISectionProps {
+    section: string;
+    selectedSection: number;
+    changeSelectedSection: (arg: number) => void;
+    hideSubSection: boolean;
+    subSections: string[];
+    openedSection: number;
+}
+/**
+ * export interface Palette's SubSection View Props
+ */
+export interface ISubSectionProps {
+    subSections: string[];
 }
 
 /**

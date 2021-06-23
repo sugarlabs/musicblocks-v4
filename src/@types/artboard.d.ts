@@ -6,6 +6,21 @@ export interface IArtboardProps {
     dimensions: [number, number];
     /** Refreshes the viewport dimensions state. */
     updateDimensions: () => void;
+    /** width of the Artboard */
+    width: number;
+    /** height of the Artboard */
+    height: number;
+    /** scale factor in X */
+    scaleX: number;
+    /** scale factor in Y */
+    scaleY: number;
+    /** Function to hide aux menu */
+    /** Function to clear the canvas */
+    /** Function to hide all grids */
+    /** Function that renders Cartesian/Polar  */
+    /** Sets the scale of the turtle canvas. */
+    setArtBoardScale: (scale: number) => void;
+    /**  */
 }
 
 /** Function that may be called on any keyboard event. */
@@ -25,7 +40,7 @@ export type P5WritableMethods = {
     setup: () => void;
     draw: () => void;
     setBackground: () => void;
-
+    handleClick: any;
     windowResized: (event?: Event) => void;
 
     keyPressed: KeyboardEventCallback;
@@ -67,3 +82,33 @@ export type SketchDef = {
         args: Parameters<P5WritableMethods[T]>,
     ) => ReturnType<P5WritableMethods[T]>;
 };
+
+/**
+ * Interface for the Artboard component's Model class.
+ */
+export interface ITurtleModel {
+    /*unique ID of the turtle */
+    id: string;
+    /* name of the turtle */
+    name: string;
+    /* Which start block is associated with this turtle. */
+    startBlock: string;
+    /* x coordinate */
+    x: number;
+    /* y coordinate */
+    y: number;
+    /* is the turtle running */
+    running: boolean;
+    /** media (text, images)*/
+    media: [string];
+    /**reference canvas using p5 of the turtle*/
+    canvas: p5;
+}
+
+/**
+ * Interface for the Artboard component's Model class.
+ */
+export interface ITurtlesModel {
+    /** List of all of the turtles, one for each start block */
+    turtles: [ITurtleModel];
+}

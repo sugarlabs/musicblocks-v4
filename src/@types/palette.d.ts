@@ -40,6 +40,9 @@ export interface IBlockPopUp {
 export interface IPopUpBlocks {
     subSectionName: string;
     blockList: (string | { [button: string]: string[] })[];
+    selectedHighShelf: string;
+    openLowShelf: boolean;
+    openAccordion: (arg: string) => void;
 }
 
 /**

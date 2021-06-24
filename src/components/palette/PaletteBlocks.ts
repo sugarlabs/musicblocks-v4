@@ -1,12 +1,12 @@
 // -- monitor component ----------------------------------------------------------------------------
 
 import Monitor from '../Monitor';
-
+// -- type -----------------------------------------------------------------------------------------
+import { IBlockPopUp } from '../../@types/palette';
 // -- view component -------------------------------------------------------------------------------
 
 import { useEffect, useState } from 'react';
 import PopUp from '../../views/palette/PopUp';
-import { IBlockPopUp } from '../../@types/palette';
 
 // -- view-model component definition --------------------------------------------------------------
 
@@ -14,6 +14,16 @@ import { IBlockPopUp } from '../../@types/palette';
  * ViewModel of the PopUp component.
  */
 export default function (props: IBlockPopUp): JSX.Element {
+    const [selectedHighShelf, setSelectedHighShelf] = useState<string>('');
+    const [openLowShelf, setOpenLowShelf] = useState<boolean>(false);
+    const openAccordion = (highShelf: string) => {
+        if (selectedHighShelf === highShelf) {
+            setSelectedHighShelf('');
+        } else {
+            setOpenLowShelf(true);
+            setSelectedHighShelf(highShelf);
+        }
+    };
     let subSectionName = props.subSectionName;
     const [blockList, setBlockList] = useState<(string | { [button: string]: string[] })[]>([]);
     useEffect(() => {
@@ -23,5 +33,8 @@ export default function (props: IBlockPopUp): JSX.Element {
     return PopUp({
         subSectionName,
         blockList,
+        selectedHighShelf,
+        openLowShelf,
+        openAccordion,
     });
 }

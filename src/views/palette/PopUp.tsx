@@ -14,16 +14,6 @@ import { useState } from 'react';
  * @returns root JSX element
  */
 export default function (props: IPopUpBlocks): JSX.Element {
-  const [selectedHighShelf, setSelectedHighShelf] = useState<string>('');
-  const [openLowShelf, setOpenLowShelf] = useState<boolean>(false);
-  const openAccordion = (highShelf: string) => {
-    if (selectedHighShelf === highShelf) {
-      setSelectedHighShelf('');
-    } else {
-      setOpenLowShelf(true);
-      setSelectedHighShelf(highShelf);
-    }
-  };
   const renderBlocks = (blocks: string | { [button: string]: string[] }, index: number) => {
     if (typeof blocks === 'string') {
       return <button className="blockInfo">{blocks}</button>;
@@ -31,10 +21,14 @@ export default function (props: IPopUpBlocks): JSX.Element {
       for (const [highShelf, lowShelf] of Object.entries(blocks)) {
         return (
           <div key={`lowShelf-block-item-${index}`} className="lowShelf">
-            <div className="title" onClick={() => openAccordion(highShelf)}>
+            <div className="title" onClick={() => props.openAccordion(highShelf)}>
               {highShelf}
             </div>
-            <div className={openLowShelf && selectedHighShelf === highShelf ? 'active' : 'body'}>
+            <div
+              className={
+                props.openLowShelf && props.selectedHighShelf === highShelf ? 'active' : 'body'
+              }
+            >
               {lowShelf.map((lowBlock, i) => (
                 <button key={`lowShelf-block-${i}`} className="blockInfo">
                   {lowBlock}

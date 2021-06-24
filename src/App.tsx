@@ -25,7 +25,7 @@ export default function App(): JSX.Element {
     <ContextConfig.Provider value={{ ...config }}>
       <div id="app">
         <Artboard />
-        <Builder />
+        {/* <Builder /> */}
         <Menu />
         <Palette />
       </div>

@@ -18,8 +18,3 @@ export const createSketch = (definition: SketchDef): Sketch => {
         });
     };
 };
-
-export const sketch = createSketch({
-    setup,
-    draw,
-  });

@@ -7,19 +7,19 @@ export interface IArtboardProps {
     /** Refreshes the viewport dimensions state. */
     updateDimensions: () => void;
     /** width of the Artboard */
-    width: number;
+    // width: number;
     /** height of the Artboard */
-    height: number;
+    // height: number;
     /** scale factor in X */
-    scaleX: number;
+    // scaleX: number;
     /** scale factor in Y */
-    scaleY: number;
+    // scaleY: number;
     /** Function to hide aux menu */
     /** Function to clear the canvas */
     /** Function to hide all grids */
     /** Function that renders Cartesian/Polar  */
     /** Sets the scale of the turtle canvas. */
-    setArtBoardScale: (scale: number) => void;
+    // setArtBoardScale: (scale: number) => void;
     /**  */
 }
 

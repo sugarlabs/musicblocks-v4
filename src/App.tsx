@@ -2,7 +2,6 @@ import { useState } from 'react';
 
 // -- context --------------------------------------------------------------------------------------
 
-import { IContextConfig } from './@types/context';
 import { ContextConfig, ContextConfigDefaults } from './context/context-config';
 
 // -- subcomponents --------------------------------------------------------------------------------
@@ -19,11 +18,12 @@ import './App.scss';
 // -- component definition -------------------------------------------------------------------------
 
 export default function App(): JSX.Element {
-  const [config] = useState<IContextConfig>(ContextConfigDefaults);
+  const [config, setConfig] = useState(ContextConfigDefaults.config);
 
   return (
-    <ContextConfig.Provider value={{ ...config }}>
+    <ContextConfig.Provider value={{ config, setConfig }}>
       <div id="app">
+        <div className="lang-container">Current Language: {config.language}</div>
         <Artboard />
         <Builder />
         <Menu />

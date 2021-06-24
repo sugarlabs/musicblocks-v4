@@ -6,6 +6,11 @@ export interface IPalette {
     getSections: () => Promise<string[]>;
 }
 
+export interface IMenu{
+    /** Returns a `Promise` for the list of languages available. */
+    getLanguages: () => Promise<string[]>;
+}
+
 /**
  * Interface for the Monitor component.
  */

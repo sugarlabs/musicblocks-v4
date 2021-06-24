@@ -3,14 +3,22 @@
 import { IMonitor, IPalette } from '../@types/monitor';
 
 // -- PaletteBlocks defination ---------------------------------------------------------------------
-const blockList: { [button: string]: string[] } = {};
-blockList.rhythm = ['note', 'note value drum', 'silence', 'note value'];
+const blockList: { [button: string]: (string | { [button: string]: string[] })[] } = {};
+const lowShelf1: { [button: string]: string[] } = {};
+const lowShelf2: { [button: string]: string[] } = {};
+
+lowShelf1.block1 = ['block1', 'block2', 'block3', 'block4', 'block5'];
+lowShelf2.block2 = ['block11', 'block21', 'block31', 'block41', 'block51'];
+
+blockList.rhythm = ['note', 'note value drum', 'silence', 'note value', lowShelf1, lowShelf2];
 blockList.meter = [
     'beats per second',
     'master beats per second',
     'on every note do',
     'notes played',
     'beat count',
+    lowShelf1,
+    lowShelf2,
 ];
 
 blockList.pitch = [
@@ -25,9 +33,11 @@ blockList.pitch = [
     'pitch number',
     'scalar change in pitch',
     'change in pitch',
+    lowShelf1,
+    lowShelf2,
 ];
 
-blockList.flow = ['repeat', 'forever', 'if then', 'if then else', 'backward'];
+blockList.flow = ['repeat', 'forever', 'if then', 'if then else', 'backward', lowShelf1, lowShelf2];
 
 blockList.graphics = [
     'forward',
@@ -41,6 +51,8 @@ blockList.graphics = [
     'x',
     'y',
     'heading',
+    lowShelf1,
+    lowShelf2,
 ];
 
 // -- subcomponent definitions ---------------------------------------------------------------------
@@ -120,10 +132,12 @@ class Palette implements IPalette {
      *
      * @returns `Promise` instance corresponding to the Blocklist of the selected subSection.
      */
-    getBlockList(subSection: string): Promise<string[]> {
+    getBlockList(subSection: string): Promise<(string | { [button: string]: string[] })[]> {
         // dummy logic
         const fetchBlockList = (section: string) => {
-            return new Promise<string[]>((res) => setTimeout(() => res(blockList[section])));
+            return new Promise<(string | { [button: string]: string[] })[]>((res) =>
+                setTimeout(() => res(blockList[section])),
+            );
         };
         return fetchBlockList(subSection);
     }

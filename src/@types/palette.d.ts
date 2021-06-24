@@ -39,7 +39,7 @@ export interface IBlockPopUp {
  */
 export interface IPopUpBlocks {
     subSectionName: string;
-    blockList: string[];
+    blockList: (string | { [button: string]: string[] })[];
 }
 
 /**

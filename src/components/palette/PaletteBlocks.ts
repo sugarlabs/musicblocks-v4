@@ -15,7 +15,7 @@ import { IBlockPopUp } from '../../@types/palette';
  */
 export default function (props: IBlockPopUp): JSX.Element {
     let subSectionName = props.subSectionName;
-    const [blockList, setBlockList] = useState<string[]>([]);
+    const [blockList, setBlockList] = useState<(string | { [button: string]: string[] })[]>([]);
     useEffect(() => {
         (async () => setBlockList(await Monitor.palette.getBlockList(subSectionName)))();
     }, [props.subSectionName]);

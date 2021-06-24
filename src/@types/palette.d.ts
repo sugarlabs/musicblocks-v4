@@ -9,7 +9,7 @@ export interface IPaletteProps {
     hideSubSection: boolean;
     openedSection: number;
     changeSelectedSection: (arg: number) => void;
-    toggleHideSubSection: (arg: boolean) => void;
+    // toggleHideSubSection: (arg: boolean) => void;
 }
 /**
  * Interface for the Palette's section View props
@@ -27,6 +27,19 @@ export interface ISectionProps {
  */
 export interface ISubSectionProps {
     subSections: string[];
+}
+/**
+ * Interface for PaletteBlock View Model
+ */
+export interface IBlockPopUp {
+    subSectionName: string;
+}
+/**
+ * Interface for PopUp view component
+ */
+export interface IPopUpBlocks {
+    subSectionName: string;
+    blockList: string[];
 }
 
 /**

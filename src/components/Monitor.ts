@@ -2,6 +2,47 @@
 
 import { IMonitor, IPalette } from '../@types/monitor';
 
+// -- PaletteBlocks defination ---------------------------------------------------------------------
+const blockList: { [button: string]: string[] } = {};
+blockList.rhythm = ['note', 'note value drum', 'silence', 'note value'];
+blockList.meter = [
+    'beats per second',
+    'master beats per second',
+    'on every note do',
+    'notes played',
+    'beat count',
+];
+
+blockList.pitch = [
+    'pitch',
+    'pitch G4',
+    'scalar step (+/-)',
+    'pitch number',
+    'hertz',
+    'fourth',
+    'fifth',
+    'pitch in hertz',
+    'pitch number',
+    'scalar change in pitch',
+    'change in pitch',
+];
+
+blockList.flow = ['repeat', 'forever', 'if then', 'if then else', 'backward'];
+
+blockList.graphics = [
+    'forward',
+    'back',
+    'left',
+    'right',
+    'set xy',
+    'set heading',
+    'arc',
+    'scroll xy',
+    'x',
+    'y',
+    'heading',
+];
+
 // -- subcomponent definitions ---------------------------------------------------------------------
 
 /**
@@ -72,6 +113,19 @@ class Palette implements IPalette {
         };
 
         return fetchSubSections(index);
+    }
+
+    /**
+     * Fetches the list of blocksList according to their subSection and returns it.
+     *
+     * @returns `Promise` instance corresponding to the Blocklist of the selected subSection.
+     */
+    getBlockList(subSection: string): Promise<string[]> {
+        // dummy logic
+        const fetchBlockList = (section: string) => {
+            return new Promise<string[]>((res) => setTimeout(() => res(blockList[section])));
+        };
+        return fetchBlockList(subSection);
     }
 }
 

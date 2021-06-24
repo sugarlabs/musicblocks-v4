@@ -26,7 +26,7 @@ export default function (props: ISectionProps): JSX.Element {
     <div id="section-wrapper">
       <button
         className="sectionButton"
-        onClick={props.changeSelectedSection.bind(null, props.selectedSection)}
+        onClick={() => props.changeSelectedSection(props.selectedSection)}
       >
         {props.section}
       </button>

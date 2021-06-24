@@ -22,7 +22,7 @@ export default function (): JSX.Element {
     const [subSections, setSubSections] = useState<string[]>([]);
     const [selectedSection, setSelectedSection] = useState<number>(0);
     const [hideSubSection, setHideSubSection] = useState<boolean>(true);
-    const [openedSection, setOpenedSection] = useState<number>(0);
+    const [openedSection, setOpenedSection] = useState<number>(-1);
     useEffect(() => {
         (async () => setSections(await Monitor.palette.getSections()))();
     }, []);
@@ -52,7 +52,6 @@ export default function (): JSX.Element {
         hideSubSection,
         selectedSection,
         changeSelectedSection,
-        toggleHideSubSection,
         openedSection,
     });
 }

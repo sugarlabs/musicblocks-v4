@@ -48,12 +48,32 @@
       ul{
         list-style: none;
         padding: 0;
-  
+        
         li{
           div{
+            position: relative;
             width: 96px;
             text-align: center;
             margin: 24px 0;
+
+            span{
+              visibility: hidden;
+              width: 120px;
+              background-color: rgba(0,0,0,0.60);
+              color: #fff;
+              text-align: center;
+              border-radius: 6px;
+              padding: 7.5px 5px;
+              
+              position: absolute;
+              z-index: 0;
+              top: -5px;
+              right: 105%;
+            }
+          }
+
+          div:hover span{
+            visibility: visible;
           }
 
           .dropdown-inactive{
@@ -62,11 +82,14 @@
   
           .dropdown-active{
             position: absolute;
+            z-index: 1;
             margin-top: -6vh;
-            margin-left: -5vw;
+            margin-left: -3vw;
             background-color: #3F4756;
             color: #fff;
             width: 150px;
+            border: 2px solid #fff;
+            border-radius: 16px;
   
             button{
               width: 150px;
@@ -78,6 +101,7 @@
               padding: 12px 12px;
               font-size: 12px;
               font-weight: 600;
+              border-radius: 16px;
             }
   
             .dropdown-btn:hover{

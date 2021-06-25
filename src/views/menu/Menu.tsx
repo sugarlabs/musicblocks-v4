@@ -39,12 +39,17 @@ export default function (props: IMenuProps): JSX.Element {
           <nav>
             <ul>
               <li className="main-menu-btn">
-                {/* <img src={Logo} /> */}
-                <div>Music Blocks</div>
+                <div>
+                  Music Blocks
+                  <span>Music Blocks</span>
+                </div>
               </li>
               <hr></hr>
               <li className="main-menu-btn">
-                <div onClick={() => props.togglePlayMenu()}>Play</div>
+                <div onClick={() => props.togglePlayMenu()}>
+                  Play
+                  <span>Play</span>
+                </div>
                 <div className={props.playMenuVisible ? 'dropdown-active' : 'dropdown-inactive'}>
                   <button onClick={() => props.togglePlayMenu()} className="dropdown-btn">
                     Play
@@ -59,27 +64,48 @@ export default function (props: IMenuProps): JSX.Element {
               </li>
               <hr></hr>
               <li className="main-menu-btn">
-                <div>Search</div>
+                <div>
+                  Search
+                  <span>Search</span>
+                </div>
               </li>
               <li className="main-menu-btn">
-                <div>Undo</div>
+                <div>
+                  Undo
+                  <span>Undo</span>
+                </div>
               </li>
               <li className="main-menu-btn">
-                <div>Redo</div>
+                <div>
+                  Redo
+                  <span>Redo</span>
+                </div>
               </li>
               <hr></hr>
               <li className="main-menu-btn">
-                <div>Palette#1</div>
+                <div>
+                  Palette#1
+                  <span>Palette #1</span>
+                </div>
               </li>
               <li className="main-menu-btn">
-                <div>Palette#2</div>
+                <div>
+                  Palette#2
+                  <span>Palette #2</span>
+                </div>
               </li>
               <li className="main-menu-btn">
-                <div>Palette#3</div>
+                <div>
+                  Palette#3
+                  <span>Palette #3</span>
+                </div>
               </li>
               <hr></hr>
               <li className="main-menu-btn">
-                <div onClick={() => props.toggleSettingsMenu()}>Settings</div>
+                <div onClick={() => props.toggleSettingsMenu()}>
+                  Settings
+                  <span>Settings</span>
+                </div>
                 <div
                   className={props.settingsMenuVisible ? 'dropdown-active' : 'dropdown-inactive'}
                 >
@@ -100,13 +126,22 @@ export default function (props: IMenuProps): JSX.Element {
                 </div>
               </li>
               <li className="main-menu-btn">
-                <div>New Project</div>
+                <div>
+                  New Project
+                  <span>New Project</span>
+                </div>
               </li>
               <li className="main-menu-btn">
-                <div>Save Project</div>
+                <div>
+                  Save Project
+                  <span>Save Project</span>
+                </div>
               </li>
               <li className="main-menu-btn">
-                <div onClick={() => props.toggleLanguageMenu()}>Language</div>
+                <div onClick={() => props.toggleLanguageMenu()}>
+                  Language
+                  <span>Language</span>
+                </div>
                 <div
                   className={
                     props.languageMenuVisible

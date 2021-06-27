@@ -1,5 +1,9 @@
 import { useState } from 'react';
 
+// -- model component ------------------------------------------------------------------------------
+
+import _ArtboardModel from '../../models/artboard/Artboard';
+const ArtboardModel = new _ArtboardModel();
 // -- utilities ------------------------------------------------------------------------------------
 
 import { getViewportDimensions } from '../../utils/ambience';
@@ -17,5 +21,11 @@ export default function (): JSX.Element {
     const [dimensions, setDimensions] = useState(getViewportDimensions());
     const updateDimensions = () => setDimensions(getViewportDimensions());
 
-    return Artboard({ dimensions, updateDimensions });
+    const [lines, setLines] = useState([]);
+    const [arcs, setArcs] = useState([]);
+    const addLine = (line: number) => {
+        ArtboardModel.addLine(line);
+    };
+
+    return Artboard({ dimensions, updateDimensions, addLine });
 }

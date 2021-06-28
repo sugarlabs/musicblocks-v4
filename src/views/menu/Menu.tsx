@@ -2,13 +2,9 @@
 
 import { IMenuProps } from '../../@types/menu';
 
-import { ContextConfig } from '../../context/context-config';
-
 // -- stylesheet -----------------------------------------------------------------------------------
 
 import './Menu.scss';
-
-import { useContext } from 'react';
 
 // -- view component definition --------------------------------------------------------------------
 
@@ -19,8 +15,6 @@ import { useContext } from 'react';
  * @returns root JSX element
  */
 export default function (props: IMenuProps): JSX.Element {
-  const { config, setConfig } = useContext(ContextConfig);
-
   return (
     <div>
       <div
@@ -35,7 +29,13 @@ export default function (props: IMenuProps): JSX.Element {
         onMouseEnter={() => props.toggleAutoHideTemp()}
         onMouseLeave={() => props.toggleAutoHideTemp()}
       >
-        <div className={props.autoHide && props.autoHideTemp ? 'menu-dock-inactive' : 'menu-dock'}>
+        <div
+          className={
+            props.autoHide && props.autoHideTemp
+              ? 'menu-dock menu-dock-inactive'
+              : 'menu-dock menu-dock-active'
+          }
+        >
           <nav>
             <ul>
               <li className="main-menu-btn">
@@ -84,20 +84,20 @@ export default function (props: IMenuProps): JSX.Element {
               <hr></hr>
               <li className="main-menu-btn">
                 <div>
-                  Palette#1
-                  <span>Palette #1</span>
+                  Hide Blocks
+                  <span>Hide Blocks</span>
                 </div>
               </li>
               <li className="main-menu-btn">
                 <div>
-                  Palette#2
-                  <span>Palette #2</span>
+                  Clean
+                  <span>Clean</span>
                 </div>
               </li>
               <li className="main-menu-btn">
                 <div>
-                  Palette#3
-                  <span>Palette #3</span>
+                  Collapse Blocks
+                  <span>Collapse Blocks</span>
                 </div>
               </li>
               <hr></hr>
@@ -151,10 +151,7 @@ export default function (props: IMenuProps): JSX.Element {
                 >
                   {props.languages.map((lang) => (
                     <button
-                      onClick={() => {
-                        setConfig({ ...config, language: lang });
-                        props.toggleLanguageMenu();
-                      }}
+                      onClick={() => props.changeLanguage(lang)}
                       className="dropdown-btn"
                       value={lang}
                     >

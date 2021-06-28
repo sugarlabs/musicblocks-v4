@@ -20,7 +20,7 @@ export interface IMenuProps {
     /** list of languages available */
     languages: string[];
 
-    // currLang: string;
+    changeLanguage: (language: string) => void;
 
     /** Toggles the state of auto hide. */
     toggleAutoHide: () => void;

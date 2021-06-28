@@ -17,7 +17,13 @@
   color: #fff;
 
   .menu-dock-inactive{
-    display: none;
+    margin-left: 100%;
+    transition: all 1.5s;
+  }
+
+  .menu-dock-active{
+    margin-left: 0;
+    transition: all 0.5s;
   }
 
   .menu-dock {
@@ -88,7 +94,7 @@
             background-color: #3F4756;
             color: #fff;
             width: 150px;
-            border: 2px solid #fff;
+            border: 1px solid rgba(255,255,255,0.5);
             border-radius: 16px;
   
             button{

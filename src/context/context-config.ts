@@ -17,7 +17,7 @@ const defaultConfig: IConfig = {
 
 export const ContextConfigDefaults: IContextConfig = {
     config: defaultConfig,
-    setConfig: (config) => console.log(config),
+    setConfig: (config) => config,
 };
 
 // -- instance -------------------------------------------------------------------------------------

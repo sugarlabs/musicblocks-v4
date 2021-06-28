@@ -54,7 +54,7 @@ export default function (): JSX.Element {
         setAutoHide(MenuModel.autoHide);
 
         // closes any open submenu while auto-hiding the menu-dock
-        if (autoHide && autoHideTemp) {
+        if (!autoHide && autoHideTemp) {
             if (playMenuVisible) {
                 togglePlayMenu();
             }
@@ -67,6 +67,11 @@ export default function (): JSX.Element {
         }
     };
 
+    const changeLanguage = (language: string) => {
+        toggleLanguageMenu();
+        Monitor.menu.changeLanguage(language);
+    };
+
     return MenuView({
         autoHide,
         autoHideTemp,
@@ -74,6 +79,7 @@ export default function (): JSX.Element {
         settingsMenuVisible,
         languageMenuVisible,
         languages,
+        changeLanguage,
         toggleAutoHide,
         toggleAutoHideTemp,
         togglePlayMenu,

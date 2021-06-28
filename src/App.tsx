@@ -4,6 +4,8 @@ import { useState } from 'react';
 
 import { ContextConfig, ContextConfigDefaults } from './context/context-config';
 
+import Monitor from './components/Monitor';
+
 // -- subcomponents --------------------------------------------------------------------------------
 
 import Artboard from './components/artboard/Artboard';
@@ -19,6 +21,12 @@ import './App.scss';
 
 export default function App(): JSX.Element {
   const [config, setConfig] = useState(ContextConfigDefaults.config);
+
+  const changeLanguage = (newLanguage: string) => {
+    setConfig({ ...config, language: newLanguage });
+  };
+
+  Monitor.registerSetLanguage(changeLanguage);
 
   return (
     <ContextConfig.Provider value={{ config, setConfig }}>

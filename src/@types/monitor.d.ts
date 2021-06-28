@@ -9,6 +9,9 @@ export interface IPalette {
 export interface IMenu{
     /** Returns a `Promise` for the list of languages available. */
     getLanguages: () => Promise<string[]>;
+
+    /** updates the ;anguage from Menu */
+    changeLanguage: (language: string) => void;
 }
 
 /**

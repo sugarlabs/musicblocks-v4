@@ -39,6 +39,15 @@ class Menu implements IMenu {
         };
         return fetchLanguages();
     }
+
+    /**
+     * Updates the language state in the Context API
+     *
+     * @param language the language selected from the menu
+     */
+    changeLanguage = (language: string) => {
+        language;
+    };
 }
 
 // -- component definition -------------------------------------------------------------------------
@@ -65,6 +74,10 @@ class Monitor implements IMonitor {
 
     get menu(): Menu {
         return this._menu;
+    }
+
+    registerSetLanguage(updateLanguage: (language: string) => void): void {
+        this._menu.changeLanguage = updateLanguage;
     }
 }
 

@@ -51,35 +51,18 @@ export interface InteractArtboardProps {
 }
 
 /**
- * Interface for the Artboard component's Model class.
- */
-export interface ITurtleModel {
-    /*unique ID of the turtle */
-    id: string;
-    /* name of the turtle */
-    name: string;
-    /* Which start block is associated with this turtle. */
-    startBlock: string;
-    /* x coordinate */
-    x: number;
-    /* y coordinate */
-    y: number;
-    /* is the turtle running */
-    running: boolean;
-    /** media (text, images)*/
-    media: [string];
-    /**reference canvas using p5 of the turtle*/
-    canvas: p5;
-}
-
-/**
  * Interface for the Artboard Manager component's Model class.
  */
 export interface IArtboardManagerModel {
-    /** Whether auto hide is on or off. */
-    autoHide: boolean;
-    /** Toggles the state of auto hide. */
-    toggleAutoHide: () => void;
+    /** get the dimension width of a particular canvas*/
+    getWidth: () => number;
+    /** get the dimension height of a particular canvas*/
+    getHeight: () => number;
+    /** get the scale of a particular canvas */
+    getScale: () => number;
+    /** zoom the canvas based on input Scale */
+    doScale: (scale: number) => void;
+    /**  */
 }
 
 /**

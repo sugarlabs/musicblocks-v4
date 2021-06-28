@@ -2,30 +2,57 @@
 
 import { IArtboardManagerModel } from '../../@types/artboard';
 
+import IArtboardModel from './../../models/artboard/Artboard';
+
 // -- model component definition -------------------------------------------------------------------
 
 /**
  * Class representing the Model of the Menu component.
  */
 export default class implements IArtboardManagerModel {
-    /** Stores the value of the auto hide state. */
-    private _autoHide: boolean;
-
+    private _height: number;
+    private _width: number;
+    private _scale: number;
+    private _artboardList: [IArtboardModel];
     constructor() {
-        this._autoHide = false;
+        this._height = 300;
+        this._width = 300;
+        this._scale = 1.0;
+        this._artboardList = [new IArtboardModel()];
+    }
+    /**
+     * returns the height of the canvas.
+     */
+    getHeight(): number {
+        return this._height;
     }
 
     /**
-     * `true` if auto hide is on else `false`.
+     * returns the height of the canvas.
      */
-    get autoHide(): boolean {
-        return this._autoHide;
+    getWidth(): number {
+        return this._width;
     }
 
-    /**
-     * Toggles the value of `_autoHide`.
-     */
-    toggleAutoHide(): void {
-        this._autoHide = !this._autoHide;
+    /** returns the scale of the canvas. */
+    getScale(): number {
+        return this._scale;
+    }
+
+    /** zoom in , out based on value of scale. */
+    doScale(scale: number): void {
+        this._height = scale * this._height;
+        this._width = scale * this._width;
+    }
+
+    /** add a new Artboard to the canvas */
+    addArtboard(artboard: IArtboardModel): [IArtboardModel] {
+        this._artboardList.concat(artboard);
+        return this._artboardList;
+    }
+
+    /** returns all artboards */
+    getArtboards(): [IArtboardModel] {
+        return this._artboardList;
     }
 }

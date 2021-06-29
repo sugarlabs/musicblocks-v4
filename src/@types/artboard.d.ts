@@ -2,6 +2,8 @@
  * Interface for the Artboard component's View props.
  */
 export interface IArtboardProps {
+    /** id of the artboard */
+    id: number;
     /** Viewport dimensions as [width, height]. */
     dimensions: [number, number];
     /** Refreshes the viewport dimensions state. */
@@ -24,7 +26,6 @@ export interface IArtboardProps {
     // setArtBoardScale: (scale: number) => void;
     /**  */
 }
-
 /**
  * Interface for the Interactor Artboard component's View props.
  */
@@ -75,4 +76,11 @@ export interface IArtboardModel {
     getArcs: () => [number];
     /** add a line to the line parameters */
     addLine: (line: number) => void;
+}
+
+export interface ITurtleModel {
+    over: () => void;
+    update: () => void;
+    show: () => void;
+    pressed: () => void;
 }

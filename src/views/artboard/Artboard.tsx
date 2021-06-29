@@ -19,14 +19,12 @@ export default function (props: IArtboardProps): JSX.Element {
     window.addEventListener('resize', props.updateDimensions);
     return () => window.removeEventListener('resize', props.updateDimensions);
   }, []);
-
+  console.log(props);
   return (
     <>
       <div id="artboard-wrapper">
         <h4>Artboard {`(${props.dimensions[0]} × ${props.dimensions[1]})`}</h4>
-        <ArtboardSketch index={1} />
-        <ArtboardSketch index={2} />
-        <ArtboardSketch index={3} />
+        <ArtboardSketch index={props.id} />
       </div>
     </>
   );

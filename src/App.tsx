@@ -11,6 +11,7 @@ import Artboard from './components/artboard/Artboard';
 import Builder from './components/builder/Builder';
 import Menu from './components/menu/Menu';
 import Palette from './components/palette/Palette';
+import Manager from './components/artboard/Manager';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
@@ -24,7 +25,8 @@ export default function App(): JSX.Element {
   return (
     <ContextConfig.Provider value={{ ...config }}>
       <div id="app">
-        <Artboard />
+        {/* <Artboard /> */}
+        <Manager />
         {/* <Builder /> */}
         <Menu />
         <Palette />

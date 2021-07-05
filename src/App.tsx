@@ -11,11 +11,11 @@ import Monitor from './components/Monitor';
 import Artboard from './components/artboard/Artboard';
 import Builder from './components/builder/Builder';
 import Menu from './components/menu/Menu';
-import Palette from './components/palette/Palette';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
 import './App.scss';
+import Palette from './components/palette/Palette';
 
 // -- component definition -------------------------------------------------------------------------
 

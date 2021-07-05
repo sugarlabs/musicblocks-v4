@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-
 // -- types ----------------------------------------------------------------------------------------
 
 import { IArtboardProps } from '../../@types/artboard';
@@ -9,7 +8,7 @@ import { IArtboardProps } from '../../@types/artboard';
 import './Artboard.scss';
 
 // -- view component definition --------------------------------------------------------------------
-
+import ArtboardSketch from './ArtboardSketch';
 /**
  * View of the Artboard Framework component.
  *
@@ -20,10 +19,13 @@ export default function (props: IArtboardProps): JSX.Element {
     window.addEventListener('resize', props.updateDimensions);
     return () => window.removeEventListener('resize', props.updateDimensions);
   }, []);
-
+  console.log(props);
   return (
-    <div id="artboard-wrapper">
-      <h4>Artboard {`(${props.dimensions[0]} × ${props.dimensions[1]})`}</h4>
-    </div>
+    <>
+      <div id="artboard-wrapper">
+        <h4>Artboard {`(${props.dimensions[0]} × ${props.dimensions[1]})`}</h4>
+        <ArtboardSketch index={props.id} />
+      </div>
+    </>
   );
 }

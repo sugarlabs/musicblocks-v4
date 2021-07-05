@@ -11,6 +11,8 @@ import Monitor from './components/Monitor';
 import Artboard from './components/artboard/Artboard';
 import Builder from './components/builder/Builder';
 import Menu from './components/menu/Menu';
+import Palette from './components/palette/Palette';
+import Manager from './components/artboard/Manager';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
@@ -32,8 +34,9 @@ export default function App(): JSX.Element {
     <ContextConfig.Provider value={{ config, setConfig }}>
       <div id="app">
         <div className="lang-container">Current Language: {config.language}</div>
-        <Artboard />
-        <Builder />
+        {/* <Artboard /> */}
+        <Manager />
+        {/* <Builder /> */}
         <Menu />
         <Palette />
       </div>

@@ -1,5 +1,5 @@
 /**
- * Returns the vieport dimensions.
+ * Returns the viewport dimensions.
  *
  * @returns Viewport dimensions as 1D array as [width, height]
  */

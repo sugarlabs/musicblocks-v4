@@ -2,15 +2,22 @@ import { createContext } from 'react';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { IContextConfig } from '../@types/context';
+import { IContextConfig, IConfig } from '../@types/context';
 
 // -- defaults -------------------------------------------------------------------------------------
 
 /**
  * Default values for the top-level configurations context.
  */
-export const ContextConfigDefaults: IContextConfig = {
+
+const defaultConfig: IConfig = {
     theme: 'light',
+    language: 'English',
+};
+
+export const ContextConfigDefaults: IContextConfig = {
+    config: defaultConfig,
+    setConfig: (config) => config,
 };
 
 // -- instance -------------------------------------------------------------------------------------

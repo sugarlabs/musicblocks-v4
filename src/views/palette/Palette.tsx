@@ -6,6 +6,10 @@ import { IPaletteProps } from '../../@types/palette';
 
 import './Palette.scss';
 
+// -- Views ----------------------------------------------------------------------------------------
+
+import Section from './Section';
+
 // -- view component definition --------------------------------------------------------------------
 
 /**
@@ -16,12 +20,17 @@ import './Palette.scss';
 export default function (props: IPaletteProps): JSX.Element {
   return (
     <div id="palette-wrapper">
-      <h4>Palette</h4>
-      <ul>
-        {props.sections.map((section, i) => (
-          <li key={`palette-section-item-${i}`}>{section}</li>
-        ))}
-      </ul>
+      {props.sections.map((section, i) => (
+        <Section
+          key={i}
+          openedSection={props.openedSection}
+          selectedSection={i}
+          section={section}
+          changeSelectedSection={props.changeSelectedSection}
+          hideSubSection={props.hideSubSection}
+          subSections={props.subSections}
+        />
+      ))}
     </div>
   );
 }

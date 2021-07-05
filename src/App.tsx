@@ -2,8 +2,9 @@ import { useState } from 'react';
 
 // -- context --------------------------------------------------------------------------------------
 
-import { IContextConfig } from './@types/context';
 import { ContextConfig, ContextConfigDefaults } from './context/context-config';
+
+import Monitor from './components/Monitor';
 
 // -- subcomponents --------------------------------------------------------------------------------
 
@@ -16,15 +17,23 @@ import Manager from './components/artboard/Manager';
 // -- stylesheet -----------------------------------------------------------------------------------
 
 import './App.scss';
+import Palette from './components/palette/Palette';
 
 // -- component definition -------------------------------------------------------------------------
 
 export default function App(): JSX.Element {
-  const [config] = useState<IContextConfig>(ContextConfigDefaults);
+  const [config, setConfig] = useState(ContextConfigDefaults.config);
+
+  const changeLanguage = (newLanguage: string) => {
+    setConfig({ ...config, language: newLanguage });
+  };
+
+  Monitor.registerSetLanguage(changeLanguage);
 
   return (
-    <ContextConfig.Provider value={{ ...config }}>
+    <ContextConfig.Provider value={{ config, setConfig }}>
       <div id="app">
+        <div className="lang-container">Current Language: {config.language}</div>
         {/* <Artboard /> */}
         <Manager />
         {/* <Builder /> */}

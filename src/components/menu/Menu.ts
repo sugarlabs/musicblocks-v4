@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+import Monitor from '../Monitor';
 
 // -- model component ------------------------------------------------------------------------------
 
@@ -15,19 +17,73 @@ import MenuView from '../../views/menu/Menu';
  * ViewModel of the Menu component.
  */
 export default function (): JSX.Element {
-    const [title, updateTitle] = useState('Menubar');
-    setTimeout(() => updateTitle('Menu'), 2000);
+    const [autoHide, setAutoHide] = useState<boolean>(true);
+    const [autoHideTemp, setAutoHideTemp] = useState<boolean>(true);
+    const [playMenuVisible, setPlayMenuVisible] = useState<boolean>(false);
+    const [settingsMenuVisible, setSettingsMenuVisible] = useState<boolean>(false);
+    const [languageMenuVisible, setLanguageMenuVisible] = useState<boolean>(false);
+    const [languages, setLanguages] = useState<string[]>([]);
 
-    /*
-     * Poor example but illustrates usage of model.
-     * Say `toggleAutoHide` is fairly complex and impacts other intrinsic states, moving all the
-     * complexity into the Model makes sense.
-     */
-    const [autoHide, setAutoHide] = useState(false);
+    // fetch the languages from Monitor in initial render
+    useEffect(() => {
+        (async () => setLanguages(await Monitor.menu.getLanguages()))();
+    }, []);
+
+    const toggleAutoHideTemp = () => {
+        MenuModel.toggleAutoHideTemp();
+        setAutoHideTemp(MenuModel.autoHideTemp);
+    };
+
+    const togglePlayMenu = () => {
+        MenuModel.togglePlayMenu();
+        setPlayMenuVisible(MenuModel.playMenuVisible);
+    };
+
+    const toggleSettingsMenu = () => {
+        MenuModel.toggleSettingsMenu();
+        setSettingsMenuVisible(MenuModel.settingsMenuVisible);
+    };
+
+    const toggleLanguageMenu = () => {
+        MenuModel.toggleLanguageMenu();
+        setLanguageMenuVisible(MenuModel.languageMenuVisible);
+    };
+
     const toggleAutoHide = () => {
         MenuModel.toggleAutoHide();
         setAutoHide(MenuModel.autoHide);
+
+        // closes any open submenu while auto-hiding the menu-dock
+        if (!autoHide && autoHideTemp) {
+            if (playMenuVisible) {
+                togglePlayMenu();
+            }
+            if (settingsMenuVisible) {
+                toggleSettingsMenu();
+            }
+            if (languageMenuVisible) {
+                toggleLanguageMenu();
+            }
+        }
     };
 
-    return MenuView({ title, autoHide, toggleAutoHide });
+    const changeLanguage = (language: string) => {
+        toggleLanguageMenu();
+        Monitor.menu.changeLanguage(language);
+    };
+
+    return MenuView({
+        autoHide,
+        autoHideTemp,
+        playMenuVisible,
+        settingsMenuVisible,
+        languageMenuVisible,
+        languages,
+        changeLanguage,
+        toggleAutoHide,
+        toggleAutoHideTemp,
+        togglePlayMenu,
+        toggleSettingsMenu,
+        toggleLanguageMenu,
+    });
 }

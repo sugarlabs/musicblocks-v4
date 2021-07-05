@@ -1,40 +1,136 @@
 @import '../../scss/colors';
 
-#menu-wrapper {
+.auto-hide-overlay{
+  position: absolute;
+  z-index: 900;
+  height: 100vh;
+  width: 15vw;
+  right: 0;
+  background-color: rgba(0,0,0,0.10);
+}
+
+#menu-wrapper{
   position: absolute;
   z-index: 1000;
   right: 0.5rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 6rem;
-  height: 40rem;
-  background: $menu-background;
+  margin-top: 5vh;
+  color: #fff;
 
-  h4 {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: $mb-accent;
+  .menu-dock-inactive{
+    margin-left: 100%;
+    transition: all 1.5s;
   }
 
-  #menu-auto-hide-wrapper {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
+  .menu-dock-active{
+    margin-left: 0;
+    transition: all 0.5s;
+  }
 
-    span {
-      margin-top: 1rem;
-      font-size: 0.9rem;
-      color: $menu-label;
+  .menu-dock {
+    width: 96px;
+    height: 90vh;
+    background: $menu-background;
+    border-radius: 16px;
+    font-size: 12px;
+  
+    button{
+      outline: none;
     }
+  
+    nav{
+      height: 85vh;
+      width: 96px;
+      position: absolute;
+      margin: 2.5vh 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-evenly;
+  
+      .main-menu-btn{
+        cursor: pointer;
+      }
 
-    button {
-      margin-top: 1rem;
+      ul{
+        list-style: none;
+        padding: 0;
+        
+        li{
+          div{
+            position: relative;
+            width: 96px;
+            text-align: center;
+            margin: 24px 0;
+
+            span{
+              visibility: hidden;
+              width: 120px;
+              background-color: rgba(0,0,0,0.60);
+              color: #fff;
+              text-align: center;
+              border-radius: 6px;
+              padding: 7.5px 5px;
+              
+              position: absolute;
+              z-index: 0;
+              top: -5px;
+              right: 105%;
+            }
+          }
+
+          div:hover span{
+            visibility: visible;
+          }
+
+          .dropdown-inactive{
+            display: none;
+          }
+  
+          .dropdown-active{
+            position: absolute;
+            z-index: 1;
+            margin-top: -6vh;
+            margin-left: -3vw;
+            background-color: #3F4756;
+            color: #fff;
+            width: 150px;
+            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: 16px;
+  
+            button{
+              width: 150px;
+              text-align: left;
+              background-color: #3F4756;
+              border: none;
+              color: #fff;
+              cursor: pointer;
+              padding: 12px 12px;
+              font-size: 12px;
+              font-weight: 600;
+              border-radius: 16px;
+            }
+  
+            .dropdown-btn:hover{
+              background-color: #2196f3;
+              transition: 500ms;
+            }
+          }
+
+          .language-menu{
+            margin-top: -20vh;
+          }
+        }
+  
+        hr{
+          width: 64px;
+          padding-left: 16px;
+        }
+  
+        img{
+          width: 42px;
+          margin: 10px 0;
+        }
+      }
     }
   }
 }

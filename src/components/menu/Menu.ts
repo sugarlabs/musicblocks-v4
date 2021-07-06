@@ -67,6 +67,9 @@ export default function (): JSX.Element {
             if (settingsMenuVisible) {
                 toggleSettingsMenu();
             }
+            if (projectMenuVisible) {
+                toggleProjectMenu();
+            }
             if (languageMenuVisible) {
                 toggleLanguageMenu();
             }

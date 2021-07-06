@@ -41,16 +41,18 @@ export default function (props: IMenuProps): JSX.Element {
               <li className="main-menu-btn">
                 <div>
                   Music Blocks
-                  <span>Music Blocks</span>
+                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>
+                    Music Blocks
+                  </span>
                 </div>
               </li>
               <hr></hr>
               <li className="main-menu-btn">
                 <div onClick={() => props.togglePlayMenu()}>
                   Play
-                  <span>Play</span>
+                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Play</span>
                 </div>
-                <div className={props.playMenuVisible ? 'dropdown-active' : 'dropdown-inactive'}>
+                <div className={props.playMenuVisible ? 'dropdown-active' : 'inactive-menu'}>
                   <button onClick={() => props.togglePlayMenu()} className="dropdown-btn">
                     Play
                   </button>
@@ -66,63 +68,53 @@ export default function (props: IMenuProps): JSX.Element {
               <li className="main-menu-btn">
                 <div>
                   Search
-                  <span>Search</span>
+                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Search</span>
                 </div>
               </li>
               <li className="main-menu-btn">
                 <div>
                   Undo
-                  <span>Undo</span>
+                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Undo</span>
                 </div>
               </li>
               <li className="main-menu-btn">
                 <div>
                   Redo
-                  <span>Redo</span>
+                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Redo</span>
                 </div>
               </li>
               <hr></hr>
               <li className="main-menu-btn">
                 <div>
                   Hide Blocks
-                  <span>Hide Blocks</span>
+                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>
+                    Hide Blocks
+                  </span>
                 </div>
               </li>
               <li className="main-menu-btn">
                 <div>
                   Clean
-                  <span>Clean</span>
+                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Clean</span>
                 </div>
               </li>
               <li className="main-menu-btn">
                 <div>
                   Collapse Blocks
-                  <span>Collapse Blocks</span>
+                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>
+                    Collapse Blocks
+                  </span>
                 </div>
               </li>
               <hr></hr>
               <li className="main-menu-btn">
-                <div onClick={() => props.toggleSettingsMenu()}>
-                  Settings
-                  <span>Settings</span>
-                </div>
-                <div
-                  className={props.settingsMenuVisible ? 'dropdown-active' : 'dropdown-inactive'}
-                >
-                  <button onClick={() => props.toggleSettingsMenu()} className="dropdown-btn">
-                    Horizontal Scroll
-                  </button>
-                  <button onClick={() => props.toggleSettingsMenu()} className="dropdown-btn">
-                    Help
-                  </button>
-                </div>
-              </li>
-              <li className="main-menu-btn">
                 <div onClick={() => props.toggleProjectMenu()}>
                   Project
-                  <span>Project Settings</span>
+                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>
+                    Project Settings
+                  </span>
                 </div>
-                <div className={props.projectMenuVisible ? 'dropdown-active' : 'dropdown-inactive'}>
+                <div className={props.projectMenuVisible ? 'dropdown-active' : 'inactive-menu'}>
                   <button
                     onClick={() => {
                       props.toggleProjectMenu();
@@ -145,13 +137,11 @@ export default function (props: IMenuProps): JSX.Element {
               <li className="main-menu-btn">
                 <div onClick={() => props.toggleLanguageMenu()}>
                   Language
-                  <span>Language</span>
+                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Language</span>
                 </div>
                 <div
                   className={
-                    props.languageMenuVisible
-                      ? 'dropdown-active language-menu'
-                      : 'dropdown-inactive'
+                    props.languageMenuVisible ? 'dropdown-active language-menu' : 'inactive-menu'
                   }
                 >
                   {props.languages.map((lang) => (
@@ -163,6 +153,20 @@ export default function (props: IMenuProps): JSX.Element {
                       {lang}
                     </button>
                   ))}
+                </div>
+              </li>
+              <li className="main-menu-btn">
+                <div onClick={() => props.toggleSettingsMenu()}>
+                  Settings
+                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Settings</span>
+                </div>
+                <div
+                  className={props.settingsMenuVisible ? 'settings-menu-active' : 'inactive-menu'}
+                >
+                  <button onClick={() => props.toggleSettingsMenu()}>Horizontal Scroll</button>
+                  <button onClick={() => props.toggleSettingsMenu()}>Turtle Wrap</button>
+                  <button onClick={() => props.toggleSettingsMenu()}>Increase Block Size</button>
+                  <button onClick={() => props.toggleSettingsMenu()}>Decrease Block Size</button>
                 </div>
               </li>
             </ul>

@@ -4,8 +4,9 @@
   position: absolute;
   z-index: 900;
   height: 100vh;
-  width: 15vw;
+  width: 25rem;
   right: 0;
+  top: 0;
   background-color: rgba(0,0,0,0.10);
 }
 
@@ -14,6 +15,7 @@
   z-index: 1000;
   right: 0.5rem;
   margin-top: 5vh;
+  width: 24rem;
   color: #fff;
 
   .menu-dock-inactive{
@@ -22,7 +24,7 @@
   }
 
   .menu-dock-active{
-    margin-left: 0;
+    margin-left: calc(24rem - 96px);
     transition: all 0.5s;
   }
 
@@ -82,7 +84,7 @@
             visibility: visible;
           }
 
-          .dropdown-inactive{
+          .inactive-menu{
             display: none;
           }
   
@@ -118,6 +120,29 @@
 
           .language-menu{
             margin-top: -20vh;
+          }
+
+          .settings-menu-active{
+            cursor:default;
+            height: 40vh;
+            width: 120px;
+            background-color: rgba(0,0,0,0.75);
+            position: absolute;
+            z-index: 1;
+            bottom: 0vh;
+            right: 102px; /* 96px width of menu dock + 6px margin */
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+
+            button{
+              cursor: pointer;
+              background: none;
+              outline: none;
+              border: none;
+              color: #fff;
+            }
           }
         }
   

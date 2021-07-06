@@ -13,6 +13,7 @@ export default class implements IMenuModel {
     private _autoHideTemp: boolean;
     private _playMenuVisible: boolean;
     private _settingsMenuVisible: boolean;
+    private _projectMenuVisible: boolean;
     private _languageMenuVisible: boolean;
 
     constructor() {
@@ -20,6 +21,7 @@ export default class implements IMenuModel {
         this._autoHideTemp = true;
         this._playMenuVisible = false;
         this._settingsMenuVisible = false;
+        this._projectMenuVisible = false;
         this._languageMenuVisible = false;
     }
 
@@ -40,6 +42,10 @@ export default class implements IMenuModel {
 
     get settingsMenuVisible(): boolean {
         return this._settingsMenuVisible;
+    }
+
+    get projectMenuVisible(): boolean {
+        return this._projectMenuVisible;
     }
 
     get languageMenuVisible(): boolean {
@@ -72,6 +78,13 @@ export default class implements IMenuModel {
      */
     toggleSettingsMenu(): void {
         this._settingsMenuVisible = !this._settingsMenuVisible;
+    }
+
+    /**
+     * Toggles the value of `_projectMenuVisible`.
+     */
+    toggleProjectMenu(): void {
+        this._projectMenuVisible = !this._projectMenuVisible;
     }
 
     /**

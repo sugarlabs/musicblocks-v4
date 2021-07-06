@@ -21,6 +21,7 @@ export default function (): JSX.Element {
     const [autoHideTemp, setAutoHideTemp] = useState<boolean>(true);
     const [playMenuVisible, setPlayMenuVisible] = useState<boolean>(false);
     const [settingsMenuVisible, setSettingsMenuVisible] = useState<boolean>(false);
+    const [projectMenuVisible, setProjectMenuVisible] = useState<boolean>(false);
     const [languageMenuVisible, setLanguageMenuVisible] = useState<boolean>(false);
     const [languages, setLanguages] = useState<string[]>([]);
 
@@ -42,6 +43,11 @@ export default function (): JSX.Element {
     const toggleSettingsMenu = () => {
         MenuModel.toggleSettingsMenu();
         setSettingsMenuVisible(MenuModel.settingsMenuVisible);
+    };
+
+    const toggleProjectMenu = () => {
+        MenuModel.toggleProjectMenu();
+        setProjectMenuVisible(MenuModel.projectMenuVisible);
     };
 
     const toggleLanguageMenu = () => {
@@ -77,6 +83,7 @@ export default function (): JSX.Element {
         autoHideTemp,
         playMenuVisible,
         settingsMenuVisible,
+        projectMenuVisible,
         languageMenuVisible,
         languages,
         changeLanguage,
@@ -84,6 +91,7 @@ export default function (): JSX.Element {
         toggleAutoHideTemp,
         togglePlayMenu,
         toggleSettingsMenu,
+        toggleProjectMenu,
         toggleLanguageMenu,
     });
 }

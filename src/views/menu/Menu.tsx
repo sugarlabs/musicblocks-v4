@@ -109,14 +109,6 @@ export default function (props: IMenuProps): JSX.Element {
                 <div
                   className={props.settingsMenuVisible ? 'dropdown-active' : 'dropdown-inactive'}
                 >
-                  <button
-                    onClick={() => {
-                      props.toggleSettingsMenu();
-                    }}
-                    className="dropdown-btn"
-                  >
-                    Merge Project
-                  </button>
                   <button onClick={() => props.toggleSettingsMenu()} className="dropdown-btn">
                     Horizontal Scroll
                   </button>
@@ -126,15 +118,28 @@ export default function (props: IMenuProps): JSX.Element {
                 </div>
               </li>
               <li className="main-menu-btn">
-                <div>
-                  New Project
-                  <span>New Project</span>
+                <div onClick={() => props.toggleProjectMenu()}>
+                  Project
+                  <span>Project Settings</span>
                 </div>
-              </li>
-              <li className="main-menu-btn">
-                <div>
-                  Save Project
-                  <span>Save Project</span>
+                <div className={props.projectMenuVisible ? 'dropdown-active' : 'dropdown-inactive'}>
+                  <button
+                    onClick={() => {
+                      props.toggleProjectMenu();
+                    }}
+                    className="dropdown-btn"
+                  >
+                    Save Project
+                  </button>
+                  <button onClick={() => props.toggleProjectMenu()} className="dropdown-btn">
+                    Load Project
+                  </button>
+                  <button onClick={() => props.toggleProjectMenu()} className="dropdown-btn">
+                    New Project
+                  </button>
+                  <button onClick={() => props.toggleProjectMenu()} className="dropdown-btn">
+                    Merge Project
+                  </button>
                 </div>
               </li>
               <li className="main-menu-btn">

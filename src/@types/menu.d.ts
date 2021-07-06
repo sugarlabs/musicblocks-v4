@@ -14,6 +14,9 @@ export interface IMenuProps {
     /** `true` if settings submenu is visible else `false`. */
     settingsMenuVisible: boolean;
 
+    /** `true` if project settings submenu is visible else `false`. */
+    projectMenuVisible: boolean;
+
     /** `true` if language submenu is visible else `false`. */
     languageMenuVisible: boolean;
 
@@ -33,6 +36,9 @@ export interface IMenuProps {
 
     /** Toggles the state of settings submenu. */
     toggleSettingsMenu: () => void;
+
+    /** Toggles the state of project settings submenu. */
+    toggleProjectMenu: () => void;
 
     /** Toggles the state of language submenu. */
     toggleLanguageMenu: () => void;
@@ -54,6 +60,9 @@ export interface IMenuModel {
     /** Whether the Settings submenu is open or not */
     settingsMenuVisible: boolean;
 
+    /** Whether the Project Settings submenu is open or not */
+    projectMenuVisible: boolean;
+
     /** Whether the Language submenu is open or not */
     languageMenuVisible: boolean;
 
@@ -68,6 +77,9 @@ export interface IMenuModel {
 
     /** Toggles the state of settings submenu. */
     toggleSettingsMenu: () => void;
+
+    /** Toggles the state of project settings submenu. */
+    toggleProjectMenu: () => void;
 
     /** Toggles the state of language submenu. */
     toggleLanguageMenu: () => void;

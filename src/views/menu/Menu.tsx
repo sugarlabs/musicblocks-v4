@@ -135,27 +135,6 @@ export default function (props: IMenuProps): JSX.Element {
                 </div>
               </li>
               <li className="main-menu-btn">
-                <div onClick={() => props.toggleLanguageMenu()}>
-                  Language
-                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Language</span>
-                </div>
-                <div
-                  className={
-                    props.languageMenuVisible ? 'dropdown-active language-menu' : 'inactive-menu'
-                  }
-                >
-                  {props.languages.map((lang) => (
-                    <button
-                      onClick={() => props.changeLanguage(lang)}
-                      className="dropdown-btn"
-                      value={lang}
-                    >
-                      {lang}
-                    </button>
-                  ))}
-                </div>
-              </li>
-              <li className="main-menu-btn">
                 <div onClick={() => props.toggleSettingsMenu()}>
                   Settings
                   <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Settings</span>
@@ -174,6 +153,29 @@ export default function (props: IMenuProps): JSX.Element {
                     <label className="switch">
                       <input type="checkbox" />
                     </label>
+                  </button>
+                  <button onClick={() => props.toggleLanguageMenu()}>
+                    Language
+                    <div
+                      className={
+                        props.languageMenuVisible
+                          ? 'dropdown-active language-menu'
+                          : 'inactive-menu'
+                      }
+                    >
+                      {props.languages.map((lang) => (
+                        <button
+                          onClick={() => {
+                            props.changeLanguage(lang);
+                            props.toggleLanguageMenu();
+                          }}
+                          className="dropdown-btn"
+                          value={lang}
+                        >
+                          {lang}
+                        </button>
+                      ))}
+                    </div>
                   </button>
                   <button onClick={() => props.toggleSettingsMenu()}>Increase Block Size</button>
                   <button onClick={() => props.toggleSettingsMenu()}>Decrease Block Size</button>

@@ -99,7 +99,7 @@
             border: 1px solid rgba(255, 255, 255, 0.5);
             border-radius: 16px;
 
-            button {
+            .dropdown-btn {
               width: 150px;
               text-align: left;
               background-color: #3f4756;
@@ -119,12 +119,13 @@
           }
 
           .language-menu {
-            margin-top: -20vh;
+            margin-top: 12px;
+            margin-left: 0px;
           }
 
           .settings-menu-active {
             cursor: default;
-            height: 40vh;
+            height: 50vh;
             width: 15rem;
             background-color: rgba(0, 0, 0, 0.75);
             position: absolute;
@@ -146,10 +147,6 @@
               padding: 0 12px;
               font-weight: 600;
               height: 10%;
-
-              :hover {
-                background-color: rgba(255, 255, 255, 0.5);
-              }
 
               input {
                 float: right;

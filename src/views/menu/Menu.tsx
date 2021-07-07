@@ -163,8 +163,18 @@ export default function (props: IMenuProps): JSX.Element {
                 <div
                   className={props.settingsMenuVisible ? 'settings-menu-active' : 'inactive-menu'}
                 >
-                  <button onClick={() => props.toggleSettingsMenu()}>Horizontal Scroll</button>
-                  <button onClick={() => props.toggleSettingsMenu()}>Turtle Wrap</button>
+                  <button>
+                    Horizontal Scroll
+                    <label className="switch">
+                      <input type="checkbox" />
+                    </label>
+                  </button>
+                  <button>
+                    Turtle Wrap
+                    <label className="switch">
+                      <input type="checkbox" />
+                    </label>
+                  </button>
                   <button onClick={() => props.toggleSettingsMenu()}>Increase Block Size</button>
                   <button onClick={() => props.toggleSettingsMenu()}>Decrease Block Size</button>
                 </div>

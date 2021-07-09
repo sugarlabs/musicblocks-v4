@@ -1,6 +1,7 @@
 /**
  * Interface for the Artboard component's View props.
  */
+import p5 from 'p5';
 export interface IArtboardProps {
     /** id of the artboard */
     id: number;
@@ -83,4 +84,19 @@ export interface ITurtleModel {
     update: () => void;
     show: () => void;
     pressed: () => void;
+}
+
+export interface SketchProps {
+    [key: string]: any;
+}
+
+export interface Sketch {
+    (instance: p5): void;
+}
+export interface P5WrapperProps extends SketchProps {
+    sketch: Sketch;
+}
+
+export interface P5Instance extends p5 {
+    updateWithProps?: (props: SketchProps) => void;
 }

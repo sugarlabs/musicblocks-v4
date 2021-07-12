@@ -19,7 +19,6 @@ export default function (props: IArtboardProps): JSX.Element {
     window.addEventListener('resize', props.updateDimensions);
     return () => window.removeEventListener('resize', props.updateDimensions);
   }, []);
-  console.log(props);
   return (
     <>
       <div id="artboard-wrapper">

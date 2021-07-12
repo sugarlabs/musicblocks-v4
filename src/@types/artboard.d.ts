@@ -84,3 +84,14 @@ export interface ITurtleModel {
     show: () => void;
     pressed: () => void;
 }
+
+export interface IArtBoardDrawModel {
+    /** get stroke weight of drawn line */
+    getStrokeWeight: () => number;
+    /** get the color of the drawn line */
+    getStokeColor: () => number;
+    /** get the turtleX position */
+    getTurtleX: () => number;
+    /** get turtleY position */
+    getTurtleY: () => number;
+}

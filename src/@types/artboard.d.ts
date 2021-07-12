@@ -92,6 +92,10 @@ export interface IArtBoardDrawModel {
     getStokeColor: () => number;
     /** get the turtleX position */
     getTurtleX: () => number;
+    /** set X position of the turtle */
+    setTurtleX: (x: number) => void;
     /** get turtleY position */
     getTurtleY: () => number;
+    /** set Y position of the turtle */
+    setTurtleY: (y: number) => void;
 }

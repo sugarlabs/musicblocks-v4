@@ -8,7 +8,7 @@ import { IArtBoardDrawModel } from '../../@types/artboard';
  * Class representing the Model of the Menu component.
  */
 export default class implements IArtBoardDrawModel {
-    /** Stores the value of the auto hide state. */
+    /** Stores the value for artBoard draw functions. */
     private _strokeWeight: number;
     private _strokeColor: number;
     private _turtleX: number;
@@ -17,8 +17,8 @@ export default class implements IArtBoardDrawModel {
     constructor() {
         this._strokeWeight = 10;
         this._strokeColor = 0;
-        this._turtleX = 100;
-        this._turtleY = 100;
+        this._turtleX = 500;
+        this._turtleY = 500;
     }
     getStrokeWeight(): number {
         return this._strokeWeight;
@@ -29,7 +29,13 @@ export default class implements IArtBoardDrawModel {
     getTurtleX(): number {
         return this._turtleX;
     }
+    setTurtleX(x: number): void {
+        this._turtleX = x;
+    }
     getTurtleY(): number {
         return this._turtleY;
+    }
+    setTurtleY(y: number): void {
+        this._turtleY = y;
     }
 }

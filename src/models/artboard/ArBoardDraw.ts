@@ -13,13 +13,16 @@ export default class implements IArtBoardDrawModel {
     private _strokeColor: number;
     private _turtleX: number;
     private _turtleY: number;
+    private _turtleAngle: number;
 
     constructor() {
         this._strokeWeight = 10;
         this._strokeColor = 0;
         this._turtleX = 500;
         this._turtleY = 500;
+        this._turtleAngle = 0;
     }
+
     getStrokeWeight(): number {
         return this._strokeWeight;
     }
@@ -37,5 +40,11 @@ export default class implements IArtBoardDrawModel {
     }
     setTurtleY(y: number): void {
         this._turtleY = y;
+    }
+    getTurtleAngle(): number {
+        return this._turtleAngle;
+    }
+    setTurleAngle(angle: number): void {
+        this._turtleAngle = angle;
     }
 }

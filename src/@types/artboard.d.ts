@@ -98,4 +98,8 @@ export interface IArtBoardDrawModel {
     getTurtleY: () => number;
     /** set Y position of the turtle */
     setTurtleY: (y: number) => void;
+    /** get the angle of turtle */
+    getTurtleAngle: () => number;
+    /** set the new angle for turtle */
+    setTurleAngle: (angle: number) => void;
 }

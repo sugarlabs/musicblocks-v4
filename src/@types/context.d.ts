@@ -5,6 +5,9 @@
 export interface IConfig {
     theme: 'light' | 'dark';
     language: string;
+    horizontalScroll: boolean;
+    turtleWrap: boolean;
+    blockSize: number;
 }
 
 export interface IContextConfig {

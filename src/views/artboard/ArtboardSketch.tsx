@@ -19,28 +19,30 @@ const Sketch = (sketch: p5) => {
    *
    * @param direction In which direction to draw the line
    */
-  function moveForwardPart(direction: string) {
-    const initialX = artBoardDraw.getTurtleX();
-    const initialY = artBoardDraw.getTurtleY();
+  function moveForwardPart(i: number, direction: string) {
+    setTimeout(function () {
+      const initialX = artBoardDraw.getTurtleX();
+      const initialY = artBoardDraw.getTurtleY();
 
-    if (direction === 'forward') {
-      const finalX = initialX + steps * sketch.cos(artBoardDraw.getTurtleAngle());
-      const finalY = initialY - steps * sketch.sin(artBoardDraw.getTurtleAngle());
+      if (direction === 'forward') {
+        const finalX = initialX + steps * sketch.cos(artBoardDraw.getTurtleAngle());
+        const finalY = initialY - steps * sketch.sin(artBoardDraw.getTurtleAngle());
 
-      sketch.line(initialX, initialY, finalX, finalY);
+        sketch.line(initialX, initialY, finalX, finalY);
 
-      artBoardDraw.setTurtleX(finalX);
-      artBoardDraw.setTurtleY(finalY);
-    }
-    if (direction === 'back') {
-      const finalX = initialX - steps * sketch.cos(artBoardDraw.getTurtleAngle());
-      const finalY = initialY + steps * sketch.sin(artBoardDraw.getTurtleAngle());
+        artBoardDraw.setTurtleX(finalX);
+        artBoardDraw.setTurtleY(finalY);
+      }
+      if (direction === 'back') {
+        const finalX = initialX - steps * sketch.cos(artBoardDraw.getTurtleAngle());
+        const finalY = initialY + steps * sketch.sin(artBoardDraw.getTurtleAngle());
 
-      sketch.line(initialX, initialY, finalX, finalY);
+        sketch.line(initialX, initialY, finalX, finalY);
 
-      artBoardDraw.setTurtleX(finalX);
-      artBoardDraw.setTurtleY(finalY);
-    }
+        artBoardDraw.setTurtleX(finalX);
+        artBoardDraw.setTurtleY(finalY);
+      }
+    }, 50 * i);
   }
 
   /**
@@ -52,14 +54,9 @@ const Sketch = (sketch: p5) => {
     artBoardDraw.setTurleAngle((initialAngle + angle) % 360);
   }
   function moveForward(steps: number, direction: string) {
-    let counter = 0;
-    const moveForwardInterval = setInterval(() => {
-      moveForwardPart(direction);
-      counter++;
-      if (counter === steps) {
-        clearInterval(moveForwardInterval);
-      }
-    }, 75);
+    for (let i = 0; i < steps; i++) {
+      moveForwardPart(i, direction);
+    }
   }
 
   /** Function called in makeArc to arc the arc in n small steps */
@@ -82,9 +79,6 @@ const Sketch = (sketch: p5) => {
       moveForward(20, 'forward');
       artBoardDraw.setStrokeColor(sketch.random(255), sketch.random(255), sketch.random(255));
     }, 75 * 20);
-    // setTimeout(() => {
-
-    // });
   }
   sketch.setup = () => {
     const [width, height]: [number, number] = getViewportDimensions();

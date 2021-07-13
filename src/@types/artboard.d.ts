@@ -88,8 +88,12 @@ export interface ITurtleModel {
 export interface IArtBoardDrawModel {
     /** get stroke weight of drawn line */
     getStrokeWeight: () => number;
+    /** set stroke weight of drawn line */
+    setStrokeWeight: (x: number) => void;
     /** get the color of the drawn line */
-    getStokeColor: () => number;
+    getStokeColor: () => [number, number, number];
+    /** set Stroke color */
+    setStrokeColor: (red: number, blue: number, green: number) => void;
     /** get the turtleX position */
     getTurtleX: () => number;
     /** set X position of the turtle */

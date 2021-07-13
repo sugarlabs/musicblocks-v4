@@ -10,23 +10,31 @@ import { IArtBoardDrawModel } from '../../@types/artboard';
 export default class implements IArtBoardDrawModel {
     /** Stores the value for artBoard draw functions. */
     private _strokeWeight: number;
-    private _strokeColor: number;
+    private _strokeColor: [number, number, number];
     private _turtleX: number;
     private _turtleY: number;
     private _turtleAngle: number;
 
     constructor() {
         this._strokeWeight = 10;
-        this._strokeColor = 0;
+        this._strokeColor = [254, 30, 21];
         this._turtleX = 500;
         this._turtleY = 500;
         this._turtleAngle = 0;
+    }
+    setStrokeWeight(x: number): void {
+        this._strokeWeight = x;
+    }
+    setStrokeColor(red: number, blue: number, green: number): void {
+        this._strokeColor[0] = red;
+        this._strokeColor[1] = blue;
+        this._strokeColor[2] = green;
     }
 
     getStrokeWeight(): number {
         return this._strokeWeight;
     }
-    getStokeColor(): number {
+    getStokeColor(): [number, number, number] {
         return this._strokeColor;
     }
     getTurtleX(): number {

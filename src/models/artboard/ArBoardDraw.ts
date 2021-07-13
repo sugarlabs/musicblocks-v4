@@ -11,16 +11,10 @@ export default class implements IArtBoardDrawModel {
     /** Stores the value for artBoard draw functions. */
     private _strokeWeight: number;
     private _strokeColor: [number, number, number];
-    private _turtleX: number;
-    private _turtleY: number;
-    private _turtleAngle: number;
 
     constructor() {
         this._strokeWeight = 10;
         this._strokeColor = [254, 30, 21];
-        this._turtleX = 500;
-        this._turtleY = 500;
-        this._turtleAngle = 0;
     }
     setStrokeWeight(x: number): void {
         this._strokeWeight = x;
@@ -36,23 +30,5 @@ export default class implements IArtBoardDrawModel {
     }
     getStokeColor(): [number, number, number] {
         return this._strokeColor;
-    }
-    getTurtleX(): number {
-        return this._turtleX;
-    }
-    setTurtleX(x: number): void {
-        this._turtleX = x;
-    }
-    getTurtleY(): number {
-        return this._turtleY;
-    }
-    setTurtleY(y: number): void {
-        this._turtleY = y;
-    }
-    getTurtleAngle(): number {
-        return this._turtleAngle;
-    }
-    setTurleAngle(angle: number): void {
-        this._turtleAngle = angle;
     }
 }

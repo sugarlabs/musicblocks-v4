@@ -19,26 +19,47 @@ const Sketch = (sketch: p5) => {
    *
    * @param direction In which direction to draw the line
    */
-  function moveForward(direction: string) {
+  function moveForwardPart(direction: string) {
     const initialX = artBoardDraw.getTurtleX();
     const initialY = artBoardDraw.getTurtleY();
+
     if (direction === 'forward') {
-      artBoardDraw.setTurtleX(initialX + steps);
-      const finalX = artBoardDraw.getTurtleX();
-      sketch.line(initialX, initialY, finalX, initialY);
+      const finalX = initialX + steps * sketch.cos(artBoardDraw.getTurtleAngle());
+      const finalY = initialY - steps * sketch.sin(artBoardDraw.getTurtleAngle());
+
+      sketch.line(initialX, initialY, finalX, finalY);
+
+      artBoardDraw.setTurtleX(finalX);
+      artBoardDraw.setTurtleY(finalY);
     }
     if (direction === 'back') {
-      artBoardDraw.setTurtleX(initialX - steps);
-      const finalX = artBoardDraw.getTurtleX();
-      sketch.line(initialX, initialY, finalX, initialY);
+      const finalX = initialX - steps * sketch.cos(artBoardDraw.getTurtleAngle());
+      const finalY = initialY + steps * sketch.sin(artBoardDraw.getTurtleAngle());
+
+      sketch.line(initialX, initialY, finalX, finalY);
+
+      artBoardDraw.setTurtleX(finalX);
+      artBoardDraw.setTurtleY(finalY);
     }
   }
+
   /**
    *
    * @param angle Angle by which the turtle should be rotated
    */
   function rotateTurtle(angle: number) {
-    // functionality to rotate the turtle by an angle
+    const initialAngle = artBoardDraw.getTurtleAngle();
+    artBoardDraw.setTurleAngle((initialAngle + angle) % 360);
+  }
+  function moveForward(steps: number, direction: string) {
+    let counter = 0;
+    const moveForwardInterval = setInterval(() => {
+      moveForwardPart(direction);
+      counter++;
+      if (counter === steps) {
+        clearInterval(moveForwardInterval);
+      }
+    }, 75);
   }
 
   /** Function called in makeArc to arc the arc in n small steps */
@@ -51,17 +72,26 @@ const Sketch = (sketch: p5) => {
    * @param angle The angle of the arc
    */
   function makeArc(radius: number, angle: number) {
-    let centerX =
-      artBoardDraw.getTurtleX() + radius * sketch.cos(artBoardDraw.getTurtleAngle() - angle);
-    let centerY =
-      artBoardDraw.getTurtleY() + radius * sketch.sin(artBoardDraw.getTurtleAngle() - angle);
+    let centerX = artBoardDraw.getTurtleX() + radius * sketch.cos(artBoardDraw.getTurtleAngle());
+    let centerY = artBoardDraw.getTurtleY() + radius * sketch.sin(artBoardDraw.getTurtleAngle());
+  }
+
+  function play() {
+    setInterval(() => {
+      rotateTurtle(30);
+      moveForward(20, 'forward');
+      artBoardDraw.setStrokeColor(sketch.random(255), sketch.random(255), sketch.random(255));
+    }, 75 * 20);
+    // setTimeout(() => {
+
+    // });
   }
   sketch.setup = () => {
     const [width, height]: [number, number] = getViewportDimensions();
     sketch.createCanvas(width, height);
     sketch.background(230);
-    moveForwardButton = sketch.createButton('Make Arc');
-    moveForwardButton.mousePressed(makeArc);
+    moveForwardButton = sketch.createButton('Play');
+    moveForwardButton.mousePressed(play);
     moveForwardButton.position(300, 0);
     sketch.angleMode(sketch.DEGREES);
   };

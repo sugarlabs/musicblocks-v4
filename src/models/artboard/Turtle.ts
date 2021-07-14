@@ -1,5 +1,4 @@
 // -- types ----------------------------------------------------------------------------------------
-import p5 from 'p5';
 import { ITurtleModel } from '../../@types/artboard';
 
 // -- model component definition -------------------------------------------------------------------
@@ -7,7 +6,7 @@ import { ITurtleModel } from '../../@types/artboard';
 /**
  * Class representing the Model of the Menu component.
  */
-export default class implements ITurtleModel {
+class Turtle implements ITurtleModel {
     /** Stores the value for artBoard draw functions. */
     private _turtleX: number;
     private _turtleY: number;
@@ -38,3 +37,4 @@ export default class implements ITurtleModel {
         this._turtleAngle = angle;
     }
 }
+export const turtle = new Turtle();

@@ -25,7 +25,7 @@ export default function (props: IArtboardProps): JSX.Element {
       <div id="artboard-wrapper">
         <h4>Artboard {`(${props.dimensions[0]} × ${props.dimensions[1]})`}</h4>
         <ArtboardSketch index={props.id} />
-        <ArtboardTurtle index={props.id} />
+        <ArtboardTurtle index={props.id + 1} />
       </div>
     </>
   );

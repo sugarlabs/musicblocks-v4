@@ -1,7 +1,7 @@
 @import '../../scss/colors';
 
 #artboard-wrapper {
-  position: absolute;
+  position: relative;
   z-index: 1;
   width: inherit;
   height: inherit;
@@ -11,5 +11,13 @@
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
+  }
+  canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  button {
+    z-index: 1000;
   }
 }

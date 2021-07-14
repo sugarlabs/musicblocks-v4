@@ -144,14 +144,24 @@ export default function (props: IMenuProps): JSX.Element {
                 >
                   <button>
                     Horizontal Scroll
-                    <label className="switch">
-                      <input type="checkbox" />
+                    <label>
+                      <input
+                        type="checkbox"
+                        onClick={(e) => {
+                          props.updateHorizontalScroll((e.target as HTMLInputElement).checked);
+                        }}
+                      />
                     </label>
                   </button>
                   <button>
                     Turtle Wrap
-                    <label className="switch">
-                      <input type="checkbox" />
+                    <label>
+                      <input
+                        type="checkbox"
+                        onClick={(e) => {
+                          props.updateTurtleWrap((e.target as HTMLInputElement).checked);
+                        }}
+                      />
                     </label>
                   </button>
                   <button onClick={() => props.toggleLanguageMenu()}>

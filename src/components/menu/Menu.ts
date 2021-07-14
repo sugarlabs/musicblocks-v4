@@ -81,6 +81,14 @@ export default function (): JSX.Element {
         Monitor.menu.changeLanguage(language);
     };
 
+    const updateHorizontalScroll = (isEnabled: boolean) => {
+        Monitor.menu.updateHorizontalScroll(isEnabled);
+    };
+
+    const updateTurtleWrap = (isWrapOn: boolean) => {
+        Monitor.menu.updateTurtleWrap(isWrapOn);
+    };
+
     return MenuView({
         autoHide,
         autoHideTemp,
@@ -90,6 +98,8 @@ export default function (): JSX.Element {
         languageMenuVisible,
         languages,
         changeLanguage,
+        updateHorizontalScroll,
+        updateTurtleWrap,
         toggleAutoHide,
         toggleAutoHideTemp,
         togglePlayMenu,

@@ -148,7 +148,7 @@ class Palette implements IPalette {
  */
 class Menu implements IMenu {
     /**
-     * Fetches the list of palette sections and returns it.
+     * Fetches the list of languages and returns it.
      *
      * @returns 'Promise' instance corresponding to the list of languages available.
      */
@@ -168,6 +168,14 @@ class Menu implements IMenu {
      */
     changeLanguage = (language: string) => {
         language;
+    };
+
+    updateHorizontalScroll = (isEnabled: boolean) => {
+        isEnabled;
+    };
+
+    updateTurtleWrap = (isWrapOn: boolean) => {
+        isWrapOn;
     };
 }
 
@@ -199,6 +207,14 @@ class Monitor implements IMonitor {
 
     registerSetLanguage(updateLanguage: (language: string) => void): void {
         this._menu.changeLanguage = updateLanguage;
+    }
+
+    registerUpdateScroll(updateHorizontalScroll: (isEnabled: boolean) => void): void {
+        this._menu.updateHorizontalScroll = updateHorizontalScroll;
+    }
+
+    registerUpdateWrap(updateTurtleWrap: (isWrapOn: boolean) => void): void {
+        this._menu.updateTurtleWrap = updateTurtleWrap;
     }
 }
 

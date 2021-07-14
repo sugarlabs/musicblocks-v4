@@ -17,7 +17,7 @@ import Manager from './components/artboard/Manager';
 // -- stylesheet -----------------------------------------------------------------------------------
 
 import './App.scss';
-import Palette from './components/palette/Palette';
+// import Palette from './components/palette/Palette';
 
 // -- component definition -------------------------------------------------------------------------
 
@@ -28,7 +28,17 @@ export default function App(): JSX.Element {
     setConfig({ ...config, language: newLanguage });
   };
 
+  const updateTurtleWrap = (isWrapOn: boolean) => {
+    setConfig({ ...config, turtleWrap: isWrapOn });
+  };
+
+  const updateHorizontalScroll = (isEnabled: boolean) => {
+    setConfig({ ...config, horizontalScroll: isEnabled });
+  };
+
   Monitor.registerSetLanguage(changeLanguage);
+  Monitor.registerUpdateScroll(updateHorizontalScroll);
+  Monitor.registerUpdateWrap(updateTurtleWrap);
 
   return (
     <ContextConfig.Provider value={{ config, setConfig }}>

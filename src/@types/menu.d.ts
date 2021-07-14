@@ -1,7 +1,7 @@
 /**
  * Interface for the Menu component's View props.
  */
-export interface IMenuProps {    
+export interface IMenuProps {
     /** `true` if auto hide is on else `false`. */
     autoHide: boolean;
 
@@ -24,6 +24,10 @@ export interface IMenuProps {
     languages: string[];
 
     changeLanguage: (language: string) => void;
+
+    updateHorizontalScroll: (isEnabled: boolean) => void;
+
+    updateTurtleWrap: (isWrapOn: boolean) => void;
 
     /** Toggles the state of auto hide. */
     toggleAutoHide: () => void;

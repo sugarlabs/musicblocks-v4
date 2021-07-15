@@ -1,3 +1,5 @@
+import { IBlockSize } from './monitor';
+
 /**
  * Interface for the Menu component's View props.
  */
@@ -20,14 +22,22 @@ export interface IMenuProps {
     /** `true` if language submenu is visible else `false`. */
     languageMenuVisible: boolean;
 
+    /** `true` if blockSize submenu is visible else `false`. */
+    blockSizeMenuVisible: boolean;
+
     /** list of languages available */
     languages: string[];
+
+    /** list of blockSizes available */
+    blockSizes: IBlockSize[];
 
     changeLanguage: (language: string) => void;
 
     updateHorizontalScroll: (isEnabled: boolean) => void;
 
     updateTurtleWrap: (isWrapOn: boolean) => void;
+
+    changeBlockSize: (blockSize: number) => void;
 
     /** Toggles the state of auto hide. */
     toggleAutoHide: () => void;
@@ -46,6 +56,9 @@ export interface IMenuProps {
 
     /** Toggles the state of language submenu. */
     toggleLanguageMenu: () => void;
+
+    /** Toggles the state of block size submenu. */
+    toggleBlockSizeMenu: () => void;
 }
 
 /**
@@ -70,6 +83,9 @@ export interface IMenuModel {
     /** Whether the Language submenu is open or not */
     languageMenuVisible: boolean;
 
+    /** Whether the Block Size submenu is open or not */
+    blockSizeMenuVisible: boolean;
+
     /** Toggles the state of auto hide. */
     toggleAutoHide: () => void;
 
@@ -87,4 +103,7 @@ export interface IMenuModel {
 
     /** Toggles the state of language submenu. */
     toggleLanguageMenu: () => void;
+
+    /** Toggles the state of blockSize submenu. */
+    toggleBlockSizeMenu: () => void;
 }

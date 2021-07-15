@@ -1,6 +1,6 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { IMonitor, IPalette, IMenu } from '../@types/monitor';
+import { IMonitor, IPalette, IMenu, IBlockSize } from '../@types/monitor';
 
 // -- PaletteBlocks defination ---------------------------------------------------------------------
 const blockList: { [button: string]: (string | { [button: string]: string[] })[] } = {};
@@ -161,6 +161,38 @@ class Menu implements IMenu {
         return fetchLanguages();
     }
 
+    getBlockSizes(): Promise<IBlockSize[]> {
+        const fetchBlockSizes = () => {
+            return new Promise<IBlockSize[]>((res) =>
+                setTimeout(() =>
+                    res([
+                        {
+                            label: 'Small',
+                            size: 1,
+                        },
+                        {
+                            label: 'Normal',
+                            size: 1.5,
+                        },
+                        {
+                            label: 'Medium',
+                            size: 2,
+                        },
+                        {
+                            label: 'Large',
+                            size: 3,
+                        },
+                        {
+                            label: 'Very Large',
+                            size: 4,
+                        },
+                    ]),
+                ),
+            );
+        };
+        return fetchBlockSizes();
+    }
+
     /**
      * Updates the language state in the Context API
      *
@@ -168,6 +200,10 @@ class Menu implements IMenu {
      */
     changeLanguage = (language: string) => {
         language;
+    };
+
+    changeBlockSize = (blockSize: number) => {
+        blockSize;
     };
 
     updateHorizontalScroll = (isEnabled: boolean) => {
@@ -215,6 +251,10 @@ class Monitor implements IMonitor {
 
     registerUpdateWrap(updateTurtleWrap: (isWrapOn: boolean) => void): void {
         this._menu.updateTurtleWrap = updateTurtleWrap;
+    }
+
+    registerSetBlockSize(changeBlockSize: (blockSize: number) => void): void {
+        this._menu.changeBlockSize = changeBlockSize;
     }
 }
 

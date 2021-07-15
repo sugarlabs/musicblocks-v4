@@ -28,6 +28,10 @@ export default function App(): JSX.Element {
     setConfig({ ...config, language: newLanguage });
   };
 
+  const changeBlockSize = (newBlockSize: number) => {
+    setConfig({ ...config, blockSize: newBlockSize });
+  };
+
   const updateTurtleWrap = (isWrapOn: boolean) => {
     setConfig({ ...config, turtleWrap: isWrapOn });
   };
@@ -39,6 +43,7 @@ export default function App(): JSX.Element {
   Monitor.registerSetLanguage(changeLanguage);
   Monitor.registerUpdateScroll(updateHorizontalScroll);
   Monitor.registerUpdateWrap(updateTurtleWrap);
+  Monitor.registerSetBlockSize(changeBlockSize);
 
   return (
     <ContextConfig.Provider value={{ config, setConfig }}>

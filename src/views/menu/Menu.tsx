@@ -142,27 +142,28 @@ export default function (props: IMenuProps): JSX.Element {
                 <div
                   className={props.settingsMenuVisible ? 'settings-menu-active' : 'inactive-menu'}
                 >
-                  <button>
-                    Horizontal Scroll
-                    <label>
-                      <input
-                        type="checkbox"
-                        onClick={(e) => {
-                          props.updateHorizontalScroll((e.target as HTMLInputElement).checked);
-                        }}
-                      />
-                    </label>
-                  </button>
-                  <button>
-                    Turtle Wrap
-                    <label>
-                      <input
-                        type="checkbox"
-                        onClick={(e) => {
-                          props.updateTurtleWrap((e.target as HTMLInputElement).checked);
-                        }}
-                      />
-                    </label>
+                  <button onClick={() => props.toggleBlockSizeMenu()}>
+                    Set Block Size
+                    <div
+                      className={
+                        props.blockSizeMenuVisible
+                          ? 'dropdown-active language-menu'
+                          : 'inactive-menu'
+                      }
+                    >
+                      {props.blockSizes.map((blockSize) => (
+                        <button
+                          onClick={() => {
+                            props.changeBlockSize(blockSize.size);
+                            props.toggleBlockSizeMenu();
+                          }}
+                          className="dropdown-btn"
+                          value={blockSize.label}
+                        >
+                          {blockSize.label}
+                        </button>
+                      ))}
+                    </div>
                   </button>
                   <button onClick={() => props.toggleLanguageMenu()}>
                     Language
@@ -187,8 +188,28 @@ export default function (props: IMenuProps): JSX.Element {
                       ))}
                     </div>
                   </button>
-                  <button onClick={() => props.toggleSettingsMenu()}>Increase Block Size</button>
-                  <button onClick={() => props.toggleSettingsMenu()}>Decrease Block Size</button>
+                  <button>
+                    Horizontal Scroll
+                    <label>
+                      <input
+                        type="checkbox"
+                        onClick={(e) => {
+                          props.updateHorizontalScroll((e.target as HTMLInputElement).checked);
+                        }}
+                      />
+                    </label>
+                  </button>
+                  <button>
+                    Turtle Wrap
+                    <label>
+                      <input
+                        type="checkbox"
+                        onClick={(e) => {
+                          props.updateTurtleWrap((e.target as HTMLInputElement).checked);
+                        }}
+                      />
+                    </label>
+                  </button>
                 </div>
               </li>
             </ul>

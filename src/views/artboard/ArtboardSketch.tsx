@@ -12,81 +12,87 @@ const artBoardDraw = new ArtBoardDraw();
 /** This is a setup function.*/
 
 const Sketch = (sketch: p5) => {
+  // The three buttons to control the turtle
   let moveForwardButton: p5.Element;
   let rotateButton: p5.Element;
   let moveInArcButton: p5.Element;
   const steps = 5;
-
+  const sleep = (milliseconds: number) => {
+    return new Promise((resolve) => setTimeout(resolve, milliseconds));
+  };
   /**
-   *
+   * Called by moveForward iteravively to move the turtle forward step by step.
    * @param direction In which direction to draw the line
    */
   function moveForwardPart(i: number, direction: string) {
-    setTimeout(function () {
-      const initialX = turtle.getTurtleX();
-      const initialY = turtle.getTurtleY();
+    const initialX = turtle.getTurtleX();
+    const initialY = turtle.getTurtleY();
 
-      if (direction === 'forward') {
-        const finalX = initialX + steps * sketch.cos(turtle.getTurtleAngle());
-        const finalY = initialY - steps * sketch.sin(turtle.getTurtleAngle());
+    if (direction === 'forward') {
+      const finalX = initialX + steps * sketch.cos(turtle.getTurtleAngle());
+      const finalY = initialY - steps * sketch.sin(turtle.getTurtleAngle());
 
-        sketch.line(initialX, initialY, finalX, finalY);
+      sketch.line(initialX, initialY, finalX, finalY);
 
-        turtle.setTurtleX(finalX);
-        turtle.setTurtleY(finalY);
-      }
-      if (direction === 'back') {
-        const finalX = initialX - steps * sketch.cos(turtle.getTurtleAngle());
-        const finalY = initialY + steps * sketch.sin(turtle.getTurtleAngle());
+      turtle.setTurtleX(finalX);
+      turtle.setTurtleY(finalY);
+    }
+    if (direction === 'back') {
+      const finalX = initialX - steps * sketch.cos(turtle.getTurtleAngle());
+      const finalY = initialY + steps * sketch.sin(turtle.getTurtleAngle());
 
-        sketch.line(initialX, initialY, finalX, finalY);
+      sketch.line(initialX, initialY, finalX, finalY);
 
-        turtle.setTurtleX(finalX);
-        turtle.setTurtleY(finalY);
-      }
-    }, 50 * i);
-  }
-  function rotateTurtlePart(i: number) {
-    if (i < 0) {
-      i = -1 * i;
-      setTimeout(function () {
-        const initialAngle = turtle.getTurtleAngle();
-        turtle.setTurleAngle((initialAngle - 1) % 360);
-      }, 10 * i);
-    } else {
-      setTimeout(function () {
-        const initialAngle = turtle.getTurtleAngle();
-        turtle.setTurleAngle((initialAngle + 1) % 360);
-      }, 10 * i);
+      turtle.setTurtleX(finalX);
+      turtle.setTurtleY(finalY);
     }
   }
   /**
-   *
+   * Called by moveForward iteravively to move the turtle forward step by step.
+   * @param isNegative rotate the turtle in antiClockwise direction if isNegative is false
+   * and vice versa
+   */
+  function rotateTurtlePart(isNegative: boolean) {
+    const initialAngle = turtle.getTurtleAngle();
+    if (isNegative) {
+      turtle.setTurleAngle((initialAngle - 1) % 360);
+    } else {
+      turtle.setTurleAngle((initialAngle + 1) % 360);
+    }
+  }
+  /**
+   * Rotates the turtle by the defined angle.
    * @param angle Angle by which the turtle should be rotated
    */
-  function rotateTurtle(angle: number) {
+  async function rotateTurtle(angle: number) {
+    let isNegative = false;
     if (angle < 0) {
-      angle = -1 * angle;
-      for (let i = 0; i < angle; i++) {
-        rotateTurtlePart(-1 * i);
-      }
-    } else {
-      for (let i = 0; i < angle; i++) {
-        rotateTurtlePart(i);
-      }
+      isNegative = true;
+      angle = angle * -1;
     }
 
-    // artBoardDraw.setStrokeColor(sketch.random(255), sketch.random(255), sketch.random(255));
+    for (let i = 0; i < angle; i++) {
+      await sleep(10);
+      rotateTurtlePart(isNegative);
+    }
   }
-  function moveForward(steps: number, direction: string) {
+
+  /**
+   * Rotates the turtle by the defined steps and in forward and back direction.
+   * @param direction The direction in which the turtle move ( forward or back)
+   * @param steps Number of steps the turtle move
+   */
+  async function moveForward(steps: number, direction: string) {
     for (let i = 0; i < steps; i++) {
+      await sleep(50);
       moveForwardPart(i, direction);
     }
   }
 
-  /** Function called in makeArc to arc the arc in n small steps */
+  /**
+   * Function called in makeArc to arc the arc in n small steps
+   * */
   function makeArcSteps(i: number, radius: number) {
-    // timer = setTimeout(() => {
     let initialX = turtle.getTurtleX();
     let initialY = turtle.getTurtleY();
 
@@ -99,14 +105,8 @@ const Sketch = (sketch: p5) => {
     turtle.setTurtleY(finalY);
 
     turtle.setTurleAngle(turtle.getTurtleAngle() + 1);
-    // }, 50 * i);
-    // timerRunning = true;
-    // functionality
   }
 
-  const sleep = (milliseconds: number) => {
-    return new Promise((resolve) => setTimeout(resolve, milliseconds));
-  };
   /**
    *
    * @param radius Radius for the arc

@@ -10,8 +10,6 @@ import { getViewportDimensions } from '../../utils/ambience';
 /** This is a setup function.*/
 
 const turtleSketch = (sketch: p5) => {
-  let shape: import('p5');
-  let angle = 0;
   sketch.setup = () => {
     const [width, height]: [number, number] = getViewportDimensions();
     sketch.createCanvas(width, height);

@@ -25,14 +25,12 @@ export default function (): JSX.Element {
   useEffect(() => {
     addArtboard(3);
   }, []);
-  console.log(artboardList);
   return (
     <>
       <div id="artboard-manager-wrapper">
         {artboardList.map((board) => (
           <Artboard board={board} />
         ))}
-        ;
       </div>
     </>
   );

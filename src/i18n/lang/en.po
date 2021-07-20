@@ -1,0 +1,15 @@
+#: i18n/tests/i18n.test.ts:1
+#~msgid "hello"
+#~msgstr ""
+
+#: i18n/tests/i18n.test.ts:1
+#~msgid "keyboard"
+#~msgstr ""
+
+#: i18n/tests/i18n.test.ts:1
+#~msgid "tempo"
+#~msgstr ""
+
+#: i18n/tests/i18n.test.ts:1
+#~msgid "note"
+#~msgstr ""

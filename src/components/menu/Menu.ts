@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import Monitor from '../Monitor';
-
+import { IBlockSize } from '../../@types/monitor';
 // -- model component ------------------------------------------------------------------------------
 
 import _MenuModel from '../../models/menu/Menu';
@@ -21,12 +21,18 @@ export default function (): JSX.Element {
     const [autoHideTemp, setAutoHideTemp] = useState<boolean>(true);
     const [playMenuVisible, setPlayMenuVisible] = useState<boolean>(false);
     const [settingsMenuVisible, setSettingsMenuVisible] = useState<boolean>(false);
+    const [projectMenuVisible, setProjectMenuVisible] = useState<boolean>(false);
     const [languageMenuVisible, setLanguageMenuVisible] = useState<boolean>(false);
+    const [blockSizeMenuVisible, setBlockSizeMenuVisible] = useState<boolean>(false);
     const [languages, setLanguages] = useState<string[]>([]);
+    const [blockSizes, setBlockSizes] = useState<IBlockSize[]>([]);
 
-    // fetch the languages from Monitor in initial render
+    // fetch the languages and blockSizes from Monitor in initial render
     useEffect(() => {
-        (async () => setLanguages(await Monitor.menu.getLanguages()))();
+        (async () => {
+            setLanguages(await Monitor.menu.getLanguages());
+            setBlockSizes(await Monitor.menu.getBlockSizes());
+        })();
     }, []);
 
     const toggleAutoHideTemp = () => {
@@ -44,9 +50,19 @@ export default function (): JSX.Element {
         setSettingsMenuVisible(MenuModel.settingsMenuVisible);
     };
 
+    const toggleProjectMenu = () => {
+        MenuModel.toggleProjectMenu();
+        setProjectMenuVisible(MenuModel.projectMenuVisible);
+    };
+
     const toggleLanguageMenu = () => {
         MenuModel.toggleLanguageMenu();
         setLanguageMenuVisible(MenuModel.languageMenuVisible);
+    };
+
+    const toggleBlockSizeMenu = () => {
+        MenuModel.toggleBlockSizeMenu();
+        setBlockSizeMenuVisible(MenuModel.blockSizeMenuVisible);
     };
 
     const toggleAutoHide = () => {
@@ -61,8 +77,14 @@ export default function (): JSX.Element {
             if (settingsMenuVisible) {
                 toggleSettingsMenu();
             }
+            if (projectMenuVisible) {
+                toggleProjectMenu();
+            }
             if (languageMenuVisible) {
                 toggleLanguageMenu();
+            }
+            if (blockSizeMenuVisible) {
+                toggleBlockSizeMenu();
             }
         }
     };
@@ -72,18 +94,39 @@ export default function (): JSX.Element {
         Monitor.menu.changeLanguage(language);
     };
 
+    const updateHorizontalScroll = (isEnabled: boolean) => {
+        Monitor.menu.updateHorizontalScroll(isEnabled);
+    };
+
+    const updateTurtleWrap = (isWrapOn: boolean) => {
+        Monitor.menu.updateTurtleWrap(isWrapOn);
+    };
+
+    const changeBlockSize = (blockSize: number) => {
+        toggleBlockSizeMenu();
+        Monitor.menu.changeBlockSize(blockSize);
+    };
+
     return MenuView({
         autoHide,
         autoHideTemp,
         playMenuVisible,
         settingsMenuVisible,
+        projectMenuVisible,
         languageMenuVisible,
+        blockSizeMenuVisible,
         languages,
+        blockSizes,
         changeLanguage,
+        updateHorizontalScroll,
+        updateTurtleWrap,
+        changeBlockSize,
         toggleAutoHide,
         toggleAutoHideTemp,
         togglePlayMenu,
         toggleSettingsMenu,
+        toggleProjectMenu,
         toggleLanguageMenu,
+        toggleBlockSizeMenu,
     });
 }

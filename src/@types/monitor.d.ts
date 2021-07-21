@@ -6,12 +6,25 @@ export interface IPalette {
     getSections: () => Promise<string[]>;
 }
 
-export interface IMenu{
+export interface IBlockSize {
+    label: string;
+    size: number;
+}
+
+export interface IMenu {
     /** Returns a `Promise` for the list of languages available. */
     getLanguages: () => Promise<string[]>;
 
-    /** updates the ;anguage from Menu */
+    getBlockSizes: () => Promise<IBlockSize[]>;
+
+    /** updates the language from Menu */
     changeLanguage: (language: string) => void;
+
+    updateHorizontalScroll: (isEnabled: boolean) => void;
+
+    updateTurtleWrap: (isWrapOn: boolean) => void;
+
+    changeBlockSize: (blockSize: number) => void;
 }
 
 /**
@@ -20,4 +33,5 @@ export interface IMenu{
 export interface IMonitor {
     /** Getter for the Palette subcomponent. */
     palette: IPalette;
+    menu: IMenu;
 }

@@ -1,28 +1,30 @@
 @import '../../scss/colors';
 
-.auto-hide-overlay{
+.auto-hide-overlay {
   position: absolute;
   z-index: 900;
   height: 100vh;
-  width: 15vw;
+  width: 25rem;
   right: 0;
-  background-color: rgba(0,0,0,0.10);
+  top: 0;
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
-#menu-wrapper{
+#menu-wrapper {
   position: absolute;
   z-index: 1000;
   right: 0.5rem;
   margin-top: 5vh;
+  width: 21.5rem;
   color: #fff;
 
-  .menu-dock-inactive{
+  .menu-dock-inactive {
     margin-left: 100%;
     transition: all 1.5s;
   }
 
-  .menu-dock-active{
-    margin-left: 0;
+  .menu-dock-active {
+    margin-left: calc(21.5rem - 96px);
     transition: all 0.5s;
   }
 
@@ -32,12 +34,12 @@
     background: $menu-background;
     border-radius: 16px;
     font-size: 12px;
-  
-    button{
+
+    button {
       outline: none;
     }
-  
-    nav{
+
+    nav {
       height: 85vh;
       width: 96px;
       position: absolute;
@@ -46,31 +48,31 @@
       flex-direction: column;
       align-items: center;
       justify-content: space-evenly;
-  
-      .main-menu-btn{
+
+      .main-menu-btn {
         cursor: pointer;
       }
 
-      ul{
+      ul {
         list-style: none;
         padding: 0;
-        
-        li{
-          div{
+
+        li {
+          div {
             position: relative;
             width: 96px;
             text-align: center;
             margin: 24px 0;
 
-            span{
+            span {
               visibility: hidden;
               width: 120px;
-              background-color: rgba(0,0,0,0.60);
+              background-color: rgba(0, 0, 0, 0.6);
               color: #fff;
               text-align: center;
               border-radius: 6px;
               padding: 7.5px 5px;
-              
+
               position: absolute;
               z-index: 0;
               top: -5px;
@@ -78,29 +80,29 @@
             }
           }
 
-          div:hover span{
+          div:hover span {
             visibility: visible;
           }
 
-          .dropdown-inactive{
+          .inactive-menu {
             display: none;
           }
-  
-          .dropdown-active{
+
+          .dropdown-active {
             position: absolute;
             z-index: 1;
             margin-top: -6vh;
             margin-left: -3vw;
-            background-color: #3F4756;
+            background-color: #3f4756;
             color: #fff;
             width: 150px;
-            border: 1px solid rgba(255,255,255,0.5);
+            border: 1px solid rgba(255, 255, 255, 0.5);
             border-radius: 16px;
-  
-            button{
+
+            .dropdown-btn {
               width: 150px;
               text-align: left;
-              background-color: #3F4756;
+              background-color: #3f4756;
               border: none;
               color: #fff;
               cursor: pointer;
@@ -109,24 +111,56 @@
               font-weight: 600;
               border-radius: 16px;
             }
-  
-            .dropdown-btn:hover{
+
+            .dropdown-btn:hover {
               background-color: #2196f3;
               transition: 500ms;
             }
           }
 
-          .language-menu{
-            margin-top: -20vh;
+          .language-menu {
+            margin-top: 12px;
+            margin-left: 0px;
+          }
+
+          .settings-menu-active {
+            cursor: default;
+            height: 40vh;
+            width: 15rem;
+            background-color: rgba(0, 0, 0, 0.75);
+            position: absolute;
+            z-index: 1;
+            bottom: 0vh;
+            right: 102px; /* 96px width of menu dock + 6px margin */
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+
+            button {
+              cursor: pointer;
+              background: none;
+              outline: none;
+              border: none;
+              color: #fff;
+              text-align: left;
+              padding: 0 12px;
+              font-weight: 600;
+              height: 10%;
+
+              input {
+                float: right;
+              }
+            }
           }
         }
-  
-        hr{
+
+        hr {
           width: 64px;
           padding-left: 16px;
         }
-  
-        img{
+
+        img {
           width: 42px;
           margin: 10px 0;
         }

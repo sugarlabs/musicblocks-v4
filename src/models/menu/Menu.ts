@@ -13,14 +13,18 @@ export default class implements IMenuModel {
     private _autoHideTemp: boolean;
     private _playMenuVisible: boolean;
     private _settingsMenuVisible: boolean;
+    private _projectMenuVisible: boolean;
     private _languageMenuVisible: boolean;
+    private _blockSizeMenuVisible: boolean;
 
     constructor() {
         this._autoHide = true;
         this._autoHideTemp = true;
         this._playMenuVisible = false;
         this._settingsMenuVisible = false;
+        this._projectMenuVisible = false;
         this._languageMenuVisible = false;
+        this._blockSizeMenuVisible = false;
     }
 
     /**
@@ -42,8 +46,16 @@ export default class implements IMenuModel {
         return this._settingsMenuVisible;
     }
 
+    get projectMenuVisible(): boolean {
+        return this._projectMenuVisible;
+    }
+
     get languageMenuVisible(): boolean {
         return this._languageMenuVisible;
+    }
+
+    get blockSizeMenuVisible(): boolean {
+        return this._blockSizeMenuVisible;
     }
 
     /**
@@ -75,9 +87,23 @@ export default class implements IMenuModel {
     }
 
     /**
+     * Toggles the value of `_projectMenuVisible`.
+     */
+    toggleProjectMenu(): void {
+        this._projectMenuVisible = !this._projectMenuVisible;
+    }
+
+    /**
      * Toggles the value of `_languageMenuVisible`.
      */
     toggleLanguageMenu(): void {
         this._languageMenuVisible = !this._languageMenuVisible;
+    }
+
+    /**
+     * Toggles the value of `_blockSizeMenuVisible`.
+     */
+    toggleBlockSizeMenu(): void {
+        this._blockSizeMenuVisible = !this._blockSizeMenuVisible;
     }
 }

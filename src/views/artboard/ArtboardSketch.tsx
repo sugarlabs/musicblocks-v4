@@ -1,8 +1,9 @@
 // -- types ----------------------------------------------------------------------------------------
 
 import p5 from 'p5';
-import { useEffect } from 'react';
+import React, { useEffect, createRef, useState } from 'react';
 import { getViewportDimensions } from '../../utils/ambience';
+import { P5Instance, SketchProps, P5WrapperProps } from '../../@types/artboard';
 
 // -- model component definition -------------------------------------------------------------------
 import ArtBoardDraw from '../../models/artboard/ArBoardDraw';
@@ -11,12 +12,19 @@ const artBoardDraw = new ArtBoardDraw();
 
 /** This is a setup function.*/
 
-const Sketch = (sketch: p5) => {
+export const boardSketch = (sketch: P5Instance): void => {
   // The three buttons to control the turtle
   let moveForwardButton: p5.Element;
   let rotateButton: p5.Element;
   let moveInArcButton: p5.Element;
   const steps = 5;
+
+  // controller variables used in Draw functions (controlled by manager)
+  let doMoveForward = false;
+  let doRotate = false;
+  let doMakeArc = false;
+  let sleepTime: number;
+
   const sleep = (milliseconds: number) => {
     return new Promise((resolve) => setTimeout(resolve, milliseconds));
   };
@@ -114,7 +122,8 @@ const Sketch = (sketch: p5) => {
    */
   async function makeArc(angle: number, radius: number) {
     for (let i = 0; i < angle; i++) {
-      await sleep(50);
+      // await sleep(50);
+      await sleep(sleepTime);
       makeArcSteps(i, radius);
     }
   }
@@ -145,7 +154,40 @@ const Sketch = (sketch: p5) => {
     sketch.angleMode(sketch.DEGREES);
   };
 
+  sketch.updateWithProps = (props: SketchProps) => {
+    if (props.doMove) {
+      doMoveForward = props.doMove;
+    }
+
+    if (props.rotation) {
+      doRotate = props.rotation;
+    }
+
+    if (props.makeArc) {
+      doMakeArc = props.makeArc;
+    }
+
+    if (props.sleepTime) {
+      sleepTime = props.sleepTime;
+    }
+  };
+
   sketch.draw = () => {
+    if (doMoveForward) {
+      move();
+      doMoveForward = false;
+    }
+
+    if (doRotate) {
+      rotate();
+      doRotate = false;
+    }
+
+    if (doMakeArc) {
+      moveInArc();
+      doMakeArc = false;
+    }
+
     sketch.stroke(artBoardDraw.getStokeColor());
     sketch.strokeWeight(artBoardDraw.getStrokeWeight());
   };
@@ -154,13 +196,25 @@ const Sketch = (sketch: p5) => {
 /**
  * Class representing the Model of the Artboard component.
  */
-export default function ArtboardSketch(props: { index: number }): JSX.Element {
+export const ArtboardSketch: React.FC<P5WrapperProps> = ({ sketch, children, ...props }) => {
   /** Stores the value of the auto hide state. */
-
+  const artboardSketch = createRef<HTMLDivElement>();
+  const [instance, setInstance] = useState<P5Instance>();
   const id = `art-board-${props.index}`;
   useEffect(() => {
-    new p5(Sketch, document.getElementById(id) as HTMLElement);
-  }, []);
+    instance?.updateWithProps?.(props);
+  }, [props]);
 
-  return <div id={id} />;
-}
+  useEffect(() => {
+    if (artboardSketch.current === null) return;
+    instance?.remove();
+    const canvas = new p5(sketch, artboardSketch.current);
+    setInstance(canvas);
+  }, [sketch, artboardSketch.current]);
+
+  return (
+    <div id={id} ref={artboardSketch}>
+      {children}
+    </div>
+  );
+};

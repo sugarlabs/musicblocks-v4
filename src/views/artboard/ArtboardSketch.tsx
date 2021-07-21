@@ -14,9 +14,9 @@ const artBoardDraw = new ArtBoardDraw();
 
 export const boardSketch = (sketch: P5Instance): void => {
   // The three buttons to control the turtle
-  let moveForwardButton: p5.Element;
-  let rotateButton: p5.Element;
-  let moveInArcButton: p5.Element;
+  // let moveForwardButton: p5.Element;
+  // let rotateButton: p5.Element;
+  // let moveInArcButton: p5.Element;
   const steps = 5;
 
   // controller variables used in Draw functions (controlled by manager)
@@ -142,52 +142,41 @@ export const boardSketch = (sketch: P5Instance): void => {
     const [width, height]: [number, number] = getViewportDimensions();
     sketch.createCanvas(width, height);
     sketch.background(230);
-    moveForwardButton = sketch.createButton('Move');
-    moveForwardButton.mousePressed(move);
-    moveForwardButton.position(300, 0);
-    rotateButton = sketch.createButton('Rotate');
-    rotateButton.mousePressed(rotate);
-    rotateButton.position(300, 30);
-    moveInArcButton = sketch.createButton('Arc');
-    moveInArcButton.mousePressed(moveInArc);
-    moveInArcButton.position(400, 30);
+    // moveForwardButton = sketch.createButton('Move');
+    // moveForwardButton.mousePressed(move);
+    // moveForwardButton.position(300, 0);
+    // rotateButton = sketch.createButton('Rotate');
+    // rotateButton.mousePressed(rotate);
+    // rotateButton.position(300, 30);
+    // moveInArcButton = sketch.createButton('Arc');
+    // moveInArcButton.mousePressed(moveInArc);
+    // moveInArcButton.position(400, 30);
     sketch.angleMode(sketch.DEGREES);
   };
 
   sketch.updateWithProps = (props: SketchProps) => {
-    if (props.doMove) {
-      doMoveForward = props.doMove;
-    }
+    doMoveForward = props.doMove;
+    doRotate = props.rotation;
+    doMakeArc = props.makeArc;
+    sleepTime = props.sleepTime;
 
-    if (props.rotation) {
-      doRotate = props.rotation;
-    }
-
-    if (props.makeArc) {
-      doMakeArc = props.makeArc;
-    }
-
-    if (props.sleepTime) {
-      sleepTime = props.sleepTime;
-    }
-  };
-
-  sketch.draw = () => {
     if (doMoveForward) {
       move();
-      doMoveForward = false;
+      props.handleMove();
     }
 
     if (doRotate) {
       rotate();
-      doRotate = false;
+      props.handleRotation();
     }
 
     if (doMakeArc) {
       moveInArc();
-      doMakeArc = false;
+      props.handleArc();
     }
+  };
 
+  sketch.draw = () => {
     sketch.stroke(artBoardDraw.getStokeColor());
     sketch.strokeWeight(artBoardDraw.getStrokeWeight());
   };

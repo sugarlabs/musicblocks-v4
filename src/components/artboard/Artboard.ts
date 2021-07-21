@@ -18,7 +18,6 @@ import Artboard from '../../views/artboard/Artboard';
  * ViewModel of the Artboard Framework component.
  */
 export default function (props: any): JSX.Element {
-    console.log(props.board);
     const [id, setId] = useState(0);
     const [dimensions, setDimensions] = useState(getViewportDimensions());
     const updateDimensions = () => setDimensions(getViewportDimensions());

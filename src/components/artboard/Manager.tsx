@@ -86,7 +86,7 @@ export default function (): JSX.Element {
       <div id="artboard-manager-wrapper">
         <div>
           {artboardList.map((board) => (
-            <Artboard board={board} />
+            <Artboard key={board._id} board={board} />
           ))}
           {/* {visibleArtboard && <Artboard board={visibleArtboard} />} */}
         </div>

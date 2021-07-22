@@ -18,7 +18,7 @@ export default class implements IArtboardManagerModel {
         this._height = 300;
         this._width = 300;
         this._scale = 1.0;
-        this._artboardList = [new IArtboardModel(0)];
+        this._artboardList = [new IArtboardModel(0, 300, 300, 0)];
     }
     /**
      * returns the height of the canvas.

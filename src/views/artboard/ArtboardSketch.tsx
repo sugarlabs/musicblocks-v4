@@ -202,7 +202,7 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ sketch, children, ...
   }, [sketch, artboardSketch.current]);
 
   return (
-    <div id={id} ref={artboardSketch}>
+    <div id={id} ref={artboardSketch} style={{ position: 'absolute', zIndex: props.index }}>
       {children}
     </div>
   );

@@ -39,10 +39,15 @@ export default function App(): JSX.Element {
     setConfig({ ...config, horizontalScroll: isEnabled });
   };
 
+  const updateVolume = (volume: number) => {
+    setConfig({ ...config, masterVolume: volume });
+  };
+
   Monitor.registerSetLanguage(changeLanguage);
   Monitor.registerUpdateScroll(updateHorizontalScroll);
   Monitor.registerUpdateWrap(updateTurtleWrap);
   Monitor.registerSetBlockSize(changeBlockSize);
+  Monitor.registerUpdateVolume(updateVolume);
 
   return (
     <ContextConfig.Provider value={{ config, setConfig }}>

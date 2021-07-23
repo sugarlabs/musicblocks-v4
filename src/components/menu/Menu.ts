@@ -36,39 +36,114 @@ export default function (): JSX.Element {
         })();
     }, []);
 
+    let togglePlayMenu: () => void;
+    let toggleSettingsMenu: () => void;
+    let toggleProjectMenu: () => void;
+    let toggleLanguageMenu: () => void;
+    let toggleBlockSizeMenu: () => void;
+    let toggleMusicSettingsMenu: () => void;
+
     const toggleAutoHideTemp = () => {
         MenuModel.toggleAutoHideTemp();
         setAutoHideTemp(MenuModel.autoHideTemp);
     };
 
-    const togglePlayMenu = () => {
+    togglePlayMenu = () => {
         MenuModel.togglePlayMenu();
         setPlayMenuVisible(MenuModel.playMenuVisible);
+        if (!playMenuVisible) {
+            if (settingsMenuVisible) {
+                toggleSettingsMenu();
+            }
+            if (projectMenuVisible) {
+                toggleProjectMenu();
+            }
+            if (languageMenuVisible) {
+                toggleLanguageMenu();
+            }
+            if (blockSizeMenuVisible) {
+                toggleBlockSizeMenu();
+            }
+            if (musicSettingsMenuVisible) {
+                toggleMusicSettingsMenu();
+            }
+        }
     };
 
-    const toggleSettingsMenu = () => {
+    toggleSettingsMenu = () => {
         MenuModel.toggleSettingsMenu();
         setSettingsMenuVisible(MenuModel.settingsMenuVisible);
+        if (!settingsMenuVisible) {
+            if (playMenuVisible) {
+                togglePlayMenu();
+            }
+            if (projectMenuVisible) {
+                toggleProjectMenu();
+            }
+            if (languageMenuVisible) {
+                toggleLanguageMenu();
+            }
+            if (blockSizeMenuVisible) {
+                toggleBlockSizeMenu();
+            }
+            if (musicSettingsMenuVisible) {
+                toggleMusicSettingsMenu();
+            }
+        }
     };
 
-    const toggleProjectMenu = () => {
+    toggleProjectMenu = () => {
         MenuModel.toggleProjectMenu();
         setProjectMenuVisible(MenuModel.projectMenuVisible);
+        if (!projectMenuVisible) {
+            if (playMenuVisible) {
+                togglePlayMenu();
+            }
+            if (settingsMenuVisible) {
+                toggleSettingsMenu();
+            }
+            if (languageMenuVisible) {
+                toggleLanguageMenu();
+            }
+            if (blockSizeMenuVisible) {
+                toggleBlockSizeMenu();
+            }
+            if (musicSettingsMenuVisible) {
+                toggleMusicSettingsMenu();
+            }
+        }
     };
 
-    const toggleLanguageMenu = () => {
+    toggleLanguageMenu = () => {
         MenuModel.toggleLanguageMenu();
         setLanguageMenuVisible(MenuModel.languageMenuVisible);
     };
 
-    const toggleBlockSizeMenu = () => {
+    toggleBlockSizeMenu = () => {
         MenuModel.toggleBlockSizeMenu();
         setBlockSizeMenuVisible(MenuModel.blockSizeMenuVisible);
     };
 
-    const toggleMusicSettingsMenu = () => {
+    toggleMusicSettingsMenu = () => {
         MenuModel.toggleMusicSettingsMenu();
         setMusicSettingsMenuVisible(MenuModel.musicSettingsMenuVisible);
+        if (!musicSettingsMenuVisible) {
+            if (playMenuVisible) {
+                togglePlayMenu();
+            }
+            if (settingsMenuVisible) {
+                toggleSettingsMenu();
+            }
+            if (projectMenuVisible) {
+                toggleProjectMenu();
+            }
+            if (languageMenuVisible) {
+                toggleLanguageMenu();
+            }
+            if (blockSizeMenuVisible) {
+                toggleBlockSizeMenu();
+            }
+        }
     };
 
     const toggleAutoHide = () => {

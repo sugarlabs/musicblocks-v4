@@ -8,6 +8,7 @@ export interface IConfig {
     horizontalScroll: boolean;
     turtleWrap: boolean;
     blockSize: number;
+    masterVolume: number;
 }
 
 export interface IContextConfig {

@@ -212,6 +212,37 @@ export default function (props: IMenuProps): JSX.Element {
                   </button>
                 </div>
               </li>
+
+              <li className="main-menu-btn">
+                <div onClick={() => props.toggleMusicSettingsMenu()}>
+                  Music <br /> Settings
+                  <span className={props.musicSettingsMenuVisible ? 'inactive-menu' : ''}>
+                    Music Settings
+                  </span>
+                </div>
+                <div
+                  className={
+                    props.musicSettingsMenuVisible ? 'settings-menu-active' : 'inactive-menu'
+                  }
+                >
+                  <button>Set Pitch</button>
+                  <button>Set Temperament</button>
+                  <button>
+                    Set Master Volume
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={2}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        const newValue: number = +e.target.value;
+                        props.updateVolume(newValue);
+                      }}
+                    />
+                  </button>
+                  <button>View Status</button>
+                </div>
+              </li>
             </ul>
           </nav>
         </div>

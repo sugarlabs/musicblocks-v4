@@ -4,7 +4,7 @@
   position: absolute;
   z-index: 900;
   height: 100vh;
-  width: 25rem;
+  width: 30rem;
   right: 0;
   top: 0;
   background-color: rgba(0, 0, 0, 0.1);
@@ -150,6 +150,12 @@
 
               input {
                 float: right;
+              }
+
+              input[type='range'] {
+                float: left;
+                margin: 18px 0 0;
+                width: 90%;
               }
             }
           }

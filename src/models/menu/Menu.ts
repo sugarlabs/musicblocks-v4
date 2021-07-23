@@ -16,6 +16,7 @@ export default class implements IMenuModel {
     private _projectMenuVisible: boolean;
     private _languageMenuVisible: boolean;
     private _blockSizeMenuVisible: boolean;
+    private _musicSettingsMenuVisible: boolean;
 
     constructor() {
         this._autoHide = true;
@@ -25,6 +26,7 @@ export default class implements IMenuModel {
         this._projectMenuVisible = false;
         this._languageMenuVisible = false;
         this._blockSizeMenuVisible = false;
+        this._musicSettingsMenuVisible = false;
     }
 
     /**
@@ -56,6 +58,10 @@ export default class implements IMenuModel {
 
     get blockSizeMenuVisible(): boolean {
         return this._blockSizeMenuVisible;
+    }
+
+    get musicSettingsMenuVisible(): boolean {
+        return this._musicSettingsMenuVisible;
     }
 
     /**
@@ -105,5 +111,9 @@ export default class implements IMenuModel {
      */
     toggleBlockSizeMenu(): void {
         this._blockSizeMenuVisible = !this._blockSizeMenuVisible;
+    }
+
+    toggleMusicSettingsMenu(): void {
+        this._musicSettingsMenuVisible = !this._musicSettingsMenuVisible;
     }
 }

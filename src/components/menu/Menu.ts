@@ -24,6 +24,7 @@ export default function (): JSX.Element {
     const [projectMenuVisible, setProjectMenuVisible] = useState<boolean>(false);
     const [languageMenuVisible, setLanguageMenuVisible] = useState<boolean>(false);
     const [blockSizeMenuVisible, setBlockSizeMenuVisible] = useState<boolean>(false);
+    const [musicSettingsMenuVisible, setMusicSettingsMenuVisible] = useState<boolean>(false);
     const [languages, setLanguages] = useState<string[]>([]);
     const [blockSizes, setBlockSizes] = useState<IBlockSize[]>([]);
 
@@ -65,6 +66,11 @@ export default function (): JSX.Element {
         setBlockSizeMenuVisible(MenuModel.blockSizeMenuVisible);
     };
 
+    const toggleMusicSettingsMenu = () => {
+        MenuModel.toggleMusicSettingsMenu();
+        setMusicSettingsMenuVisible(MenuModel.musicSettingsMenuVisible);
+    };
+
     const toggleAutoHide = () => {
         MenuModel.toggleAutoHide();
         setAutoHide(MenuModel.autoHide);
@@ -85,6 +91,9 @@ export default function (): JSX.Element {
             }
             if (blockSizeMenuVisible) {
                 toggleBlockSizeMenu();
+            }
+            if (musicSettingsMenuVisible) {
+                toggleMusicSettingsMenu();
             }
         }
     };
@@ -107,6 +116,10 @@ export default function (): JSX.Element {
         Monitor.menu.changeBlockSize(blockSize);
     };
 
+    const updateVolume = (vol: number) => {
+        Monitor.menu.updateVolume(vol);
+    };
+
     return MenuView({
         autoHide,
         autoHideTemp,
@@ -115,12 +128,14 @@ export default function (): JSX.Element {
         projectMenuVisible,
         languageMenuVisible,
         blockSizeMenuVisible,
+        musicSettingsMenuVisible,
         languages,
         blockSizes,
         changeLanguage,
         updateHorizontalScroll,
         updateTurtleWrap,
         changeBlockSize,
+        updateVolume,
         toggleAutoHide,
         toggleAutoHideTemp,
         togglePlayMenu,
@@ -128,5 +143,6 @@ export default function (): JSX.Element {
         toggleProjectMenu,
         toggleLanguageMenu,
         toggleBlockSizeMenu,
+        toggleMusicSettingsMenu,
     });
 }

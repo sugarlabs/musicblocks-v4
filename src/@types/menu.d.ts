@@ -25,6 +25,9 @@ export interface IMenuProps {
     /** `true` if blockSize submenu is visible else `false`. */
     blockSizeMenuVisible: boolean;
 
+    /** `true` if music settings submenu is visible else `false`. */
+    musicSettingsMenuVisible: boolean;
+
     /** list of languages available */
     languages: string[];
 
@@ -38,6 +41,8 @@ export interface IMenuProps {
     updateTurtleWrap: (isWrapOn: boolean) => void;
 
     changeBlockSize: (blockSize: number) => void;
+
+    updateVolume: (volume: number) => void;
 
     /** Toggles the state of auto hide. */
     toggleAutoHide: () => void;
@@ -59,6 +64,9 @@ export interface IMenuProps {
 
     /** Toggles the state of block size submenu. */
     toggleBlockSizeMenu: () => void;
+
+    /** Toggles the state of music settings submenu. */
+    toggleMusicSettingsMenu: () => void;
 }
 
 /**
@@ -86,6 +94,9 @@ export interface IMenuModel {
     /** Whether the Block Size submenu is open or not */
     blockSizeMenuVisible: boolean;
 
+    /** Whether the Music Settings submenu is open or not */
+    musicSettingsMenuVisible: boolean;
+
     /** Toggles the state of auto hide. */
     toggleAutoHide: () => void;
 
@@ -106,4 +117,7 @@ export interface IMenuModel {
 
     /** Toggles the state of blockSize submenu. */
     toggleBlockSizeMenu: () => void;
+
+    /** Toggles the state of music settings submenu. */
+    toggleMusicSettingsMenu: () => void;
 }

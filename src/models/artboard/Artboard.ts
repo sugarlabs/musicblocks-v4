@@ -11,12 +11,20 @@ export default class implements IArtboardModel {
     /** Stores the value of the auto hide state. */
     private _lines: [number];
     private _arcs: [number];
-    private _id: number;
+    public _id: number;
+    public _x: number;
+    public _y: number;
+    public _zIndex: number;
+    public _angle: number;
 
-    constructor(id: number) {
+    constructor(id: number, x: number, y: number, angle: number) {
         this._lines = [0];
         this._arcs = [0];
         this._id = id;
+        this._x = x;
+        this._y = y;
+        this._zIndex = id;
+        this._angle = angle;
     }
 
     /**

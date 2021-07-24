@@ -5,18 +5,17 @@
  */
 
  import {
-     i18n,
-     i18n_with_locale
+     i18n
  } from '../i18n';
 
 describe('Internationalization utilities', () => {
     test("Query the word 'Hello' in French and recieve 'Bonjour'", () => {
-        expect(i18n_with_locale("hello", "fr")).toBe("bonjour");
+        expect(i18n("hello", "fr")).toBe("bonjour");
         // Phrases with no corresponding msgid should be detected
-        let not_translated = i18n_with_locale("Not a translated phrase", "fr");
+        let not_translated = i18n("Not a translated phrase", "fr");
         expect(not_translated).toBe("Not a translated phrase");
         // The translation of some words is is "" if they are meant to be the same as the msgid.
-        let same_as_english = i18n_with_locale("tempo", "fr");
+        let same_as_english = i18n("tempo", "fr");
         expect(same_as_english).toBe("tempo");
     });
 

@@ -3,7 +3,9 @@
 import p5 from 'p5';
 import React, { useEffect, useState, createRef } from 'react';
 import { P5Instance, SketchProps, P5WrapperProps } from '../../@types/artboard';
-import { turtle } from '../../models/artboard/Turtle';
+// import { turtle } from '../../models/artboard/Turtle';
+import ITurtleModel from '../../models/artboard/Turtle';
+const turtle = new ITurtleModel(0, 500, 500, 0);
 import { getViewportDimensions } from '../../utils/ambience';
 
 // -- model component definition -------------------------------------------------------------------

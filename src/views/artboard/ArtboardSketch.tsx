@@ -7,7 +7,8 @@ import { P5Instance, SketchProps, P5WrapperProps } from '../../@types/artboard';
 
 // -- model component definition -------------------------------------------------------------------
 import ArtBoardDraw from '../../models/artboard/ArBoardDraw';
-import { turtle } from '../../models/artboard/Turtle';
+import ITurtleModel from '../../models/artboard/Turtle';
+const turtle = new ITurtleModel(0, 500, 500, 0);
 const artBoardDraw = new ArtBoardDraw();
 
 /** This is a setup function.*/

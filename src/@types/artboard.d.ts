@@ -15,21 +15,6 @@ export interface IArtboardProps {
     updateDimensions: () => void;
     /** Move the artboard to top */
     moveToTop: (id: number) => void;
-    /** width of the Artboard */
-    // width: number;
-    /** height of the Artboard */
-    // height: number;
-    /** scale factor in X */
-    // scaleX: number;
-    /** scale factor in Y */
-    // scaleY: number;
-    /** Function to hide aux menu */
-    /** Function to clear the canvas */
-    /** Function to hide all grids */
-    /** Function that renders Cartesian/Polar  */
-    /** Sets the scale of the turtle canvas. */
-    // setArtBoardScale: (scale: number) => void;
-    /**  */
 }
 /**
  * Interface for the Interactor Artboard component's View props.
@@ -39,21 +24,6 @@ export interface InteractArtboardProps {
     dimensions: [number, number];
     /** Refreshes the viewport dimensions state. */
     updateDimensions: () => void;
-    /** width of the Artboard */
-    // width: number;
-    /** height of the Artboard */
-    // height: number;
-    /** scale factor in X */
-    // scaleX: number;
-    /** scale factor in Y */
-    // scaleY: number;
-    /** Function to hide aux menu */
-    /** Function to clear the canvas */
-    /** Function to hide all grids */
-    /** Function that renders Cartesian/Polar  */
-    /** Sets the scale of the turtle canvas. */
-    // setArtBoardScale: (scale: number) => void;
-    /**  */
 }
 
 /**
@@ -76,11 +46,7 @@ export interface IArtboardManagerModel {
  */
 export interface IArtboardModel {
     /** get all the line parameters */
-    getLines: () => [number];
-    /** get all the arcs parameters */
-    getArcs: () => [number];
-    /** add a line to the line parameters */
-    addLine: (line: number) => void;
+    getTurtle: () => ITurtleModel;
 }
 
 export interface ITurtleModel {

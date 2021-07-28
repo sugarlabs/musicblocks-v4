@@ -6,16 +6,18 @@ import { ITurtleModel } from '../../@types/artboard';
 /**
  * Class representing the Model of the Menu component.
  */
-class Turtle implements ITurtleModel {
+export default class implements ITurtleModel {
     /** Stores the value for artBoard draw functions. */
+    private _id: number;
     private _turtleX: number;
     private _turtleY: number;
     private _turtleAngle: number;
 
-    constructor() {
-        this._turtleX = 500;
-        this._turtleY = 500;
-        this._turtleAngle = 0;
+    constructor(id: number, x: number, y: number, angle: number) {
+        this._id = id;
+        this._turtleX = x;
+        this._turtleY = y;
+        this._turtleAngle = angle;
     }
 
     getTurtleX(): number {
@@ -37,4 +39,3 @@ class Turtle implements ITurtleModel {
         this._turtleAngle = angle;
     }
 }
-export const turtle = new Turtle();

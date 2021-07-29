@@ -1,4 +1,5 @@
 // -- types ----------------------------------------------------------------------------------------
+import p5 from 'p5';
 import { ITurtleModel } from '../../@types/artboard';
 
 // -- model component definition -------------------------------------------------------------------
@@ -19,7 +20,21 @@ export default class implements ITurtleModel {
         this._turtleY = y;
         this._turtleAngle = angle;
     }
+    display(sketch: p5): void {
+        sketch.rect(0, 0, 30, 60);
+    }
 
+    move(sketch: p5): void {
+        sketch.translate(this._turtleX, this._turtleY);
+        sketch.rotate(90 - this._turtleAngle);
+    }
+
+    render(sketch: p5): void {
+        sketch.push();
+        this.move(sketch);
+        this.display(sketch);
+        sketch.pop();
+    }
     getTurtleX(): number {
         return this._turtleX;
     }

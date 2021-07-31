@@ -1,6 +1,7 @@
 // -- types ----------------------------------------------------------------------------------------
 
 import { IMenuProps } from '../../@types/menu';
+import Checkbox from './Checkbox';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
@@ -188,28 +189,8 @@ export default function (props: IMenuProps): JSX.Element {
                       ))}
                     </div>
                   </button>
-                  <button>
-                    Horizontal Scroll
-                    <label>
-                      <input
-                        type="checkbox"
-                        onClick={(e) => {
-                          props.updateHorizontalScroll((e.target as HTMLInputElement).checked);
-                        }}
-                      />
-                    </label>
-                  </button>
-                  <button>
-                    Turtle Wrap
-                    <label>
-                      <input
-                        type="checkbox"
-                        onClick={(e) => {
-                          props.updateTurtleWrap((e.target as HTMLInputElement).checked);
-                        }}
-                      />
-                    </label>
-                  </button>
+                  <Checkbox name="Horizontal Scroll" onclick={props.updateHorizontalScroll} />
+                  <Checkbox name="Turtle Wrap" onclick={props.updateTurtleWrap} />
                 </div>
               </li>
 

@@ -1,6 +1,20 @@
 import { IBlockSize } from './monitor';
 
 /**
+ * Interface for the Checkbox View Component
+ */
+export interface ICheckboxProps {
+    /** display name of the property applicable for the checkbox */
+    name: string;
+
+    /** method to toggle the state of the checkbox */
+    onclick: (arg: boolean) => void;
+
+    /** styles of the checkbox */
+    className?: string;
+}
+
+/**
  * Interface for the Menu component's View props.
  */
 export interface IMenuProps {

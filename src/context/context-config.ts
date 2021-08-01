@@ -16,6 +16,7 @@ const defaultConfig: IConfig = {
     horizontalScroll: false,
     turtleWrap: false,
     blockSize: 1.5,
+    masterVolume: 50,
 };
 
 export const ContextConfigDefaults: IContextConfig = {

@@ -213,6 +213,10 @@ class Menu implements IMenu {
     updateTurtleWrap = (isWrapOn: boolean) => {
         isWrapOn;
     };
+
+    updateVolume = (volume: number) => {
+        volume;
+    };
 }
 
 // -- component definition -------------------------------------------------------------------------
@@ -255,6 +259,10 @@ class Monitor implements IMonitor {
 
     registerSetBlockSize(changeBlockSize: (blockSize: number) => void): void {
         this._menu.changeBlockSize = changeBlockSize;
+    }
+
+    registerUpdateVolume(updateVolume: (vol: number) => void): void {
+        this._menu.updateVolume = updateVolume;
     }
 }
 

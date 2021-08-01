@@ -25,6 +25,8 @@ export interface IMenu {
     updateTurtleWrap: (isWrapOn: boolean) => void;
 
     changeBlockSize: (blockSize: number) => void;
+
+    updateVolume: (vol: number) => void;
 }
 
 /**

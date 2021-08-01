@@ -24,6 +24,7 @@ export default function (): JSX.Element {
     const [projectMenuVisible, setProjectMenuVisible] = useState<boolean>(false);
     const [languageMenuVisible, setLanguageMenuVisible] = useState<boolean>(false);
     const [blockSizeMenuVisible, setBlockSizeMenuVisible] = useState<boolean>(false);
+    const [musicSettingsMenuVisible, setMusicSettingsMenuVisible] = useState<boolean>(false);
     const [languages, setLanguages] = useState<string[]>([]);
     const [blockSizes, setBlockSizes] = useState<IBlockSize[]>([]);
 
@@ -35,34 +36,114 @@ export default function (): JSX.Element {
         })();
     }, []);
 
+    let togglePlayMenu: () => void;
+    let toggleSettingsMenu: () => void;
+    let toggleProjectMenu: () => void;
+    let toggleLanguageMenu: () => void;
+    let toggleBlockSizeMenu: () => void;
+    let toggleMusicSettingsMenu: () => void;
+
     const toggleAutoHideTemp = () => {
         MenuModel.toggleAutoHideTemp();
         setAutoHideTemp(MenuModel.autoHideTemp);
     };
 
-    const togglePlayMenu = () => {
+    togglePlayMenu = () => {
         MenuModel.togglePlayMenu();
         setPlayMenuVisible(MenuModel.playMenuVisible);
+        if (!playMenuVisible) {
+            if (settingsMenuVisible) {
+                toggleSettingsMenu();
+            }
+            if (projectMenuVisible) {
+                toggleProjectMenu();
+            }
+            if (languageMenuVisible) {
+                toggleLanguageMenu();
+            }
+            if (blockSizeMenuVisible) {
+                toggleBlockSizeMenu();
+            }
+            if (musicSettingsMenuVisible) {
+                toggleMusicSettingsMenu();
+            }
+        }
     };
 
-    const toggleSettingsMenu = () => {
+    toggleSettingsMenu = () => {
         MenuModel.toggleSettingsMenu();
         setSettingsMenuVisible(MenuModel.settingsMenuVisible);
+        if (!settingsMenuVisible) {
+            if (playMenuVisible) {
+                togglePlayMenu();
+            }
+            if (projectMenuVisible) {
+                toggleProjectMenu();
+            }
+            if (languageMenuVisible) {
+                toggleLanguageMenu();
+            }
+            if (blockSizeMenuVisible) {
+                toggleBlockSizeMenu();
+            }
+            if (musicSettingsMenuVisible) {
+                toggleMusicSettingsMenu();
+            }
+        }
     };
 
-    const toggleProjectMenu = () => {
+    toggleProjectMenu = () => {
         MenuModel.toggleProjectMenu();
         setProjectMenuVisible(MenuModel.projectMenuVisible);
+        if (!projectMenuVisible) {
+            if (playMenuVisible) {
+                togglePlayMenu();
+            }
+            if (settingsMenuVisible) {
+                toggleSettingsMenu();
+            }
+            if (languageMenuVisible) {
+                toggleLanguageMenu();
+            }
+            if (blockSizeMenuVisible) {
+                toggleBlockSizeMenu();
+            }
+            if (musicSettingsMenuVisible) {
+                toggleMusicSettingsMenu();
+            }
+        }
     };
 
-    const toggleLanguageMenu = () => {
+    toggleLanguageMenu = () => {
         MenuModel.toggleLanguageMenu();
         setLanguageMenuVisible(MenuModel.languageMenuVisible);
     };
 
-    const toggleBlockSizeMenu = () => {
+    toggleBlockSizeMenu = () => {
         MenuModel.toggleBlockSizeMenu();
         setBlockSizeMenuVisible(MenuModel.blockSizeMenuVisible);
+    };
+
+    toggleMusicSettingsMenu = () => {
+        MenuModel.toggleMusicSettingsMenu();
+        setMusicSettingsMenuVisible(MenuModel.musicSettingsMenuVisible);
+        if (!musicSettingsMenuVisible) {
+            if (playMenuVisible) {
+                togglePlayMenu();
+            }
+            if (settingsMenuVisible) {
+                toggleSettingsMenu();
+            }
+            if (projectMenuVisible) {
+                toggleProjectMenu();
+            }
+            if (languageMenuVisible) {
+                toggleLanguageMenu();
+            }
+            if (blockSizeMenuVisible) {
+                toggleBlockSizeMenu();
+            }
+        }
     };
 
     const toggleAutoHide = () => {
@@ -86,6 +167,9 @@ export default function (): JSX.Element {
             if (blockSizeMenuVisible) {
                 toggleBlockSizeMenu();
             }
+            if (musicSettingsMenuVisible) {
+                toggleMusicSettingsMenu();
+            }
         }
     };
 
@@ -107,6 +191,10 @@ export default function (): JSX.Element {
         Monitor.menu.changeBlockSize(blockSize);
     };
 
+    const updateVolume = (vol: number) => {
+        Monitor.menu.updateVolume(vol);
+    };
+
     return MenuView({
         autoHide,
         autoHideTemp,
@@ -115,12 +203,14 @@ export default function (): JSX.Element {
         projectMenuVisible,
         languageMenuVisible,
         blockSizeMenuVisible,
+        musicSettingsMenuVisible,
         languages,
         blockSizes,
         changeLanguage,
         updateHorizontalScroll,
         updateTurtleWrap,
         changeBlockSize,
+        updateVolume,
         toggleAutoHide,
         toggleAutoHideTemp,
         togglePlayMenu,
@@ -128,5 +218,6 @@ export default function (): JSX.Element {
         toggleProjectMenu,
         toggleLanguageMenu,
         toggleBlockSizeMenu,
+        toggleMusicSettingsMenu,
     });
 }

@@ -1,6 +1,7 @@
 // -- types ----------------------------------------------------------------------------------------
 
 import { IMenuProps } from '../../@types/menu';
+import Checkbox from './Checkbox';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
@@ -188,28 +189,39 @@ export default function (props: IMenuProps): JSX.Element {
                       ))}
                     </div>
                   </button>
+                  <Checkbox name="Horizontal Scroll" onclick={props.updateHorizontalScroll} />
+                  <Checkbox name="Turtle Wrap" onclick={props.updateTurtleWrap} />
+                </div>
+              </li>
+
+              <li className="main-menu-btn">
+                <div onClick={() => props.toggleMusicSettingsMenu()}>
+                  Music <br /> Settings
+                  <span className={props.musicSettingsMenuVisible ? 'inactive-menu' : ''}>
+                    Music Settings
+                  </span>
+                </div>
+                <div
+                  className={
+                    props.musicSettingsMenuVisible ? 'settings-menu-active' : 'inactive-menu'
+                  }
+                >
+                  <button>Set Pitch</button>
+                  <button>Set Temperament</button>
                   <button>
-                    Horizontal Scroll
-                    <label>
-                      <input
-                        type="checkbox"
-                        onClick={(e) => {
-                          props.updateHorizontalScroll((e.target as HTMLInputElement).checked);
-                        }}
-                      />
-                    </label>
+                    Set Master Volume
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={2}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        const newValue: number = +e.target.value;
+                        props.updateVolume(newValue);
+                      }}
+                    />
                   </button>
-                  <button>
-                    Turtle Wrap
-                    <label>
-                      <input
-                        type="checkbox"
-                        onClick={(e) => {
-                          props.updateTurtleWrap((e.target as HTMLInputElement).checked);
-                        }}
-                      />
-                    </label>
-                  </button>
+                  <button>View Status</button>
                 </div>
               </li>
             </ul>

@@ -8,11 +8,10 @@ import { P5Instance, SketchProps, P5WrapperProps } from '../../@types/artboard';
 // -- model component definition -------------------------------------------------------------------
 import ArtBoardDraw from '../../models/artboard/ArBoardDraw';
 import ITurtleModel from '../../models/artboard/Turtle';
-const turtle = new ITurtleModel(0, 500, 500, 0);
+let turtle: ITurtleModel;
 const artBoardDraw = new ArtBoardDraw();
 
 /** This is a setup function.*/
-
 export const boardSketch = (sketch: P5Instance): void => {
   // The three buttons to control the turtle
   // let moveForwardButton: p5.Element;
@@ -133,7 +132,7 @@ export const boardSketch = (sketch: P5Instance): void => {
     rotateTurtle(30);
   }
   function move() {
-    moveForward(20, 'forward');
+    moveForward(50, 'forward');
   }
   function moveInArc() {
     makeArc(90, 5);
@@ -142,16 +141,16 @@ export const boardSketch = (sketch: P5Instance): void => {
   sketch.setup = () => {
     const [width, height]: [number, number] = getViewportDimensions();
     sketch.createCanvas(width, height);
-    sketch.background(230);
+    sketch.clear();
     // moveForwardButton = sketch.createButton('Move');
     // moveForwardButton.mousePressed(move);
-    // moveForwardButton.position(300, 0);
+    // moveForwardButton.position(sketch.random(200, 700), 0);
     // rotateButton = sketch.createButton('Rotate');
     // rotateButton.mousePressed(rotate);
     // rotateButton.position(300, 30);
     // moveInArcButton = sketch.createButton('Arc');
     // moveInArcButton.mousePressed(moveInArc);
-    // moveInArcButton.position(400, 30);
+    // moveInArcButton.position(sketch.random(200, 700), 30);
     sketch.angleMode(sketch.DEGREES);
   };
 
@@ -173,13 +172,26 @@ export const boardSketch = (sketch: P5Instance): void => {
 
     if (doMakeArc) {
       moveInArc();
-      props.handleArc();
+      // props.handleArc();
     }
   };
 
   sketch.draw = () => {
+    const [width, height]: [number, number] = getViewportDimensions();
     sketch.stroke(artBoardDraw.getStokeColor());
     sketch.strokeWeight(artBoardDraw.getStrokeWeight());
+    if (turtle.getTurtleX() > width) {
+      turtle.setTurtleX(0);
+    }
+    if (turtle.getTurtleX() < 0) {
+      turtle.setTurtleX(width);
+    }
+    if (turtle.getTurtleY() > height) {
+      turtle.setTurtleY(0);
+    }
+    if (turtle.getTurtleY() < 0) {
+      turtle.setTurtleY(height);
+    }
   };
 };
 
@@ -190,14 +202,19 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ sketch, children, ...
   /** Stores the value of the auto hide state. */
   const artboardSketch = createRef<HTMLDivElement>();
   const [instance, setInstance] = useState<P5Instance>();
-  const id = `art-board-${props.index}`;
+
+  const id = `art-board-sketch-${props.index}`;
   useEffect(() => {
     instance?.updateWithProps?.(props);
   }, [props]);
 
   useEffect(() => {
+    turtle = props.turtle;
+  });
+  useEffect(() => {
     if (artboardSketch.current === null) return;
     instance?.remove();
+    // turtle = props.turtle;
     const canvas = new p5(sketch, artboardSketch.current);
     setInstance(canvas);
   }, [sketch, artboardSketch.current]);

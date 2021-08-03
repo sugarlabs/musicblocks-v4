@@ -9,10 +9,10 @@ import { ITurtleModel } from '../../@types/artboard';
  */
 export default class implements ITurtleModel {
     /** Stores the value for artBoard draw functions. */
-    private _id: number;
-    private _turtleX: number;
-    private _turtleY: number;
-    private _turtleAngle: number;
+    _id: number;
+    _turtleX: number;
+    _turtleY: number;
+    _turtleAngle: number;
 
     constructor(id: number, x: number, y: number, angle: number) {
         this._id = id;

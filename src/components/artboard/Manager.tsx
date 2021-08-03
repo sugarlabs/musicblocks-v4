@@ -60,7 +60,7 @@ export default function (): JSX.Element {
   return (
     <>
       <div id="artboard-manager-wrapper">
-        <Artboard boards={artBoardList} moveToTop={moveToTop} />
+        <Artboard moveToTop={moveToTop} />
       </div>
     </>
   );

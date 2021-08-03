@@ -17,6 +17,7 @@ import Manager from './components/artboard/Manager';
 // -- stylesheet -----------------------------------------------------------------------------------
 
 import './App.scss';
+import { ArtBoardContext, ContextDefaultArtBoard } from './context/ArtBoardContext';
 
 // -- component definition -------------------------------------------------------------------------
 
@@ -44,12 +45,17 @@ export default function App(): JSX.Element {
   Monitor.registerUpdateWrap(updateTurtleWrap);
   Monitor.registerSetBlockSize(changeBlockSize);
 
+  const [artBoardList, setArtBoardList] = useState(ContextDefaultArtBoard.artBoardList);
+
   return (
     <ContextConfig.Provider value={{ config, setConfig }}>
       <div id="app">
         <div className="lang-container">Current Language: {config.language}</div>
         {/* <Artboard /> */}
-        <Manager />
+        <ArtBoardContext.Provider value={{ artBoardList, setArtBoardList }}>
+          <Manager />
+        </ArtBoardContext.Provider>
+
         {/* <Builder /> */}
         <Menu />
         <Palette />

@@ -2,16 +2,15 @@ import { createContext } from 'react';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { IartBoard, IArtBoardContext } from '../@types/context';
+import { IArtBoardContext } from '../@types/context';
+import { IArtboardModel } from '../../src/@types/artboard';
 
 // -- defaults -------------------------------------------------------------------------------------
 
 /**
  * Default values for the top-level configurations context.
  */
-const ArtBoardList: IartBoard = {
-    artboardList: [],
-};
+const ArtBoardList: IArtboardModel[] = [];
 
 export const ContextDefaultArtBoard: IArtBoardContext = {
     artBoardList: ArtBoardList,
@@ -20,7 +19,4 @@ export const ContextDefaultArtBoard: IArtBoardContext = {
 
 // -- instance -------------------------------------------------------------------------------------
 
-/**
- * Context instance for the top-level configurations.
- */
 export const ArtBoardContext = createContext<IArtBoardContext>(ContextDefaultArtBoard);

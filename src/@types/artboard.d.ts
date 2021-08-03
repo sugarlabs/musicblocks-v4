@@ -2,13 +2,8 @@
  * Interface for the Artboard component's View props.
  */
 import p5 from 'p5';
+import Turtle from '../models/artboard/Turtle';
 export interface IArtboardProps {
-    /** number of turtles */
-    turtleCount: number;
-    /** list of artboards */
-    boards: IArtboardModel[];
-    /** list of turtles */
-    turtles: ITurtleModel[];
     /** Viewport dimensions as [width, height]. */
     dimensions: [number, number];
     /** Refreshes the viewport dimensions state. */
@@ -16,6 +11,14 @@ export interface IArtboardProps {
     /** Move the artboard to top */
     moveToTop: (id: number) => void;
 }
+
+export interface IArtboardHandlerProps {
+    turtle: ITurtleModel;
+    updateDimensions: () => void;
+    index: number;
+    moveTurtle: () => void;
+}
+
 /**
  * Interface for the Interactor Artboard component's View props.
  */
@@ -45,11 +48,15 @@ export interface IArtboardManagerModel {
  * Interface for the Artboard component's Model class.
  */
 export interface IArtboardModel {
-    /** get all the line parameters */
-    getTurtle: () => ITurtleModel;
+    _id: number;
+    _turtle: ITurtleModel;
 }
 
 export interface ITurtleModel {
+    _id: number;
+    _turtleX: number;
+    _turtleY: number;
+    _turtleAngle: number;
     /** get the turtleX position */
     getTurtleX: () => number;
     /** set X position of the turtle */
@@ -62,6 +69,9 @@ export interface ITurtleModel {
     getTurtleAngle: () => number;
     /** set the new angle for turtle */
     setTurleAngle: (angle: number) => void;
+    display: (sketch: p5) => void;
+    move: (sketch: p5) => void;
+    render: (sketch: p5) => void;
 }
 
 export interface IArtBoardDrawModel {
@@ -83,7 +93,13 @@ export interface Sketch {
     (instance: p5): void;
 }
 export interface P5WrapperProps extends SketchProps {
+    index: number;
     sketch: Sketch;
+    turtle: ITurtleModel;
+}
+export interface P5WrapperTurtleProps extends SketchProps {
+    sketch: Sketch;
+    artBoardList: IArtboardModel[];
 }
 
 export interface P5Instance extends p5 {

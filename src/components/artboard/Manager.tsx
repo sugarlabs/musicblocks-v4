@@ -1,6 +1,4 @@
 // -- model component -------------------------------------------------------------------------------
-import IArtboardManagerModel from '../../models/artboard/ArtboardManager';
-const _ArtboardManagerModel = new IArtboardManagerModel();
 import IArtboardModel from '../../models/artboard/Artboard';
 import ITurtleModel from '../../models/artboard/Turtle';
 import { useContext, useEffect, useState } from 'react';
@@ -28,20 +26,17 @@ export default function (): JSX.Element {
     setartboardIDList([...artboardIDList, id]);
     const newTurtle = new ITurtleModel(id, x, y, angle);
     const newArtboard = new IArtboardModel(id, newTurtle);
-    _ArtboardManagerModel.addArtboard(newArtboard);
+    // _ArtboardManagerModel.addArtboard(newArtboard);
     setArtBoardList([...artBoardList, newArtboard]);
   };
 
   // manager can initialise several artboards at a time and store them
   // in the artboardList.
   useEffect(() => {
-    addArtboard(2, 200, 300, 0); // artboard with id 2.
-    addArtboard(4, 300, 300, 0); // artboard with id 4.
-    addArtboard(8, 400, 300, 0); // artboard with id 8.
-    addArtboard(16, 500, 300, 0); // artboard with id 8.
-    addArtboard(32, 600, 300, 0); // artboard with id 8.
-    addArtboard(64, 700, 300, 0); // artboard with id 8.
-  }, [addArtboard]);
+    for (let i = 1; i <= 20; i++) {
+      addArtboard(i, 700, 500, 0);
+    }
+  });
 
   const moveToTop = (id: number) => {
     for (let i = 0; i < artboardIDList.length; i++) {

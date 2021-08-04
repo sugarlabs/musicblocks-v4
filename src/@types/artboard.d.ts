@@ -2,7 +2,6 @@
  * Interface for the Artboard component's View props.
  */
 import p5 from 'p5';
-import Turtle from '../models/artboard/Turtle';
 export interface IArtboardProps {
     /** Viewport dimensions as [width, height]. */
     dimensions: [number, number];
@@ -13,10 +12,11 @@ export interface IArtboardProps {
 }
 
 export interface IArtboardHandlerProps {
+    doArc: boolean;
+    setDoArc: Dispatch<SetStateAction<boolean>>;
     turtle: ITurtleModel;
     updateDimensions: () => void;
     index: number;
-    moveTurtle: () => void;
 }
 
 /**
@@ -94,10 +94,10 @@ export interface Sketch {
 }
 export interface P5WrapperProps extends SketchProps {
     index: number;
-    sketch: Sketch;
     turtle: ITurtleModel;
 }
 export interface P5WrapperTurtleProps extends SketchProps {
+    index: number;
     sketch: Sketch;
     artBoardList: IArtboardModel[];
 }

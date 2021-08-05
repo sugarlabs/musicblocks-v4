@@ -1,4 +1,5 @@
 // -- types ----------------------------------------------------------------------------------------
+import p5 from 'p5';
 import { ITurtleModel } from '../../@types/artboard';
 
 // -- model component definition -------------------------------------------------------------------
@@ -8,10 +9,10 @@ import { ITurtleModel } from '../../@types/artboard';
  */
 export default class implements ITurtleModel {
     /** Stores the value for artBoard draw functions. */
-    private _id: number;
-    private _turtleX: number;
-    private _turtleY: number;
-    private _turtleAngle: number;
+    _id: number;
+    _turtleX: number;
+    _turtleY: number;
+    _turtleAngle: number;
 
     constructor(id: number, x: number, y: number, angle: number) {
         this._id = id;
@@ -19,7 +20,21 @@ export default class implements ITurtleModel {
         this._turtleY = y;
         this._turtleAngle = angle;
     }
+    display(sketch: p5): void {
+        sketch.rect(0, 0, 30, 60);
+    }
 
+    move(sketch: p5): void {
+        sketch.translate(this._turtleX, this._turtleY);
+        sketch.rotate(90 - this._turtleAngle);
+    }
+
+    render(sketch: p5): void {
+        sketch.push();
+        this.move(sketch);
+        this.display(sketch);
+        sketch.pop();
+    }
     getTurtleX(): number {
         return this._turtleX;
     }

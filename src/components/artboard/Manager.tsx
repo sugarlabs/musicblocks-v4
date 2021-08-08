@@ -33,7 +33,7 @@ export default function (): JSX.Element {
   // manager can initialise several artboards at a time and store them
   // in the artboardList.
   useEffect(() => {
-    for (let i = 1; i <= 20; i++) {
+    for (let i = 1; i <= 5; i++) {
       addArtboard(i, 700, 500, 0);
     }
   });

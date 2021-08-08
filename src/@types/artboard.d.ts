@@ -72,6 +72,11 @@ export interface ITurtleModel {
     display: (sketch: p5) => void;
     move: (sketch: p5) => void;
     render: (sketch: p5) => void;
+    over: (sketch: p5) => void;
+    show: (sketch: p5) => void;
+    pressed: (sketch: p5) => void;
+    released: () => void;
+    update: (sketch: p5) => void;
 }
 
 export interface IArtBoardDrawModel {

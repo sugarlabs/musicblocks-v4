@@ -31,10 +31,22 @@ export const turtleSketch = (sketch: P5Instance): void => {
 
   sketch.draw = () => {
     sketch.clear();
-    artBoardList.map((artboard) => artboard._turtle.render(sketch));
+    artBoardList.map((artboard) => {
+      artboard._turtle.over(sketch);
+      artboard._turtle.update(sketch);
+      artboard._turtle.show(sketch);
+    });
+  };
 
-    // turtleList.map((turtle: ITurtleModel) => turtle.render(sketch));
-    sketch.fill(color);
+  sketch.mousePressed = () => {
+    artBoardList.map((artboard) => {
+      artboard._turtle.pressed(sketch);
+    });
+  };
+  sketch.mouseReleased = () => {
+    artBoardList.map((artboard) => {
+      artboard._turtle.released();
+    });
   };
 };
 

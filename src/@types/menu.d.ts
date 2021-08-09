@@ -81,6 +81,22 @@ export interface IMenuProps {
 
     /** Toggles the state of music settings submenu. */
     toggleMusicSettingsMenu: () => void;
+
+    play: () => void;
+
+    playStepByStep: () => void;
+
+    playSlowly: () => void;
+
+    hideBlocks: () => void;
+
+    cleanArtwork: () => void;
+
+    collapseBlocks: () => void;
+
+    undo: () => void;
+
+    redo: () => void;
 }
 
 /**

@@ -53,13 +53,31 @@ export default function (props: IMenuProps): JSX.Element {
                   <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Play</span>
                 </div>
                 <div className={props.playMenuVisible ? 'dropdown-active' : 'inactive-menu'}>
-                  <button onClick={() => props.togglePlayMenu()} className="dropdown-btn">
+                  <button
+                    onClick={() => {
+                      props.play();
+                      props.togglePlayMenu();
+                    }}
+                    className="dropdown-btn"
+                  >
                     Play
                   </button>
-                  <button onClick={() => props.togglePlayMenu()} className="dropdown-btn">
+                  <button
+                    onClick={() => {
+                      props.playSlowly();
+                      props.togglePlayMenu();
+                    }}
+                    className="dropdown-btn"
+                  >
                     Play Slowly
                   </button>
-                  <button onClick={() => props.togglePlayMenu()} className="dropdown-btn">
+                  <button
+                    onClick={() => {
+                      props.playStepByStep();
+                      props.togglePlayMenu();
+                    }}
+                    className="dropdown-btn"
+                  >
                     Play Step by Step
                   </button>
                 </div>
@@ -72,20 +90,20 @@ export default function (props: IMenuProps): JSX.Element {
                 </div>
               </li>
               <li className="main-menu-btn">
-                <div>
+                <div onClick={props.undo}>
                   Undo
                   <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Undo</span>
                 </div>
               </li>
               <li className="main-menu-btn">
-                <div>
+                <div onClick={props.redo}>
                   Redo
                   <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Redo</span>
                 </div>
               </li>
               <hr></hr>
               <li className="main-menu-btn">
-                <div>
+                <div onClick={props.hideBlocks}>
                   Hide Blocks
                   <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>
                     Hide Blocks
@@ -93,13 +111,13 @@ export default function (props: IMenuProps): JSX.Element {
                 </div>
               </li>
               <li className="main-menu-btn">
-                <div>
+                <div onClick={props.cleanArtwork}>
                   Clean
                   <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Clean</span>
                 </div>
               </li>
               <li className="main-menu-btn">
-                <div>
+                <div onClick={props.collapseBlocks}>
                   Collapse Blocks
                   <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>
                     Collapse Blocks

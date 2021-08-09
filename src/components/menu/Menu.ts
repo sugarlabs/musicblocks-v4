@@ -36,6 +36,38 @@ export default function (): JSX.Element {
         })();
     }, []);
 
+    const play = (): void => {
+        Monitor.menu.play();
+    };
+
+    const playStepByStep = (): void => {
+        Monitor.menu.playStepByStep();
+    };
+
+    const playSlowly = (): void => {
+        Monitor.menu.playSlowly();
+    };
+
+    const hideBlocks = (): void => {
+        Monitor.menu.hideBlocks();
+    };
+
+    const cleanArtwork = (): void => {
+        Monitor.menu.cleanArtwork();
+    };
+
+    const collapseBlocks = (): void => {
+        Monitor.menu.collapseBlocks();
+    };
+
+    const undo = (): void => {
+        Monitor.menu.undo();
+    };
+
+    const redo = (): void => {
+        Monitor.menu.redo();
+    };
+
     let togglePlayMenu: () => void;
     let toggleSettingsMenu: () => void;
     let toggleProjectMenu: () => void;
@@ -219,5 +251,13 @@ export default function (): JSX.Element {
         toggleLanguageMenu,
         toggleBlockSizeMenu,
         toggleMusicSettingsMenu,
+        play,
+        playStepByStep,
+        playSlowly,
+        hideBlocks,
+        cleanArtwork,
+        collapseBlocks,
+        undo,
+        redo,
     });
 }

@@ -17,14 +17,13 @@ import './Menu.scss';
  */
 export default function (props: IMenuProps): JSX.Element {
   return (
-    <div>
-      <div
-        className="auto-hide-overlay"
-        onMouseEnter={() => props.toggleAutoHide()}
-        onMouseLeave={() => {
-          props.toggleAutoHide();
-        }}
-      ></div>
+    <div
+      className="auto-hide-overlay"
+      onMouseEnter={() => props.toggleAutoHide()}
+      onMouseLeave={() => {
+        props.toggleAutoHide();
+      }}
+    >
       <div
         id="menu-wrapper"
         onMouseEnter={() => props.toggleAutoHideTemp()}

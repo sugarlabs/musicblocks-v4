@@ -1,6 +1,6 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { IMonitor, IPalette, IMenu, IBlockSize } from '../@types/monitor';
+import { IMonitor, IPalette, IMenu, IBlockSize, IArtboardManager } from '../@types/monitor';
 
 // -- PaletteBlocks defination ---------------------------------------------------------------------
 const blockList: { [button: string]: (string | { [button: string]: string[] })[] } = {};
@@ -219,6 +219,36 @@ class Menu implements IMenu {
     };
 }
 
+/**
+ * Class representing the Manager subcomponent proxied by the Monitor component.
+ */
+class ArtboardManager implements IArtboardManager {
+    /** enable horizontal scrolling in the artboards*/
+    enableHorizontalScroll = (isEnabled: boolean) => {
+        isEnabled;
+    };
+
+    enableTurtleWrap = (isWrapOn: boolean) => {
+        isWrapOn;
+    };
+
+    playArtboard = (id: number) => {
+        id;
+    };
+
+    stopArtboard = (id: number) => {
+        id;
+    };
+
+    removeArtboard = (id: number) => {
+        id;
+    };
+
+    addArtboard = (id: number, x: number, y: number, angle: number) => {
+        [id, x, y, angle];
+    };
+}
+
 // -- component definition -------------------------------------------------------------------------
 
 /**
@@ -230,10 +260,12 @@ class Monitor implements IMonitor {
     /** Instance of the Palette component. */
     private _palette: Palette;
     private _menu: Menu;
+    private _manager: ArtboardManager;
 
     constructor() {
         this._palette = new Palette();
         this._menu = new Menu();
+        this._manager = new ArtboardManager();
     }
 
     /** Getter for the palette component. */
@@ -243,6 +275,10 @@ class Monitor implements IMonitor {
 
     get menu(): Menu {
         return this._menu;
+    }
+
+    get manager(): ArtboardManager {
+        return this._manager;
     }
 
     registerSetLanguage(updateLanguage: (language: string) => void): void {
@@ -255,6 +291,7 @@ class Monitor implements IMonitor {
 
     registerUpdateWrap(updateTurtleWrap: (isWrapOn: boolean) => void): void {
         this._menu.updateTurtleWrap = updateTurtleWrap;
+        // this._manager.enableTurtleWrap (isWrapOn);
     }
 
     registerSetBlockSize(changeBlockSize: (blockSize: number) => void): void {
@@ -263,6 +300,24 @@ class Monitor implements IMonitor {
 
     registerUpdateVolume(updateVolume: (vol: number) => void): void {
         this._menu.updateVolume = updateVolume;
+    }
+
+    registerRemoveArtboard(removeArtboard: (id: number) => void): void {
+        this._manager.removeArtboard = removeArtboard;
+    }
+
+    registerPlayArtboard(playArtboard: (id: number) => void): void {
+        this._manager.playArtboard = playArtboard;
+    }
+
+    registerStopArtboard(stopArtboard: (id: number) => void): void {
+        this._manager.stopArtboard = stopArtboard;
+    }
+
+    registerAddArtboard(
+        addArtboard: (id: number, x: number, y: number, angle: number) => void,
+    ): void {
+        this._manager.addArtboard = addArtboard;
     }
 }
 

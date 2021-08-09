@@ -217,6 +217,38 @@ class Menu implements IMenu {
     updateVolume = (volume: number) => {
         volume;
     };
+
+    play = () => {
+        console.log('play');
+    };
+
+    playStepByStep = () => {
+        console.log('play step by step');
+    };
+
+    playSlowly = () => {
+        console.log('play slowly');
+    };
+
+    hideBlocks = () => {
+        console.log('hide blocks');
+    };
+
+    cleanArtwork = () => {
+        console.log('clean artwork');
+    };
+
+    collapseBlocks = () => {
+        console.log('collapse blocks');
+    };
+
+    undo = () => {
+        console.log('undo');
+    };
+
+    redo = () => {
+        console.log('redo');
+    };
 }
 
 // -- component definition -------------------------------------------------------------------------

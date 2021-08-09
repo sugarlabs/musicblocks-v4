@@ -27,6 +27,22 @@ export interface IMenu {
     changeBlockSize: (blockSize: number) => void;
 
     updateVolume: (vol: number) => void;
+
+    play: () => void;
+
+    playStepByStep: () => void;
+
+    playSlowly: () => void;
+
+    hideBlocks: () => void;
+
+    cleanArtwork: () => void;
+
+    collapseBlocks: () => void;
+
+    undo: () => void;
+
+    redo: () => void;
 }
 
 /**

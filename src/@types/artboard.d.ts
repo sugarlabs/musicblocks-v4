@@ -9,6 +9,8 @@ export interface IArtboardProps {
     updateDimensions: () => void;
     /** Move the artboard to top */
     moveToTop: (id: number) => void;
+    /** List of ids of playing or active artboards */
+    activeBoards: (activeBoards: number[]) => number[];
 }
 
 export interface IArtboardHandlerProps {

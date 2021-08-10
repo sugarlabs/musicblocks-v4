@@ -12,7 +12,7 @@ import ArtboardHandler from './ArtboardHandler';
 // -- view component definition --------------------------------------------------------------------
 
 // import { ArtboardSketch, boardSketch } from './ArtboardSketch';
-import { ArtboardTurtleSketch, turtleSketch } from './ArtboardTurtle';
+import { ArtboardTurtleSketch } from './ArtboardTurtle';
 
 /**
  * View of the Artboard Framework component.
@@ -28,8 +28,11 @@ export default function (props: IArtboardProps): JSX.Element {
   const moveTurtleInArc = () => setDoArc(true);
   return (
     <>
+      <button style={{ position: 'absolute', zIndex: 1000 }} onClick={moveTurtleInArc}>
+        Arc
+      </button>
+
       <div id="artboard-wrapper">
-        <button onClick={moveTurtleInArc}>Arc</button>
         <h4>Artboard {`(${props.dimensions[0]} × ${props.dimensions[1]})`}</h4>
         {artBoardList.map((board) => (
           <ArtboardHandler
@@ -42,7 +45,7 @@ export default function (props: IArtboardProps): JSX.Element {
           />
         ))}
       </div>
-      <ArtboardTurtleSketch artBoardList={artBoardList} sketch={turtleSketch} index={id + 1} />
+      <ArtboardTurtleSketch artBoardList={artBoardList} index={id + 1} />
     </>
   );
 }

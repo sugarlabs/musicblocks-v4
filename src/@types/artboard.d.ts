@@ -103,7 +103,6 @@ export interface P5WrapperProps extends SketchProps {
 }
 export interface P5WrapperTurtleProps extends SketchProps {
     index: number;
-    sketch: Sketch;
     artBoardList: IArtboardModel[];
 }
 

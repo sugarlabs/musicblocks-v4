@@ -14,9 +14,14 @@ export interface IArtboardProps {
 export interface IArtboardHandlerProps {
     doArc: boolean;
     setDoArc: Dispatch<SetStateAction<boolean>>;
+    doMove: boolean;
+    setDoMove: Dispatch<SetStateAction<boolean>>;
+    doRotate: boolean;
+    setDoRotate: Dispatch<SetStateAction<boolean>>;
     turtle: ITurtleModel;
     updateDimensions: () => void;
     index: number;
+    selectedTurtle: number;
 }
 
 /**
@@ -77,6 +82,7 @@ export interface ITurtleModel {
     pressed: (sketch: p5) => void;
     released: () => void;
     update: (sketch: p5) => void;
+    getColor: () => [number, number, number];
 }
 
 export interface IArtBoardDrawModel {
@@ -103,7 +109,7 @@ export interface P5WrapperProps extends SketchProps {
 }
 export interface P5WrapperTurtleProps extends SketchProps {
     index: number;
-    artBoardList: IArtboardModel[];
+    turtle: ITurtleModel;
 }
 
 export interface P5Instance extends p5 {

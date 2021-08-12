@@ -2,18 +2,18 @@ export default function (props: any): JSX.Element {
   return (
     <svg
       width="55"
-      viewBox="0 0 54.999998 54.999998"
+      viewBox="0 0 55 55"
       version="1.1"
       id="svg40"
-      x={props.position.x}
-      y={props.position.y}
+      x={props.turtle.getTurtleX() - 55 / 2}
+      y={props.turtle.getTurtleY() - 55 / 2}
       height="55"
-      transform={`translate(${props.position.x + 100},${props.position.y})`}
+      // transform="rotate(90)"
       onMouseDown={props.handleMouseDown}
       onMouseUp={props.handleMouseUp}
     >
       <g
-        transform="translate(-3.1884835,0.12548216)"
+        transform={`rotate(${90 - props.turtle.getTurtleAngle()}, 27.5, 27.5)`}
         fill="#FFFFFF"
         stroke="fill_color"
         strokeWidth="4"
@@ -22,7 +22,7 @@ export default function (props: any): JSX.Element {
         id="g3586"
       >
         <path
-          fill="red"
+          fill={`rgb(${props.color[0]},${props.color[1]},${props.color[2]})`}
           stroke="none"
           strokeWidth="1px"
           strokeLinecap="butt"
@@ -187,7 +187,6 @@ export default function (props: any): JSX.Element {
           strokeLinejoin="miter"
           strokeMiterlimit="4"
           fillOpacity="1"
-          // style="stroke-opacity:1;fill-opacity:1"
         />
         <path
           fill="none"
@@ -199,7 +198,6 @@ export default function (props: any): JSX.Element {
           strokeOpacity="1"
           strokeLinejoin="miter"
           strokeMiterlimit="4"
-          // style="stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
           id="path4653"
           d="m 31.302308,50.085622 c 0,0 0.723125,3.123831 5.500191,3.669996 4.777067,0.546166 11.784656,-3.778776 14.78791,-9.501331 3.003254,-5.722555 2.402683,-11.490783 3.003253,-18.121425"
         />

@@ -15,7 +15,7 @@ import ArtBoardDraw from '../../models/artboard/ArBoardDraw';
  * Class representing the Model of the Artboard component.
  */
 export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props }) => {
-  const artBoardDraw = new ArtBoardDraw();
+  const artBoardDraw = new ArtBoardDraw(props.turtle.getColor());
   const [currentTurtle, setcurrentTurtle] = useState(props.turtle);
   const boardSketch = (sketch: P5Instance): void => {
     // The three buttons to control the turtle

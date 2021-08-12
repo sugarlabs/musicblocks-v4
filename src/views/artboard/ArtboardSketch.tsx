@@ -1,7 +1,7 @@
 // -- types ----------------------------------------------------------------------------------------
 
 import p5 from 'p5';
-import React, { useEffect, createRef, useState } from 'react';
+import React, { useEffect, createRef, useState, useContext } from 'react';
 import { getViewportDimensions } from '../../utils/ambience';
 import { P5Instance, SketchProps, P5WrapperProps } from '../../@types/artboard';
 
@@ -9,12 +9,17 @@ import { P5Instance, SketchProps, P5WrapperProps } from '../../@types/artboard';
 import ArtBoardDraw from '../../models/artboard/ArBoardDraw';
 // let turtle: ITurtleModel;
 
+// -- global configuration context definition -----------------------------------------------------------
+import { ContextConfig } from '../../context/context-config';
+
 /** This is a setup function.*/
 
 /**
  * Class representing the Model of the Artboard component.
  */
 export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props }) => {
+  const { config, setConfig } = useContext(ContextConfig);
+
   const artBoardDraw = new ArtBoardDraw();
   const [currentTurtle, setcurrentTurtle] = useState(props.turtle);
   const boardSketch = (sketch: P5Instance): void => {
@@ -173,16 +178,16 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
       const [width, height]: [number, number] = getViewportDimensions();
       sketch.stroke(artBoardDraw.getStokeColor());
       sketch.strokeWeight(artBoardDraw.getStrokeWeight());
-      if (currentTurtle.getTurtleX() > width) {
+      if (currentTurtle.getTurtleX() > width && config.turtleWrap) {
         currentTurtle.setTurtleX(0);
       }
-      if (currentTurtle.getTurtleX() < 0) {
+      if (currentTurtle.getTurtleX() < 0 && config.turtleWrap) {
         currentTurtle.setTurtleX(width);
       }
-      if (currentTurtle.getTurtleY() > height) {
+      if (currentTurtle.getTurtleY() > height && config.turtleWrap) {
         currentTurtle.setTurtleY(0);
       }
-      if (currentTurtle.getTurtleY() < 0) {
+      if (currentTurtle.getTurtleY() < 0 && config.turtleWrap) {
         currentTurtle.setTurtleY(height);
       }
     };
@@ -203,7 +208,7 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
     instance?.remove();
     const canvas = new p5(boardSketch, artboardSketch.current);
     setInstance(canvas);
-  }, [props.turtle]);
+  }, [props.turtle, config.turtleWrap]);
 
   return (
     <div

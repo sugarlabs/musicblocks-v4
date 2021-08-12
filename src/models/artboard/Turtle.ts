@@ -15,6 +15,7 @@ export default class implements ITurtleModel {
     _turtleAngle: number;
     _width: number;
     _height: number;
+    _color: [number, number, number];
 
     /** Dragging parameters */
     _dragging = false; // Is the object being dragged?
@@ -29,6 +30,14 @@ export default class implements ITurtleModel {
         this._turtleAngle = angle;
         this._width = 30;
         this._height = 60;
+        this._color = [
+            Math.floor(Math.random() * 255) + 1,
+            Math.floor(Math.random() * 255) + 1,
+            Math.floor(Math.random() * 255) + 1,
+        ];
+    }
+    getColor(): [number, number, number] {
+        return this._color;
     }
     display(sketch: p5): void {
         sketch.rect(0, 0, this._width, this._height);

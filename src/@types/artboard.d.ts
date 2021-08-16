@@ -22,6 +22,16 @@ export interface IArtboardHandlerProps {
     updateDimensions: () => void;
     index: number;
     selectedTurtle: number;
+    turtleSettings: ITurtleSettings;
+}
+export interface ITurtleSettings {
+    arcRadius: number;
+    arcAngle: number;
+    sleepTime: number;
+    steps: number;
+    moveDirection: string;
+    distance: number;
+    moveSleepTime: number;
 }
 
 /**

@@ -63,7 +63,7 @@ export default function (props: IArtboardHandlerProps): JSX.Element {
         handleRotation={handleRotate}
         makeArc={doMakeArc}
         handleArc={handleArc}
-        sleepTime={20}
+        turtleSettings={props.turtleSettings}
       />
     </>
   );

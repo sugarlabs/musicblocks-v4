@@ -9,7 +9,6 @@ import { ArtBoardContext } from '../../context/ArtBoardContext';
 import './Artboard.scss';
 import ArtboardHandler from './ArtboardHandler';
 import { ArtboardTurtleSketch } from './ArtboardTurtle';
-import { TurtleSetup } from './TurtleSetup';
 
 // -- view component definition --------------------------------------------------------------------
 
@@ -30,27 +29,27 @@ export default function (props: IArtboardProps): JSX.Element {
   const moveTurtleForward = () => setDoMove(true);
   const rotateTurtle = () => setDoRotate(true);
   const [selectedTurtle, setSelectedTurtle] = useState(1);
-
+  const [turtleMoveSettings, setTurtleMoveSettings] = useState({
+    arcRadius: 5,
+    arcAngle: 90,
+    sleepTime: 10,
+    steps: 5,
+    moveDirection: 'forward',
+    distance: 50,
+    moveSleepTime: 50,
+    rotateAngle: 180,
+  });
   const handleTurtleSelect = (i: number) => {
     setSelectedTurtle(i);
   };
 
   return (
     <>
-      {/* <select
-        id="dropDown"
-        style={{ position: 'absolute', zIndex: 1000 }}
-        onChange={handleDropdownChange}
-      >
-        {artBoardList.map((artboard, index) => (
-          <option key={index} value={artboard._id}>{`Turtle ${artboard._id}`}</option>
-        ))}
-      </select> */}
       {artBoardList.map((artboard, index) => (
         <button
           value={artboard._id}
           onClick={() => handleTurtleSelect(artboard._id)}
-          style={{ position: 'absolute', top: 20 * index, zIndex: 1000 }}
+          style={{ position: 'absolute', top: 21 * index, zIndex: 1000 }}
         >{`Turtle ${artboard._id}`}</button>
       ))}
       <button style={{ position: 'absolute', left: 100, zIndex: 1000 }}></button>
@@ -77,6 +76,7 @@ export default function (props: IArtboardProps): JSX.Element {
             index={board._id}
             turtle={board._turtle}
             updateDimensions={props.updateDimensions}
+            turtleSettings={turtleMoveSettings}
             selectedTurtle={selectedTurtle}
           />
         ))}

@@ -7,12 +7,9 @@ import { P5Instance, SketchProps, P5WrapperProps } from '../../@types/artboard';
 
 // -- model component definition -------------------------------------------------------------------
 import ArtBoardDraw from '../../models/artboard/ArBoardDraw';
-// let turtle: ITurtleModel;
-
-/** This is a setup function.*/
 
 /**
- * Class representing the Model of the Artboard component.
+ * Handles the main functionality of the artboard sketch.
  */
 export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props }) => {
   const artBoardDraw = new ArtBoardDraw(props.turtle.getColor());
@@ -172,6 +169,7 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
       const [width, height]: [number, number] = getViewportDimensions();
       sketch.stroke(artBoardDraw.getStokeColor());
       sketch.strokeWeight(artBoardDraw.getStrokeWeight());
+      // Handle wrap functionality
       if (currentTurtle.getTurtleX() > width) {
         currentTurtle.setTurtleX(0);
       }
@@ -198,7 +196,6 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
   useEffect(() => {
     setcurrentTurtle(props.turtle);
     setTurtleSettings(props.turtleSettings);
-    // currentTurtle = currentTurtle;
     if (artboardSketch.current === null) return;
     instance?.remove();
     const canvas = new p5(boardSketch, artboardSketch.current);

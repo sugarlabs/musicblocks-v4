@@ -8,8 +8,6 @@ import Monitor from './components/Monitor';
 
 // -- subcomponents --------------------------------------------------------------------------------
 
-import Artboard from './components/artboard/Artboard';
-import Builder from './components/builder/Builder';
 import Menu from './components/menu/Menu';
 import Palette from './components/palette/Palette';
 import Manager from './components/artboard/Manager';

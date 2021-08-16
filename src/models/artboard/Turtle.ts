@@ -4,9 +4,6 @@ import { ITurtleModel } from '../../@types/artboard';
 
 // -- model component definition -------------------------------------------------------------------
 
-/**
- * Class representing the Model of the Menu component.
- */
 export default class implements ITurtleModel {
     /** Stores the value for artBoard draw functions. */
     _id: number;
@@ -48,6 +45,7 @@ export default class implements ITurtleModel {
         sketch.imageMode(sketch.CENTER);
     }
     display(sketch: p5): void {
+        // helps in creating custom shapes
         sketch.beginShape();
         sketch.translate(-this._width / 2, 0);
         sketch.vertex(0, 0);
@@ -66,6 +64,7 @@ export default class implements ITurtleModel {
     }
 
     render(sketch: p5): void {
+        // push pop is used to keep the state of the turtle different (when we translate the turtle)
         sketch.push();
         sketch.fill(sketch.color(this._color[0], this._color[1], this._color[2]));
         this.move(sketch);

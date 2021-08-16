@@ -6,7 +6,6 @@ import { P5Instance, P5WrapperTurtleProps, IArtboardModel } from '../../@types/a
 import { getViewportDimensions } from '../../utils/ambience';
 // -- model component definition -------------------------------------------------------------------
 
-/** This is a setup function.*/
 let artBoardList: IArtboardModel[];
 export const turtleSketch = (sketch: P5Instance): void => {
   sketch.setup = () => {
@@ -22,6 +21,7 @@ export const turtleSketch = (sketch: P5Instance): void => {
     sketch.clear();
     artBoardList.map((artboard) => artboard._turtle.render(sketch));
   };
+  // Mouse pressed makes the turtle active when clicked
   sketch.mousePressed = () => {
     if (artBoardList.length > 0) {
       for (let i = 0; i < artBoardList.length; i++) {
@@ -29,10 +29,8 @@ export const turtleSketch = (sketch: P5Instance): void => {
           distance = sketch.dist(sketch.mouseX, sketch.mouseY, turtle._turtleX, turtle._turtleY);
         if (distance < 30) {
           turtle._active = true;
-          // turtle.color = '#f00';
         } else {
           turtle._active = false;
-          // turtle.color = '#000';
         }
       }
     }
@@ -48,8 +46,6 @@ export const turtleSketch = (sketch: P5Instance): void => {
         if (turtle._active) {
           turtle._turtleX = sketch.mouseX;
           turtle._turtleY = sketch.mouseY;
-          // circle.x = mouseX;
-          // circle.y = mouseY;
           break;
         }
       }
@@ -67,7 +63,6 @@ export const ArtboardTurtleSketch: React.FC<P5WrapperTurtleProps> = ({
   children,
   ...props
 }) => {
-  /** Stores the value of the auto hide state. */
   const artboardTurtleSketch = createRef<HTMLDivElement>();
   const id = `art-board-turtle`;
   const [instance, setInstance] = useState<P5Instance>();

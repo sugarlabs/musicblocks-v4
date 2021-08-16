@@ -11,7 +11,7 @@ import './Artboard.scss';
 
 import { ArtboardSketch } from './ArtboardSketch';
 /**
- * View of the Artboard Framework component.
+ * Passes the props with their function to call each turtle to move or rotate.
  *
  * @returns root JSX element
  */

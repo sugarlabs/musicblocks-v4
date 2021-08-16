@@ -170,6 +170,11 @@ class Menu implements IMenu {
         return fetchLanguages();
     }
 
+    /**
+     * Fetches the list of the block sizes and their corresponding labels and returns it.
+     *
+     * @returns 'Promise' instance corresponding to the list of block sizes and their labels.
+     */
     getBlockSizes(): Promise<IBlockSize[]> {
         const fetchBlockSizes = () => {
             return new Promise<IBlockSize[]>((res) =>
@@ -211,18 +216,38 @@ class Menu implements IMenu {
         language;
     };
 
+    /**
+     * Updates the block size state in the Context API
+     *
+     * @param blockSize the block size selected from the menu
+     */
     changeBlockSize = (blockSize: number) => {
         blockSize;
     };
 
+    /**
+     * Updates the horizontalScroll state in the Context API
+     *
+     * @param isEnabled the horizontalScroll state selected from the menu
+     */
     updateHorizontalScroll = (isEnabled: boolean) => {
         isEnabled;
     };
 
+    /**
+     * Updates the turtleWrap state in the Context API
+     *
+     * @param isWrapOn the turtleWrap state selected from the menu
+     */
     updateTurtleWrap = (isWrapOn: boolean) => {
         isWrapOn;
     };
 
+    /**
+     * Updates the master volume state in the Context API
+     *
+     * @param volume the volume state set from the menu
+     */
     updateVolume = (volume: number) => {
         volume;
     };

@@ -87,7 +87,7 @@ export const ArtboardTurtleSketch: React.FC<P5WrapperTurtleProps> = ({
   }, [sketch, artboardTurtleSketch.current]);
 
   return (
-    <div ref={artboardTurtleSketch} className="art-board-sketch-turtle">
+    <div id={id} ref={artboardTurtleSketch} className="art-board-sketch-turtle">
       {children}
     </div>
   );

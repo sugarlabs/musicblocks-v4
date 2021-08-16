@@ -26,4 +26,5 @@ export interface IContextConfig {
 export interface IArtBoardContext {
     artBoardList: IArtboardModel[];
     setArtBoardList: (artboard: IartBoard) => void;
+    numberOfArtboards: number;
 }

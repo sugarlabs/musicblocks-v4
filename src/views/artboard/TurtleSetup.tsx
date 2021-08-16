@@ -71,15 +71,14 @@ export const TurtleSetup = (props: { turtle: ITurtleModel }) => {
   // });
   return (
     <>
-      {artBoardList.map((board) => (
-        <TurtleSVG
-          position={position}
-          turtle={board.turtle}
-          color={props.turtle.getColor()}
-          handleMouseDown={handleMouseDown}
-          handleMouseUp={handleMouseUp}
-        />
-      ))}
+      {/* {artBoardList.map((board) => ( */}
+      <TurtleSVG
+        position={position}
+        turtle={props.turtle}
+        color={props.turtle.getColor()}
+        handleMouseDown={handleMouseDown}
+        handleMouseUp={handleMouseUp}
+      />
     </>
   );
 };

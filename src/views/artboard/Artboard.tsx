@@ -9,11 +9,11 @@ import { ArtBoardContext } from '../../context/ArtBoardContext';
 import './Artboard.scss';
 import ArtboardHandler from './ArtboardHandler';
 import { ArtboardTurtleSketch } from './ArtboardTurtle';
+import { TurtleSetup } from './TurtleSetup';
 
 // -- view component definition --------------------------------------------------------------------
 
 // import { ArtboardSketch, boardSketch } from './ArtboardSketch';
-import { TurtleSetup } from './TurtleSetup';
 
 /**
  * View of the Artboard Framework component.
@@ -31,21 +31,29 @@ export default function (props: IArtboardProps): JSX.Element {
   const rotateTurtle = () => setDoRotate(true);
   const [selectedTurtle, setSelectedTurtle] = useState(1);
 
-  const handleDropdownChange = (e: any) => {
-    setSelectedTurtle(e.target.value);
+  const handleTurtleSelect = (i: number) => {
+    setSelectedTurtle(i);
   };
 
   return (
     <>
-      <select
+      {/* <select
         id="dropDown"
-        style={{ position: 'absolute', zIndex: 10000000 }}
+        style={{ position: 'absolute', zIndex: 1000 }}
         onChange={handleDropdownChange}
       >
         {artBoardList.map((artboard, index) => (
           <option key={index} value={artboard._id}>{`Turtle ${artboard._id}`}</option>
         ))}
-      </select>
+      </select> */}
+      {artBoardList.map((artboard, index) => (
+        <button
+          value={artboard._id}
+          onClick={() => handleTurtleSelect(artboard._id)}
+          style={{ position: 'absolute', top: 20 * index, zIndex: 1000 }}
+        >{`Turtle ${artboard._id}`}</button>
+      ))}
+      <button style={{ position: 'absolute', left: 100, zIndex: 1000 }}></button>
       <button style={{ position: 'absolute', left: 100, zIndex: 1000 }} onClick={moveTurtleInArc}>
         Arc
       </button>
@@ -55,7 +63,6 @@ export default function (props: IArtboardProps): JSX.Element {
       <button style={{ position: 'absolute', left: 220, zIndex: 1000 }} onClick={rotateTurtle}>
         Rotate
       </button>
-
       <div id="artboard-wrapper">
         <h4>Artboard {`(${props.dimensions[0]} × ${props.dimensions[1]})`}</h4>
         {artBoardList.map((board) => (
@@ -73,8 +80,6 @@ export default function (props: IArtboardProps): JSX.Element {
             selectedTurtle={selectedTurtle}
           />
         ))}
-      </div>
-      <div id="artboard-turtle-wrapper">
         <ArtboardTurtleSketch artBoardList={artBoardList} />
       </div>
     </>

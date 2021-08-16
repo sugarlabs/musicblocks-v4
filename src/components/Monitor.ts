@@ -219,35 +219,35 @@ class Menu implements IMenu {
     };
 
     play = () => {
-        console.log('play');
+        // play the project
     };
 
     playStepByStep = () => {
-        console.log('play step by step');
+        // play the project step by step
     };
 
     playSlowly = () => {
-        console.log('play slowly');
+        // play the project slowly
     };
 
     hideBlocks = () => {
-        console.log('hide blocks');
+        // hide the blocks in the project
     };
 
     cleanArtwork = () => {
-        console.log('clean artwork');
+        // clean the artwork of the project
     };
 
     collapseBlocks = () => {
-        console.log('collapse blocks');
+        // collapse the collapsible blocks
     };
 
     undo = () => {
-        console.log('undo');
+        // undo project to the previous state
     };
 
     redo = () => {
-        console.log('redo');
+        // redo project to the next state
     };
 }
 

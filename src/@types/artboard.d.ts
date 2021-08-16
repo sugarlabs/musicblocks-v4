@@ -13,7 +13,9 @@ export interface IArtboardProps {
 
 export interface IArtboardHandlerProps {
     doArc: boolean;
+    doClean: boolean;
     setDoArc: Dispatch<SetStateAction<boolean>>;
+    setDoClean: Dispatch<SetStateAction<boolean>>;
     turtle: ITurtleModel;
     updateDimensions: () => void;
     index: number;

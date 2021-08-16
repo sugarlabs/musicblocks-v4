@@ -4,6 +4,8 @@ import { useContext, useState } from 'react';
 import { IArtboardProps } from '../../@types/artboard';
 import { ArtBoardContext } from '../../context/ArtBoardContext';
 
+import Monitor from '../../components/Monitor';
+
 // -- stylesheet -----------------------------------------------------------------------------------
 
 import './Artboard.scss';
@@ -25,7 +27,16 @@ export default function (props: IArtboardProps): JSX.Element {
   const [id, setId] = useState<number>(0);
 
   const [doArc, setDoArc] = useState(false);
+
+  const [doClean, setDoClean] = useState(false);
+
   const moveTurtleInArc = () => setDoArc(true);
+
+  const performClean = () => setDoClean(true);
+
+  // register the performClean method to the Monitor to connect this with the menu dock
+  Monitor.registerArtboardClean(performClean);
+
   return (
     <>
       <div id="artboard-wrapper">
@@ -34,7 +45,9 @@ export default function (props: IArtboardProps): JSX.Element {
         {artBoardList.map((board) => (
           <ArtboardHandler
             doArc={doArc}
+            doClean={doClean}
             setDoArc={setDoArc}
+            setDoClean={setDoClean}
             key={board._turtle._id}
             index={board._turtle._id}
             turtle={board._turtle}

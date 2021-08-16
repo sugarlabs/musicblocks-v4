@@ -19,7 +19,6 @@ import { ContextConfig } from '../../context/context-config';
  */
 export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props }) => {
   const { config, setConfig } = useContext(ContextConfig);
-
   const artBoardDraw = new ArtBoardDraw();
   const [currentTurtle, setcurrentTurtle] = useState(props.turtle);
   const boardSketch = (sketch: P5Instance): void => {
@@ -31,6 +30,10 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
     let doRotate = false;
     let doMakeArc = false;
     let sleepTime: number;
+
+    const clean = () => {
+      sketch.clear();
+    };
 
     const sleep = (milliseconds: number) => {
       return new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -157,6 +160,7 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
       doRotate = props.rotation;
       doMakeArc = props.makeArc;
       sleepTime = props.sleepTime;
+      let doClean = props.cleanAll;
 
       if (doMoveForward) {
         move();
@@ -171,6 +175,11 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
       if (doMakeArc) {
         moveInArc();
         props.handleArc();
+      }
+
+      if (doClean && !doMakeArc) {
+        clean();
+        props.handleClean();
       }
     };
 

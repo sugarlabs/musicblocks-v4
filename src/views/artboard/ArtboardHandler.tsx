@@ -19,12 +19,20 @@ export default function (props: IArtboardHandlerProps): JSX.Element {
   const [doMove, setDoMove] = useState<boolean>(false);
   const [doRotate, setDoRotation] = useState<boolean>(false);
   const [doMakeArc, setDoMakeArc] = useState<boolean>(false);
+  const [doCleanAll, setDoCleanAll] = useState<boolean>(false);
   const handleMove = () => setDoMove(!doMove);
   const handleRotate = () => setDoRotation(!doRotate);
+
   function handleArc() {
     setDoMakeArc(!doMakeArc);
     props.setDoArc(false);
   }
+
+  function handleClean() {
+    setDoCleanAll(!doCleanAll);
+    props.setDoClean(false);
+  }
+
   useEffect(() => {
     window.addEventListener('resize', props.updateDimensions);
     return () => window.removeEventListener('resize', props.updateDimensions);
@@ -33,7 +41,10 @@ export default function (props: IArtboardHandlerProps): JSX.Element {
     if (props.doArc) {
       handleArc();
     }
-  }, [props.doArc]);
+    if (props.doClean) {
+      handleClean();
+    }
+  }, [props.doArc, props.doClean]);
 
   return (
     <>
@@ -51,6 +62,8 @@ export default function (props: IArtboardHandlerProps): JSX.Element {
         makeArc={doMakeArc}
         handleArc={handleArc}
         sleepTime={20}
+        cleanAll={doCleanAll}
+        handleClean={handleClean}
       />
     </>
   );

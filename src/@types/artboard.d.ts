@@ -62,6 +62,7 @@ export interface ITurtleModel {
     _turtleX: number;
     _turtleY: number;
     _turtleAngle: number;
+    _active: boolean;
     /** get the turtleX position */
     getTurtleX: () => number;
     /** set X position of the turtle */
@@ -77,11 +78,7 @@ export interface ITurtleModel {
     display: (sketch: p5) => void;
     move: (sketch: p5) => void;
     render: (sketch: p5) => void;
-    over: (sketch: p5) => void;
-    show: (sketch: p5) => void;
-    pressed: (sketch: p5) => void;
-    released: () => void;
-    update: (sketch: p5) => void;
+    callSVG: (sketch: p5) => void;
     getColor: () => [number, number, number];
 }
 
@@ -108,8 +105,9 @@ export interface P5WrapperProps extends SketchProps {
     turtle: ITurtleModel;
 }
 export interface P5WrapperTurtleProps extends SketchProps {
-    index: number;
-    turtle: ITurtleModel;
+    // index: number;
+    // turtle: ITurtleModel;
+    artBoardList: IArtboardModel[];
 }
 
 export interface P5Instance extends p5 {

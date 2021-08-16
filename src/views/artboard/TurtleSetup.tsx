@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useEffect } from 'react';
 import { ITurtleModel } from '../../@types/artboard';
+import { ArtBoardContext } from '../../context/ArtBoardContext';
 import TurtleSVG from './TurtleSVG';
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const TurtleSetup = (props: { turtle: ITurtleModel }) => {
+  const { artBoardList } = useContext(ArtBoardContext);
+
   const [interaction, setInteraction] = useState(false);
   const [position, setPosition] = React.useState({
     x: props.turtle.getTurtleX(),
@@ -59,20 +62,24 @@ export const TurtleSetup = (props: { turtle: ITurtleModel }) => {
     setInteraction(false);
   };
 
-  useEffect(() => {
-    setPosition((position) =>
-      Object.assign({}, position, {
-        coords: {},
-      }),
-    );
-  });
+  // useEffect(() => {
+  //   setPosition((position) =>
+  //     Object.assign({}, position, {
+  //       coords: {},
+  //     }),
+  //   );
+  // });
   return (
-    <TurtleSVG
-      position={position}
-      turtle={props.turtle}
-      color={props.turtle.getColor()}
-      handleMouseDown={handleMouseDown}
-      handleMouseUp={handleMouseUp}
-    />
+    <>
+      {artBoardList.map((board) => (
+        <TurtleSVG
+          position={position}
+          turtle={board.turtle}
+          color={props.turtle.getColor()}
+          handleMouseDown={handleMouseDown}
+          handleMouseUp={handleMouseUp}
+        />
+      ))}
+    </>
   );
 };

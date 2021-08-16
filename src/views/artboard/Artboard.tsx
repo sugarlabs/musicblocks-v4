@@ -8,6 +8,7 @@ import { ArtBoardContext } from '../../context/ArtBoardContext';
 
 import './Artboard.scss';
 import ArtboardHandler from './ArtboardHandler';
+import { ArtboardTurtleSketch } from './ArtboardTurtle';
 
 // -- view component definition --------------------------------------------------------------------
 
@@ -28,7 +29,7 @@ export default function (props: IArtboardProps): JSX.Element {
   const moveTurtleInArc = () => setDoArc(true);
   const moveTurtleForward = () => setDoMove(true);
   const rotateTurtle = () => setDoRotate(true);
-  const [selectedTurtle, setSelectedTurtle] = useState(0);
+  const [selectedTurtle, setSelectedTurtle] = useState(1);
 
   const handleDropdownChange = (e: any) => {
     setSelectedTurtle(e.target.value);
@@ -38,7 +39,7 @@ export default function (props: IArtboardProps): JSX.Element {
     <>
       <select
         id="dropDown"
-        style={{ position: 'absolute', zIndex: 1000 }}
+        style={{ position: 'absolute', zIndex: 10000000 }}
         onChange={handleDropdownChange}
       >
         {artBoardList.map((artboard, index) => (
@@ -74,22 +75,7 @@ export default function (props: IArtboardProps): JSX.Element {
         ))}
       </div>
       <div id="artboard-turtle-wrapper">
-        <svg
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            border: '1px solid green',
-            height: props.dimensions[1],
-            width: props.dimensions[0],
-            fill: 'red',
-            zIndex: 1,
-          }}
-        >
-          {artBoardList.map((board) => (
-            <TurtleSetup turtle={board._turtle} key={board._turtle._id} />
-          ))}
-        </svg>
+        <ArtboardTurtleSketch artBoardList={artBoardList} />
       </div>
     </>
   );

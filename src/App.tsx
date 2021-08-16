@@ -49,6 +49,7 @@ export default function App(): JSX.Element {
   Monitor.registerUpdateWrap(updateTurtleWrap);
   Monitor.registerSetBlockSize(changeBlockSize);
   Monitor.registerUpdateVolume(updateVolume);
+  Monitor.registerClean();
 
   const [artBoardList, setArtBoardList] = useState(ContextDefaultArtBoard.artBoardList);
 

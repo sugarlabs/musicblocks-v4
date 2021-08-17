@@ -30,6 +30,7 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
     let doRotate = false;
     let doMakeArc = false;
     let sleepTime: number;
+    let isMoving = false;
 
     const clean = () => {
       sketch.clear();
@@ -136,6 +137,7 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
         await sleep(sleepTime);
         makeArcSteps(i, radius);
       }
+      isMoving = !isMoving;
     }
 
     function rotate() {
@@ -145,6 +147,7 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
       moveForward(50, 'forward');
     }
     function moveInArc() {
+      isMoving = !isMoving;
       makeArc(sketch.random(90, 360), sketch.random(0, 7));
     }
 
@@ -177,7 +180,7 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
         props.handleArc();
       }
 
-      if (doClean && !doMakeArc) {
+      if (doClean && !isMoving) {
         clean();
         props.handleClean();
       }

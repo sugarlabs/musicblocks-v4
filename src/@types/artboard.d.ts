@@ -105,3 +105,18 @@ export interface P5WrapperTurtleProps extends SketchProps {
 export interface P5Instance extends p5 {
     updateWithProps?: (props: SketchProps) => void;
 }
+
+export interface SketchProps {
+    [key: string]: any;
+}
+
+export interface Sketch {
+    (instance: p5): void;
+}
+export interface P5WrapperProps extends SketchProps {
+    sketch: Sketch;
+}
+
+export interface P5Instance extends p5 {
+    updateWithProps?: (props: SketchProps) => void;
+}

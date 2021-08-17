@@ -4,24 +4,58 @@ import { ITurtleModel } from '../../@types/artboard';
 
 // -- model component definition -------------------------------------------------------------------
 
-/**
- * Class representing the Model of the Menu component.
- */
 export default class implements ITurtleModel {
     /** Stores the value for artBoard draw functions. */
     _id: number;
     _turtleX: number;
     _turtleY: number;
     _turtleAngle: number;
+    _width: number;
+    _height: number;
+    _color: [number, number, number];
+
+    /** Dragging parameters */
+    _dragging = false; // Is the object being dragged?
+    _rollover = false; // Is the mouse over the ellipse?
+    _offsetX = 0;
+    _offsetY = 0;
+    _active = false;
+    _svg!: p5.Image | p5.Element;
 
     constructor(id: number, x: number, y: number, angle: number) {
         this._id = id;
         this._turtleX = x;
         this._turtleY = y;
         this._turtleAngle = angle;
+        this._width = 60;
+        this._height = 30;
+        this._color = [
+            Math.floor(Math.random() * 255) + 1,
+            Math.floor(Math.random() * 255) + 1,
+            Math.floor(Math.random() * 255) + 1,
+        ];
+    }
+    getColor(): [number, number, number] {
+        return this._color;
+    }
+    callSVG(sketch: p5): void {
+        this._svg = sketch.loadImage(
+            'https://github.com/sugarlabs/musicblocks/blob/master/images/mouse.svg',
+        );
+        sketch.imageMode(sketch.CENTER);
     }
     display(sketch: p5): void {
-        sketch.rect(0, 0, 30, 60);
+        // helps in creating custom shapes
+        sketch.beginShape();
+        sketch.translate(-this._width / 2, 0);
+        sketch.vertex(0, 0);
+        sketch.vertex(0, this._height);
+        sketch.vertex(this._width, this._height);
+        sketch.vertex(this._width, 0);
+        sketch.vertex(this._width / 2, -this._height);
+        sketch.vertex(0, 0);
+        sketch.endShape(sketch.CLOSE);
+        // sketch.image(this._svg, 0, 0, this._width, this._height);
     }
 
     move(sketch: p5): void {
@@ -30,7 +64,9 @@ export default class implements ITurtleModel {
     }
 
     render(sketch: p5): void {
+        // push pop is used to keep the state of the turtle different (when we translate the turtle)
         sketch.push();
+        sketch.fill(sketch.color(this._color[0], this._color[1], this._color[2]));
         this.move(sketch);
         this.display(sketch);
         sketch.pop();

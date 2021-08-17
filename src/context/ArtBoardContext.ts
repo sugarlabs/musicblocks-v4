@@ -15,6 +15,7 @@ const ArtBoardList: IArtboardModel[] = [];
 export const ContextDefaultArtBoard: IArtBoardContext = {
     artBoardList: ArtBoardList,
     setArtBoardList: (artBoardList) => artBoardList,
+    numberOfArtboards: 0,
 };
 
 // -- instance -------------------------------------------------------------------------------------

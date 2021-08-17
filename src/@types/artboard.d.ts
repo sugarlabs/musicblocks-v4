@@ -16,9 +16,24 @@ export interface IArtboardProps {
 export interface IArtboardHandlerProps {
     doArc: boolean;
     setDoArc: Dispatch<SetStateAction<boolean>>;
+    doMove: boolean;
+    setDoMove: Dispatch<SetStateAction<boolean>>;
+    doRotate: boolean;
+    setDoRotate: Dispatch<SetStateAction<boolean>>;
     turtle: ITurtleModel;
     updateDimensions: () => void;
     index: number;
+    selectedTurtle: number;
+    turtleSettings: ITurtleSettings;
+}
+export interface ITurtleSettings {
+    arcRadius: number;
+    arcAngle: number;
+    sleepTime: number;
+    steps: number;
+    moveDirection: string;
+    distance: number;
+    moveSleepTime: number;
 }
 
 /**
@@ -59,6 +74,7 @@ export interface ITurtleModel {
     _turtleX: number;
     _turtleY: number;
     _turtleAngle: number;
+    _active: boolean;
     /** get the turtleX position */
     getTurtleX: () => number;
     /** set X position of the turtle */
@@ -74,6 +90,8 @@ export interface ITurtleModel {
     display: (sketch: p5) => void;
     move: (sketch: p5) => void;
     render: (sketch: p5) => void;
+    callSVG: (sketch: p5) => void;
+    getColor: () => [number, number, number];
 }
 
 export interface IArtBoardDrawModel {
@@ -99,9 +117,24 @@ export interface P5WrapperProps extends SketchProps {
     turtle: ITurtleModel;
 }
 export interface P5WrapperTurtleProps extends SketchProps {
-    index: number;
-    sketch: Sketch;
+    // index: number;
+    // turtle: ITurtleModel;
     artBoardList: IArtboardModel[];
+}
+
+export interface P5Instance extends p5 {
+    updateWithProps?: (props: SketchProps) => void;
+}
+
+export interface SketchProps {
+    [key: string]: any;
+}
+
+export interface Sketch {
+    (instance: p5): void;
+}
+export interface P5WrapperProps extends SketchProps {
+    sketch: Sketch;
 }
 
 export interface P5Instance extends p5 {

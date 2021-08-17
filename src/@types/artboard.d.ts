@@ -90,6 +90,8 @@ export interface ITurtleModel {
     render: (sketch: p5) => void;
     callSVG: (sketch: p5) => void;
     getColor: () => [number, number, number];
+    setIsMoving(isMoving: boolean): void;
+    getIsMoving(): boolean;
 }
 
 export interface IArtBoardDrawModel {
@@ -130,9 +132,6 @@ export interface SketchProps {
 
 export interface Sketch {
     (instance: p5): void;
-}
-export interface P5WrapperProps extends SketchProps {
-    sketch: Sketch;
 }
 
 export interface P5Instance extends p5 {

@@ -12,9 +12,16 @@
       top: 0;
       left: 0;
     }
-    button {
-      z-index: 200000000 !important;
+  }
+  .art-board-sketch-turtle {
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
     }
+  }
+  button {
+    z-index: 200000000 !important;
   }
   h4 {
     position: absolute;

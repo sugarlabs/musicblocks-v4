@@ -7,25 +7,22 @@ import { P5Instance, SketchProps, P5WrapperProps } from '../../@types/artboard';
 
 // -- model component definition -------------------------------------------------------------------
 import ArtBoardDraw from '../../models/artboard/ArBoardDraw';
-// let turtle: ITurtleModel;
-
-/** This is a setup function.*/
 
 /**
- * Class representing the Model of the Artboard component.
+ * Handles the main functionality of the artboard sketch.
  */
 export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props }) => {
-  const artBoardDraw = new ArtBoardDraw();
+  const artBoardDraw = new ArtBoardDraw(props.turtle.getColor());
   const [currentTurtle, setcurrentTurtle] = useState(props.turtle);
+  const [turtleSettings, setTurtleSettings] = useState(props.turtleSettings);
   const boardSketch = (sketch: P5Instance): void => {
     // The three buttons to control the turtle
-    const steps = 5;
+    const steps = turtleSettings.steps;
 
     // controller variables used in Draw functions (controlled by manager)
     let doMoveForward = false;
     let doRotate = false;
     let doMakeArc = false;
-    let sleepTime: number;
 
     const sleep = (milliseconds: number) => {
       return new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -82,7 +79,7 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
       }
 
       for (let i = 0; i < angle; i++) {
-        await sleep(10);
+        await sleep(turtleSettings.sleepTime);
         rotateTurtlePart(isNegative);
       }
     }
@@ -94,7 +91,7 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
      */
     async function moveForward(steps: number, direction: string) {
       for (let i = 0; i < steps; i++) {
-        await sleep(50);
+        await sleep(turtleSettings.moveSleepTime);
         moveForwardPart(i, direction);
       }
     }
@@ -125,19 +122,19 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
     async function makeArc(angle: number, radius: number) {
       for (let i = 0; i < angle; i++) {
         // await sleep(50);
-        await sleep(sleepTime);
+        await sleep(turtleSettings.moveSleepTime);
         makeArcSteps(i, radius);
       }
     }
 
     function rotate() {
-      rotateTurtle(30);
+      rotateTurtle(turtleSettings.rotateAngle);
     }
     function move() {
-      moveForward(50, 'forward');
+      moveForward(turtleSettings.distance, turtleSettings.moveDirection);
     }
     function moveInArc() {
-      makeArc(sketch.random(90, 360), sketch.random(0, 7));
+      makeArc(turtleSettings.arcAngle, turtleSettings.arcRadius);
     }
 
     sketch.setup = () => {
@@ -151,7 +148,6 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
       doMoveForward = props.doMove;
       doRotate = props.rotation;
       doMakeArc = props.makeArc;
-      sleepTime = props.sleepTime;
 
       if (doMoveForward) {
         move();
@@ -173,6 +169,7 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
       const [width, height]: [number, number] = getViewportDimensions();
       sketch.stroke(artBoardDraw.getStokeColor());
       sketch.strokeWeight(artBoardDraw.getStrokeWeight());
+      // Handle wrap functionality
       if (currentTurtle.getTurtleX() > width) {
         currentTurtle.setTurtleX(0);
       }
@@ -198,7 +195,7 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
 
   useEffect(() => {
     setcurrentTurtle(props.turtle);
-    // currentTurtle = currentTurtle;
+    setTurtleSettings(props.turtleSettings);
     if (artboardSketch.current === null) return;
     instance?.remove();
     const canvas = new p5(boardSketch, artboardSketch.current);

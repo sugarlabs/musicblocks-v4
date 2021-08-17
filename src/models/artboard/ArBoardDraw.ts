@@ -12,9 +12,9 @@ export default class implements IArtBoardDrawModel {
     private _strokeWeight: number;
     private _strokeColor: [number, number, number];
 
-    constructor() {
+    constructor(strokeColor: [number, number, number]) {
         this._strokeWeight = 10;
-        this._strokeColor = [254, 30, 21];
+        this._strokeColor = strokeColor;
     }
     setStrokeWeight(x: number): void {
         this._strokeWeight = x;

@@ -17,15 +17,35 @@ import MenuView from '../../views/menu/Menu';
  * ViewModel of the Menu component.
  */
 export default function (): JSX.Element {
+    // autoHide: detects the mouse entropy inside the auto hide overlay
     const [autoHide, setAutoHide] = useState<boolean>(true);
+
+    // autoHideTemp: counter state to detect mouse entropy over the menu dock to account for
+    // the change in autoHide while hovering abouve the menu dock due to difference in z-indices
     const [autoHideTemp, setAutoHideTemp] = useState<boolean>(true);
+
+    // playMenuVisible: state to detect if the play submenu is visible
     const [playMenuVisible, setPlayMenuVisible] = useState<boolean>(false);
+
+    // settingsMenuVisible: state to detect if the settings submenu is visible
     const [settingsMenuVisible, setSettingsMenuVisible] = useState<boolean>(false);
+
+    // projectMenuVisible: state to detect if the project submenu is visible
     const [projectMenuVisible, setProjectMenuVisible] = useState<boolean>(false);
+
+    // languageSubmenuVisible: state to detect if the language submenu is visible
     const [languageMenuVisible, setLanguageMenuVisible] = useState<boolean>(false);
+
+    // blockSizeMenuVisible: state to detect if the block size submenu is visible
     const [blockSizeMenuVisible, setBlockSizeMenuVisible] = useState<boolean>(false);
+
+    // musicSettingsMenuVisible: state to detect if the project music settings submenu is visible
     const [musicSettingsMenuVisible, setMusicSettingsMenuVisible] = useState<boolean>(false);
+
+    // languages[]: list of languages to be displayed in the language submenu
     const [languages, setLanguages] = useState<string[]>([]);
+
+    // blockSizes[]: list of block sizes to be displayed in the block size submenu
     const [blockSizes, setBlockSizes] = useState<IBlockSize[]>([]);
 
     // fetch the languages and blockSizes from Monitor in initial render
@@ -83,6 +103,8 @@ export default function (): JSX.Element {
     togglePlayMenu = () => {
         MenuModel.togglePlayMenu();
         setPlayMenuVisible(MenuModel.playMenuVisible);
+
+        // close any open submenu other than play submenu
         if (!playMenuVisible) {
             if (settingsMenuVisible) {
                 toggleSettingsMenu();
@@ -105,6 +127,8 @@ export default function (): JSX.Element {
     toggleSettingsMenu = () => {
         MenuModel.toggleSettingsMenu();
         setSettingsMenuVisible(MenuModel.settingsMenuVisible);
+
+        // close any open submenu other than settings submenu
         if (!settingsMenuVisible) {
             if (playMenuVisible) {
                 togglePlayMenu();
@@ -127,6 +151,8 @@ export default function (): JSX.Element {
     toggleProjectMenu = () => {
         MenuModel.toggleProjectMenu();
         setProjectMenuVisible(MenuModel.projectMenuVisible);
+
+        // close any open submenu other than project settings submenu
         if (!projectMenuVisible) {
             if (playMenuVisible) {
                 togglePlayMenu();
@@ -159,6 +185,8 @@ export default function (): JSX.Element {
     toggleMusicSettingsMenu = () => {
         MenuModel.toggleMusicSettingsMenu();
         setMusicSettingsMenuVisible(MenuModel.musicSettingsMenuVisible);
+
+        // close any open submenu other than project music settings submenu
         if (!musicSettingsMenuVisible) {
             if (playMenuVisible) {
                 togglePlayMenu();

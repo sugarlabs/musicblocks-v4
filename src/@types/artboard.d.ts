@@ -133,9 +133,6 @@ export interface SketchProps {
 export interface Sketch {
     (instance: p5): void;
 }
-export interface P5WrapperProps extends SketchProps {
-    sketch: Sketch;
-}
 
 export interface P5Instance extends p5 {
     updateWithProps?: (props: SketchProps) => void;

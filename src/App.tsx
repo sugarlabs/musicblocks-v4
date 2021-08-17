@@ -8,8 +8,6 @@ import Monitor from './components/Monitor';
 
 // -- subcomponents --------------------------------------------------------------------------------
 
-import Artboard from './components/artboard/Artboard';
-import Builder from './components/builder/Builder';
 import Menu from './components/menu/Menu';
 import Palette from './components/palette/Palette';
 import Manager from './components/artboard/Manager';
@@ -52,17 +50,15 @@ export default function App(): JSX.Element {
   Monitor.registerClean();
 
   const [artBoardList, setArtBoardList] = useState(ContextDefaultArtBoard.artBoardList);
+  const numberOfArtboards = 5;
 
   return (
     <ContextConfig.Provider value={{ config, setConfig }}>
       <div id="app">
         <div className="lang-container">Current Language: {config.language}</div>
-        {/* <Artboard /> */}
-        <ArtBoardContext.Provider value={{ artBoardList, setArtBoardList }}>
+        <ArtBoardContext.Provider value={{ artBoardList, setArtBoardList, numberOfArtboards }}>
           <Manager />
         </ArtBoardContext.Provider>
-
-        {/* <Builder /> */}
         <Menu />
         <Palette />
       </div>

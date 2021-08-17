@@ -11,7 +11,7 @@ import './Artboard.scss';
 
 import { ArtboardSketch } from './ArtboardSketch';
 /**
- * View of the Artboard Framework component.
+ * Passes the props with their function to call each turtle to move or rotate.
  *
  * @returns root JSX element
  */
@@ -20,8 +20,6 @@ export default function (props: IArtboardHandlerProps): JSX.Element {
   const [doRotate, setDoRotation] = useState<boolean>(false);
   const [doMakeArc, setDoMakeArc] = useState<boolean>(false);
   const [doCleanAll, setDoCleanAll] = useState<boolean>(false);
-  const handleMove = () => setDoMove(!doMove);
-  const handleRotate = () => setDoRotation(!doRotate);
 
   function handleArc() {
     setDoMakeArc(!doMakeArc);
@@ -33,12 +31,21 @@ export default function (props: IArtboardHandlerProps): JSX.Element {
     props.setDoClean(false);
   }
 
+  function handleMove() {
+    setDoMove(!doMove);
+    props.setDoMove(false);
+  }
+  function handleRotate() {
+    setDoRotation(!doRotate);
+    props.setDoRotate(false);
+  }
   useEffect(() => {
     window.addEventListener('resize', props.updateDimensions);
     return () => window.removeEventListener('resize', props.updateDimensions);
   }, []);
+
   useEffect(() => {
-    if (props.doArc) {
+    if (props.doArc && props.index == props.selectedTurtle) {
       handleArc();
     }
     if (props.doClean) {
@@ -46,11 +53,19 @@ export default function (props: IArtboardHandlerProps): JSX.Element {
     }
   }, [props.doArc, props.doClean]);
 
+  useEffect(() => {
+    if (props.doMove && props.index == props.selectedTurtle) {
+      handleMove();
+    }
+  }, [props.doMove]);
+  useEffect(() => {
+    if (props.doRotate && props.index == props.selectedTurtle) {
+      handleRotate();
+    }
+  }, [props.doRotate]);
+
   return (
     <>
-      {/* <button onClick={handleArc}>{`Arc${props.index}`}</button> */}
-      {/* <button onClick={handleMove}>{`Move${props.index}`}</button> */}
-      {/* <button onClick={handleRotate}>{`Rotate${props.index}`}</button> */}
       <ArtboardSketch
         key={props.index}
         index={props.index}
@@ -64,6 +79,7 @@ export default function (props: IArtboardHandlerProps): JSX.Element {
         sleepTime={20}
         cleanAll={doCleanAll}
         handleClean={handleClean}
+        turtleSettings={props.turtleSettings}
       />
     </>
   );

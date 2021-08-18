@@ -60,4 +60,23 @@ export interface IMonitor {
     /** Getter for the Palette subcomponent. */
     palette: IPalette;
     menu: IMenu;
+    manager: IManager;
+}
+
+/**
+ * Interface for the Artboard Manager subcomponent proxied by the Monitor component.
+ */
+export interface IArtboardManager {
+    /** pass the message to corresponding artboard.  */
+    enableHorizontalScroll: (isEnabled: boolean) => void;
+
+    enableTurtleWrap: (isWrapOn: boolean) => void;
+
+    playArtboard: (id: number) => void;
+
+    stopArtboard: (id: number) => void;
+
+    removeArtboard: (id: number) => void;
+
+    addArtboard: (id: number, x: number, y: number, angle: number) => void;
 }

@@ -92,11 +92,12 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
         isNegative = true;
         angle = angle * -1;
       }
-
+      currentTurtle.setIsMoving(true);
       for (let i = 0; i < angle; i++) {
         await sleep(turtleSettings.sleepTime);
         rotateTurtlePart(isNegative);
       }
+      currentTurtle.setIsMoving(false);
     }
 
     /**
@@ -105,10 +106,12 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
      * @param steps Number of steps the turtle move
      */
     async function moveForward(steps: number, direction: string) {
+      currentTurtle.setIsMoving(true);
       for (let i = 0; i < steps; i++) {
         await sleep(turtleSettings.moveSleepTime);
         moveForwardPart(i, direction);
       }
+      currentTurtle.setIsMoving(false);
     }
 
     /**
@@ -135,12 +138,14 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
      * @param angle The angle of the arc
      */
     async function makeArc(angle: number, radius: number) {
+      currentTurtle.setIsMoving(true);
       for (let i = 0; i < angle; i++) {
         // await sleep(50);
         await sleep(turtleSettings.moveSleepTime);
         makeArcSteps(i, radius);
       }
       isMoving = !isMoving;
+      currentTurtle.setIsMoving(false);
     }
 
     function rotate() {

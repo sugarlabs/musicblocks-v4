@@ -17,8 +17,9 @@ import Artboard from '../../views/artboard/Artboard';
  */
 export default function (props: any): JSX.Element {
     const moveToTop = props.moveToTop;
+    const activeBoards = props.activeBoards;
     const [dimensions, setDimensions] = useState(getViewportDimensions());
     const updateDimensions = () => setDimensions(getViewportDimensions());
 
-    return Artboard({ dimensions, updateDimensions, moveToTop });
+    return Artboard({ dimensions, updateDimensions, moveToTop, activeBoards });
 }

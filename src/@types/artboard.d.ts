@@ -9,6 +9,8 @@ export interface IArtboardProps {
     updateDimensions: () => void;
     /** Move the artboard to top */
     moveToTop: (id: number) => void;
+    /** List of ids of playing or active artboards */
+    activeBoards: (activeBoards: number[]) => number[];
 }
 
 export interface IArtboardHandlerProps {
@@ -92,6 +94,8 @@ export interface ITurtleModel {
     render: (sketch: p5) => void;
     callSVG: (sketch: p5) => void;
     getColor: () => [number, number, number];
+    setIsMoving(isMoving: boolean): void;
+    getIsMoving(): boolean;
 }
 
 export interface IArtBoardDrawModel {

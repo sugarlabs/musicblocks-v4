@@ -9,6 +9,8 @@ export interface IArtboardProps {
     updateDimensions: () => void;
     /** Move the artboard to top */
     moveToTop: (id: number) => void;
+    /** List of ids of playing or active artboards */
+    activeBoards: (activeBoards: number[]) => number[];
 }
 
 export interface IArtboardHandlerProps {
@@ -130,9 +132,6 @@ export interface SketchProps {
 
 export interface Sketch {
     (instance: p5): void;
-}
-export interface P5WrapperProps extends SketchProps {
-    sketch: Sketch;
 }
 
 export interface P5Instance extends p5 {

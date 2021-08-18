@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 // -- types ----------------------------------------------------------------------------------------
 
 import { IArtboardProps } from '../../@types/artboard';

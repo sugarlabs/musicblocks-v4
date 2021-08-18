@@ -15,12 +15,11 @@ export default class implements ITurtleModel {
     _color: [number, number, number];
 
     /** Dragging parameters */
-    _dragging = false; // Is the object being dragged?
-    _rollover = false; // Is the mouse over the ellipse?
     _offsetX = 0;
     _offsetY = 0;
     _active = false;
     _svg!: p5.Image | p5.Element;
+    _isMoving: boolean;
 
     constructor(id: number, x: number, y: number, angle: number) {
         this._id = id;
@@ -29,6 +28,7 @@ export default class implements ITurtleModel {
         this._turtleAngle = angle;
         this._width = 60;
         this._height = 30;
+        this._isMoving = false;
         this._color = [
             Math.floor(Math.random() * 255) + 1,
             Math.floor(Math.random() * 255) + 1,
@@ -88,5 +88,11 @@ export default class implements ITurtleModel {
     }
     setTurleAngle(angle: number): void {
         this._turtleAngle = angle;
+    }
+    setIsMoving(isMoving: boolean): void {
+        this._isMoving = isMoving;
+    }
+    getIsMoving(): boolean {
+        return this._isMoving;
     }
 }

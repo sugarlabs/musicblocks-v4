@@ -92,6 +92,8 @@ export interface ITurtleModel {
     render: (sketch: p5) => void;
     callSVG: (sketch: p5) => void;
     getColor: () => [number, number, number];
+    setIsMoving(isMoving: boolean): void;
+    getIsMoving(): boolean;
 }
 
 export interface IArtBoardDrawModel {

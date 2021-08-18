@@ -27,10 +27,12 @@ export const turtleSketch = (sketch: P5Instance): void => {
       for (let i = 0; i < artBoardList.length; i++) {
         let turtle = artBoardList[i]._turtle,
           distance = sketch.dist(sketch.mouseX, sketch.mouseY, turtle._turtleX, turtle._turtleY);
-        if (distance < 30) {
-          turtle._active = true;
-        } else {
-          turtle._active = false;
+        if (!turtle.getIsMoving()) {
+          if (distance < 30) {
+            turtle._active = true;
+          } else {
+            turtle._active = false;
+          }
         }
       }
     }

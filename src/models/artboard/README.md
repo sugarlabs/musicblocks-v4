@@ -1,6 +1,6 @@
 # ArtBoard Model
 
-ArtBoard Model is responsible for storing the structure of the class and its parameter used for artBoardDraw funtionality.These classes are called by the `ArtBoardSketch.tsx` and `ArtBoardTurtle.tsx` There are majorly 4 different classes.
+The ArtBoard Model is responsible for storing the structure of the class and the parameters used by the artBoardDraw function. There are four classes in the model, whcih are called by the `ArtBoardSketch.tsx` and `ArtBoardTurtle.tsx`.
 
 <ul>
 <li> ArtBoardDraw.ts
@@ -15,12 +15,12 @@ ArtBoard Model is responsible for storing the structure of the class and its par
 
 ## ArBoardDraw.ts
 
-Responsible for storing the thickness and the color of the line drawn on the artBoard. Each instance of `artBoardSketch.tsx` calls artBoardDraw constructor with color (RGB format) as the parameter.
+Responsible for storing the attributes (thickness and color) of the line drawn on the artBoard. Each instance of `artBoardSketch.tsx` calls artBoardDraw constructor with color (RGB format) as the parameter.
 
 | Parameter    | Type                   | Description                                              |
 | ------------ | ---------------------- | -------------------------------------------------------- |
 | StrokeWeight | number                 | Defines the thickeness of the line drawn on the artBoard |
-| StrokeColor  | [number,number,number] | Defines the color of the line drawn on the artBoard      |
+| StrokeColor  | [number,number,number] | Defines the color [R, G, B] of the line drawn on the artBoard      |
 
 Both of these parameters have their own getter and setter to maintain encapsulation.
 
@@ -32,7 +32,7 @@ constructor(strokeColor : [number,number,number]){
 
 ## Turtle.ts
 
-Responsible for creating a turtle and each turtle is identified with their own unique id. Each instance of `artBoardTurtle.tsx` calls Turtle with the id, the initial position and the initial angle of the turtle.
+Responsible for creating a turtle; each turtle is identified with an unique id. Each instance of `artBoardTurtle.tsx` calls Turtle with an id, the initial x-y position, and the initial angle of rotation.
 
 | Parameter   | Type                   | Description                                                                               |
 | ----------- | ---------------------- | ----------------------------------------------------------------------------------------- |

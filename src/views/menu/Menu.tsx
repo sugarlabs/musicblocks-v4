@@ -1,6 +1,9 @@
 // -- types ----------------------------------------------------------------------------------------
 
 import { IMenuProps } from '../../@types/menu';
+
+// -- checkbox component ---------------------------------------------------------------------------
+
 import Checkbox from './Checkbox';
 
 // -- stylesheet -----------------------------------------------------------------------------------
@@ -17,19 +20,21 @@ import './Menu.scss';
  */
 export default function (props: IMenuProps): JSX.Element {
   return (
-    <div>
-      <div
-        className="auto-hide-overlay"
-        onMouseEnter={() => props.toggleAutoHide()}
-        onMouseLeave={() => {
-          props.toggleAutoHide();
-        }}
-      ></div>
+    // auto hide overlay to detect mouseEnter and mouseLeave
+    <div
+      className="auto-hide-overlay"
+      onMouseEnter={() => props.toggleAutoHide()}
+      onMouseLeave={() => {
+        props.toggleAutoHide();
+      }}
+    >
+      {/* menu wrapper wrapping the entire menu-dock along with its submenus */}
       <div
         id="menu-wrapper"
         onMouseEnter={() => props.toggleAutoHideTemp()}
         onMouseLeave={() => props.toggleAutoHideTemp()}
       >
+        {/* main menu-dock */}
         <div
           className={
             props.autoHide && props.autoHideTemp
@@ -47,67 +52,98 @@ export default function (props: IMenuProps): JSX.Element {
                   </span>
                 </div>
               </li>
+
               <hr></hr>
+
               <li className="main-menu-btn">
                 <div onClick={() => props.togglePlayMenu()}>
                   Play
                   <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Play</span>
                 </div>
+
+                {/* Play Submenu */}
                 <div className={props.playMenuVisible ? 'dropdown-active' : 'inactive-menu'}>
-                  <button onClick={() => props.togglePlayMenu()} className="dropdown-btn">
+                  <button
+                    onClick={() => {
+                      props.play();
+                      props.togglePlayMenu();
+                    }}
+                    className="dropdown-btn"
+                  >
                     Play
                   </button>
-                  <button onClick={() => props.togglePlayMenu()} className="dropdown-btn">
+                  <button
+                    onClick={() => {
+                      props.playSlowly();
+                      props.togglePlayMenu();
+                    }}
+                    className="dropdown-btn"
+                  >
                     Play Slowly
                   </button>
-                  <button onClick={() => props.togglePlayMenu()} className="dropdown-btn">
+                  <button
+                    onClick={() => {
+                      props.playStepByStep();
+                      props.togglePlayMenu();
+                    }}
+                    className="dropdown-btn"
+                  >
                     Play Step by Step
                   </button>
                 </div>
               </li>
+
               <hr></hr>
+
               <li className="main-menu-btn">
                 <div>
                   Search
                   <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Search</span>
                 </div>
               </li>
+
               <li className="main-menu-btn">
-                <div>
+                <div onClick={props.undo}>
                   Undo
                   <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Undo</span>
                 </div>
               </li>
+
               <li className="main-menu-btn">
-                <div>
+                <div onClick={props.redo}>
                   Redo
                   <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Redo</span>
                 </div>
               </li>
+
               <hr></hr>
               <li className="main-menu-btn">
-                <div>
+                <div onClick={props.hideBlocks}>
                   Hide Blocks
                   <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>
                     Hide Blocks
                   </span>
                 </div>
               </li>
+
               <li className="main-menu-btn">
-                <div>
+                <div onClick={props.cleanArtwork}>
                   Clean
                   <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Clean</span>
                 </div>
               </li>
+
               <li className="main-menu-btn">
-                <div>
+                <div onClick={props.collapseBlocks}>
                   Collapse Blocks
                   <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>
                     Collapse Blocks
                   </span>
                 </div>
               </li>
+
               <hr></hr>
+
               <li className="main-menu-btn">
                 <div onClick={() => props.toggleProjectMenu()}>
                   Project
@@ -115,6 +151,8 @@ export default function (props: IMenuProps): JSX.Element {
                     Project Settings
                   </span>
                 </div>
+
+                {/* Project Settings Submenu */}
                 <div className={props.projectMenuVisible ? 'dropdown-active' : 'inactive-menu'}>
                   <button
                     onClick={() => {
@@ -135,11 +173,13 @@ export default function (props: IMenuProps): JSX.Element {
                   </button>
                 </div>
               </li>
+
               <li className="main-menu-btn">
                 <div onClick={() => props.toggleSettingsMenu()}>
                   Settings
                   <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Settings</span>
                 </div>
+                {/* Global Settings Submenu */}
                 <div
                   className={props.settingsMenuVisible ? 'settings-menu-active' : 'inactive-menu'}
                 >
@@ -152,6 +192,7 @@ export default function (props: IMenuProps): JSX.Element {
                           : 'inactive-menu'
                       }
                     >
+                      {/* List of all block sizes fetched from Monitor */}
                       {props.blockSizes.map((blockSize) => (
                         <button
                           onClick={() => {
@@ -175,6 +216,7 @@ export default function (props: IMenuProps): JSX.Element {
                           : 'inactive-menu'
                       }
                     >
+                      {/* Language Settings Submenu */}
                       {props.languages.map((lang) => (
                         <button
                           onClick={() => {
@@ -201,6 +243,8 @@ export default function (props: IMenuProps): JSX.Element {
                     Music Settings
                   </span>
                 </div>
+
+                {/* Project Music Settings Submenu */}
                 <div
                   className={
                     props.musicSettingsMenuVisible ? 'settings-menu-active' : 'inactive-menu'

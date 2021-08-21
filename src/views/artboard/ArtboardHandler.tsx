@@ -19,10 +19,18 @@ export default function (props: IArtboardHandlerProps): JSX.Element {
   const [doMove, setDoMove] = useState<boolean>(false);
   const [doRotate, setDoRotation] = useState<boolean>(false);
   const [doMakeArc, setDoMakeArc] = useState<boolean>(false);
+  const [doCleanAll, setDoCleanAll] = useState<boolean>(false);
+
   function handleArc() {
     setDoMakeArc(!doMakeArc);
     props.setDoArc(false);
   }
+
+  function handleClean() {
+    setDoCleanAll(!doCleanAll);
+    props.setDoClean(false);
+  }
+
   function handleMove() {
     setDoMove(!doMove);
     props.setDoMove(false);
@@ -35,11 +43,16 @@ export default function (props: IArtboardHandlerProps): JSX.Element {
     window.addEventListener('resize', props.updateDimensions);
     return () => window.removeEventListener('resize', props.updateDimensions);
   }, []);
+
   useEffect(() => {
     if (props.doArc && props.index == props.selectedTurtle) {
       handleArc();
     }
-  }, [props.doArc]);
+    if (props.doClean) {
+      handleClean();
+    }
+  }, [props.doArc, props.doClean]);
+
   useEffect(() => {
     if (props.doMove && props.index == props.selectedTurtle) {
       handleMove();
@@ -63,6 +76,9 @@ export default function (props: IArtboardHandlerProps): JSX.Element {
         handleRotation={handleRotate}
         makeArc={doMakeArc}
         handleArc={handleArc}
+        sleepTime={20}
+        cleanAll={doCleanAll}
+        handleClean={handleClean}
         turtleSettings={props.turtleSettings}
       />
     </>

@@ -1,6 +1,13 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { IMonitor, IPalette, IMenu, IBlockSize, IArtboardManager } from '../@types/monitor';
+import {
+    IMonitor,
+    IPalette,
+    IMenu,
+    IBlockSize,
+    IArtboardManager,
+    IArtboard,
+} from '../@types/monitor';
 
 // -- PaletteBlocks defination ---------------------------------------------------------------------
 const blockList: { [button: string]: (string | { [button: string]: string[] })[] } = {};
@@ -144,6 +151,15 @@ class Palette implements IPalette {
 }
 
 /**
+ * Class representing the Artboard subcomponent proxied by the Monitor component.
+ */
+class Artboard implements IArtboard {
+    clean = () => {
+        // clean the artwork on the artboard
+    };
+}
+
+/**
  * Class representing the Menu subcomponent proxied by the Monitor component.
  */
 class Menu implements IMenu {
@@ -161,6 +177,11 @@ class Menu implements IMenu {
         return fetchLanguages();
     }
 
+    /**
+     * Fetches the list of the block sizes and their corresponding labels and returns it.
+     *
+     * @returns 'Promise' instance corresponding to the list of block sizes and their labels.
+     */
     getBlockSizes(): Promise<IBlockSize[]> {
         const fetchBlockSizes = () => {
             return new Promise<IBlockSize[]>((res) =>
@@ -202,20 +223,72 @@ class Menu implements IMenu {
         language;
     };
 
+    /**
+     * Updates the block size state in the Context API
+     *
+     * @param blockSize the block size selected from the menu
+     */
     changeBlockSize = (blockSize: number) => {
         blockSize;
     };
 
+    /**
+     * Updates the horizontalScroll state in the Context API
+     *
+     * @param isEnabled the horizontalScroll state selected from the menu
+     */
     updateHorizontalScroll = (isEnabled: boolean) => {
         isEnabled;
     };
 
+    /**
+     * Updates the turtleWrap state in the Context API
+     *
+     * @param isWrapOn the turtleWrap state selected from the menu
+     */
     updateTurtleWrap = (isWrapOn: boolean) => {
         isWrapOn;
     };
 
+    /**
+     * Updates the master volume state in the Context API
+     *
+     * @param volume the volume state set from the menu
+     */
     updateVolume = (volume: number) => {
         volume;
+    };
+
+    play = () => {
+        // play the project
+    };
+
+    playStepByStep = () => {
+        // play the project step by step
+    };
+
+    playSlowly = () => {
+        // play the project slowly
+    };
+
+    hideBlocks = () => {
+        // hide the blocks in the project
+    };
+
+    cleanArtwork = () => {
+        // clean the artwork of the project
+    };
+
+    collapseBlocks = () => {
+        // collapse the collapsible blocks
+    };
+
+    undo = () => {
+        // undo project to the previous state
+    };
+
+    redo = () => {
+        // redo project to the next state
     };
 }
 
@@ -259,12 +332,16 @@ class ArtboardManager implements IArtboardManager {
 class Monitor implements IMonitor {
     /** Instance of the Palette component. */
     private _palette: Palette;
+    /** Instance of the Menu component. */
     private _menu: Menu;
+    /** Instance of the Artboard component. */
+    private _artboard: Artboard;
     private _manager: ArtboardManager;
 
     constructor() {
         this._palette = new Palette();
         this._menu = new Menu();
+        this._artboard = new Artboard();
         this._manager = new ArtboardManager();
     }
 
@@ -273,8 +350,14 @@ class Monitor implements IMonitor {
         return this._palette;
     }
 
+    /** Getter for the menu component. */
     get menu(): Menu {
         return this._menu;
+    }
+
+    /** Getter for the artboard component. */
+    get artboard(): Artboard {
+        return this._artboard;
     }
 
     get manager(): ArtboardManager {
@@ -300,6 +383,18 @@ class Monitor implements IMonitor {
 
     registerUpdateVolume(updateVolume: (vol: number) => void): void {
         this._menu.updateVolume = updateVolume;
+    }
+
+    registerArtboardClean(clean: () => void): void {
+        this._artboard.clean = clean;
+    }
+
+    registerClean(): void {
+        /*
+            connecting the menu to the artboard for clean functionality by
+            setting the clean Artwork method of the menu to the clean method of the artboard
+        */
+        this._menu.cleanArtwork = this._artboard.clean;
     }
 
     registerRemoveArtboard(removeArtboard: (id: number) => void): void {

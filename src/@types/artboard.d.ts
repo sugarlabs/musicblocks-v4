@@ -15,7 +15,9 @@ export interface IArtboardProps {
 
 export interface IArtboardHandlerProps {
     doArc: boolean;
+    doClean: boolean;
     setDoArc: Dispatch<SetStateAction<boolean>>;
+    setDoClean: Dispatch<SetStateAction<boolean>>;
     doMove: boolean;
     setDoMove: Dispatch<SetStateAction<boolean>>;
     doRotate: boolean;

@@ -1,17 +1,24 @@
 // -- types ----------------------------------------------------------------------------------------
 
 import p5 from 'p5';
-import React, { useEffect, createRef, useState } from 'react';
+import React, { useEffect, createRef, useState, useContext } from 'react';
 import { getViewportDimensions } from '../../utils/ambience';
 import { P5Instance, SketchProps, P5WrapperProps } from '../../@types/artboard';
 
 // -- model component definition -------------------------------------------------------------------
 import ArtBoardDraw from '../../models/artboard/ArBoardDraw';
+// let turtle: ITurtleModel;
+
+// -- global configuration context definition -----------------------------------------------------------
+import { ContextConfig } from '../../context/context-config';
+
+/** This is a setup function.*/
 
 /**
  * Handles the main functionality of the artboard sketch.
  */
 export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props }) => {
+  const { config, setConfig } = useContext(ContextConfig);
   const artBoardDraw = new ArtBoardDraw(props.turtle.getColor());
   const [currentTurtle, setcurrentTurtle] = useState(props.turtle);
   const [turtleSettings, setTurtleSettings] = useState(props.turtleSettings);
@@ -23,6 +30,14 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
     let doMoveForward = false;
     let doRotate = false;
     let doMakeArc = false;
+
+    // checks whether the turtle is moving or not
+    let isMoving = false;
+
+    // method to clean the artwork of the turtle
+    const clean = () => {
+      sketch.clear();
+    };
 
     const sleep = (milliseconds: number) => {
       return new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -129,6 +144,7 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
         await sleep(turtleSettings.moveSleepTime);
         makeArcSteps(i, radius);
       }
+      isMoving = !isMoving;
       currentTurtle.setIsMoving(false);
     }
 
@@ -139,6 +155,7 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
       moveForward(turtleSettings.distance, turtleSettings.moveDirection);
     }
     function moveInArc() {
+      isMoving = !isMoving;
       makeArc(turtleSettings.arcAngle, turtleSettings.arcRadius);
     }
 
@@ -153,6 +170,7 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
       doMoveForward = props.doMove;
       doRotate = props.rotation;
       doMakeArc = props.makeArc;
+      let doClean = props.cleanAll;
 
       if (doMoveForward) {
         move();
@@ -168,23 +186,27 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
         moveInArc();
         props.handleArc();
       }
+
+      if (doClean && !isMoving) {
+        clean();
+        props.handleClean();
+      }
     };
 
     sketch.draw = () => {
       const [width, height]: [number, number] = getViewportDimensions();
       sketch.stroke(artBoardDraw.getStokeColor());
       sketch.strokeWeight(artBoardDraw.getStrokeWeight());
-      // Handle wrap functionality
-      if (currentTurtle.getTurtleX() > width) {
+      if (currentTurtle.getTurtleX() > width && config.turtleWrap) {
         currentTurtle.setTurtleX(0);
       }
-      if (currentTurtle.getTurtleX() < 0) {
+      if (currentTurtle.getTurtleX() < 0 && config.turtleWrap) {
         currentTurtle.setTurtleX(width);
       }
-      if (currentTurtle.getTurtleY() > height) {
+      if (currentTurtle.getTurtleY() > height && config.turtleWrap) {
         currentTurtle.setTurtleY(0);
       }
-      if (currentTurtle.getTurtleY() < 0) {
+      if (currentTurtle.getTurtleY() < 0 && config.turtleWrap) {
         currentTurtle.setTurtleY(height);
       }
     };
@@ -205,7 +227,7 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
     instance?.remove();
     const canvas = new p5(boardSketch, artboardSketch.current);
     setInstance(canvas);
-  }, [props.turtle]);
+  }, [props.turtle, config.turtleWrap]);
 
   return (
     <div

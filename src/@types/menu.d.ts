@@ -48,14 +48,19 @@ export interface IMenuProps {
     /** list of blockSizes available */
     blockSizes: IBlockSize[];
 
+    /** change the language to the selected option */
     changeLanguage: (language: string) => void;
 
+    /** enable/disable horizontal scroll for the canvas */
     updateHorizontalScroll: (isEnabled: boolean) => void;
 
+    /** enable/disable turtle wrap for the artwork */
     updateTurtleWrap: (isWrapOn: boolean) => void;
 
+    /** update the block size of all the blocks */
     changeBlockSize: (blockSize: number) => void;
 
+    /** update the application master volume */
     updateVolume: (volume: number) => void;
 
     /** Toggles the state of auto hide. */
@@ -81,6 +86,30 @@ export interface IMenuProps {
 
     /** Toggles the state of music settings submenu. */
     toggleMusicSettingsMenu: () => void;
+
+    /** play the project */
+    play: () => void;
+
+    /** play the project step by step */
+    playStepByStep: () => void;
+
+    /** play the project slowly */
+    playSlowly: () => void;
+
+    /** hide the blocks in the project */
+    hideBlocks: () => void;
+
+    /** clean the artwork of the project */
+    cleanArtwork: () => void;
+
+    /**collapse all the collapsible blocks */
+    collapseBlocks: () => void;
+
+    /** undo project to the previous state */
+    undo: () => void;
+
+    /** redo project to the next state */
+    redo: () => void;
 }
 
 /**

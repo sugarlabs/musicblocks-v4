@@ -11,6 +11,14 @@ export interface IBlockSize {
     size: number;
 }
 
+/**
+ * Interface for the Artboard subcomponent by the Monitor component.
+ */
+export interface IArtboard {
+    /** Cleans the artwork of all the artboards */
+    clean: () => void;
+}
+
 export interface IMenu {
     /** Returns a `Promise` for the list of languages available. */
     getLanguages: () => Promise<string[]>;
@@ -27,6 +35,22 @@ export interface IMenu {
     changeBlockSize: (blockSize: number) => void;
 
     updateVolume: (vol: number) => void;
+
+    play: () => void;
+
+    playStepByStep: () => void;
+
+    playSlowly: () => void;
+
+    hideBlocks: () => void;
+
+    cleanArtwork: () => void;
+
+    collapseBlocks: () => void;
+
+    undo: () => void;
+
+    redo: () => void;
 }
 
 /**

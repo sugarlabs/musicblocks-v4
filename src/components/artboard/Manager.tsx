@@ -97,12 +97,12 @@ export default function (): JSX.Element {
     setActiveBoards(boards);
   };
 
-  Monitor.registerUpdateScroll(updateHorizontalScroll);
-  Monitor.registerUpdateWrap(updateTurtleWrap);
-  Monitor.registerRemoveArtboard(removeArtboard);
-  Monitor.registerAddArtboard(addArtboard);
-  Monitor.registerPlayArtboard(playArtboard);
-  Monitor.registerStopArtboard(stopArtboard);
+  // Monitor.registerUpdateScroll(updateHorizontalScroll);
+  // Monitor.registerUpdateWrap(updateTurtleWrap);
+  // Monitor.registerRemoveArtboard(removeArtboard);
+  // Monitor.registerAddArtboard(addArtboard);
+  // Monitor.registerPlayArtboard(playArtboard);
+  // Monitor.registerStopArtboard(stopArtboard);
 
   return (
     <>

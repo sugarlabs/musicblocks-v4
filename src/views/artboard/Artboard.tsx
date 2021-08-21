@@ -4,6 +4,8 @@ import { useContext, useEffect, useState } from 'react';
 import { IArtboardProps } from '../../@types/artboard';
 import { ArtBoardContext } from '../../context/ArtBoardContext';
 
+import Monitor from '../../components/Monitor';
+
 // -- stylesheet -----------------------------------------------------------------------------------
 
 import './Artboard.scss';
@@ -24,9 +26,17 @@ export default function (props: IArtboardProps): JSX.Element {
   const { artBoardList } = useContext(ArtBoardContext);
   // state to keep track of the current artboard turtle
   const [doArc, setDoArc] = useState(false);
+
+  const [doClean, setDoClean] = useState(false);
+
+  const moveTurtleInArc = () => setDoArc(true);
+
+  const performClean = () => setDoClean(true);
+
+  // register the performClean method to the Monitor to connect this with the menu dock
+  Monitor.registerArtboardClean(performClean);
   const [doMove, setDoMove] = useState(false);
   const [doRotate, setDoRotate] = useState(false);
-  const moveTurtleInArc = () => setDoArc(true);
   const moveTurtleForward = () => setDoMove(true);
   const rotateTurtle = () => setDoRotate(true);
   // Only the selected turtle from the list will move
@@ -70,7 +80,9 @@ export default function (props: IArtboardProps): JSX.Element {
         {artBoardList.map((board) => (
           <ArtboardHandler
             doArc={doArc}
+            doClean={doClean}
             setDoArc={setDoArc}
+            setDoClean={setDoClean}
             doMove={doMove}
             setDoMove={setDoMove}
             doRotate={doRotate}

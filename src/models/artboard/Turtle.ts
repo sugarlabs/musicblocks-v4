@@ -12,12 +12,8 @@ export default class implements ITurtleModel {
     _turtleAngle: number;
     _width: number;
     _height: number;
+    _active: boolean;
     _color: [number, number, number];
-
-    /** Dragging parameters */
-    _offsetX = 0;
-    _offsetY = 0;
-    _active = false;
     _svg!: p5.Image | p5.Element;
     _isMoving: boolean;
 
@@ -29,6 +25,7 @@ export default class implements ITurtleModel {
         this._width = 60;
         this._height = 30;
         this._isMoving = false;
+        this._active = false;
         this._color = [
             Math.floor(Math.random() * 255) + 1,
             Math.floor(Math.random() * 255) + 1,

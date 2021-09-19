@@ -8,13 +8,13 @@ import { appConfigDefaults, ConfigContext, projectConfigDefaults } from './conte
 
 import Monitor from './components/Monitor';
 import Menu from './components/menu/Menu';
-import Palette from './components/palette/Palette';
-import Manager from './components/artboard/Manager';
+// import Palette from './components/palette/Palette';
+// import Manager from './components/artboard/Manager';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
 import './App.scss';
-import { ArtBoardContext, ContextDefaultArtBoard } from './context/ArtBoardContext';
+// import { ArtBoardContext, ContextDefaultArtBoard } from './context/ArtBoardContext';
 import { TAppTheme } from './@types/config';
 
 // -- component definition -------------------------------------------------------------------------
@@ -45,39 +45,17 @@ export default function App(): JSX.Element {
     setProjectConfig({ ...projectConfig, masterVolume });
   };
 
-  const changeBlockSize = (newBlockSize: number) => {
-    setAppConfig({ ...appConfig, blockSize: newBlockSize });
-  };
-
-  const updateTurtleWrap = (isWrapOn: boolean) => {
-    setAppConfig({ ...appConfig, turtleWrap: isWrapOn });
-  };
-
-  const updateHorizontalScroll = (isEnabled: boolean) => {
-    setAppConfig({ ...appConfig, horizontalScroll: isEnabled });
-  };
-
-  // const updateVolume = (volume: number) => {
-  //   setAppConfig({ ...appConfig, masterVolume: volume });
-  // };
-
-  Monitor.registerUpdateScroll(updateHorizontalScroll);
-  Monitor.registerUpdateWrap(updateTurtleWrap);
-  Monitor.registerSetBlockSize(changeBlockSize);
-  // Monitor.registerUpdateVolume(updateVolume);
-  Monitor.registerClean();
-
-  const [artBoardList, setArtBoardList] = useState(ContextDefaultArtBoard.artBoardList);
-  const numberOfArtboards = 5;
+  // const [artBoardList, setArtBoardList] = useState(ContextDefaultArtBoard.artBoardList);
+  // const numberOfArtboards = 5;
 
   return (
     <ConfigContext.Provider value={{ appConfig, setAppConfig, projectConfig, setProjectConfig }}>
       <main id="app">
-        <ArtBoardContext.Provider value={{ artBoardList, setArtBoardList, numberOfArtboards }}>
+        {/* <ArtBoardContext.Provider value={{ artBoardList, setArtBoardList, numberOfArtboards }}>
           <Manager />
-        </ArtBoardContext.Provider>
+        </ArtBoardContext.Provider> */}
         <Menu />
-        <Palette />
+        {/* <Palette /> */}
       </main>
     </ConfigContext.Provider>
   );

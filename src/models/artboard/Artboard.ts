@@ -1,6 +1,7 @@
 // -- types ----------------------------------------------------------------------------------------
 
 import { IArtboardModel } from '../../@types/artboard';
+import { ITurtleModel } from '../../@types/artboard';
 
 // -- model component definition -------------------------------------------------------------------
 
@@ -9,31 +10,18 @@ import { IArtboardModel } from '../../@types/artboard';
  */
 export default class implements IArtboardModel {
     /** Stores the value of the auto hide state. */
-    private _lines: [number];
-    private _arcs: [number];
-    private _id: number;
+    public _id: number;
+    public _turtle: ITurtleModel;
 
-    constructor(id: number) {
-        this._lines = [0];
-        this._arcs = [0];
+    constructor(id: number, turtle: ITurtleModel) {
         this._id = id;
+        this._turtle = turtle;
     }
 
     /**
-     * returns all the line parameters.
+     * returns the turtle.
      */
-    getLines(): [number] {
-        return this._lines;
-    }
-
-    addLine(line: number): void {
-        this._lines.concat(line);
-    }
-
-    /**
-     * returns all the arcs parameters.
-     */
-    getArcs(): [number] {
-        return this._arcs;
+    getTurtle(): ITurtleModel {
+        return this._turtle;
     }
 }

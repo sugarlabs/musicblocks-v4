@@ -1,9 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 // -- model component ------------------------------------------------------------------------------
 
-import _ArtboardModel from '../../models/artboard/Artboard';
-const ArtboardModel = new _ArtboardModel(0);
 // -- utilities ------------------------------------------------------------------------------------
 
 import { getViewportDimensions } from '../../utils/ambience';
@@ -18,20 +16,10 @@ import Artboard from '../../views/artboard/Artboard';
  * ViewModel of the Artboard Framework component.
  */
 export default function (props: any): JSX.Element {
-    console.log(props.board);
-    const [id, setId] = useState(0);
+    const moveToTop = props.moveToTop;
+    const activeBoards = props.activeBoards;
     const [dimensions, setDimensions] = useState(getViewportDimensions());
     const updateDimensions = () => setDimensions(getViewportDimensions());
 
-    const [lines, setLines] = useState([] as number[]);
-    const [arcs, setArcs] = useState([] as number[]);
-    const addLine = (line: number) => {
-        ArtboardModel.addLine(line);
-        setLines(lines.concat(line));
-    };
-
-    useEffect(() => {
-        setId(props.board._id);
-    }, []);
-    return Artboard({ id, dimensions, updateDimensions, addLine });
+    return Artboard({ dimensions, updateDimensions, moveToTop, activeBoards });
 }

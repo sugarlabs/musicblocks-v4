@@ -1,6 +1,13 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { IMonitor, IPalette, IMenu } from '../@types/monitor';
+import {
+    IMonitor,
+    IPalette,
+    IMenu,
+    IBlockSize,
+    IArtboardManager,
+    IArtboard,
+} from '../@types/monitor';
 
 // -- PaletteBlocks defination ---------------------------------------------------------------------
 const blockList: { [button: string]: (string | { [button: string]: string[] })[] } = {};
@@ -144,11 +151,20 @@ class Palette implements IPalette {
 }
 
 /**
+ * Class representing the Artboard subcomponent proxied by the Monitor component.
+ */
+class Artboard implements IArtboard {
+    clean = () => {
+        // clean the artwork on the artboard
+    };
+}
+
+/**
  * Class representing the Menu subcomponent proxied by the Monitor component.
  */
 class Menu implements IMenu {
     /**
-     * Fetches the list of palette sections and returns it.
+     * Fetches the list of languages and returns it.
      *
      * @returns 'Promise' instance corresponding to the list of languages available.
      */
@@ -162,12 +178,147 @@ class Menu implements IMenu {
     }
 
     /**
+     * Fetches the list of the block sizes and their corresponding labels and returns it.
+     *
+     * @returns 'Promise' instance corresponding to the list of block sizes and their labels.
+     */
+    getBlockSizes(): Promise<IBlockSize[]> {
+        const fetchBlockSizes = () => {
+            return new Promise<IBlockSize[]>((res) =>
+                setTimeout(() =>
+                    res([
+                        {
+                            label: 'Small',
+                            size: 1,
+                        },
+                        {
+                            label: 'Normal',
+                            size: 1.5,
+                        },
+                        {
+                            label: 'Medium',
+                            size: 2,
+                        },
+                        {
+                            label: 'Large',
+                            size: 3,
+                        },
+                        {
+                            label: 'Very Large',
+                            size: 4,
+                        },
+                    ]),
+                ),
+            );
+        };
+        return fetchBlockSizes();
+    }
+
+    /**
      * Updates the language state in the Context API
      *
      * @param language the language selected from the menu
      */
     changeLanguage = (language: string) => {
         language;
+    };
+
+    /**
+     * Updates the block size state in the Context API
+     *
+     * @param blockSize the block size selected from the menu
+     */
+    changeBlockSize = (blockSize: number) => {
+        blockSize;
+    };
+
+    /**
+     * Updates the horizontalScroll state in the Context API
+     *
+     * @param isEnabled the horizontalScroll state selected from the menu
+     */
+    updateHorizontalScroll = (isEnabled: boolean) => {
+        isEnabled;
+    };
+
+    /**
+     * Updates the turtleWrap state in the Context API
+     *
+     * @param isWrapOn the turtleWrap state selected from the menu
+     */
+    updateTurtleWrap = (isWrapOn: boolean) => {
+        isWrapOn;
+    };
+
+    /**
+     * Updates the master volume state in the Context API
+     *
+     * @param volume the volume state set from the menu
+     */
+    updateVolume = (volume: number) => {
+        volume;
+    };
+
+    play = () => {
+        // play the project
+    };
+
+    playStepByStep = () => {
+        // play the project step by step
+    };
+
+    playSlowly = () => {
+        // play the project slowly
+    };
+
+    hideBlocks = () => {
+        // hide the blocks in the project
+    };
+
+    cleanArtwork = () => {
+        // clean the artwork of the project
+    };
+
+    collapseBlocks = () => {
+        // collapse the collapsible blocks
+    };
+
+    undo = () => {
+        // undo project to the previous state
+    };
+
+    redo = () => {
+        // redo project to the next state
+    };
+}
+
+/**
+ * Class representing the Manager subcomponent proxied by the Monitor component.
+ */
+class ArtboardManager implements IArtboardManager {
+    /** enable horizontal scrolling in the artboards*/
+    enableHorizontalScroll = (isEnabled: boolean) => {
+        isEnabled;
+    };
+
+    enableTurtleWrap = (isWrapOn: boolean) => {
+        isWrapOn;
+    };
+
+    playArtboard = (id: number) => {
+        id;
+    };
+
+    stopArtboard = (id: number) => {
+        id;
+    };
+
+    removeArtboard = (id: number) => {
+        id;
+    };
+
+    addArtboard = (id: number, x: number, y: number, angle: number) => {
+        [id, x, y, angle];
     };
 }
 
@@ -181,11 +332,17 @@ class Menu implements IMenu {
 class Monitor implements IMonitor {
     /** Instance of the Palette component. */
     private _palette: Palette;
+    /** Instance of the Menu component. */
     private _menu: Menu;
+    /** Instance of the Artboard component. */
+    private _artboard: Artboard;
+    private _manager: ArtboardManager;
 
     constructor() {
         this._palette = new Palette();
         this._menu = new Menu();
+        this._artboard = new Artboard();
+        this._manager = new ArtboardManager();
     }
 
     /** Getter for the palette component. */
@@ -193,12 +350,69 @@ class Monitor implements IMonitor {
         return this._palette;
     }
 
+    /** Getter for the menu component. */
     get menu(): Menu {
         return this._menu;
     }
 
+    /** Getter for the artboard component. */
+    get artboard(): Artboard {
+        return this._artboard;
+    }
+
+    get manager(): ArtboardManager {
+        return this._manager;
+    }
+
     registerSetLanguage(updateLanguage: (language: string) => void): void {
         this._menu.changeLanguage = updateLanguage;
+    }
+
+    registerUpdateScroll(updateHorizontalScroll: (isEnabled: boolean) => void): void {
+        this._menu.updateHorizontalScroll = updateHorizontalScroll;
+    }
+
+    registerUpdateWrap(updateTurtleWrap: (isWrapOn: boolean) => void): void {
+        this._menu.updateTurtleWrap = updateTurtleWrap;
+        // this._manager.enableTurtleWrap (isWrapOn);
+    }
+
+    registerSetBlockSize(changeBlockSize: (blockSize: number) => void): void {
+        this._menu.changeBlockSize = changeBlockSize;
+    }
+
+    registerUpdateVolume(updateVolume: (vol: number) => void): void {
+        this._menu.updateVolume = updateVolume;
+    }
+
+    registerArtboardClean(clean: () => void): void {
+        this._artboard.clean = clean;
+    }
+
+    registerClean(): void {
+        /*
+            connecting the menu to the artboard for clean functionality by
+            setting the clean Artwork method of the menu to the clean method of the artboard
+        */
+        this._menu.cleanArtwork = this._artboard.clean;
+    }
+
+    registerRemoveArtboard(removeArtboard: (id: number) => void): void {
+        this._manager.removeArtboard = removeArtboard;
+    }
+
+    registerPlayArtboard(playArtboard: (id: number) => void): void {
+        this._manager.playArtboard = playArtboard;
+    }
+
+    registerStopArtboard(stopArtboard: (id: number) => void): void {
+        this._manager.stopArtboard = stopArtboard;
+    }
+
+    registerAddArtboard(
+        addArtboard: (id: number, x: number, y: number, angle: number) => void,
+    ): void {
+        this._manager.addArtboard = addArtboard;
     }
 }
 

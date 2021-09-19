@@ -4,83 +4,92 @@ import { ITurtleModel } from '../../@types/artboard';
 
 // -- model component definition -------------------------------------------------------------------
 
-/**
- * Class representing the Model of the Menu component.
- */
 export default class implements ITurtleModel {
-    /** Stores the value of the auto hide state. */
-    private _dragging: boolean;
-    private _rollover: boolean;
-    private _x: number;
-    private _y: number;
-    private _id: number;
-    private _w: number;
-    private _h: number;
-    private _offsetX: number;
-    private _offsetY: number;
-    private _p: p5;
+    /** Stores the value for artBoard draw functions. */
+    _id: number;
+    _turtleX: number;
+    _turtleY: number;
+    _turtleAngle: number;
+    _width: number;
+    _height: number;
+    _active: boolean;
+    _color: [number, number, number];
+    _svg!: p5.Image | p5.Element;
+    _isMoving: boolean;
 
-    constructor(id: number, x: number, y: number, w: number, h: number, p: p5) {
-        this._dragging = false;
-        this._rollover = false;
-        this._x = x;
-        this._y = y;
+    constructor(id: number, x: number, y: number, angle: number) {
         this._id = id;
-        this._w = w;
-        this._h = h;
-        this._offsetX = 0;
-        this._offsetY = 0;
-        this._p = p;
+        this._turtleX = x;
+        this._turtleY = y;
+        this._turtleAngle = angle;
+        this._width = 60;
+        this._height = 30;
+        this._isMoving = false;
+        this._active = false;
+        this._color = [
+            Math.floor(Math.random() * 255) + 1,
+            Math.floor(Math.random() * 255) + 1,
+            Math.floor(Math.random() * 255) + 1,
+        ];
+    }
+    getColor(): [number, number, number] {
+        return this._color;
+    }
+    callSVG(sketch: p5): void {
+        this._svg = sketch.loadImage(
+            'https://github.com/sugarlabs/musicblocks/blob/master/images/mouse.svg',
+        );
+        sketch.imageMode(sketch.CENTER);
+    }
+    display(sketch: p5): void {
+        // helps in creating custom shapes
+        sketch.beginShape();
+        sketch.translate(-this._width / 2, 0);
+        sketch.vertex(0, 0);
+        sketch.vertex(0, this._height);
+        sketch.vertex(this._width, this._height);
+        sketch.vertex(this._width, 0);
+        sketch.vertex(this._width / 2, -this._height);
+        sketch.vertex(0, 0);
+        sketch.endShape(sketch.CLOSE);
+        // sketch.image(this._svg, 0, 0, this._width, this._height);
     }
 
-    over(): void {
-        // Is mouse over object
-        if (
-            this._p.mouseX > this._x &&
-            this._p.mouseX < this._x + this._w &&
-            this._p.mouseY > this._y &&
-            this._p.mouseY < this._y + this._h
-        ) {
-            this._rollover = true;
-        } else {
-            this._rollover = false;
-        }
+    move(sketch: p5): void {
+        sketch.translate(this._turtleX, this._turtleY);
+        sketch.rotate(90 - this._turtleAngle);
     }
-    update(): void {
-        // Adjust location if being dragged
-        if (this._dragging) {
-            this._x = this._p.mouseX + this._offsetX;
-            this._y = this._p.mouseY + this._offsetY;
-        }
+
+    render(sketch: p5): void {
+        // push pop is used to keep the state of the turtle different (when we translate the turtle)
+        sketch.push();
+        sketch.fill(sketch.color(this._color[0], this._color[1], this._color[2]));
+        this.move(sketch);
+        this.display(sketch);
+        sketch.pop();
     }
-    show(): void {
-        this._p.stroke(10);
-        // Different fill based on state
-        if (this._dragging) {
-            this._p.fill(50);
-        } else if (this._rollover) {
-            this._p.fill(100);
-        } else {
-            this._p.fill(175, 200);
-        }
-        this._p.rect(this._x, this._y, this._w, this._h);
+    getTurtleX(): number {
+        return this._turtleX;
     }
-    pressed(): void {
-        // Did I click on the rectangle?
-        if (
-            this._p.mouseX > this._x &&
-            this._p.mouseX < this._x + this._w &&
-            this._p.mouseY > this._y &&
-            this._p.mouseY < this._y + this._h
-        ) {
-            this._dragging = true;
-            // If so, keep track of relative location of click to corner of rectangle
-            this._offsetX = this._x - this._p.mouseX;
-            this._offsetY = this._y - this._p.mouseY;
-        }
+    setTurtleX(x: number): void {
+        this._turtleX = x;
     }
-    released(): void {
-        // Quit dragging
-        this._dragging = false;
+    getTurtleY(): number {
+        return this._turtleY;
+    }
+    setTurtleY(y: number): void {
+        this._turtleY = y;
+    }
+    getTurtleAngle(): number {
+        return this._turtleAngle;
+    }
+    setTurleAngle(angle: number): void {
+        this._turtleAngle = angle;
+    }
+    setIsMoving(isMoving: boolean): void {
+        this._isMoving = isMoving;
+    }
+    getIsMoving(): boolean {
+        return this._isMoving;
     }
 }

@@ -10,7 +10,7 @@ import ArtBoardDraw from '../../models/artboard/ArBoardDraw';
 // let turtle: ITurtleModel;
 
 // -- global configuration context definition -----------------------------------------------------------
-import { ContextConfig } from '../../context/context-config';
+import { ConfigContext } from '../../context/config';
 
 /** This is a setup function.*/
 
@@ -18,7 +18,7 @@ import { ContextConfig } from '../../context/context-config';
  * Handles the main functionality of the artboard sketch.
  */
 export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props }) => {
-  const { config, setConfig } = useContext(ContextConfig);
+  const { appConfig, setAppConfig } = useContext(ConfigContext);
   const artBoardDraw = new ArtBoardDraw(props.turtle.getColor());
   const [currentTurtle, setcurrentTurtle] = useState(props.turtle);
   const [turtleSettings, setTurtleSettings] = useState(props.turtleSettings);
@@ -197,16 +197,16 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
       const [width, height]: [number, number] = getViewportDimensions();
       sketch.stroke(artBoardDraw.getStokeColor());
       sketch.strokeWeight(artBoardDraw.getStrokeWeight());
-      if (currentTurtle.getTurtleX() > width && config.turtleWrap) {
+      if (currentTurtle.getTurtleX() > width && appConfig.turtleWrap) {
         currentTurtle.setTurtleX(0);
       }
-      if (currentTurtle.getTurtleX() < 0 && config.turtleWrap) {
+      if (currentTurtle.getTurtleX() < 0 && appConfig.turtleWrap) {
         currentTurtle.setTurtleX(width);
       }
-      if (currentTurtle.getTurtleY() > height && config.turtleWrap) {
+      if (currentTurtle.getTurtleY() > height && appConfig.turtleWrap) {
         currentTurtle.setTurtleY(0);
       }
-      if (currentTurtle.getTurtleY() < 0 && config.turtleWrap) {
+      if (currentTurtle.getTurtleY() < 0 && appConfig.turtleWrap) {
         currentTurtle.setTurtleY(height);
       }
     };
@@ -227,7 +227,7 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
     instance?.remove();
     const canvas = new p5(boardSketch, artboardSketch.current);
     setInstance(canvas);
-  }, [props.turtle, config.turtleWrap]);
+  }, [props.turtle, appConfig.turtleWrap]);
 
   return (
     <div

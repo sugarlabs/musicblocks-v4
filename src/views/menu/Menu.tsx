@@ -1,5 +1,6 @@
 // -- types ----------------------------------------------------------------------------------------
 
+import { TAppLanguage } from '../../@types/config';
 import { IMenuProps } from '../../@types/menu';
 
 // -- checkbox component ---------------------------------------------------------------------------
@@ -220,7 +221,7 @@ export default function (props: IMenuProps): JSX.Element {
                       {props.languages.map((lang) => (
                         <button
                           onClick={() => {
-                            props.changeLanguage(lang);
+                            props.changeLanguage(lang as TAppLanguage);
                             props.toggleLanguageMenu();
                           }}
                           className="dropdown-btn"

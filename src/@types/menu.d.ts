@@ -1,3 +1,4 @@
+import { TAppLanguage } from './config';
 import { IBlockSize } from './monitor';
 
 /**
@@ -49,7 +50,7 @@ export interface IMenuProps {
     blockSizes: IBlockSize[];
 
     /** change the language to the selected option */
-    changeLanguage: (language: string) => void;
+    changeLanguage: (language: TAppLanguage) => void;
 
     /** enable/disable horizontal scroll for the canvas */
     updateHorizontalScroll: (isEnabled: boolean) => void;

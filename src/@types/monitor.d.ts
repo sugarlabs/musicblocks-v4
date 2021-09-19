@@ -1,3 +1,5 @@
+import { TAppLanguage, TAppTheme } from './config';
+
 /**
  * Interface for the Palette subcomponent proxied by the Monitor component.
  */
@@ -19,38 +21,63 @@ export interface IArtboard {
     clean: () => void;
 }
 
+/**
+ * Interface for the Menu subcomponent of the Monitor
+ */
 export interface IMenu {
-    /** Returns a `Promise` for the list of languages available. */
-    getLanguages: () => Promise<string[]>;
+    // -- Setters for the global app configurations ----------------------------
 
-    getBlockSizes: () => Promise<IBlockSize[]>;
+    /** Sets the app theme */
+    setTheme: (theme: TAppTheme) => void;
+    /** Sets the app language */
+    setLanguage: (language: TAppLanguage) => void;
+    /** Sets the app horizontal scroll */
+    setHorizontalScroll: (horizontalScroll: boolean) => void;
+    /** Sets the app sprite wrap (when sprite goes out of workspace) */
+    setTurtleWrap: (turtleWrap: boolean) => void;
+    /** Sets the app project builder brick size */
+    setBrickSize: (brickSize: number) => void;
 
-    /** updates the language from Menu */
-    changeLanguage: (language: string) => void;
+    // -- Setters for the global project configurations ------------------------
 
-    updateHorizontalScroll: (isEnabled: boolean) => void;
+    /** Sets the master volume */
+    setMasterVolume: (masterVolume: number) => void;
 
-    updateTurtleWrap: (isWrapOn: boolean) => void;
+    // -- Getters for values to present ----------------------------------------
 
-    changeBlockSize: (blockSize: number) => void;
+    /** Returns a Promise for a list of language code and corresponding names */
+    fetchLanguages: () => Promise<{ code: TAppLanguage; name: string }[]>;
+    /** Returns a Promise for a list of brick sizes and corresponding labels */
+    fetchBrickSizes: () => Promise<{ label: string; value: number }[]>;
 
-    updateVolume: (vol: number) => void;
+    // -- Actions --------------------------------------------------------------
 
+    /** Runs the project in normal speed */
     play: () => void;
-
-    playStepByStep: () => void;
-
+    /** Runs the project at a lowered speed */
     playSlowly: () => void;
+    /** Runs the project one instruction at a time */
+    playStepByStep: () => void;
+    /** Hides all the project builder bricks */
+    hideBricks: () => void;
+    /** Shows all the project builder bricks */
+    showBricks: () => void;
+    /** Folds all project builder clamp bricks */
+    foldBricks: () => void;
+    /** Unfolds all project builder clamp bricks */
+    unfoldBricks: () => void;
+    /** Cleans the artboards */
+    cleanArtboards: () => void;
+    /** Undo last action */
+    undo: () => void;
+    /** Redo last action */
+    redo: () => void;
+
+    // --
 
     hideBlocks: () => void;
-
-    cleanArtwork: () => void;
-
     collapseBlocks: () => void;
-
-    undo: () => void;
-
-    redo: () => void;
+    cleanArtwork: () => void;
 }
 
 /**

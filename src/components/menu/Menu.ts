@@ -10,6 +10,7 @@ const MenuModel = new _MenuModel();
 // -- view component -------------------------------------------------------------------------------
 
 import MenuView from '../../views/menu/Menu';
+import { TAppLanguage } from '../../@types/config';
 
 // -- view-model component definition --------------------------------------------------------------
 
@@ -233,9 +234,9 @@ export default function (): JSX.Element {
         }
     };
 
-    const changeLanguage = (language: string) => {
+    const changeLanguage = (language: TAppLanguage) => {
         toggleLanguageMenu();
-        Monitor.menu.changeLanguage(language);
+        Monitor.menu.setLanguage(language);
     };
 
     const updateHorizontalScroll = (isEnabled: boolean) => {

@@ -1,5 +1,6 @@
 // -- types ----------------------------------------------------------------------------------------
 
+import { TAppLanguage, TAppTheme } from '../@types/config';
 import {
     IMonitor,
     IPalette,
@@ -8,6 +9,8 @@ import {
     IArtboardManager,
     IArtboard,
 } from '../@types/monitor';
+
+import { collectAppLanguages, collectBrickSizes } from '../utils/config';
 
 // -- PaletteBlocks defination ---------------------------------------------------------------------
 const blockList: { [button: string]: (string | { [button: string]: string[] })[] } = {};
@@ -163,6 +166,52 @@ class Artboard implements IArtboard {
  * Class representing the Menu subcomponent proxied by the Monitor component.
  */
 class Menu implements IMenu {
+    setTheme!: (theme: TAppTheme) => void;
+    setLanguage!: (language: TAppLanguage) => void;
+    setHorizontalScroll!: (horizontalScroll: boolean) => void;
+    setTurtleWrap!: (turtleWrap: boolean) => void;
+    setBrickSize!: (value: number) => void;
+
+    setMasterVolume!: (masterVolume: number) => void;
+
+    fetchLanguages(): Promise<{ code: TAppLanguage; name: string }[]> {
+        return collectAppLanguages();
+    }
+    fetchBrickSizes(): Promise<{ value: number; label: string }[]> {
+        return collectBrickSizes();
+    }
+
+    play(): void {
+        console.log('play');
+    }
+    playSlowly(): void {
+        console.log('play slowly');
+    }
+    playStepByStep(): void {
+        console.log('play step by step');
+    }
+    hideBricks(): void {
+        console.log('hide bricks');
+    }
+    showBricks(): void {
+        console.log('show bricks');
+    }
+    foldBricks(): void {
+        console.log('fold clamps');
+    }
+    unfoldBricks(): void {
+        console.log('unfold clamps');
+    }
+    cleanArtboards(): void {
+        console.log('clean artboards');
+    }
+    undo(): void {
+        console.log('undo');
+    }
+    redo(): void {
+        console.log('redo');
+    }
+
     /**
      * Fetches the list of languages and returns it.
      *
@@ -215,15 +264,6 @@ class Menu implements IMenu {
     }
 
     /**
-     * Updates the language state in the Context API
-     *
-     * @param language the language selected from the menu
-     */
-    changeLanguage = (language: string) => {
-        language;
-    };
-
-    /**
      * Updates the block size state in the Context API
      *
      * @param blockSize the block size selected from the menu
@@ -259,18 +299,6 @@ class Menu implements IMenu {
         volume;
     };
 
-    play = () => {
-        // play the project
-    };
-
-    playStepByStep = () => {
-        // play the project step by step
-    };
-
-    playSlowly = () => {
-        // play the project slowly
-    };
-
     hideBlocks = () => {
         // hide the blocks in the project
     };
@@ -281,14 +309,6 @@ class Menu implements IMenu {
 
     collapseBlocks = () => {
         // collapse the collapsible blocks
-    };
-
-    undo = () => {
-        // undo project to the previous state
-    };
-
-    redo = () => {
-        // redo project to the next state
     };
 }
 
@@ -362,10 +382,6 @@ class Monitor implements IMonitor {
 
     get manager(): ArtboardManager {
         return this._manager;
-    }
-
-    registerSetLanguage(updateLanguage: (language: string) => void): void {
-        this._menu.changeLanguage = updateLanguage;
     }
 
     registerUpdateScroll(updateHorizontalScroll: (isEnabled: boolean) => void): void {

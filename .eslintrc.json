@@ -17,7 +17,7 @@
     "@typescript-eslint/no-use-before-define": ["error"],
     "semi": ["error", "always"],
     "prefer-const": ["off"],
-    "no-console": "warn",
+    "no-console": "off",
     "max-len": [
       "warn",
       {

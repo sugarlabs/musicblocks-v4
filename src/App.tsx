@@ -2,12 +2,11 @@ import { useState } from 'react';
 
 // -- context --------------------------------------------------------------------------------------
 
-import { ContextConfig, ContextConfigDefaults } from './context/context-config';
-
-import Monitor from './components/Monitor';
+import { appConfigDefaults, ConfigContext, projectConfigDefaults } from './context/config';
 
 // -- subcomponents --------------------------------------------------------------------------------
 
+import Monitor from './components/Monitor';
 import Menu from './components/menu/Menu';
 import Palette from './components/palette/Palette';
 import Manager from './components/artboard/Manager';
@@ -16,52 +15,70 @@ import Manager from './components/artboard/Manager';
 
 import './App.scss';
 import { ArtBoardContext, ContextDefaultArtBoard } from './context/ArtBoardContext';
+import { TAppTheme } from './@types/config';
 
 // -- component definition -------------------------------------------------------------------------
 
 export default function App(): JSX.Element {
-  const [config, setConfig] = useState(ContextConfigDefaults.config);
+  const [appConfig, setAppConfig] = useState(appConfigDefaults);
+  const [projectConfig, setProjectConfig] = useState(projectConfigDefaults);
 
-  const changeLanguage = (newLanguage: string) => {
-    setConfig({ ...config, language: newLanguage });
+  // App relies on the following properties being set here
+  Monitor.menu.setTheme = (theme: TAppTheme) => {
+    setAppConfig({ ...appConfig, theme });
+  };
+  Monitor.menu.setLanguage = (language) => {
+    setAppConfig({ ...appConfig, language });
+  };
+  Monitor.menu.setHorizontalScroll = (horizontalScroll: boolean) => {
+    setAppConfig({ ...appConfig, horizontalScroll });
+  };
+  Monitor.menu.setTurtleWrap = (turtleWrap: boolean) => {
+    setAppConfig({ ...appConfig, turtleWrap });
+  };
+  Monitor.menu.setBrickSize = (blockSize: number) => {
+    setAppConfig({ ...appConfig, blockSize });
+  };
+
+  // App relies on the following properties being set here
+  Monitor.menu.setMasterVolume = (masterVolume: number) => {
+    setProjectConfig({ ...projectConfig, masterVolume });
   };
 
   const changeBlockSize = (newBlockSize: number) => {
-    setConfig({ ...config, blockSize: newBlockSize });
+    setAppConfig({ ...appConfig, blockSize: newBlockSize });
   };
 
   const updateTurtleWrap = (isWrapOn: boolean) => {
-    setConfig({ ...config, turtleWrap: isWrapOn });
+    setAppConfig({ ...appConfig, turtleWrap: isWrapOn });
   };
 
   const updateHorizontalScroll = (isEnabled: boolean) => {
-    setConfig({ ...config, horizontalScroll: isEnabled });
+    setAppConfig({ ...appConfig, horizontalScroll: isEnabled });
   };
 
-  const updateVolume = (volume: number) => {
-    setConfig({ ...config, masterVolume: volume });
-  };
+  // const updateVolume = (volume: number) => {
+  //   setAppConfig({ ...appConfig, masterVolume: volume });
+  // };
 
-  Monitor.registerSetLanguage(changeLanguage);
   Monitor.registerUpdateScroll(updateHorizontalScroll);
   Monitor.registerUpdateWrap(updateTurtleWrap);
   Monitor.registerSetBlockSize(changeBlockSize);
-  Monitor.registerUpdateVolume(updateVolume);
+  // Monitor.registerUpdateVolume(updateVolume);
   Monitor.registerClean();
 
   const [artBoardList, setArtBoardList] = useState(ContextDefaultArtBoard.artBoardList);
   const numberOfArtboards = 5;
 
   return (
-    <ContextConfig.Provider value={{ config, setConfig }}>
-      <div id="app">
-        <div className="lang-container">Current Language: {config.language}</div>
+    <ConfigContext.Provider value={{ appConfig, setAppConfig, projectConfig, setProjectConfig }}>
+      <main id="app">
         <ArtBoardContext.Provider value={{ artBoardList, setArtBoardList, numberOfArtboards }}>
           <Manager />
         </ArtBoardContext.Provider>
         <Menu />
         <Palette />
-      </div>
-    </ContextConfig.Provider>
+      </main>
+    </ConfigContext.Provider>
   );
 }

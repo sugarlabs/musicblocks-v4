@@ -4,7 +4,7 @@ import ITurtleModel from '../../models/artboard/Turtle';
 import { useContext, useEffect, useState } from 'react';
 import { ArtBoardContext } from '../../context/ArtBoardContext';
 import Artboard from './Artboard';
-import Monitor from '../Monitor';
+import Monitor from '../monitor/Monitor';
 // -- view-model component definition --------------------------------------------------------------
 
 /**

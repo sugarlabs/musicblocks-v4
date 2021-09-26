@@ -197,16 +197,16 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
       const [width, height]: [number, number] = getViewportDimensions();
       sketch.stroke(artBoardDraw.getStokeColor());
       sketch.strokeWeight(artBoardDraw.getStrokeWeight());
-      if (currentTurtle.getTurtleX() > width && appConfig.turtleWrap) {
+      if (currentTurtle.getTurtleX() > width && appConfig.spriteWrap) {
         currentTurtle.setTurtleX(0);
       }
-      if (currentTurtle.getTurtleX() < 0 && appConfig.turtleWrap) {
+      if (currentTurtle.getTurtleX() < 0 && appConfig.spriteWrap) {
         currentTurtle.setTurtleX(width);
       }
-      if (currentTurtle.getTurtleY() > height && appConfig.turtleWrap) {
+      if (currentTurtle.getTurtleY() > height && appConfig.spriteWrap) {
         currentTurtle.setTurtleY(0);
       }
-      if (currentTurtle.getTurtleY() < 0 && appConfig.turtleWrap) {
+      if (currentTurtle.getTurtleY() < 0 && appConfig.spriteWrap) {
         currentTurtle.setTurtleY(height);
       }
     };
@@ -227,7 +227,7 @@ export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props })
     instance?.remove();
     const canvas = new p5(boardSketch, artboardSketch.current);
     setInstance(canvas);
-  }, [props.turtle, appConfig.turtleWrap]);
+  }, [props.turtle, appConfig.spriteWrap]);
 
   return (
     <div

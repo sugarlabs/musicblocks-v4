@@ -1,167 +1,103 @@
 import { TAppLanguage } from './config';
-import { IBlockSize } from './monitor';
-
-/**
- * Interface for the Checkbox View Component
- */
-export interface ICheckboxProps {
-    /** display name of the property applicable for the checkbox */
-    name: string;
-
-    /** method to toggle the state of the checkbox */
-    onclick: (arg: boolean) => void;
-
-    /** styles of the checkbox */
-    className?: string;
-}
-
-/**
- * Interface for the Menu component's View props.
- */
-export interface IMenuProps {
-    /** `true` if auto hide is on else `false`. */
-    autoHide: boolean;
-
-    /** `true` if auto hide counter is on else `false`. */
-    autoHideTemp: boolean;
-
-    /** `true` if play submenu is visible else `false`. */
-    playMenuVisible: boolean;
-
-    /** `true` if settings submenu is visible else `false`. */
-    settingsMenuVisible: boolean;
-
-    /** `true` if project settings submenu is visible else `false`. */
-    projectMenuVisible: boolean;
-
-    /** `true` if language submenu is visible else `false`. */
-    languageMenuVisible: boolean;
-
-    /** `true` if blockSize submenu is visible else `false`. */
-    blockSizeMenuVisible: boolean;
-
-    /** `true` if music settings submenu is visible else `false`. */
-    musicSettingsMenuVisible: boolean;
-
-    /** list of languages available */
-    languages: string[];
-
-    /** list of blockSizes available */
-    blockSizes: IBlockSize[];
-
-    /** change the language to the selected option */
-    changeLanguage: (language: TAppLanguage) => void;
-
-    /** enable/disable horizontal scroll for the canvas */
-    updateHorizontalScroll: (isEnabled: boolean) => void;
-
-    /** enable/disable turtle wrap for the artwork */
-    updateTurtleWrap: (isWrapOn: boolean) => void;
-
-    /** update the block size of all the blocks */
-    changeBlockSize: (blockSize: number) => void;
-
-    /** update the application master volume */
-    updateVolume: (volume: number) => void;
-
-    /** Toggles the state of auto hide. */
-    toggleAutoHide: () => void;
-
-    /** Toggles the state of auto hide counter. */
-    toggleAutoHideTemp: () => void;
-
-    /** Toggles the state of play submenu. */
-    togglePlayMenu: () => void;
-
-    /** Toggles the state of settings submenu. */
-    toggleSettingsMenu: () => void;
-
-    /** Toggles the state of project settings submenu. */
-    toggleProjectMenu: () => void;
-
-    /** Toggles the state of language submenu. */
-    toggleLanguageMenu: () => void;
-
-    /** Toggles the state of block size submenu. */
-    toggleBlockSizeMenu: () => void;
-
-    /** Toggles the state of music settings submenu. */
-    toggleMusicSettingsMenu: () => void;
-
-    /** play the project */
-    play: () => void;
-
-    /** play the project step by step */
-    playStepByStep: () => void;
-
-    /** play the project slowly */
-    playSlowly: () => void;
-
-    /** hide the blocks in the project */
-    hideBlocks: () => void;
-
-    /** clean the artwork of the project */
-    cleanArtwork: () => void;
-
-    /**collapse all the collapsible blocks */
-    collapseBlocks: () => void;
-
-    /** undo project to the previous state */
-    undo: () => void;
-
-    /** redo project to the next state */
-    redo: () => void;
-}
 
 /**
  * Interface for the Menu component's Model class.
  */
 export interface IMenuModel {
-    /** Whether auto hide is on or off. */
+    /** Sets conditional visibility of play and stop buttons */
+    playing: boolean;
+    /** Contains list of available languages */
+    languages: { code: TAppLanguage; name: string }[];
+    /** Contains list of project builder brick sizes */
+    brickSizes: { value: number; label: string }[];
+}
+
+/**
+ * Interface for the Menu component's View props
+ */
+export interface IMenuProps {
+    /** `true` if playing else `false` */
+    playing: boolean;
+    /** Function to trigger on clicking play */
+    playHandler: () => void;
+    /** Function to trigger on clicking play slowly */
+    playSlowHandler: () => void;
+    /** Function to trigger on clicking play next step */
+    playStepHandler: () => void;
+    /** Function to trigger on clicking stop */
+    stopHandler: () => void;
+    /** Function to trigger on clicking undo */
+    undoHandler: () => void;
+    /** Function to trigger on clicking redo */
+    redoHandler: () => void;
+    /** Function to trigger on clicking clear */
+    clearHandler: () => void;
+    /** Handler to set brick visibility */
+    setBrickVisibility: (visible: boolean) => void;
+    /** Handler to set brick clamps fold */
+    setBrickFold: (fold: boolean) => void;
+    /** Function to trigger on clicking new project */
+    projectNewHandler: () => void;
+    /** Function to trigger on clicking load project */
+    projectLoadHandler: () => void;
+    /** Function to trigger on clicking save project */
+    projectSavehandler: () => void;
+    /** Range of master volume slider */
+    masterVolumeRange: { min: number; max: number };
+    /** Value of master volume slider */
+    masterVolume: number;
+    /** Handler to set master volume */
+    setMasterVolume: (volume: number) => void;
+    /** Range of brick size slider */
+    brickSizeRange: { min: number; max: number };
+    /** Value of brick size slider */
+    brickSize: number;
+    /** Handler to set brick size */
+    setBrickSize: (size: number) => void;
+    /** `true` if auto hide is enabled else `false` */
     autoHide: boolean;
+    /** Handler to set auto hide */
+    setAutoHide: (autoHide: boolean) => void;
+    /** `true` if horizontal scroll is enabled else `false` */
+    horizontalScroll: boolean;
+    /** Handler to set horizontal scroll */
+    setHorizontalScroll: (horizontalScroll: boolean) => void;
+    /** `true` if sprite wrap is enabled else `false` */
+    spriteWrap: boolean;
+    /** Handler to set sprite wrap */
+    setSpriteWrap: (wrap: boolean) => void;
+}
 
-    /** Counter to check for auto hide due to difference in z-indices */
-    autoHideTemp: boolean;
+/**
+ * Interface for the Slider sub-component's View props
+ */
+export interface ISliderProps {
+    /** DOM ID for the checkbox input field */
+    id: string;
+    /** Label for the checkbox */
+    label: string;
+    /** Minimum value */
+    min: number;
+    /** Maximum value */
+    max: number;
+    /** Slider step */
+    step: number;
+    /** Slider value */
+    value: number;
+    /** Function to trigger on value change */
+    changeHandler: (value: number) => void;
+}
 
-    /** Whether the Play submenu is open or not */
-    playMenuVisible: boolean;
-
-    /** Whether the Settings submenu is open or not */
-    settingsMenuVisible: boolean;
-
-    /** Whether the Project Settings submenu is open or not */
-    projectMenuVisible: boolean;
-
-    /** Whether the Language submenu is open or not */
-    languageMenuVisible: boolean;
-
-    /** Whether the Block Size submenu is open or not */
-    blockSizeMenuVisible: boolean;
-
-    /** Whether the Music Settings submenu is open or not */
-    musicSettingsMenuVisible: boolean;
-
-    /** Toggles the state of auto hide. */
-    toggleAutoHide: () => void;
-
-    /** Toggles the state of auto hide counter. */
-    toggleAutoHideTemp: () => void;
-
-    /** Toggles the state of play submenu. */
-    togglePlayMenu: () => void;
-
-    /** Toggles the state of settings submenu. */
-    toggleSettingsMenu: () => void;
-
-    /** Toggles the state of project settings submenu. */
-    toggleProjectMenu: () => void;
-
-    /** Toggles the state of language submenu. */
-    toggleLanguageMenu: () => void;
-
-    /** Toggles the state of blockSize submenu. */
-    toggleBlockSizeMenu: () => void;
-
-    /** Toggles the state of music settings submenu. */
-    toggleMusicSettingsMenu: () => void;
+/**
+ * Interface for the Checkbox sub-component's View props
+ */
+export interface ICheckboxProps {
+    /** DOM ID for the checkbox input field */
+    id: string;
+    /** Label for the checkbox */
+    label: string;
+    /** Whether checkbox is checked */
+    checked: boolean;
+    /** Function to trigger on value change */
+    changeHandler: (checked: boolean) => void;
 }

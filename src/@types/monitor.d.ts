@@ -1,16 +1,9 @@
-import { TAppLanguage, TAppTheme } from './config';
-
 /**
  * Interface for the Palette subcomponent proxied by the Monitor component.
  */
 export interface IPalette {
     /** Returns a `Promise` for the list of palette sections. */
     getSections: () => Promise<string[]>;
-}
-
-export interface IBlockSize {
-    label: string;
-    size: number;
 }
 
 /**
@@ -25,59 +18,30 @@ export interface IArtboard {
  * Interface for the Menu subcomponent of the Monitor
  */
 export interface IMenu {
-    // -- Setters for the global app configurations ----------------------------
+    /** Saves a `name:method` key-value pair inside the component */
+    /* eslint-disable-next-line */
+    registerMethod: (name: string, method: Function) => void;
+    /** Removes a `name:method` key-value pair from the component */
+    unregisterMethod: (name: string) => boolean;
 
-    /** Sets the app theme */
-    setTheme: (theme: TAppTheme) => void;
-    /** Sets the app language */
-    setLanguage: (language: TAppLanguage) => void;
-    /** Sets the app horizontal scroll */
-    setHorizontalScroll: (horizontalScroll: boolean) => void;
-    /** Sets the app sprite wrap (when sprite goes out of workspace) */
-    setTurtleWrap: (turtleWrap: boolean) => void;
-    /** Sets the app project builder brick size */
-    setBrickSize: (brickSize: number) => void;
+    /*
+     * Since arbitrary arguments can be sent to the following methods, use with caution (arguments
+     * might not match method signature).
+     */
 
-    // -- Setters for the global project configurations ------------------------
-
-    /** Sets the master volume */
-    setMasterVolume: (masterVolume: number) => void;
-
-    // -- Getters for values to present ----------------------------------------
-
-    /** Returns a Promise for a list of language code and corresponding names */
-    fetchLanguages: () => Promise<{ code: TAppLanguage; name: string }[]>;
-    /** Returns a Promise for a list of brick sizes and corresponding labels */
-    fetchBrickSizes: () => Promise<{ label: string; value: number }[]>;
-
-    // -- Actions --------------------------------------------------------------
-
-    /** Runs the project in normal speed */
-    play: () => void;
-    /** Runs the project at a lowered speed */
-    playSlowly: () => void;
-    /** Runs the project one instruction at a time */
-    playStepByStep: () => void;
-    /** Hides all the project builder bricks */
-    hideBricks: () => void;
-    /** Shows all the project builder bricks */
-    showBricks: () => void;
-    /** Folds all project builder clamp bricks */
-    foldBricks: () => void;
-    /** Unfolds all project builder clamp bricks */
-    unfoldBricks: () => void;
-    /** Cleans the artboards */
-    cleanArtboards: () => void;
-    /** Undo last action */
-    undo: () => void;
-    /** Redo last action */
-    redo: () => void;
-
-    // --
-
-    hideBlocks: () => void;
-    collapseBlocks: () => void;
-    cleanArtwork: () => void;
+    /** Calls the method with the given name and passes the arguments. */
+    doMethod: (name: string, ...args: unknown[]) => void;
+    /**
+     * Calls the method with the given name and passes the arguments, and returns a `Promise` of the
+     * returned values.
+     */
+    getMethodResult: (name: string, ...args: unknown[]) => Promise<unknown> | null;
+    /** Registers a getter and a setter function for the model state object */
+    registerStateObject: (stateObject: { [key: string]: unknown }, forceUpdate: () => void) => void;
+    /** Returns a model state */
+    getState: (state: string) => unknown;
+    /** Sets a model state */
+    setState: (state: string, value: unknown) => void;
 }
 
 /**

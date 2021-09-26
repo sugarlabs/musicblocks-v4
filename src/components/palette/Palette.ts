@@ -1,6 +1,6 @@
 // -- monitor component ----------------------------------------------------------------------------
 
-import Monitor from '../Monitor';
+import Monitor from '../monitor/Monitor';
 
 // -- model component ------------------------------------------------------------------------------
 

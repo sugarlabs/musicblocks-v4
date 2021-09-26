@@ -1,16 +1,10 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { TAppLanguage, TAppTheme } from '../@types/config';
-import {
-    IMonitor,
-    IPalette,
-    IMenu,
-    IBlockSize,
-    IArtboardManager,
-    IArtboard,
-} from '../@types/monitor';
+import { IMonitor, IPalette, IArtboardManager, IArtboard } from '../../@types/monitor';
 
-import { collectAppLanguages, collectBrickSizes } from '../utils/config';
+// -- subcomponents --------------------------------------------------------------------------------
+
+import Menu from './Menu';
 
 // -- PaletteBlocks defination ---------------------------------------------------------------------
 const blockList: { [button: string]: (string | { [button: string]: string[] })[] } = {};
@@ -163,156 +157,6 @@ class Artboard implements IArtboard {
 }
 
 /**
- * Class representing the Menu subcomponent proxied by the Monitor component.
- */
-class Menu implements IMenu {
-    setTheme!: (theme: TAppTheme) => void;
-    setLanguage!: (language: TAppLanguage) => void;
-    setHorizontalScroll!: (horizontalScroll: boolean) => void;
-    setTurtleWrap!: (turtleWrap: boolean) => void;
-    setBrickSize!: (value: number) => void;
-
-    setMasterVolume!: (masterVolume: number) => void;
-
-    fetchLanguages(): Promise<{ code: TAppLanguage; name: string }[]> {
-        return collectAppLanguages();
-    }
-    fetchBrickSizes(): Promise<{ value: number; label: string }[]> {
-        return collectBrickSizes();
-    }
-
-    play(): void {
-        console.log('play');
-    }
-    playSlowly(): void {
-        console.log('play slowly');
-    }
-    playStepByStep(): void {
-        console.log('play step by step');
-    }
-    hideBricks(): void {
-        console.log('hide bricks');
-    }
-    showBricks(): void {
-        console.log('show bricks');
-    }
-    foldBricks(): void {
-        console.log('fold clamps');
-    }
-    unfoldBricks(): void {
-        console.log('unfold clamps');
-    }
-    cleanArtboards(): void {
-        console.log('clean artboards');
-    }
-    undo(): void {
-        console.log('undo');
-    }
-    redo(): void {
-        console.log('redo');
-    }
-
-    /**
-     * Fetches the list of languages and returns it.
-     *
-     * @returns 'Promise' instance corresponding to the list of languages available.
-     */
-    getLanguages(): Promise<string[]> {
-        const fetchLanguages = () => {
-            return new Promise<string[]>((res) =>
-                setTimeout(() => res(['English', 'português', '日本語', 'हिंदी', 'عربى'])),
-            );
-        };
-        return fetchLanguages();
-    }
-
-    /**
-     * Fetches the list of the block sizes and their corresponding labels and returns it.
-     *
-     * @returns 'Promise' instance corresponding to the list of block sizes and their labels.
-     */
-    getBlockSizes(): Promise<IBlockSize[]> {
-        const fetchBlockSizes = () => {
-            return new Promise<IBlockSize[]>((res) =>
-                setTimeout(() =>
-                    res([
-                        {
-                            label: 'Small',
-                            size: 1,
-                        },
-                        {
-                            label: 'Normal',
-                            size: 1.5,
-                        },
-                        {
-                            label: 'Medium',
-                            size: 2,
-                        },
-                        {
-                            label: 'Large',
-                            size: 3,
-                        },
-                        {
-                            label: 'Very Large',
-                            size: 4,
-                        },
-                    ]),
-                ),
-            );
-        };
-        return fetchBlockSizes();
-    }
-
-    /**
-     * Updates the block size state in the Context API
-     *
-     * @param blockSize the block size selected from the menu
-     */
-    changeBlockSize = (blockSize: number) => {
-        blockSize;
-    };
-
-    /**
-     * Updates the horizontalScroll state in the Context API
-     *
-     * @param isEnabled the horizontalScroll state selected from the menu
-     */
-    updateHorizontalScroll = (isEnabled: boolean) => {
-        isEnabled;
-    };
-
-    /**
-     * Updates the turtleWrap state in the Context API
-     *
-     * @param isWrapOn the turtleWrap state selected from the menu
-     */
-    updateTurtleWrap = (isWrapOn: boolean) => {
-        isWrapOn;
-    };
-
-    /**
-     * Updates the master volume state in the Context API
-     *
-     * @param volume the volume state set from the menu
-     */
-    updateVolume = (volume: number) => {
-        volume;
-    };
-
-    hideBlocks = () => {
-        // hide the blocks in the project
-    };
-
-    cleanArtwork = () => {
-        // clean the artwork of the project
-    };
-
-    collapseBlocks = () => {
-        // collapse the collapsible blocks
-    };
-}
-
-/**
  * Class representing the Manager subcomponent proxied by the Monitor component.
  */
 class ArtboardManager implements IArtboardManager {
@@ -350,11 +194,11 @@ class ArtboardManager implements IArtboardManager {
  * @description The Monitor component is the supervisor background component on the client side.
  */
 class Monitor implements IMonitor {
-    /** Instance of the Palette component. */
+    /** Instance of the Palette subcomponent. */
     private _palette: Palette;
-    /** Instance of the Menu component. */
+    /** Instance of the Menu subcomponent. */
     private _menu: Menu;
-    /** Instance of the Artboard component. */
+    /** Instance of the Artboard subcomponent. */
     private _artboard: Artboard;
     private _manager: ArtboardManager;
 
@@ -365,17 +209,17 @@ class Monitor implements IMonitor {
         this._manager = new ArtboardManager();
     }
 
-    /** Getter for the palette component. */
+    /** Getter for the palette subcomponent. */
     get palette(): Palette {
         return this._palette;
     }
 
-    /** Getter for the menu component. */
+    /** Getter for the menu subcomponent. */
     get menu(): Menu {
         return this._menu;
     }
 
-    /** Getter for the artboard component. */
+    /** Getter for the artboard subcomponent. */
     get artboard(): Artboard {
         return this._artboard;
     }
@@ -384,33 +228,8 @@ class Monitor implements IMonitor {
         return this._manager;
     }
 
-    registerUpdateScroll(updateHorizontalScroll: (isEnabled: boolean) => void): void {
-        this._menu.updateHorizontalScroll = updateHorizontalScroll;
-    }
-
-    registerUpdateWrap(updateTurtleWrap: (isWrapOn: boolean) => void): void {
-        this._menu.updateTurtleWrap = updateTurtleWrap;
-        // this._manager.enableTurtleWrap (isWrapOn);
-    }
-
-    registerSetBlockSize(changeBlockSize: (blockSize: number) => void): void {
-        this._menu.changeBlockSize = changeBlockSize;
-    }
-
-    registerUpdateVolume(updateVolume: (vol: number) => void): void {
-        this._menu.updateVolume = updateVolume;
-    }
-
     registerArtboardClean(clean: () => void): void {
         this._artboard.clean = clean;
-    }
-
-    registerClean(): void {
-        /*
-            connecting the menu to the artboard for clean functionality by
-            setting the clean Artwork method of the menu to the clean method of the artboard
-        */
-        this._menu.cleanArtwork = this._artboard.clean;
     }
 
     registerRemoveArtboard(removeArtboard: (id: number) => void): void {

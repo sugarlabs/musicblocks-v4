@@ -4,7 +4,7 @@ import { useContext, useState } from 'react';
 import { IArtboardProps } from '../../@types/artboard';
 import { ArtBoardContext } from '../../context/ArtBoardContext';
 
-import Monitor from '../../components/Monitor';
+import Monitor from '../../components/monitor/Monitor';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 

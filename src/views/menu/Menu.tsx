@@ -1,11 +1,21 @@
+import React, { useEffect, useState } from 'react';
+
 // -- types ----------------------------------------------------------------------------------------
 
-import { TAppLanguage } from '../../@types/config';
 import { IMenuProps } from '../../@types/menu';
+// import { TAppLanguage } from '../../@types/config';
 
-// -- checkbox component ---------------------------------------------------------------------------
+// -- config ---------------------------------------------------------------------------------------
 
+import { MENUAUTOHIDEDELAY, MENUHIDDENONLOAD } from '../../config';
+import configColors from '../../configColors.json';
+
+// -- other components -----------------------------------------------------------------------------
+
+import ArrowChevronLeft from '../svg/arrow-chevron-left';
+import ArrowChevronRight from '../svg/arrow-chevron-right';
 import Checkbox from './Checkbox';
+import Slider from './Slider';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
@@ -20,259 +30,319 @@ import './Menu.scss';
  * @returns root JSX element
  */
 export default function (props: IMenuProps): JSX.Element {
+  const [brickVisible, setBrickVisible] = useState(true);
+
+  const [playGroupVisible, setPlayGroupVisible] = useState(false);
+  const [projectGroupVisible, setProjectGroupVisible] = useState(false);
+  const [projectSettingsDialogVisible, setProjectSettingsDialogVisible] = useState(false);
+  const [appSettingsDialogVisible, setAppSettingsDialogVisible] = useState(false);
+
+  type TToggleItems = 'play group' | 'project group' | 'project settings' | 'app settings';
+
+  const toggleItemsVisible = () =>
+    playGroupVisible ||
+    projectGroupVisible ||
+    projectSettingsDialogVisible ||
+    appSettingsDialogVisible;
+
+  const setToggleItemVisibility = (item: TToggleItems, visible: boolean) => {
+    setPlayGroupVisible(false);
+    setProjectGroupVisible(false);
+    setProjectSettingsDialogVisible(false);
+    setAppSettingsDialogVisible(false);
+
+    switch (item) {
+      case 'play group':
+        setPlayGroupVisible(visible);
+        break;
+      case 'project group':
+        setProjectGroupVisible(visible);
+        break;
+      case 'project settings':
+        setProjectSettingsDialogVisible(visible);
+        break;
+      case 'app settings':
+        setAppSettingsDialogVisible(visible);
+        break;
+    }
+  };
+
+  // Used for menu hide/unhide toggling based on value of props.autoHide and cursor position.
+  useEffect(() => {
+    const menuWrapperElem = document.getElementById('menu-wrapper') as HTMLElement;
+    const menuElem = document.getElementById('menu') as HTMLElement;
+
+    let hidden = MENUHIDDENONLOAD;
+    let menuHideTimeout: NodeJS.Timeout;
+
+    function hideMenu() {
+      if (toggleItemsVisible()) return;
+
+      if (!hidden) {
+        menuHideTimeout = setTimeout(
+          () => menuElem.classList.add('menu-hidden'),
+          MENUAUTOHIDEDELAY,
+        );
+        hidden = true;
+      }
+    }
+
+    function showMenu() {
+      if (hidden) {
+        if (menuHideTimeout) {
+          clearTimeout(menuHideTimeout);
+        }
+        menuElem.classList.remove('menu-hidden');
+        hidden = false;
+      }
+    }
+
+    if (props.autoHide) {
+      menuWrapperElem.onmouseenter = showMenu;
+      menuWrapperElem.onmouseleave = hideMenu;
+    } else {
+      showMenu();
+      menuWrapperElem.onmouseenter = null;
+      menuWrapperElem.onmouseleave = null;
+    }
+  });
+
+  // -- render -------------------------------------------------------------------------------------
+
   return (
-    // auto hide overlay to detect mouseEnter and mouseLeave
-    <div
-      className="auto-hide-overlay"
-      onMouseEnter={() => props.toggleAutoHide()}
-      onMouseLeave={() => {
-        props.toggleAutoHide();
-      }}
-    >
-      {/* menu wrapper wrapping the entire menu-dock along with its submenus */}
-      <div
-        id="menu-wrapper"
-        onMouseEnter={() => props.toggleAutoHideTemp()}
-        onMouseLeave={() => props.toggleAutoHideTemp()}
-      >
-        {/* main menu-dock */}
-        <div
-          className={
-            props.autoHide && props.autoHideTemp
-              ? 'menu-dock menu-dock-inactive'
-              : 'menu-dock menu-dock-active'
-          }
-        >
-          <nav>
-            <ul>
-              <li className="main-menu-btn">
-                <div>
-                  Music Blocks
-                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>
-                    Music Blocks
-                  </span>
-                </div>
-              </li>
+    <div id="menu-wrapper">
+      <nav id="menu">
+        <ul id="menu-buttons">
+          <li className="menu-button-wrapper">
+            <button className="menu-button">MB</button>
+          </li>
+          <div className="menu-separator"></div>
 
-              <hr></hr>
+          {/* Running controls */}
 
-              <li className="main-menu-btn">
-                <div onClick={() => props.togglePlayMenu()}>
+          <li className="menu-button-group">
+            <div className="menu-button-wrapper">
+              {!props.playing ? (
+                <button className="menu-button" onClick={props.playHandler}>
                   Play
-                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Play</span>
-                </div>
+                </button>
+              ) : (
+                <button className="menu-button" onClick={props.stopHandler}>
+                  Stop
+                </button>
+              )}
+            </div>
+            <div className="menu-button-toggle-wrapper">
+              {playGroupVisible && (
+                <React.Fragment>
+                  <div className="menu-button-wrapper">
+                    <button className="menu-button" onClick={props.playStepHandler}>
+                      Play Step
+                    </button>
+                  </div>
+                  <div className="menu-button-wrapper">
+                    <button className="menu-button" onClick={props.playSlowHandler}>
+                      Play Slow
+                    </button>
+                  </div>
+                </React.Fragment>
+              )}
+              <button
+                className="menu-button-toggle"
+                onClick={() => setToggleItemVisibility('play group', !playGroupVisible)}
+              >
+                {playGroupVisible ? (
+                  <ArrowChevronRight fillColor={configColors['menuButtonToggle']} />
+                ) : (
+                  <ArrowChevronLeft fillColor={configColors['menuButtonToggle']} />
+                )}
+              </button>
+            </div>
+          </li>
+          <li className="menu-button-wrapper">
+            <button className="menu-button" onClick={props.undoHandler}>
+              Undo
+            </button>
+          </li>
+          <li className="menu-button-wrapper">
+            <button className="menu-button" onClick={props.redoHandler}>
+              Redo
+            </button>
+          </li>
+          <div className="menu-separator"></div>
 
-                {/* Play Submenu */}
-                <div className={props.playMenuVisible ? 'dropdown-active' : 'inactive-menu'}>
-                  <button
-                    onClick={() => {
-                      props.play();
-                      props.togglePlayMenu();
-                    }}
-                    className="dropdown-btn"
-                  >
-                    Play
-                  </button>
-                  <button
-                    onClick={() => {
-                      props.playSlowly();
-                      props.togglePlayMenu();
-                    }}
-                    className="dropdown-btn"
-                  >
-                    Play Slowly
-                  </button>
-                  <button
-                    onClick={() => {
-                      props.playStepByStep();
-                      props.togglePlayMenu();
-                    }}
-                    className="dropdown-btn"
-                  >
-                    Play Step by Step
-                  </button>
-                </div>
-              </li>
+          {/* Interator controls */}
 
-              <hr></hr>
+          <li className="menu-button-wrapper">
+            <button className="menu-button" onClick={props.clearHandler}>
+              Clear
+            </button>
+          </li>
+          <li className="menu-button-wrapper">
+            {brickVisible ? (
+              <button
+                className="menu-button"
+                onClick={() => {
+                  setBrickVisible(false);
+                  props.setBrickVisibility(false);
+                }}
+              >
+                Hide Bricks
+              </button>
+            ) : (
+              <button
+                className="menu-button"
+                onClick={() => {
+                  setBrickVisible(true);
+                  props.setBrickVisibility(true);
+                }}
+              >
+                Show Bricks
+              </button>
+            )}
+          </li>
+          <li className="menu-button-wrapper">
+            <button className="menu-button" onClick={() => props.setBrickFold(true)}>
+              Fold Bricks
+            </button>
+          </li>
+          <li className="menu-button-wrapper">
+            <button className="menu-button" onClick={() => props.setBrickFold(false)}>
+              Unfold Bricks
+            </button>
+          </li>
+          <div className="menu-separator"></div>
 
-              <li className="main-menu-btn">
-                <div>
-                  Search
-                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Search</span>
-                </div>
-              </li>
+          {/* Project controls */}
 
-              <li className="main-menu-btn">
-                <div onClick={props.undo}>
-                  Undo
-                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Undo</span>
-                </div>
-              </li>
-
-              <li className="main-menu-btn">
-                <div onClick={props.redo}>
-                  Redo
-                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Redo</span>
-                </div>
-              </li>
-
-              <hr></hr>
-              <li className="main-menu-btn">
-                <div onClick={props.hideBlocks}>
-                  Hide Blocks
-                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>
-                    Hide Blocks
-                  </span>
-                </div>
-              </li>
-
-              <li className="main-menu-btn">
-                <div onClick={props.cleanArtwork}>
-                  Clean
-                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Clean</span>
-                </div>
-              </li>
-
-              <li className="main-menu-btn">
-                <div onClick={props.collapseBlocks}>
-                  Collapse Blocks
-                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>
-                    Collapse Blocks
-                  </span>
-                </div>
-              </li>
-
-              <hr></hr>
-
-              <li className="main-menu-btn">
-                <div onClick={() => props.toggleProjectMenu()}>
+          <li className="menu-button-group">
+            <div className="menu-button-wrapper">
+              {!projectGroupVisible ? (
+                <button
+                  className="menu-button"
+                  onClick={() => setToggleItemVisibility('project group', true)}
+                >
                   Project
-                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>
-                    Project Settings
-                  </span>
-                </div>
-
-                {/* Project Settings Submenu */}
-                <div className={props.projectMenuVisible ? 'dropdown-active' : 'inactive-menu'}>
-                  <button
-                    onClick={() => {
-                      props.toggleProjectMenu();
-                    }}
-                    className="dropdown-btn"
-                  >
-                    Save Project
-                  </button>
-                  <button onClick={() => props.toggleProjectMenu()} className="dropdown-btn">
-                    Load Project
-                  </button>
-                  <button onClick={() => props.toggleProjectMenu()} className="dropdown-btn">
-                    New Project
-                  </button>
-                  <button onClick={() => props.toggleProjectMenu()} className="dropdown-btn">
-                    Merge Project
-                  </button>
-                </div>
-              </li>
-
-              <li className="main-menu-btn">
-                <div onClick={() => props.toggleSettingsMenu()}>
-                  Settings
-                  <span className={props.settingsMenuVisible ? 'inactive-menu' : ''}>Settings</span>
-                </div>
-                {/* Global Settings Submenu */}
-                <div
-                  className={props.settingsMenuVisible ? 'settings-menu-active' : 'inactive-menu'}
+                </button>
+              ) : (
+                <button
+                  className="menu-button"
+                  onClick={() => setToggleItemVisibility('project group', false)}
                 >
-                  <button onClick={() => props.toggleBlockSizeMenu()}>
-                    Set Block Size
-                    <div
-                      className={
-                        props.blockSizeMenuVisible
-                          ? 'dropdown-active language-menu'
-                          : 'inactive-menu'
-                      }
-                    >
-                      {/* List of all block sizes fetched from Monitor */}
-                      {props.blockSizes.map((blockSize) => (
-                        <button
-                          onClick={() => {
-                            props.changeBlockSize(blockSize.size);
-                            props.toggleBlockSizeMenu();
-                          }}
-                          className="dropdown-btn"
-                          value={blockSize.label}
-                        >
-                          {blockSize.label}
-                        </button>
-                      ))}
-                    </div>
-                  </button>
-                  <button onClick={() => props.toggleLanguageMenu()}>
-                    Language
-                    <div
-                      className={
-                        props.languageMenuVisible
-                          ? 'dropdown-active language-menu'
-                          : 'inactive-menu'
-                      }
-                    >
-                      {/* Language Settings Submenu */}
-                      {props.languages.map((lang) => (
-                        <button
-                          onClick={() => {
-                            props.changeLanguage(lang as TAppLanguage);
-                            props.toggleLanguageMenu();
-                          }}
-                          className="dropdown-btn"
-                          value={lang}
-                        >
-                          {lang}
-                        </button>
-                      ))}
-                    </div>
-                  </button>
-                  <Checkbox name="Horizontal Scroll" onclick={props.updateHorizontalScroll} />
-                  <Checkbox name="Turtle Wrap" onclick={props.updateTurtleWrap} />
-                </div>
-              </li>
+                  ...
+                </button>
+              )}
+            </div>
+            <div className="menu-button-toggle-wrapper">
+              {projectGroupVisible && (
+                <React.Fragment>
+                  <div className="menu-button-wrapper">
+                    <button className="menu-button" onClick={props.projectSavehandler}>
+                      Save Project
+                    </button>
+                  </div>
+                  <div className="menu-button-wrapper">
+                    <button className="menu-button" onClick={props.projectLoadHandler}>
+                      Load Project
+                    </button>
+                  </div>
+                  <div className="menu-button-wrapper">
+                    <button className="menu-button" onClick={props.projectNewHandler}>
+                      New Project
+                    </button>
+                  </div>
+                </React.Fragment>
+              )}
+            </div>
+          </li>
+          <div className="menu-separator"></div>
 
-              <li className="main-menu-btn">
-                <div onClick={() => props.toggleMusicSettingsMenu()}>
-                  Music <br /> Settings
-                  <span className={props.musicSettingsMenuVisible ? 'inactive-menu' : ''}>
-                    Music Settings
-                  </span>
-                </div>
+          {/* Settings */}
 
-                {/* Project Music Settings Submenu */}
-                <div
-                  className={
-                    props.musicSettingsMenuVisible ? 'settings-menu-active' : 'inactive-menu'
-                  }
-                >
-                  <button>Set Pitch</button>
-                  <button>Set Temperament</button>
-                  <button>
-                    Set Master Volume
-                    <input
-                      type="range"
-                      min={0}
-                      max={100}
-                      step={2}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const newValue: number = +e.target.value;
-                        props.updateVolume(newValue);
-                      }}
+          <li className="menu-button-group">
+            <div className="menu-button-wrapper">
+              <button
+                className="menu-button"
+                onClick={() =>
+                  setToggleItemVisibility('project settings', !projectSettingsDialogVisible)
+                }
+              >
+                Project Settings
+              </button>
+            </div>
+            {projectSettingsDialogVisible && (
+              <div className="menu-dialog">
+                <ul className="menu-dialog-items">
+                  <li className="menu-dialog-item">
+                    <Slider
+                      id="menu-master-volume"
+                      label="Master Volume"
+                      min={props.masterVolumeRange.min}
+                      max={props.masterVolumeRange.max}
+                      step={1}
+                      value={props.masterVolume}
+                      changeHandler={(value: number) => props.setMasterVolume(value)}
                     />
-                  </button>
-                  <button>View Status</button>
-                </div>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </div>
+                  </li>
+                  <li className="menu-dialog-item">Set Pitch</li>
+                  <li className="menu-dialog-item">Set Temperament</li>
+                </ul>
+              </div>
+            )}
+          </li>
+          <li className="menu-button-group">
+            <div className="menu-button-wrapper">
+              <button
+                className="menu-button"
+                onClick={() => setToggleItemVisibility('app settings', !appSettingsDialogVisible)}
+              >
+                Settings
+              </button>
+            </div>
+            {appSettingsDialogVisible && (
+              <div className="menu-dialog">
+                <ul className="menu-dialog-items">
+                  <li className="menu-dialog-item">
+                    <Slider
+                      id="menu-brick-size"
+                      label="Brick Size"
+                      min={props.brickSizeRange.min}
+                      max={props.brickSizeRange.max}
+                      step={1}
+                      value={props.brickSize}
+                      changeHandler={(value: number) => props.setBrickSize(value)}
+                    />
+                  </li>
+                  <li className="menu-dialog-item">
+                    <Checkbox
+                      id="menu-auto-hide"
+                      label="Auto Hide"
+                      checked={props.autoHide}
+                      changeHandler={(checked: boolean) => props.setAutoHide(checked)}
+                    />
+                  </li>
+                  <li className="menu-dialog-item">
+                    <Checkbox
+                      id="menu-horizontal-scroll"
+                      label="Horizontal Scroll"
+                      checked={props.horizontalScroll}
+                      changeHandler={(checked: boolean) => props.setHorizontalScroll(checked)}
+                    />
+                  </li>
+                  <li className="menu-dialog-item">
+                    <Checkbox
+                      id="menu-sprite-wrap"
+                      label="Sprite Wrap"
+                      checked={props.spriteWrap}
+                      changeHandler={(checked: boolean) => props.setSpriteWrap(checked)}
+                    />
+                  </li>
+                </ul>
+              </div>
+            )}
+          </li>
+        </ul>
+      </nav>
     </div>
   );
 }

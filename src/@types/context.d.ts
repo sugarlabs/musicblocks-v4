@@ -8,18 +8,24 @@ export interface IAppConfig {
     theme: TAppTheme;
     /** UI Language */
     language: TAppLanguage;
+    /** Whether menu auto-hides on moving cursor away */
+    menuAutoHide: boolean;
     /** Whether horizontal scroll is enabled */
     horizontalScroll: boolean;
     /** Whether sprite wrap is enabled (when sprite goes out of workspace) */
-    turtleWrap: boolean;
+    spriteWrap: boolean;
+    /** Range of project builder brick sizes */
+    brickSizeRange: { min: number; max: number };
     /** Size of project builder bricks */
-    blockSize: number;
+    brickSize: number;
 }
 
 /**
  * Interface for global project configurations
  */
 export interface IProjectConfig {
+    /** Range of master volume */
+    masterVolumeRange: { min: number; max: number };
     /** Master volume */
     masterVolume: number;
 }

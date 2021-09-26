@@ -1,7 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
-import Monitor from '../Monitor';
-import { IBlockSize } from '../../@types/monitor';
+// -- types ----------------------------------------------------------------------------------------
+
+import { TAppLanguage } from '../../@types/config';
+
+// -- other components -----------------------------------------------------------------------------
+
+import Monitor from '../monitor/Monitor';
+
+// -- context --------------------------------------------------------------------------------------
+
+import { ConfigContext } from '../../context/config';
+
 // -- model component ------------------------------------------------------------------------------
 
 import _MenuModel from '../../models/menu/Menu';
@@ -10,7 +20,6 @@ const MenuModel = new _MenuModel();
 // -- view component -------------------------------------------------------------------------------
 
 import MenuView from '../../views/menu/Menu';
-import { TAppLanguage } from '../../@types/config';
 
 // -- view-model component definition --------------------------------------------------------------
 
@@ -18,275 +27,65 @@ import { TAppLanguage } from '../../@types/config';
  * ViewModel of the Menu component.
  */
 export default function (): JSX.Element {
-    // autoHide: detects the mouse entropy inside the auto hide overlay
-    const [autoHide, setAutoHide] = useState<boolean>(true);
-
-    // autoHideTemp: counter state to detect mouse entropy over the menu dock to account for
-    // the change in autoHide while hovering abouve the menu dock due to difference in z-indices
-    const [autoHideTemp, setAutoHideTemp] = useState<boolean>(true);
-
-    // playMenuVisible: state to detect if the play submenu is visible
-    const [playMenuVisible, setPlayMenuVisible] = useState<boolean>(false);
-
-    // settingsMenuVisible: state to detect if the settings submenu is visible
-    const [settingsMenuVisible, setSettingsMenuVisible] = useState<boolean>(false);
-
-    // projectMenuVisible: state to detect if the project submenu is visible
-    const [projectMenuVisible, setProjectMenuVisible] = useState<boolean>(false);
-
-    // languageSubmenuVisible: state to detect if the language submenu is visible
-    const [languageMenuVisible, setLanguageMenuVisible] = useState<boolean>(false);
-
-    // blockSizeMenuVisible: state to detect if the block size submenu is visible
-    const [blockSizeMenuVisible, setBlockSizeMenuVisible] = useState<boolean>(false);
-
-    // musicSettingsMenuVisible: state to detect if the project music settings submenu is visible
-    const [musicSettingsMenuVisible, setMusicSettingsMenuVisible] = useState<boolean>(false);
-
-    // languages[]: list of languages to be displayed in the language submenu
-    const [languages, setLanguages] = useState<string[]>([]);
-
-    // blockSizes[]: list of block sizes to be displayed in the block size submenu
-    const [blockSizes, setBlockSizes] = useState<IBlockSize[]>([]);
-
-    // fetch the languages and blockSizes from Monitor in initial render
     useEffect(() => {
         (async () => {
-            setLanguages(await Monitor.menu.getLanguages());
-            setBlockSizes(await Monitor.menu.getBlockSizes());
+            [MenuModel.languages, MenuModel.brickSizes] = await Promise.all([
+                Monitor.menu.getMethodResult('fetchLanguages') as Promise<
+                    {
+                        code: TAppLanguage;
+                        name: string;
+                    }[]
+                >,
+                Monitor.menu.getMethodResult('fetchBrickSizes') as Promise<
+                    {
+                        value: number;
+                        label: string;
+                    }[]
+                >,
+            ]);
         })();
     }, []);
 
-    const play = (): void => {
-        Monitor.menu.play();
-    };
+    const [value, setValue] = useState(false);
+    const forceUpdate = () => setValue(!value);
+    Monitor.menu.registerStateObject(
+        MenuModel as unknown as { [key: string]: unknown },
+        forceUpdate,
+    );
 
-    const playStepByStep = (): void => {
-        Monitor.menu.playStepByStep();
-    };
+    const { appConfig, projectConfig } = useContext(ConfigContext);
 
-    const playSlowly = (): void => {
-        Monitor.menu.playSlowly();
-    };
-
-    const hideBlocks = (): void => {
-        Monitor.menu.hideBlocks();
-    };
-
-    const cleanArtwork = (): void => {
-        Monitor.menu.cleanArtwork();
-    };
-
-    const collapseBlocks = (): void => {
-        Monitor.menu.collapseBlocks();
-    };
-
-    const undo = (): void => {
-        Monitor.menu.undo();
-    };
-
-    const redo = (): void => {
-        Monitor.menu.redo();
-    };
-
-    let togglePlayMenu: () => void;
-    let toggleSettingsMenu: () => void;
-    let toggleProjectMenu: () => void;
-    let toggleLanguageMenu: () => void;
-    let toggleBlockSizeMenu: () => void;
-    let toggleMusicSettingsMenu: () => void;
-
-    const toggleAutoHideTemp = () => {
-        MenuModel.toggleAutoHideTemp();
-        setAutoHideTemp(MenuModel.autoHideTemp);
-    };
-
-    togglePlayMenu = () => {
-        MenuModel.togglePlayMenu();
-        setPlayMenuVisible(MenuModel.playMenuVisible);
-
-        // close any open submenu other than play submenu
-        if (!playMenuVisible) {
-            if (settingsMenuVisible) {
-                toggleSettingsMenu();
-            }
-            if (projectMenuVisible) {
-                toggleProjectMenu();
-            }
-            if (languageMenuVisible) {
-                toggleLanguageMenu();
-            }
-            if (blockSizeMenuVisible) {
-                toggleBlockSizeMenu();
-            }
-            if (musicSettingsMenuVisible) {
-                toggleMusicSettingsMenu();
-            }
-        }
-    };
-
-    toggleSettingsMenu = () => {
-        MenuModel.toggleSettingsMenu();
-        setSettingsMenuVisible(MenuModel.settingsMenuVisible);
-
-        // close any open submenu other than settings submenu
-        if (!settingsMenuVisible) {
-            if (playMenuVisible) {
-                togglePlayMenu();
-            }
-            if (projectMenuVisible) {
-                toggleProjectMenu();
-            }
-            if (languageMenuVisible) {
-                toggleLanguageMenu();
-            }
-            if (blockSizeMenuVisible) {
-                toggleBlockSizeMenu();
-            }
-            if (musicSettingsMenuVisible) {
-                toggleMusicSettingsMenu();
-            }
-        }
-    };
-
-    toggleProjectMenu = () => {
-        MenuModel.toggleProjectMenu();
-        setProjectMenuVisible(MenuModel.projectMenuVisible);
-
-        // close any open submenu other than project settings submenu
-        if (!projectMenuVisible) {
-            if (playMenuVisible) {
-                togglePlayMenu();
-            }
-            if (settingsMenuVisible) {
-                toggleSettingsMenu();
-            }
-            if (languageMenuVisible) {
-                toggleLanguageMenu();
-            }
-            if (blockSizeMenuVisible) {
-                toggleBlockSizeMenu();
-            }
-            if (musicSettingsMenuVisible) {
-                toggleMusicSettingsMenu();
-            }
-        }
-    };
-
-    toggleLanguageMenu = () => {
-        MenuModel.toggleLanguageMenu();
-        setLanguageMenuVisible(MenuModel.languageMenuVisible);
-    };
-
-    toggleBlockSizeMenu = () => {
-        MenuModel.toggleBlockSizeMenu();
-        setBlockSizeMenuVisible(MenuModel.blockSizeMenuVisible);
-    };
-
-    toggleMusicSettingsMenu = () => {
-        MenuModel.toggleMusicSettingsMenu();
-        setMusicSettingsMenuVisible(MenuModel.musicSettingsMenuVisible);
-
-        // close any open submenu other than project music settings submenu
-        if (!musicSettingsMenuVisible) {
-            if (playMenuVisible) {
-                togglePlayMenu();
-            }
-            if (settingsMenuVisible) {
-                toggleSettingsMenu();
-            }
-            if (projectMenuVisible) {
-                toggleProjectMenu();
-            }
-            if (languageMenuVisible) {
-                toggleLanguageMenu();
-            }
-            if (blockSizeMenuVisible) {
-                toggleBlockSizeMenu();
-            }
-        }
-    };
-
-    const toggleAutoHide = () => {
-        MenuModel.toggleAutoHide();
-        setAutoHide(MenuModel.autoHide);
-
-        // closes any open submenu while auto-hiding the menu-dock
-        if (!autoHide && autoHideTemp) {
-            if (playMenuVisible) {
-                togglePlayMenu();
-            }
-            if (settingsMenuVisible) {
-                toggleSettingsMenu();
-            }
-            if (projectMenuVisible) {
-                toggleProjectMenu();
-            }
-            if (languageMenuVisible) {
-                toggleLanguageMenu();
-            }
-            if (blockSizeMenuVisible) {
-                toggleBlockSizeMenu();
-            }
-            if (musicSettingsMenuVisible) {
-                toggleMusicSettingsMenu();
-            }
-        }
-    };
-
-    const changeLanguage = (language: TAppLanguage) => {
-        toggleLanguageMenu();
-        Monitor.menu.setLanguage(language);
-    };
-
-    const updateHorizontalScroll = (isEnabled: boolean) => {
-        Monitor.menu.updateHorizontalScroll(isEnabled);
-    };
-
-    const updateTurtleWrap = (isWrapOn: boolean) => {
-        Monitor.menu.updateTurtleWrap(isWrapOn);
-    };
-
-    const changeBlockSize = (blockSize: number) => {
-        toggleBlockSizeMenu();
-        Monitor.menu.changeBlockSize(blockSize);
-    };
-
-    const updateVolume = (vol: number) => {
-        Monitor.menu.updateVolume(vol);
-    };
+    // -- render -----------------------------------------------------------------------------------
 
     return MenuView({
-        autoHide,
-        autoHideTemp,
-        playMenuVisible,
-        settingsMenuVisible,
-        projectMenuVisible,
-        languageMenuVisible,
-        blockSizeMenuVisible,
-        musicSettingsMenuVisible,
-        languages,
-        blockSizes,
-        changeLanguage,
-        updateHorizontalScroll,
-        updateTurtleWrap,
-        changeBlockSize,
-        updateVolume,
-        toggleAutoHide,
-        toggleAutoHideTemp,
-        togglePlayMenu,
-        toggleSettingsMenu,
-        toggleProjectMenu,
-        toggleLanguageMenu,
-        toggleBlockSizeMenu,
-        toggleMusicSettingsMenu,
-        play,
-        playStepByStep,
-        playSlowly,
-        hideBlocks,
-        cleanArtwork,
-        collapseBlocks,
-        undo,
-        redo,
+        playing: MenuModel.playing,
+        playHandler: () => Monitor.menu.doMethod('play'),
+        playSlowHandler: () => Monitor.menu.doMethod('playSlowly'),
+        playStepHandler: () => Monitor.menu.doMethod('playNextStep'),
+        stopHandler: () => Monitor.menu.doMethod('stop'),
+        undoHandler: () => Monitor.menu.doMethod('undo'),
+        redoHandler: () => Monitor.menu.doMethod('redo'),
+        clearHandler: () => Monitor.menu.doMethod('clearArtboards'),
+        setBrickVisibility: (visible: boolean) =>
+            visible ? Monitor.menu.doMethod('showBricks') : Monitor.menu.doMethod('hideBricks'),
+        setBrickFold: (fold: boolean) =>
+            fold ? Monitor.menu.doMethod('foldBricks') : Monitor.menu.doMethod('unfoldBricks'),
+        projectNewHandler: () => Monitor.menu.doMethod('projectNew'),
+        projectLoadHandler: () => Monitor.menu.doMethod('projectLoad'),
+        projectSavehandler: () => Monitor.menu.doMethod('projectSave'),
+        masterVolumeRange: projectConfig.masterVolumeRange,
+        masterVolume: projectConfig.masterVolume,
+        setMasterVolume: (masterVolume: number) =>
+            Monitor.menu.doMethod('setMasterVolume', masterVolume),
+        brickSizeRange: appConfig.brickSizeRange,
+        brickSize: appConfig.brickSize,
+        setBrickSize: (brickSize: number) => Monitor.menu.doMethod('setBrickSize', brickSize),
+        autoHide: appConfig.menuAutoHide,
+        setAutoHide: (autoHide: boolean) => Monitor.menu.doMethod('setMenuAutoHide', autoHide),
+        horizontalScroll: appConfig.horizontalScroll,
+        setHorizontalScroll: (horizontalScroll: boolean) =>
+            Monitor.menu.doMethod('setHorizontalScroll', horizontalScroll),
+        spriteWrap: appConfig.spriteWrap,
+        setSpriteWrap: (wrap: boolean) => Monitor.menu.doMethod('setSpriteWrap', wrap),
     });
 }

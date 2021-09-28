@@ -8,7 +8,7 @@ import { IAppConfig, IProjectConfig } from './@types/context';
 export const appConfig: IAppConfig = {
     theme: 'light',
     language: 'en',
-    menuAutoHide: true,
+    menuAutoHide: false,
     horizontalScroll: false,
     spriteWrap: true,
     brickSizeRange: { min: 1, max: 5 },

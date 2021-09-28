@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 // -- types ----------------------------------------------------------------------------------------
 
 import { IMenuProps } from '../../@types/menu';
-// import { TAppLanguage } from '../../@types/config';
 
 // -- config ---------------------------------------------------------------------------------------
 

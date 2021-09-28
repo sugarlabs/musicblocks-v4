@@ -11,7 +11,7 @@ import { appConfigDefaults, ConfigContext, projectConfigDefaults } from './conte
 
 // -- subcomponents --------------------------------------------------------------------------------
 
-import Monitor from './components/monitor/Monitor';
+import monitor from './components/monitor/Monitor';
 import Menu from './components/menu/Menu';
 // import Palette from './components/palette/Palette';
 // import Manager from './components/artboard/Manager';
@@ -31,34 +31,34 @@ export default function App(): JSX.Element {
   // -- Setters for the global app configurations ----------------------------
 
   // Sets the app theme
-  Monitor.menu.registerMethod('setTheme', (theme: TAppTheme) => {
+  monitor.menu.registerMethod('setTheme', (theme: TAppTheme) => {
     setAppConfig({ ...appConfig, theme });
   });
   // Sets the app language
-  Monitor.menu.registerMethod('setLanguage', (language: TAppLanguage) => {
+  monitor.menu.registerMethod('setLanguage', (language: TAppLanguage) => {
     setAppConfig({ ...appConfig, language });
   });
   // Sets menu auto-hide
-  Monitor.menu.registerMethod('setMenuAutoHide', (menuAutoHide: boolean) => {
+  monitor.menu.registerMethod('setMenuAutoHide', (menuAutoHide: boolean) => {
     setAppConfig({ ...appConfig, menuAutoHide });
   });
   // Sets the app horizontal scroll
-  Monitor.menu.registerMethod('setHorizontalScroll', (horizontalScroll: boolean) => {
+  monitor.menu.registerMethod('setHorizontalScroll', (horizontalScroll: boolean) => {
     setAppConfig({ ...appConfig, horizontalScroll });
   });
   // Sets the app sprite wrap (when sprite goes out of workspace)
-  Monitor.menu.registerMethod('setSpriteWrap', (spriteWrap: boolean) => {
+  monitor.menu.registerMethod('setSpriteWrap', (spriteWrap: boolean) => {
     setAppConfig({ ...appConfig, spriteWrap });
   });
   // Sets the app project builder brick size
-  Monitor.menu.registerMethod('setBrickSize', (brickSize: number) => {
+  monitor.menu.registerMethod('setBrickSize', (brickSize: number) => {
     setAppConfig({ ...appConfig, brickSize });
   });
 
   // -- Setters for the global project configurations ------------------------
 
   // Sets the master volume
-  Monitor.menu.registerMethod('setMasterVolume', (masterVolume: number) => {
+  monitor.menu.registerMethod('setMasterVolume', (masterVolume: number) => {
     setProjectConfig({ ...projectConfig, masterVolume });
   });
 

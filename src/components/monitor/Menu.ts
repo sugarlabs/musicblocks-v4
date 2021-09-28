@@ -1,24 +1,26 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { IMenu } from '../../@types/monitor';
 import { TAppLanguage } from '../../@types/config';
 
 // -- utilities ------------------------------------------------------------------------------------
 
 import { collectAppLanguages, collectBrickSizes } from '../../utils/config';
+import { MonitorUtils } from './MonitorUtils';
+import { Monitor } from './Monitor';
 
 // -- subcomponent definition ----------------------------------------------------------------------
 
 /**
  * Class representing the Menu subcomponent proxied by the Monitor component.
  */
-export default class Menu implements IMenu {
-    /* eslint-disable-next-line */
-    private _methodTable: { [key: string]: Function } = {};
-    private _temporaryStore: { [key: string]: unknown } = {};
+export default class Menu extends MonitorUtils {
+    protected monitor: Monitor;
 
-    constructor() {
-        this._methodTable = {
+    constructor(monitor: Monitor) {
+        super();
+        this.monitor = monitor;
+
+        this.methodTable = {
             /* The following are registered in App component */
 
             // setTheme,
@@ -48,87 +50,6 @@ export default class Menu implements IMenu {
         };
     }
 
-    /* eslint-disable-next-line */
-    public registerMethod(name: string, method: Function): void {
-        this._methodTable[name] = method;
-    }
-
-    public unregisterMethod(name: string): boolean {
-        if (name in this._methodTable) {
-            delete this._methodTable[name];
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public doMethod(name: string, ...args: unknown[]): void {
-        if (name in this._methodTable) {
-            try {
-                this._methodTable[name].call(this, ...args);
-            } catch (e) {
-                const error = e as Error;
-                if (error instanceof TypeError) {
-                    console.warn(
-                        `${error.name} in method call, verify arguments.\nMessage: "${error.message}"`,
-                    );
-                } else {
-                    console.warn(error);
-                }
-            }
-        }
-    }
-
-    public getMethodResult(name: string, ...args: unknown[]): Promise<unknown> | null {
-        if (name in this._methodTable) {
-            try {
-                const result = this._methodTable[name].call(this, ...args);
-                return result instanceof Promise
-                    ? result
-                    : new Promise((resolve) => resolve(result));
-            } catch (e) {
-                const error = e as Error;
-                if (error instanceof TypeError) {
-                    console.warn(
-                        `${error.name} in method call, verify arguments.\nMessage: "${error.message}"`,
-                    );
-                } else {
-                    console.warn(error);
-                }
-            }
-        }
-        return null;
-    }
-
-    public registerStateObject(
-        stateObject: { [key: string]: unknown },
-        forceUpdate: () => void,
-    ): void {
-        this._methodTable['__get__'] = (state: string) => {
-            if (state in stateObject) {
-                return stateObject[state];
-            } else {
-                throw TypeError(`State '${state}' does not exist`);
-            }
-        };
-        this._methodTable['__set__'] = (state: string, value: unknown) => {
-            if (state in stateObject) {
-                stateObject[state] = value;
-                forceUpdate();
-            } else {
-                throw TypeError(`State '${state}' does not exist`);
-            }
-        };
-    }
-
-    public getState(state: string): unknown {
-        return (async () => await this.getMethodResult('__get__', state))();
-    }
-
-    public setState(state: string, value: unknown): void {
-        this.doMethod('__set__', state, value);
-    }
-
     // -- Getters for values to present ----------------------------------------
 
     /** Returns a Promise for a list of language code and corresponding names */
@@ -147,10 +68,7 @@ export default class Menu implements IMenu {
     private _play(): void {
         console.log('play');
         this.setState('playing', true);
-        this._temporaryStore['play timer'] = setTimeout(
-            () => this.setState('playing', false),
-            2500,
-        );
+        this.temporaryStore['play timer'] = setTimeout(() => this.setState('playing', false), 2500);
     }
 
     /** Runs the project at a lowered speed */
@@ -166,9 +84,9 @@ export default class Menu implements IMenu {
     /** Stops running the project */
     private _stop(): void {
         console.log('stop');
-        if ('play timer' in this._temporaryStore) {
-            clearTimeout(this._temporaryStore['play timer'] as NodeJS.Timeout);
-            delete this._temporaryStore['play timer'];
+        if ('play timer' in this.temporaryStore) {
+            clearTimeout(this.temporaryStore['play timer'] as NodeJS.Timeout);
+            delete this.temporaryStore['play timer'];
             this.setState('playing', false);
         }
     }

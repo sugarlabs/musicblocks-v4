@@ -15,9 +15,30 @@ export interface IArtboard {
 }
 
 /**
- * Interface for the Menu subcomponent of the Monitor
+ * Interface for the Artboard Manager subcomponent proxied by the Monitor component.
  */
-export interface IMenu {
+export interface IArtboardManager {
+    /** pass the message to corresponding artboard.  */
+    enableHorizontalScroll: (isEnabled: boolean) => void;
+
+    enableTurtleWrap: (isWrapOn: boolean) => void;
+
+    playArtboard: (id: number) => void;
+
+    stopArtboard: (id: number) => void;
+
+    removeArtboard: (id: number) => void;
+
+    addArtboard: (id: number, x: number, y: number, angle: number) => void;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+/**
+ * Interface for the utilities class that is shared by the subcomponent instances of the Monitor.
+ * This class is meant to be extended by the subcomponent classes.
+ */
+export interface IMonitorUtils {
     /** Saves a `name:method` key-value pair inside the component */
     /* eslint-disable-next-line */
     registerMethod: (name: string, method: Function) => void;
@@ -48,26 +69,10 @@ export interface IMenu {
  * Interface for the Monitor component.
  */
 export interface IMonitor {
+    /** Menu subcomponent instance of Monitor */
+    menu: IMenu;
+
     /** Getter for the Palette subcomponent. */
     palette: IPalette;
-    menu: IMenu;
     manager: IManager;
-}
-
-/**
- * Interface for the Artboard Manager subcomponent proxied by the Monitor component.
- */
-export interface IArtboardManager {
-    /** pass the message to corresponding artboard.  */
-    enableHorizontalScroll: (isEnabled: boolean) => void;
-
-    enableTurtleWrap: (isWrapOn: boolean) => void;
-
-    playArtboard: (id: number) => void;
-
-    stopArtboard: (id: number) => void;
-
-    removeArtboard: (id: number) => void;
-
-    addArtboard: (id: number, x: number, y: number, angle: number) => void;
 }

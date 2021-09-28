@@ -186,25 +186,27 @@ class ArtboardManager implements IArtboardManager {
     };
 }
 
-// -- component definition -------------------------------------------------------------------------
-
 /**
  * Class representing the Monitor component.
  *
  * @description The Monitor component is the supervisor background component on the client side.
  */
-class Monitor implements IMonitor {
-    /** Instance of the Palette subcomponent. */
-    private _palette: Palette;
+export class Monitor implements IMonitor {
     /** Instance of the Menu subcomponent. */
     private _menu: Menu;
+
+    // -------------------------------------------------------------------------
+
+    /** Instance of the Palette subcomponent. */
+    private _palette: Palette;
     /** Instance of the Artboard subcomponent. */
     private _artboard: Artboard;
     private _manager: ArtboardManager;
 
     constructor() {
+        this._menu = new Menu(this);
+
         this._palette = new Palette();
-        this._menu = new Menu();
         this._artboard = new Artboard();
         this._manager = new ArtboardManager();
     }
@@ -253,4 +255,7 @@ class Monitor implements IMonitor {
 
 // -- component instance ---------------------------------------------------------------------------
 
+/**
+ * Instance of Monitor class. This is meant to be shared all throughout (almost like a singleton).
+ */
 export default new Monitor();

@@ -1,7 +1,7 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { IMenuModel } from '../../../@types/menu';
-import { TAppLanguage } from '../../../@types/config';
+import { IMenuModel } from '@/@types/menu';
+import { TAppLanguage } from '@/@types/config';
 
 // -- model component definition -------------------------------------------------------------------
 

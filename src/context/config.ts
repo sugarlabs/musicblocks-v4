@@ -2,11 +2,11 @@ import { createContext } from 'react';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { IAppConfig, IConfigContext, IProjectConfig } from '../@types/context';
+import { IAppConfig, IConfigContext, IProjectConfig } from '@/@types/context';
 
 // -- defaults -------------------------------------------------------------------------------------
 
-import { appConfig, projectConfig } from '../config';
+import { appConfig, projectConfig } from '@/config';
 
 /** Default values for global app configurations */
 export const appConfigDefaults: IAppConfig = { ...appConfig };

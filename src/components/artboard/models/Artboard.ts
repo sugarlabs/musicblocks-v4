@@ -1,7 +1,7 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { IArtboardModel } from '../../../@types/artboard';
-import { ITurtleModel } from '../../../@types/artboard';
+import { IArtboardModel } from '@/@types/artboard';
+import { ITurtleModel } from '@/@types/artboard';
 
 // -- model component definition -------------------------------------------------------------------
 

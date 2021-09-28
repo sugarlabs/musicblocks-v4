@@ -2,8 +2,8 @@
 
 import p5 from 'p5';
 import React, { useEffect, useState, createRef } from 'react';
-import { P5Instance, P5WrapperTurtleProps, IArtboardModel } from '../../../@types/artboard';
-import { getViewportDimensions } from '../../../utils/ambience';
+import { P5Instance, P5WrapperTurtleProps, IArtboardModel } from '@/@types/artboard';
+import { getViewportDimensions } from '@/utils/ambience';
 // -- model component definition -------------------------------------------------------------------
 
 let artBoardList: IArtboardModel[];

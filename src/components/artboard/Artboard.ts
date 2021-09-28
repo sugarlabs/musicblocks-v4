@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 // -- utilities ------------------------------------------------------------------------------------
 
-import { getViewportDimensions } from '../../utils/ambience';
+import { getViewportDimensions } from '@/utils/ambience';
 
 // -- view component -------------------------------------------------------------------------------
 

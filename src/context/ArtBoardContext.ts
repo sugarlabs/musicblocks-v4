@@ -2,8 +2,8 @@ import { createContext } from 'react';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { IArtBoardContext } from '../@types/context';
-import { IArtboardModel } from '../../src/@types/artboard';
+import { IArtBoardContext } from '@/@types/context';
+import { IArtboardModel } from '@/@types/artboard';
 
 // -- defaults -------------------------------------------------------------------------------------
 

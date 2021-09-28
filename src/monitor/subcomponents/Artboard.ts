@@ -1,6 +1,6 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { IArtboard, IArtboardManager } from '../../@types/monitor';
+import { IArtboard, IArtboardManager } from '@/@types/monitor';
 
 // -- other components -----------------------------------------------------------------------------
 

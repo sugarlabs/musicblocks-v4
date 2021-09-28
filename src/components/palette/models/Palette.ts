@@ -1,6 +1,6 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { IPaletteModel } from '../../../@types/palette';
+import { IPaletteModel } from '@/@types/palette';
 
 // -- model component definition -------------------------------------------------------------------
 

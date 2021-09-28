@@ -13,7 +13,11 @@
   "author": "Anindya Kundu <anindya.k22@outlook.com> (https://github.com/meganindya/)",
   "license": "AGPL-3.0",
   "module": "true",
+  "devDependencies": {
+    "craco-alias": "^3.0.1"
+  },
   "dependencies": {
+    "@craco/craco": "^6.3.0",
     "@testing-library/jest-dom": "^5.11.10",
     "@testing-library/react": "^11.2.6",
     "@testing-library/user-event": "^12.8.3",
@@ -34,10 +38,10 @@
     "web-vitals": "^1.1.1"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
+    "eject": "craco eject",
     "serve": "http-server . -p 80"
   },
   "eslintConfig": {
@@ -46,6 +50,9 @@
       "react-app/jest"
     ]
   },
+  "eslintIgnore": [
+    "craco.config.js"
+  ],
   "browserslist": {
     "production": [
       ">0.2%",

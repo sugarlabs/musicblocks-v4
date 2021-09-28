@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 // -- other component ------------------------------------------------------------------------------
 
-import monitor from '../../monitor/Monitor';
+import monitor from '@/monitor/Monitor';
 
 // -- model component ------------------------------------------------------------------------------
 

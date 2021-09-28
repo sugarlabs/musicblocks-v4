@@ -1,6 +1,6 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { IMonitorUtils } from '../@types/monitor';
+import { IMonitorUtils } from '@/@types/monitor';
 
 // -- component definition -------------------------------------------------------------------------
 

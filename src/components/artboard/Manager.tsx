@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 
 // -- content --------------------------------------------------------------------------------------
 
-import { ArtBoardContext } from '../../context/ArtBoardContext';
+import { ArtBoardContext } from '@/context/ArtBoardContext';
 
 // -- other components -----------------------------------------------------------------------------
 

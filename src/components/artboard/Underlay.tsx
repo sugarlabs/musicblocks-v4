@@ -2,7 +2,7 @@
 import p5 from 'p5';
 import React, { useEffect, useState, createRef } from 'react';
 
-import { P5Instance, SketchProps, P5WrapperProps } from '../../@types/artboard';
+import { P5Instance, SketchProps, P5WrapperProps } from '@/@types/artboard';
 
 export const Sketch = (sketch: P5Instance): void => {
   let underlayCanvas: p5.Element;

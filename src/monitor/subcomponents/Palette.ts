@@ -7,7 +7,7 @@ import { Monitor } from '../Monitor';
 
 // -- utilities ------------------------------------------------------------------------------------
 
-import { getBlockList, getSections, getSubSection } from '../../utils/config';
+import { getBlockList, getSections, getSubSection } from '@/utils/config';
 
 // -- subcomponent definition ----------------------------------------------------------------------
 

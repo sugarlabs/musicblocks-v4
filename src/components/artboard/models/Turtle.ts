@@ -1,6 +1,6 @@
 // -- types ----------------------------------------------------------------------------------------
 import p5 from 'p5';
-import { ITurtleModel } from '../../../@types/artboard';
+import { ITurtleModel } from '@/@types/artboard';
 
 // -- model component definition -------------------------------------------------------------------
 

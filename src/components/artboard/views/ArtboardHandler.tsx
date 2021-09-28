@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 // -- types ----------------------------------------------------------------------------------------
 
-import { IArtboardHandlerProps } from '../../../@types/artboard';
+import { IArtboardHandlerProps } from '@/@types/artboard';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 

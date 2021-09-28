@@ -1,6 +1,6 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { IArtBoardDrawModel } from '../../../@types/artboard';
+import { IArtBoardDrawModel } from '@/@types/artboard';
 
 // -- model component definition -------------------------------------------------------------------
 

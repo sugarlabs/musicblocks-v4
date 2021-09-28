@@ -1,6 +1,6 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { IArtboardManagerModel } from '../../../@types/artboard';
+import { IArtboardManagerModel } from '@/@types/artboard';
 
 import IArtboardModel from './Artboard';
 

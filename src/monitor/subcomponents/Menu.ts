@@ -1,6 +1,6 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { TAppLanguage } from '../../@types/config';
+import { TAppLanguage } from '@/@types/config';
 
 // -- other components -----------------------------------------------------------------------------
 
@@ -9,7 +9,7 @@ import { Monitor } from '../Monitor';
 
 // -- utilities ------------------------------------------------------------------------------------
 
-import { collectAppLanguages, collectBrickSizes } from '../../utils/config';
+import { collectAppLanguages, collectBrickSizes } from '@/utils/config';
 
 // -- subcomponent definition ----------------------------------------------------------------------
 

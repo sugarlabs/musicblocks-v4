@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { IBlockPopUp } from '../../@types/palette';
+import { IBlockPopUp } from '@/@types/palette';
 
 // -- other components -----------------------------------------------------------------------------
 
-import monitor from '../../monitor/Monitor';
+import monitor from '@/monitor/Monitor';
 
 // -- view component -------------------------------------------------------------------------------
 

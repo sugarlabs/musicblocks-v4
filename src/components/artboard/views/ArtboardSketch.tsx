@@ -2,15 +2,15 @@
 
 import p5 from 'p5';
 import React, { useEffect, createRef, useState, useContext } from 'react';
-import { getViewportDimensions } from '../../../utils/ambience';
-import { P5Instance, SketchProps, P5WrapperProps } from '../../../@types/artboard';
+import { getViewportDimensions } from '@/utils/ambience';
+import { P5Instance, SketchProps, P5WrapperProps } from '@/@types/artboard';
 
 // -- model component definition -------------------------------------------------------------------
 import ArtBoardDraw from '../models/ArBoardDraw';
 // let turtle: ITurtleModel;
 
 // -- global configuration context definition -----------------------------------------------------------
-import { ConfigContext } from '../../../context/config';
+import { ConfigContext } from '@/context/config';
 
 /** This is a setup function.*/
 

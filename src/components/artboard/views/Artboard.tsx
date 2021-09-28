@@ -1,10 +1,10 @@
 import { useContext, useState } from 'react';
 // -- types ----------------------------------------------------------------------------------------
 
-import { IArtboardProps } from '../../../@types/artboard';
-import { ArtBoardContext } from '../../../context/ArtBoardContext';
+import { IArtboardProps } from '@/@types/artboard';
+import { ArtBoardContext } from '@/context/ArtBoardContext';
 
-import monitor from '../../../monitor/Monitor';
+import monitor from '@/monitor/Monitor';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 

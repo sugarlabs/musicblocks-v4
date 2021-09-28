@@ -10,8 +10,8 @@ import Artboard from './Artboard';
 
 // -- model components -----------------------------------------------------------------------------
 
-import IArtboardModel from '../../models/artboard/Artboard';
-import ITurtleModel from '../../models/artboard/Turtle';
+import IArtboardModel from './models/Artboard';
+import ITurtleModel from './models/Turtle';
 
 // -- view-model component definition --------------------------------------------------------------
 

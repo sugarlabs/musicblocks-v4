@@ -9,9 +9,9 @@ import { TAppLanguage, TAppTheme } from './@types/config';
 import { appConfigDefaults, ConfigContext, projectConfigDefaults } from './context/config';
 import { ArtBoardContext, ContextDefaultArtBoard } from './context/ArtBoardContext';
 
-// -- subcomponents --------------------------------------------------------------------------------
+// -- other components -----------------------------------------------------------------------------
 
-import monitor from './components/monitor/Monitor';
+import monitor from './monitor/Monitor';
 import Menu from './components/menu/Menu';
 import Palette from './components/palette/Palette';
 import Manager from './components/artboard/Manager';

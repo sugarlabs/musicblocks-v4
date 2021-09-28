@@ -6,11 +6,11 @@ import { IBlockPopUp } from '../../@types/palette';
 
 // -- other components -----------------------------------------------------------------------------
 
-import monitor from '../monitor/Monitor';
+import monitor from '../../monitor/Monitor';
 
 // -- view component -------------------------------------------------------------------------------
 
-import PopUp from '../../views/palette/PopUp';
+import PopUp from './views/PopUp';
 
 // -- view-model component definition --------------------------------------------------------------
 

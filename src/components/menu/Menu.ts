@@ -6,7 +6,7 @@ import { TAppLanguage } from '../../@types/config';
 
 // -- other components -----------------------------------------------------------------------------
 
-import Monitor from '../monitor/Monitor';
+import Monitor from '../../monitor/Monitor';
 
 // -- context --------------------------------------------------------------------------------------
 
@@ -14,12 +14,12 @@ import { ConfigContext } from '../../context/config';
 
 // -- model component ------------------------------------------------------------------------------
 
-import _MenuModel from '../../models/menu/Menu';
+import _MenuModel from './models/Menu';
 const MenuModel = new _MenuModel();
 
 // -- view component -------------------------------------------------------------------------------
 
-import MenuView from '../../views/menu/Menu';
+import MenuView from './views/Menu';
 
 // -- view-model component definition --------------------------------------------------------------
 

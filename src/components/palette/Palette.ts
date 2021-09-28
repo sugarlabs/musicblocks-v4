@@ -2,16 +2,16 @@ import { useEffect, useState } from 'react';
 
 // -- other component ------------------------------------------------------------------------------
 
-import monitor from '../monitor/Monitor';
+import monitor from '../../monitor/Monitor';
 
 // -- model component ------------------------------------------------------------------------------
 
-import _PaletteModel from '../../models/palette/Palette';
+import _PaletteModel from './models/Palette';
 const PaletteModel = new _PaletteModel();
 
 // -- view component -------------------------------------------------------------------------------
 
-import Palette from '../../views/palette/Palette';
+import Palette from './views/Palette';
 
 // -- view-model component definition --------------------------------------------------------------
 

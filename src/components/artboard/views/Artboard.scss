@@ -1,0 +1,31 @@
+@import '../../../scss/colors';
+
+#artboard-wrapper {
+  position: relative;
+  z-index: 1;
+  width: inherit;
+  height: inherit;
+  background: $artboard-background;
+  .art-board-sketch {
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  }
+  .art-board-sketch-turtle {
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  }
+  button {
+    z-index: 200000000 !important;
+  }
+  h4 {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}

@@ -1,6 +1,6 @@
 // -- view component -------------------------------------------------------------------------------
 
-import Builder from '../../views/builder/Builder';
+import Builder from './views/Builder';
 
 // -- view-model component definition---------------------------------------------------------------
 

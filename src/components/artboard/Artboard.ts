@@ -6,7 +6,7 @@ import { getViewportDimensions } from '../../utils/ambience';
 
 // -- view component -------------------------------------------------------------------------------
 
-import Artboard from '../../views/artboard/Artboard';
+import Artboard from './views/Artboard';
 
 // -- view-model component definition --------------------------------------------------------------
 

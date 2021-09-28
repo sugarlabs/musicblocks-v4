@@ -1,11 +1,15 @@
-// -- monitor component ----------------------------------------------------------------------------
+import { useEffect, useState } from 'react';
 
-import Monitor from '../monitor/Monitor';
-// -- type -----------------------------------------------------------------------------------------
+// -- types ----------------------------------------------------------------------------------------
+
 import { IBlockPopUp } from '../../@types/palette';
+
+// -- other components -----------------------------------------------------------------------------
+
+import monitor from '../monitor/Monitor';
+
 // -- view component -------------------------------------------------------------------------------
 
-import { useEffect, useState } from 'react';
 import PopUp from '../../views/palette/PopUp';
 
 // -- view-model component definition --------------------------------------------------------------
@@ -27,7 +31,15 @@ export default function (props: IBlockPopUp): JSX.Element {
     let subSectionName = props.subSectionName;
     const [blockList, setBlockList] = useState<(string | { [button: string]: string[] })[]>([]);
     useEffect(() => {
-        (async () => setBlockList(await Monitor.palette.getBlockList(subSectionName)))();
+        // (async () => setBlockList(await Monitor.palette.getBlockList(subSectionName)))();
+        (async () => {
+            setBlockList(
+                (await monitor.palette.getMethodResult('fetchBlockList', subSectionName)) as (
+                    | string
+                    | { [button: string]: string[] }
+                )[],
+            );
+        })();
     }, [props.subSectionName]);
 
     return PopUp({

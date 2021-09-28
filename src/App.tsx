@@ -13,7 +13,7 @@ import { appConfigDefaults, ConfigContext, projectConfigDefaults } from './conte
 
 import monitor from './components/monitor/Monitor';
 import Menu from './components/menu/Menu';
-// import Palette from './components/palette/Palette';
+import Palette from './components/palette/Palette';
 // import Manager from './components/artboard/Manager';
 
 // -- stylesheet -----------------------------------------------------------------------------------
@@ -74,7 +74,7 @@ export default function App(): JSX.Element {
           <Manager />
         </ArtBoardContext.Provider> */}
         <Menu />
-        {/* <Palette /> */}
+        <Palette />
       </main>
     </ConfigContext.Provider>
   );

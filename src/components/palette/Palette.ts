@@ -1,6 +1,8 @@
-// -- monitor component ----------------------------------------------------------------------------
+import { useEffect, useState } from 'react';
 
-import Monitor from '../monitor/Monitor';
+// -- other component ------------------------------------------------------------------------------
+
+import monitor from '../monitor/Monitor';
 
 // -- model component ------------------------------------------------------------------------------
 
@@ -9,7 +11,6 @@ const PaletteModel = new _PaletteModel();
 
 // -- view component -------------------------------------------------------------------------------
 
-import { useEffect, useState } from 'react';
 import Palette from '../../views/palette/Palette';
 
 // -- view-model component definition --------------------------------------------------------------
@@ -23,17 +24,31 @@ export default function (): JSX.Element {
     const [selectedSection, setSelectedSection] = useState<number>(0);
     const [hideSubSection, setHideSubSection] = useState<boolean>(true);
     const [openedSection, setOpenedSection] = useState<number>(-1);
+
     useEffect(() => {
-        (async () => setSections(await Monitor.palette.getSections()))();
+        // (async () => setSections(await monitor.palette.getSections()))();
+        (async () => {
+            setSections((await monitor.palette.getMethodResult('fetchSections')) as string[]);
+        })();
     }, []);
 
     useEffect(() => {
-        (async () => setSubSections(await Monitor.palette.getSubSection(selectedSection)))();
+        // (async () => setSubSections(await monitor.palette.getSubSection(selectedSection)))();
+        (async () => {
+            setSubSections(
+                (await monitor.palette.getMethodResult(
+                    'fetchSubSections',
+                    selectedSection,
+                )) as string[],
+            );
+        })();
     }, [selectedSection]);
+
     const toggleHideSubSection = (flag: boolean) => {
         PaletteModel.toggleHideSubSection(flag);
         setHideSubSection(PaletteModel.hideSubSection);
     };
+
     const changeSelectedSection = (index: number) => {
         if (openedSection === index) {
             toggleHideSubSection(true);
@@ -46,6 +61,9 @@ export default function (): JSX.Element {
             toggleHideSubSection(false);
         }
     };
+
+    // -- render -----------------------------------------------------------------------------------
+
     return Palette({
         sections,
         subSections,

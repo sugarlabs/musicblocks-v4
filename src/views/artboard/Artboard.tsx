@@ -4,7 +4,7 @@ import { useContext, useState } from 'react';
 import { IArtboardProps } from '../../@types/artboard';
 import { ArtBoardContext } from '../../context/ArtBoardContext';
 
-import Monitor from '../../components/monitor/Monitor';
+import monitor from '../../components/monitor/Monitor';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
@@ -34,7 +34,8 @@ export default function (props: IArtboardProps): JSX.Element {
   const performClean = () => setDoClean(true);
 
   // register the performClean method to the Monitor to connect this with the menu dock
-  Monitor.registerArtboardClean(performClean);
+  monitor.manager.registerMethod('clean', performClean);
+
   const [doMove, setDoMove] = useState(false);
   const [doRotate, setDoRotate] = useState(false);
   const moveTurtleForward = () => setDoMove(true);
@@ -42,7 +43,7 @@ export default function (props: IArtboardProps): JSX.Element {
   // Only the selected turtle from the list will move
   const [selectedTurtle, setSelectedTurtle] = useState(1);
   // object to change the direction, angle and speed of the turtle
-  const [turtleMoveSettings, setTurtleMoveSettings] = useState({
+  const [turtleMoveSettings /*, setTurtleMoveSettings*/] = useState({
     arcRadius: 5,
     arcAngle: 90,
     sleepTime: 10,

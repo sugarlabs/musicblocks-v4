@@ -18,7 +18,7 @@ import { ConfigContext } from '../../context/config';
  * Handles the main functionality of the artboard sketch.
  */
 export const ArtboardSketch: React.FC<P5WrapperProps> = ({ children, ...props }) => {
-  const { appConfig, setAppConfig } = useContext(ConfigContext);
+  const { appConfig /*, setAppConfig*/ } = useContext(ConfigContext);
   const artBoardDraw = new ArtBoardDraw(props.turtle.getColor());
   const [currentTurtle, setcurrentTurtle] = useState(props.turtle);
   const [turtleSettings, setTurtleSettings] = useState(props.turtleSettings);

@@ -1,7 +1,5 @@
 import { useState } from 'react';
 
-// -- model component ------------------------------------------------------------------------------
-
 // -- utilities ------------------------------------------------------------------------------------
 
 import { getViewportDimensions } from '../../utils/ambience';
@@ -15,11 +13,17 @@ import Artboard from '../../views/artboard/Artboard';
 /**
  * ViewModel of the Artboard Framework component.
  */
-export default function (props: any): JSX.Element {
-    const moveToTop = props.moveToTop;
-    const activeBoards = props.activeBoards;
+export default function (props: {
+    moveToTop: (id: number) => void;
+    activeBoards: number[];
+}): JSX.Element {
     const [dimensions, setDimensions] = useState(getViewportDimensions());
     const updateDimensions = () => setDimensions(getViewportDimensions());
 
-    return Artboard({ dimensions, updateDimensions, moveToTop, activeBoards });
+    return Artboard({
+        dimensions,
+        updateDimensions,
+        moveToTop: props.moveToTop,
+        activeBoards: (activeBoards: number[]) => activeBoards,
+    });
 }

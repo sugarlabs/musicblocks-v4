@@ -61,10 +61,10 @@ export interface IMonitorUtils {
  * Interface for the Monitor component.
  */
 export interface IMonitor {
-    /** Menu subcomponent instance of Monitor */
+    /** Menu subcomponent instance of Monitor. */
     menu: IMenu;
-
-    /** Getter for the Palette subcomponent. */
+    /** Palette subcomponent instance of Monitor. */
     palette: IPalette;
+
     manager: IManager;
 }

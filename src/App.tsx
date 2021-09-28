@@ -7,14 +7,14 @@ import { TAppLanguage, TAppTheme } from './@types/config';
 // -- context --------------------------------------------------------------------------------------
 
 import { appConfigDefaults, ConfigContext, projectConfigDefaults } from './context/config';
-// import { ArtBoardContext, ContextDefaultArtBoard } from './context/ArtBoardContext';
+import { ArtBoardContext, ContextDefaultArtBoard } from './context/ArtBoardContext';
 
 // -- subcomponents --------------------------------------------------------------------------------
 
 import monitor from './components/monitor/Monitor';
 import Menu from './components/menu/Menu';
 import Palette from './components/palette/Palette';
-// import Manager from './components/artboard/Manager';
+import Manager from './components/artboard/Manager';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
@@ -62,17 +62,17 @@ export default function App(): JSX.Element {
     setProjectConfig({ ...projectConfig, masterVolume });
   });
 
-  // const [artBoardList, setArtBoardList] = useState(ContextDefaultArtBoard.artBoardList);
-  // const numberOfArtboards = 5;
+  const [artBoardList, setArtBoardList] = useState(ContextDefaultArtBoard.artBoardList);
+  const numberOfArtboards = 5;
 
   // -- render -------------------------------------------------------------------------------------
 
   return (
     <ConfigContext.Provider value={{ appConfig, setAppConfig, projectConfig, setProjectConfig }}>
       <main id="app">
-        {/* <ArtBoardContext.Provider value={{ artBoardList, setArtBoardList, numberOfArtboards }}>
+        <ArtBoardContext.Provider value={{ artBoardList, setArtBoardList, numberOfArtboards }}>
           <Manager />
-        </ArtBoardContext.Provider> */}
+        </ArtBoardContext.Provider>
         <Menu />
         <Palette />
       </main>

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
 
 // -- types ----------------------------------------------------------------------------------------
 
@@ -46,12 +46,7 @@ export default function (): JSX.Element {
         })();
     }, []);
 
-    const [value, setValue] = useState(false);
-    const forceUpdate = () => setValue(!value);
-    Monitor.menu.registerStateObject(
-        MenuModel as unknown as { [key: string]: unknown },
-        forceUpdate,
-    );
+    Monitor.menu.registerStateObject(MenuModel as unknown as { [key: string]: unknown });
 
     const { appConfig, projectConfig } = useContext(ConfigContext);
 

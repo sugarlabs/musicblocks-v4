@@ -2,6 +2,10 @@
 
 import { IMonitorUtils } from '@/@types/monitor';
 
+// -- hooks ----------------------------------------------------------------------------------------
+
+import { useForceUpdate } from '@/hooks/components';
+
 // -- component definition -------------------------------------------------------------------------
 
 /**
@@ -67,10 +71,9 @@ export class MonitorUtils implements IMonitorUtils {
         return null;
     }
 
-    public registerStateObject(
-        stateObject: { [key: string]: unknown },
-        forceUpdate: () => void,
-    ): void {
+    public registerStateObject(stateObject: { [key: string]: unknown }): void {
+        const forceUpdate = useForceUpdate();
+
         this.methodTable['__get__'] = (state: string) => {
             if (state in stateObject) {
                 return stateObject[state];

@@ -31,10 +31,20 @@ export interface IArtboardManager {
  * This class is meant to be extended by the subcomponent classes.
  */
 export interface IMonitorUtils {
-    /** Saves a `name:method` key-value pair inside the component */
+    /**
+     * Saves a `name:method` key-value pair inside the component.
+     *
+     * @param name - registered name of the method.
+     * @param method - registered method callback.
+     */
     /* eslint-disable-next-line */
     registerMethod: (name: string, method: Function) => void;
-    /** Removes a `name:method` key-value pair from the component */
+    /**
+     * Removes a `name:method` key-value pair from the component.
+     *
+     * @param name - registered name of the method.
+     * @returns `true` if successful removal else `false`.
+     */
     unregisterMethod: (name: string) => boolean;
 
     /*
@@ -42,18 +52,44 @@ export interface IMonitorUtils {
      * might not match method signature).
      */
 
-    /** Calls the method with the given name and passes the arguments. */
+    /**
+     * Calls the method with the given name and passes the arguments.
+     *
+     * @param name - registered name of the method.
+     * @param args - arguments to the method call.
+     */
     doMethod: (name: string, ...args: unknown[]) => void;
     /**
      * Calls the method with the given name and passes the arguments, and returns a `Promise` of the
      * returned values.
+     *
+     * @param name - registered name of the method.
+     * @param args - arguments to the method call.
+     * @returns `Promise` instance for the returned value if valid method name, else `null`.
      */
     getMethodResult: (name: string, ...args: unknown[]) => Promise<unknown> | null;
-    /** Registers a getter and a setter function for the model state object */
-    registerStateObject: (stateObject: { [key: string]: unknown }, forceUpdate: () => void) => void;
-    /** Returns a model state */
+    /**
+     * Registers a getter and a setter function for the model state object.
+     *
+     * @description This also adds a force update hook which re-renders the corresponding
+     * component when a state is updated.
+     *
+     * @param stateObject - model instance of the corresponding component.
+     */
+    registerStateObject: (stateObject: { [key: string]: unknown }) => void;
+    /**
+     * Returns a model state.
+     *
+     * @param state - name of the state.
+     * @returns value of the state.
+     */
     getState: (state: string) => unknown;
-    /** Sets a model state */
+    /**
+     * Sets a model state.
+     *
+     * @param state - name of the state.
+     * @param value - value to store for the state.
+     * */
     setState: (state: string, value: unknown) => void;
 }
 

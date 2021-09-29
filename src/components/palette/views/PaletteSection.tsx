@@ -1,14 +1,14 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { ISectionProps } from '@/@types/palette';
+import { IPaletteSectionProps } from '@/@types/palette';
 
 // -- other components -----------------------------------------------------------------------------
 
-import SubSection from './SubSection';
+import PaletteSubSection from './PaletteSubSection';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
-import './Section.scss';
+import './PaletteSection.scss';
 
 // -- view component definition --------------------------------------------------------------------
 
@@ -17,23 +17,18 @@ import './Section.scss';
  *
  * @returns root JSX element
  */
-export default function (props: ISectionProps): JSX.Element {
-  const render = () => {
-    if (props.openedSection === props.selectedSection) {
-      return true;
-    } else {
-      return false;
-    }
-  };
+export default function (props: IPaletteSectionProps): JSX.Element {
   return (
-    <div id="section-wrapper">
+    <div className="palette-section-wrapper">
       <button
-        className="sectionButton"
-        onClick={() => props.changeSelectedSection(props.selectedSection)}
+        className="palette-section-button"
+        onClick={() => props.setOpenedSection(props.section)}
       >
         {props.section}
       </button>
-      {!props.hideSubSection && render() ? <SubSection subSections={props.subSections} /> : null}
+      {props.opened && (
+        <PaletteSubSection subSections={props.subSections} brickList={props.brickList} />
+      )}
     </div>
   );
 }

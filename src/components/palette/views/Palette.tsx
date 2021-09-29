@@ -1,10 +1,12 @@
+import { useState } from 'react';
+
 // -- types ----------------------------------------------------------------------------------------
 
 import { IPaletteProps } from '@/@types/palette';
 
 // -- other components -----------------------------------------------------------------------------
 
-import Section from './Section';
+import PaletteSection from './PaletteSection';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
@@ -18,17 +20,22 @@ import './Palette.scss';
  * @returns root JSX element
  */
 export default function (props: IPaletteProps): JSX.Element {
+  const [openedSection, setOpenedSection] = useState<string | null>(null);
+
+  // -- render -------------------------------------------------------------------------------------
+
   return (
     <div id="palette-wrapper">
-      {props.sections.map((section, i) => (
-        <Section
-          key={i}
-          openedSection={props.openedSection}
-          selectedSection={i}
+      {props.sections.map((section) => (
+        <PaletteSection
+          key={`palette-section-${section}`}
           section={section}
-          changeSelectedSection={props.changeSelectedSection}
-          hideSubSection={props.hideSubSection}
-          subSections={props.subSections}
+          opened={section === openedSection}
+          setOpenedSection={(section: string | null) =>
+            setOpenedSection(section === openedSection ? null : section)
+          }
+          subSections={props.subSections[section]}
+          brickList={props.brickList[section]}
         />
       ))}
     </div>

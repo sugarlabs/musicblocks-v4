@@ -1,6 +1,6 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { IPaletteModel } from '@/@types/palette';
+import { IPaletteModel, TBrickList } from '@/@types/palette';
 
 // -- model component definition -------------------------------------------------------------------
 
@@ -8,41 +8,37 @@ import { IPaletteModel } from '@/@types/palette';
  * Class representing the Model of the Menu component.
  */
 export default class implements IPaletteModel {
-    /** Stores the value of the selected Section. */
-    private _selectedSection: number;
-    /** Stores whether to show the subSection or not */
-    private _hideSubSection: boolean;
+    private _sections: string[];
+    private _subSections: { [key: string]: string[] };
+    private _brickList: TBrickList;
 
     constructor() {
-        this._selectedSection = 0;
-        this._hideSubSection = true;
+        this._sections = [];
+        this._subSections = {};
+        this._brickList = {};
     }
 
-    /**
-     * return index of selected Section
-     */
-    get selectedSection(): number {
-        return this._selectedSection;
+    get sections(): string[] {
+        return this._sections;
     }
 
-    /**
-     * `true` is the sub section is hidden
-     */
-    get hideSubSection(): boolean {
-        return this._hideSubSection;
+    set sections(sections: string[]) {
+        this._sections = sections;
     }
 
-    /**
-     * Change the value of selected section`.
-     */
-    changeSelectedSection(index: number): void {
-        this._selectedSection = index;
+    get subSections(): { [key: string]: string[] } {
+        return this._subSections;
     }
 
-    /**
-     * toggle the value of `_higheSubSection`.
-     */
-    toggleHideSubSection(flag: boolean): void {
-        this._hideSubSection = flag;
+    set subSections(subSections: { [key: string]: string[] }) {
+        this._subSections = subSections;
+    }
+
+    get brickList(): TBrickList {
+        return this._brickList;
+    }
+
+    set brickList(brickList: TBrickList) {
+        this._brickList = brickList;
     }
 }

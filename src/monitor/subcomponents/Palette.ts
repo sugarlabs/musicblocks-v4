@@ -1,5 +1,7 @@
 // -- types ----------------------------------------------------------------------------------------
 
+import { TBrickList } from '@/@types/palette';
+
 // -- other components -----------------------------------------------------------------------------
 
 import { MonitorUtils } from '../MonitorUtils';
@@ -7,7 +9,11 @@ import { Monitor } from '../Monitor';
 
 // -- utilities ------------------------------------------------------------------------------------
 
-import { getBlockList, getSections, getSubSection } from '@/utils/config';
+import {
+    collectBrickList,
+    collectPaletteSections,
+    collectPaletteSubSections,
+} from '@/utils/config';
 
 // -- subcomponent definition ----------------------------------------------------------------------
 
@@ -23,8 +29,8 @@ export default class Palette extends MonitorUtils {
 
         this.methodTable = {
             fetchSections: this._fetchSections,
-            fetchSubSection: this._fetchSubSection,
-            fetchBlockList: this._fetchBlockList,
+            fetchSubSections: this._fetchSubSections,
+            fetchBrickList: this._fetchBrickList,
         };
     }
 
@@ -32,16 +38,15 @@ export default class Palette extends MonitorUtils {
 
     /** Returns a Promise for the list of palette sections. */
     private _fetchSections(): Promise<string[]> {
-        return getSections();
+        return collectPaletteSections();
     }
 
-    private _fetchSubSection(index: number): Promise<string[]> {
-        return getSubSection(index);
+    /** Returns a Promise for the list of palette sub-sections. */
+    private _fetchSubSections(): Promise<{ [key: string]: string[] }> {
+        return collectPaletteSubSections();
     }
 
-    private _fetchBlockList(
-        subSection: string,
-    ): Promise<(string | { [button: string]: string[] })[]> {
-        return getBlockList(subSection);
+    private _fetchBrickList(): Promise<TBrickList> {
+        return collectBrickList();
     }
 }

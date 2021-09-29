@@ -4,7 +4,7 @@ import { TAppLanguage } from '@/@types/config';
 
 // -- other components -----------------------------------------------------------------------------
 
-import { MonitorUtils } from '../MonitorUtils';
+import { SignalUtils } from '../SignalUtils';
 import { Monitor } from '../Monitor';
 
 // -- utilities ------------------------------------------------------------------------------------
@@ -16,7 +16,7 @@ import { collectAppLanguages, collectBrickSizes } from '@/utils/config';
 /**
  * Class representing the Menu subcomponent proxied by the Monitor component.
  */
-export default class Menu extends MonitorUtils {
+export default class Menu extends SignalUtils {
     protected monitor: Monitor;
 
     constructor(monitor: Monitor) {

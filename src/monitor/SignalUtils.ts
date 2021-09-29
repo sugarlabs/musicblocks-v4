@@ -1,6 +1,6 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { IMonitorUtils } from '@/@types/monitor';
+import { ISignalUtils } from '@/@types/monitor';
 
 // -- hooks ----------------------------------------------------------------------------------------
 
@@ -14,7 +14,7 @@ import { useForceUpdate } from '@/hooks/components';
  * @description The individual subcomponent instances: Menu, Palette, etc. need to share some common
  * utilities. This class prevents code redundancy.
  */
-export class MonitorUtils implements IMonitorUtils {
+export class SignalUtils implements ISignalUtils {
     /* eslint-disable-next-line */
     protected methodTable: { [key: string]: Function } = {};
     protected temporaryStore: { [key: string]: unknown } = {};

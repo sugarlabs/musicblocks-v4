@@ -27,10 +27,14 @@ export interface IArtboardManager {
 // -------------------------------------------------------------------------------------------------
 
 /**
- * Interface for the utilities class that is shared by the subcomponent instances of the Monitor.
- * This class is meant to be extended by the subcomponent classes.
+ * Interface for the signal utilities class that is shared by the subcomponent instances of the
+ * Monitor and used by the `useSignalEndpoint` hook to establist communication between components
+ * and the corresponding Monitor subcomponents.
+ *
+ * @description This class is meant to be extended by the subcomponent classes and the
+ * `useSignalEndpoint` hook.
  */
-export interface IMonitorUtils {
+export interface ISignalUtils {
     /**
      * Saves a `name:method` key-value pair inside the component.
      *

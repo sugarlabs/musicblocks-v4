@@ -18,6 +18,7 @@ export class SignalUtils implements ISignalUtils {
     /* eslint-disable-next-line */
     protected methodTable: { [key: string]: Function } = {};
     protected temporaryStore: { [key: string]: unknown } = {};
+    protected signalEndpoint!: ISignalUtils;
 
     /* eslint-disable-next-line */
     public registerMethod(name: string, method: Function): void {
@@ -97,5 +98,9 @@ export class SignalUtils implements ISignalUtils {
 
     public setState(state: string, value: unknown): void {
         this.doMethod('__set__', state, value);
+    }
+
+    public registerEndpoint(signalEndpoint: ISignalUtils): void {
+        this.signalEndpoint = signalEndpoint;
     }
 }

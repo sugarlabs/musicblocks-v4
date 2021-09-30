@@ -1,6 +1,6 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { ISignalUtils } from '@/@types/monitor';
+import { IMessageUtils } from '@/@types/monitor';
 
 // -- hooks ----------------------------------------------------------------------------------------
 
@@ -14,11 +14,11 @@ import { useForceUpdate } from '@/hooks/components';
  * @description The individual subcomponent instances: Menu, Palette, etc. need to share some common
  * utilities. This class prevents code redundancy.
  */
-export class SignalUtils implements ISignalUtils {
+export abstract class MessageUtils implements IMessageUtils {
     /* eslint-disable-next-line */
     protected methodTable: { [key: string]: Function } = {};
     protected temporaryStore: { [key: string]: unknown } = {};
-    protected signalEndpoint!: ISignalUtils;
+    protected messageEndpoint!: IMessageUtils;
 
     /* eslint-disable-next-line */
     public registerMethod(name: string, method: Function): void {
@@ -100,7 +100,7 @@ export class SignalUtils implements ISignalUtils {
         this.doMethod('__set__', state, value);
     }
 
-    public registerEndpoint(signalEndpoint: ISignalUtils): void {
-        this.signalEndpoint = signalEndpoint;
+    public registerEndpoint(messageEndpoint: IMessageUtils): void {
+        this.messageEndpoint = messageEndpoint;
     }
 }

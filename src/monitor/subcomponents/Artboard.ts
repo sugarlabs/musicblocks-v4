@@ -1,6 +1,6 @@
 // -- other components -----------------------------------------------------------------------------
 
-import { SignalUtils } from '../SignalUtils';
+import { MessageUtils } from '../MessageUtils';
 import { Monitor } from '../Monitor';
 
 // -- subcomponent definition ----------------------------------------------------------------------
@@ -8,7 +8,7 @@ import { Monitor } from '../Monitor';
 /**
  * Class representing the ArtboardManager subcomponent proxied by the Monitor component.
  */
-export default class ArtboardManager extends SignalUtils {
+export default class ArtboardManager extends MessageUtils {
     protected monitor: Monitor;
 
     constructor(monitor: Monitor) {

@@ -4,7 +4,7 @@ import { TBrickList } from '@/@types/palette';
 
 // -- other components -----------------------------------------------------------------------------
 
-import { SignalUtils } from '../SignalUtils';
+import { MessageUtils } from '../MessageUtils';
 import { Monitor } from '../Monitor';
 
 // -- utilities ------------------------------------------------------------------------------------
@@ -20,7 +20,7 @@ import {
 /**
  * Class representing the Menu subcomponent proxied by the Monitor component.
  */
-export default class Palette extends SignalUtils {
+export default class Palette extends MessageUtils {
     protected monitor: Monitor;
 
     constructor(monitor: Monitor) {

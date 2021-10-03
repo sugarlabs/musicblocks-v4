@@ -4,6 +4,10 @@ import { useEffect } from 'react';
 
 import { TBrickList } from '@/@types/palette';
 
+// -- hooks ----------------------------------------------------------------------------------------
+
+import { useForceUpdate } from '@/hooks/components';
+
 // -- other component ------------------------------------------------------------------------------
 
 import monitor from '@/monitor/Monitor';
@@ -23,6 +27,8 @@ import Palette from './views/Palette';
  * ViewModel of the Palette component.
  */
 export default function (): JSX.Element {
+    const forceUpdate = useForceUpdate();
+
     useEffect(() => {
         (async () => {
             PaletteModel.sections = (await monitor.palette.getMethodResult(
@@ -38,6 +44,8 @@ export default function (): JSX.Element {
             PaletteModel.brickList = (await monitor.palette.getMethodResult(
                 'fetchBrickList',
             )) as TBrickList;
+
+            forceUpdate();
         })();
     }, []);
 

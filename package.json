@@ -13,28 +13,41 @@
   "author": "Anindya Kundu <anindya.k22@outlook.com> (https://github.com/meganindya/)",
   "license": "AGPL-3.0",
   "module": "true",
+  "devDependencies": {
+    "@types/jest": "^26.0.22",
+    "@types/jquery": "^3.5.8",
+    "@types/jqueryui": "^1.12.16",
+    "@types/node": "^12.20.7",
+    "@types/p5": "^1.3.0",
+    "@types/react": "^17.0.3",
+    "@types/react-dom": "^17.0.3",
+    "@types/uuid": "^8.3.1",
+    "craco-alias": "^3.0.1",
+    "jqueryui": "^1.11.1"
+  },
   "dependencies": {
+    "@craco/craco": "^6.3.0",
     "@testing-library/jest-dom": "^5.11.10",
     "@testing-library/react": "^11.2.6",
     "@testing-library/user-event": "^12.8.3",
-    "@types/jest": "^26.0.22",
-    "@types/node": "^12.20.7",
-    "@types/react": "^17.0.3",
-    "@types/react-dom": "^17.0.3",
     "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "jquery": "^3.6.0",
+    "p5": "^1.3.1",
+    "prettier": "2.3.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
     "sass": "^1.32.8",
     "typescript": "^4.2.4",
+    "uuid": "^8.3.2",
     "web-vitals": "^1.1.1"
   },
-  "devDependencies": {},
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
+    "eject": "craco eject",
     "serve": "http-server . -p 80"
   },
   "eslintConfig": {
@@ -43,6 +56,9 @@
       "react-app/jest"
     ]
   },
+  "eslintIgnore": [
+    "craco.config.js"
+  ],
   "browserslist": {
     "production": [
       ">0.2%",

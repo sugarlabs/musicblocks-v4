@@ -1,4 +1,0 @@
-[submodule "lib"]
-	path = lib
-	url = https://github.com/sugarlabs/musicblocks-v4-lib.git
-	branch = develop

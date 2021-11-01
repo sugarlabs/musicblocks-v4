@@ -44,14 +44,14 @@ _unit testing_, _integration testing_, and _e2e_ (_end-to-end_) _testing_.
 
 - **`../public` directory** contains static files for the _React_ application.
 
-  - `index.html`: Initial home page (we shall create a _React Single-Page-Application_ or _SPA_ so
-  it shall be the only `.html` file; all _DOM_ elements will be populated by _React_ and bundled).
+    - `index.html`: Initial home page (we shall create a _React Single-Page-Application_ or _SPA_ so
+    it shall be the only `.html` file; all _DOM_ elements will be populated by _React_ and bundled).
 
-  - `manifest`: Required for creating a _Progressive Web App_ (_PWA_).
+    - `manifest`: Required for creating a _Progressive Web App_ (_PWA_).
 
-  - `robots.txt`: For _Web Crawlers_.
+    - `robots.txt`: For _Web Crawlers_.
 
-  - _Rest are static assets, e.g. images, logos, etc._.
+    - _Rest are static assets, e.g. images, logos, etc._.
 
 - `react-app-env.d.ts`: References the types of _react-scripts_, and helps with things like allowing
 for _SVG_ imports.
@@ -72,9 +72,9 @@ for _SVG_ imports.
 
 - **`view` directory** contains all the significant _React_ components.
 
-  - **`web`**: Component definitons for a big-screen web-client.
-  - **`mobile`** (_not created yet_): Component definitions for small-screen devices like
-  smartphones.
+    - **`web`**: Component definitons for a big-screen web-client.
+    - **`mobile`** (_not created yet_): Component definitions for small-screen devices like
+    smartphones.
 
 - **`model` directory** (_not created yet_) shall contain all the "stuff" for the _engine_.
 
@@ -83,6 +83,6 @@ communication between `view` and `model`.
 
 - **`.sample` directory** contains test scripts to check the compilers/runtime.
 
-  - `dart/test.dart`: A sample `.dart` file to test the _Dart_ compiler.
-  - `js/test.js`: A sample `.js` file to test the _Node_ runtime.
-  - `ts/test.ts`: A sample `.ts` file to test the _TypeScript_ compiler (transpiler).
+    - `dart/test.dart`: A sample `.dart` file to test the _Dart_ compiler.
+    - `js/test.js`: A sample `.js` file to test the _Node_ runtime.
+    - `ts/test.ts`: A sample `.ts` file to test the _TypeScript_ compiler (transpiler).

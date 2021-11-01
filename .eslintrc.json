@@ -11,13 +11,20 @@
   "plugins": ["@typescript-eslint"],
   "rules": {
     "no-mixed-spaces-and-tabs": "warn",
-    "no-unused-vars": "warn",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
     "no-use-before-define": "off",
     "@typescript-eslint/no-use-before-define": ["error"],
-    "quotes": ["warn", "double", { "avoidEscape": true }],
+    "@typescript-eslint/no-non-null-assertion": "off",
     "semi": ["error", "always"],
     "prefer-const": ["off"],
-    "no-console": "warn",
+    "no-console": "off",
     "max-len": [
       "warn",
       {
@@ -32,5 +39,9 @@
     "no-duplicate-case": "error",
     "no-irregular-whitespace": "warn"
   },
-  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"]
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended"
+  ]
 }

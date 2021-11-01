@@ -1,67 +1,75 @@
 import { useState } from 'react';
 
+// -- types ----------------------------------------------------------------------------------------
+
+import { TAppLanguage, TAppTheme } from '@/@types/config';
+
 // -- context --------------------------------------------------------------------------------------
 
-import { ContextConfig, ContextConfigDefaults } from './context/context-config';
+import { appConfigDefaults, ConfigContext, projectConfigDefaults } from '@/context/config';
 
-import Monitor from './components/Monitor';
+// -- other components -----------------------------------------------------------------------------
 
-// -- subcomponents --------------------------------------------------------------------------------
-
-import Menu from './components/menu/Menu';
-import Palette from './components/palette/Palette';
-import Manager from './components/artboard/Manager';
+import monitor from '@/components/monitor/Monitor';
+import Menu from '@/components/foreground/menu/Menu';
+import Palette from '@/components/foreground/palette/Palette';
+import ArtboardManager from '@/components/foreground/artboard/ArtboardManager';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
 import './App.scss';
-import { ArtBoardContext, ContextDefaultArtBoard } from './context/ArtBoardContext';
 
 // -- component definition -------------------------------------------------------------------------
 
 export default function App(): JSX.Element {
-  const [config, setConfig] = useState(ContextConfigDefaults.config);
+  const [appConfig, setAppConfig] = useState(appConfigDefaults);
+  const [projectConfig, setProjectConfig] = useState(projectConfigDefaults);
 
-  const changeLanguage = (newLanguage: string) => {
-    setConfig({ ...config, language: newLanguage });
-  };
+  /* App relies on the following properties being set here */
 
-  const changeBlockSize = (newBlockSize: number) => {
-    setConfig({ ...config, blockSize: newBlockSize });
-  };
+  // -- Setters for the global app configurations ----------------------------
 
-  const updateTurtleWrap = (isWrapOn: boolean) => {
-    setConfig({ ...config, turtleWrap: isWrapOn });
-  };
+  // Sets the app theme
+  monitor.menu.registerMethod('setTheme', (theme: TAppTheme) => {
+    setAppConfig({ ...appConfig, theme });
+  });
+  // Sets the app language
+  monitor.menu.registerMethod('setLanguage', (language: TAppLanguage) => {
+    setAppConfig({ ...appConfig, language });
+  });
+  // Sets menu auto-hide
+  monitor.menu.registerMethod('setMenuAutoHide', (menuAutoHide: boolean) => {
+    setAppConfig({ ...appConfig, menuAutoHide });
+  });
+  // Sets the app horizontal scroll
+  monitor.menu.registerMethod('setHorizontalScroll', (horizontalScroll: boolean) => {
+    setAppConfig({ ...appConfig, horizontalScroll });
+  });
+  // Sets the app sprite wrap (when sprite goes out of workspace)
+  monitor.menu.registerMethod('setSpriteWrap', (spriteWrap: boolean) => {
+    setAppConfig({ ...appConfig, spriteWrap });
+  });
+  // Sets the app project builder brick size
+  monitor.menu.registerMethod('setBrickSize', (brickSize: number) => {
+    setAppConfig({ ...appConfig, brickSize });
+  });
 
-  const updateHorizontalScroll = (isEnabled: boolean) => {
-    setConfig({ ...config, horizontalScroll: isEnabled });
-  };
+  // -- Setters for the global project configurations ------------------------
 
-  const updateVolume = (volume: number) => {
-    setConfig({ ...config, masterVolume: volume });
-  };
+  // Sets the master volume
+  monitor.menu.registerMethod('setMasterVolume', (masterVolume: number) => {
+    setProjectConfig({ ...projectConfig, masterVolume });
+  });
 
-  Monitor.registerSetLanguage(changeLanguage);
-  Monitor.registerUpdateScroll(updateHorizontalScroll);
-  Monitor.registerUpdateWrap(updateTurtleWrap);
-  Monitor.registerSetBlockSize(changeBlockSize);
-  Monitor.registerUpdateVolume(updateVolume);
-  Monitor.registerClean();
-
-  const [artBoardList, setArtBoardList] = useState(ContextDefaultArtBoard.artBoardList);
-  const numberOfArtboards = 5;
+  // -- render -------------------------------------------------------------------------------------
 
   return (
-    <ContextConfig.Provider value={{ config, setConfig }}>
-      <div id="app">
-        <div className="lang-container">Current Language: {config.language}</div>
-        <ArtBoardContext.Provider value={{ artBoardList, setArtBoardList, numberOfArtboards }}>
-          <Manager />
-        </ArtBoardContext.Provider>
+    <ConfigContext.Provider value={{ appConfig, setAppConfig, projectConfig, setProjectConfig }}>
+      <main id="app">
         <Menu />
         <Palette />
-      </div>
-    </ContextConfig.Provider>
+        <ArtboardManager />
+      </main>
+    </ConfigContext.Provider>
   );
 }

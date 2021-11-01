@@ -1,56 +1,62 @@
-/**
- * Interface for the Palette component's View props.
- */
-export interface IPaletteProps {
-    /** List of palette sections. */
-    sections: string[];
-    subSections: string[];
-    selectedSection: number;
-    hideSubSection: boolean;
-    openedSection: number;
-    changeSelectedSection: (arg: number) => void;
-    // toggleHideSubSection: (arg: boolean) => void;
-}
-/**
- * Interface for the Palette's section View props
- */
-export interface ISectionProps {
-    section: string;
-    selectedSection: number;
-    changeSelectedSection: (arg: number) => void;
-    hideSubSection: boolean;
-    subSections: string[];
-    openedSection: number;
-}
-/**
- * export interface Palette's SubSection View Props
- */
-export interface ISubSectionProps {
-    subSections: string[];
-}
-/**
- * Interface for PaletteBlock View Model
- */
-export interface IBlockPopUp {
-    subSectionName: string;
-}
-/**
- * Interface for PopUp view component
- */
-export interface IPopUpBlocks {
-    subSectionName: string;
-    blockList: (string | { [button: string]: string[] })[];
-    selectedHighShelf: string;
-    openLowShelf: boolean;
-    openAccordion: (arg: string) => void;
-}
+export type TBrickList = {
+    [key: string]: { [key: string]: (string | { [key: string]: string[] })[] };
+};
 
 /**
  * Interface for the Palette component's Model class.
  */
 export interface IPaletteModel {
-    /** Store the index of the selected Section */
-    selectedSection: number;
-    /** Stores whether to show the sub sections of the selected section */
-    hideSubSection: boolean;
+    /** Contains list of palette sections. */
+    sections: string[];
+    /** Contains map of palette sub-sections list per section. */
+    subSections: { [key: string]: string[] };
+    /** Contains map of palette brick list per sub-section. */
+    brickList: TBrickList;
+}
+
+/**
+ * Interface for the Palette component's View props.
+ */
+export interface IPaletteProps {
+    /** Contains list of palette sections. */
+    sections: string[];
+    /** Contains map of palette sub-sections list per section. */
+    subSections: { [key: string]: string[] };
+    /** Contains map of brick list per section. */
+    brickList: TBrickList;
+}
+
+/**
+ * Interface for the Palette's section View props.
+ */
+export interface IPaletteSectionProps {
+    /** Section name. */
+    section: string;
+    /** `true` if section is opened else `false`. */
+    opened: boolean;
+    /** Handler to select currently open section. */
+    setOpenedSection: (section: string | null) => void;
+    /** Contains list of palette sub-sections for the corresponding section. */
+    subSections: string[];
+    /** Contains map of brick list per sub-section. */
+    brickList: { [key: string]: (string | { [key: string]: string[] })[] };
+}
+/**
+ * Interface for the Palette's sub-section View Props.
+ */
+export interface IPaletteSubSectionProps {
+    /** Contains list of palette sub-sections. */
+    subSections: string[];
+    /** Contains map of brick list per sub-section. */
+    brickList: { [key: string]: (string | { [key: string]: string[] })[] };
+}
+
+/**
+ * Interface for the Palette's pop up View Props.
+ */
+export interface IPalettePopUpProps {
+    /** Sub-section name. */
+    subSection: string;
+    /** Contains list of bricks in sub-section. */
+    brickList: (string | { [key: string]: string[] })[];
 }

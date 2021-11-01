@@ -1,28 +1,45 @@
-/**
- * Interface for the top-level configurations context.
- */
+import { TAppTheme, TAppLanguage } from './config';
 
-export interface IConfig {
-    theme: 'light' | 'dark';
-    language: string;
+/**
+ * Interface for global app configurations.
+ */
+export interface IAppConfig {
+    /** UI Theme. */
+    theme: TAppTheme;
+    /** UI Language. */
+    language: TAppLanguage;
+    /** Whether menu auto-hides on moving cursor away. */
+    menuAutoHide: boolean;
+    /** Whether horizontal scroll is enabled. */
     horizontalScroll: boolean;
-    turtleWrap: boolean;
-    blockSize: number;
+    /** Whether sprite wrap is enabled (when sprite goes out of workspace). */
+    spriteWrap: boolean;
+    /** Range of project builder brick sizes. */
+    brickSizeRange: { min: number; max: number };
+    /** Size of project builder bricks. */
+    brickSize: number;
+}
+
+/**
+ * Interface for global project configurations.
+ */
+export interface IProjectConfig {
+    /** Range of master volume. */
+    masterVolumeRange: { min: number; max: number };
+    /** Master volume. */
     masterVolume: number;
 }
 
-export interface IContextConfig {
-    /** UI theme. */
-    config: IConfig;
-    setConfig: (config: IConfig) => void;
-}
-
 /**
- * Interface for artBoard Context
+ * Interface for global configurations context.
  */
-
-export interface IArtBoardContext {
-    artBoardList: IArtboardModel[];
-    setArtBoardList: (artboard: IartBoard) => void;
-    numberOfArtboards: number;
+export interface IConfigContext {
+    /** Global app configurations. */
+    appConfig: IAppConfig;
+    /** Method to set global app configurations. */
+    setAppConfig: (appConfig: IAppConfig) => void;
+    /** Global app configurations. */
+    projectConfig: IProjectConfig;
+    /** Method to set global app configurations. */
+    setProjectConfig: (projectConfig: IProjectConfig) => void;
 }

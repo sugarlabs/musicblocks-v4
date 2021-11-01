@@ -12,12 +12,19 @@
   "rules": {
     "no-mixed-spaces-and-tabs": "warn",
     "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
     "no-use-before-define": "off",
     "@typescript-eslint/no-use-before-define": ["error"],
+    "@typescript-eslint/no-non-null-assertion": "off",
     "semi": ["error", "always"],
     "prefer-const": ["off"],
-    "no-console": "warn",
+    "no-console": "off",
     "max-len": [
       "warn",
       {

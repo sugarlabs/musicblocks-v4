@@ -1,0 +1,51 @@
+@import '@/scss/colors';
+
+#artboard-manager-wrapper {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+
+  #artboard-dimensions {
+    position: absolute;
+    z-index: 1000;
+    top: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    padding: 0;
+  }
+
+  #artboard-wrapper {
+    position: absolute;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    background: $artboard-background;
+
+    .art-board-sketch {
+      canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+    }
+    .art-board-sketch-turtle {
+      canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+    }
+    button {
+      z-index: 200000000 !important;
+    }
+  }
+
+  #artboard-sprite-wrapper {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+  }
+}

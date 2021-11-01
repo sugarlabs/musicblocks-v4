@@ -15,13 +15,14 @@ import { useForceUpdate } from '@/hooks/components';
  * utilities. This class prevents code redundancy.
  */
 export abstract class MessageUtils implements IMessageUtils {
-    /* eslint-disable-next-line */
-    protected methodTable: { [key: string]: Function } = {};
+    protected methodTable: { [key: string]: CallableFunction } = {};
+    protected subscriptionTable: {
+        [key: string]: (callback: (newValue: unknown) => void) => void;
+    } = {};
     protected temporaryStore: { [key: string]: unknown } = {};
     protected messageEndpoint!: IMessageUtils;
 
-    /* eslint-disable-next-line */
-    public registerMethod(name: string, method: Function): void {
+    public registerMethod(name: string, method: CallableFunction): void {
         this.methodTable[name] = method;
     }
 
@@ -37,7 +38,8 @@ export abstract class MessageUtils implements IMessageUtils {
     public doMethod(name: string, ...args: unknown[]): void {
         if (name in this.methodTable) {
             try {
-                this.methodTable[name].call(this, ...args);
+                /* eslint-disable-next-line */
+                (this.methodTable[name] as Function).call(this, ...args);
             } catch (e) {
                 const error = e as Error;
                 if (error instanceof TypeError) {
@@ -54,7 +56,8 @@ export abstract class MessageUtils implements IMessageUtils {
     public getMethodResult(name: string, ...args: unknown[]): Promise<unknown> | null {
         if (name in this.methodTable) {
             try {
-                const result = this.methodTable[name].call(this, ...args);
+                /* eslint-disable-next-line */
+                const result = (this.methodTable[name] as Function).call(this, ...args);
                 return result instanceof Promise
                     ? result
                     : new Promise((resolve) => resolve(result));
@@ -92,15 +95,29 @@ export abstract class MessageUtils implements IMessageUtils {
         };
     }
 
-    public getState(state: string): unknown {
-        return (async () => await this.getMethodResult('__get__', state))();
+    public async getState(state: string): Promise<unknown> {
+        return await this.getMethodResult('__get__', state);
     }
 
     public setState(state: string, value: unknown): void {
         this.doMethod('__set__', state, value);
     }
 
-    public registerEndpoint(messageEndpoint: IMessageUtils): void {
+    public registerMessageEndpoint(messageEndpoint: IMessageUtils): void {
         this.messageEndpoint = messageEndpoint;
+    }
+
+    public subscribe(state: string, subscription: string): void {
+        const callback = (newValue: unknown) => {
+            (async () => {
+                const oldValue = await this.getState(state);
+
+                if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+                    this.setState(state, newValue);
+                }
+            })();
+        };
+        /* eslint-disable-next-line */
+        (this.subscriptionTable[subscription] as Function).call(this, callback);
     }
 }

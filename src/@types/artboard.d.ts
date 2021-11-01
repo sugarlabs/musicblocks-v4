@@ -1,143 +1,119 @@
+// -- Shared ---------------------------------------------------------------------------------------
+
+export type TArtboardDimensions = {
+    width: number;
+    height: number;
+};
+
 /**
- * Interface for the Artboard component's View props.
+ * Defines the position co-ordinates of the sprite.
  */
-import p5 from 'p5';
+export type TArtboardSpritePosition = {
+    x: number;
+    y: number;
+};
+
+// -- Artboard Sprite ------------------------------------------------------------------------------
+
+/**
+ * Defines the color properties of the sprite.
+ */
+export type TArtboardSpriteColor = {
+    accent: string;
+    outline: string;
+};
+
+/**
+ * Interface for the Artboard Sprite sub-component's View-Model props.
+ */
+export interface IArtboardSpriteProps {
+    spriteID: string;
+    artboardID: string;
+    initialPosition: TArtboardSpritePosition;
+    initialHeading: number;
+    color: TArtboardSpriteColor;
+}
+
+/**
+ * Interface for the Artboard Sprite sub-component's Model class.
+ */
+export interface IArtboardSpriteModel {
+    spriteID: string;
+    artboardID: string;
+    position: TArtboardSpritePosition;
+    heading: number;
+    color: TArtboardSpriteColor;
+}
+
+/**
+ * Interface for the Artboard Sprite sub-component's View props.
+ */
+export interface IArtboardSpriteViewProps {
+    id: string;
+    position: TArtboardSpritePosition;
+    updatePosition: (position: TArtboardSpritePosition) => void;
+    heading: number;
+    color: TArtboardSpriteColor;
+    dispatchSignal: (signalName: string, ...args: unknown[]) => void;
+}
+
+// -- Artboard -------------------------------------------------------------------------------------
+
+/**
+ * Interface for the Artboard sub-component's View-Model props.
+ */
 export interface IArtboardProps {
-    /** Viewport dimensions as [width, height]. */
-    dimensions: [number, number];
-    /** Refreshes the viewport dimensions state. */
-    updateDimensions: () => void;
-    /** Move the artboard to top */
-    moveToTop: (id: number) => void;
-    /** List of ids of playing or active artboards */
-    activeBoards: (activeBoards: number[]) => number[];
-}
-
-export interface IArtboardHandlerProps {
-    doArc: boolean;
-    doClean: boolean;
-    setDoArc: Dispatch<SetStateAction<boolean>>;
-    setDoClean: Dispatch<SetStateAction<boolean>>;
-    doMove: boolean;
-    setDoMove: Dispatch<SetStateAction<boolean>>;
-    doRotate: boolean;
-    setDoRotate: Dispatch<SetStateAction<boolean>>;
-    turtle: ITurtleModel;
-    updateDimensions: () => void;
-    index: number;
-    selectedTurtle: number;
-    turtleSettings: ITurtleSettings;
-}
-export interface ITurtleSettings {
-    arcRadius: number;
-    arcAngle: number;
-    sleepTime: number;
-    steps: number;
-    moveDirection: string;
-    distance: number;
-    moveSleepTime: number;
+    artboardID: string;
+    spriteID: string;
+    initialPosition: TArtboardSpritePosition;
+    initialHeading: number;
 }
 
 /**
- * Interface for the Interactor Artboard component's View props.
+ * Interface for the Artboard sub-component's Model class.
  */
-export interface InteractArtboardProps {
-    /** Viewport dimensions as [width, height]. */
-    dimensions: [number, number];
-    /** Refreshes the viewport dimensions state. */
-    updateDimensions: () => void;
+export interface IArtboardModel {
+    artboardID: string;
+    spriteID: string;
+    position: TArtboardSpritePosition;
+    heading: number;
 }
+
+/**
+ * Interface for the Artboard sub-component's View props.
+ */
+export interface IArtboardViewProps {
+    id: string;
+    position: TArtboardSpritePosition;
+    updatePosition(position: TArtboardSpritePosition): void;
+    heading: number;
+    updateHeading(heading: number): void;
+    dispatchSignal: (signalName: string, ...args: unknown[]) => void;
+}
+
+// -- Artboard Manager -----------------------------------------------------------------------------
 
 /**
  * Interface for the Artboard Manager component's Model class.
  */
 export interface IArtboardManagerModel {
-    /** get the dimension width of a particular canvas*/
-    getWidth: () => number;
-    /** get the dimension height of a particular canvas*/
-    getHeight: () => number;
-    /** get the scale of a particular canvas */
-    getScale: () => number;
-    /** zoom the canvas based on input Scale */
-    doScale: (scale: number) => void;
-    /**  */
+    viewportDimensions: [number, number];
+    artboardMap: { [key: string]: string };
+    addArtboard: () => void;
+    removeArtboard: (id: string, parameter?: 'artboard' | 'sprite') => boolean;
 }
 
 /**
- * Interface for the Artboard component's Model class.
+ * Interface for the Artboard Manager component's View props.
  */
-export interface IArtboardModel {
-    _id: number;
-    _turtle: ITurtleModel;
-}
-
-export interface ITurtleModel {
-    _id: number;
-    _turtleX: number;
-    _turtleY: number;
-    _turtleAngle: number;
-    _active: boolean;
-    /** get the turtleX position */
-    getTurtleX: () => number;
-    /** set X position of the turtle */
-    setTurtleX: (x: number) => void;
-    /** get turtleY position */
-    getTurtleY: () => number;
-    /** set Y position of the turtle */
-    setTurtleY: (y: number) => void;
-    /** get the angle of turtle */
-    getTurtleAngle: () => number;
-    /** set the new angle for turtle */
-    setTurleAngle: (angle: number) => void;
-    display: (sketch: p5) => void;
-    move: (sketch: p5) => void;
-    render: (sketch: p5) => void;
-    callSVG: (sketch: p5) => void;
-    getColor: () => [number, number, number];
-    setIsMoving(isMoving: boolean): void;
-    getIsMoving(): boolean;
-}
-
-export interface IArtBoardDrawModel {
-    /** get stroke weight of drawn line */
-    getStrokeWeight: () => number;
-    /** set stroke weight of drawn line */
-    setStrokeWeight: (x: number) => void;
-    /** get the color of the drawn line */
-    getStokeColor: () => [number, number, number];
-    /** set Stroke color */
-    setStrokeColor: (red: number, blue: number, green: number) => void;
-}
-
-export interface SketchProps {
-    [key: string]: any;
-}
-
-export interface Sketch {
-    (instance: p5): void;
-}
-export interface P5WrapperProps extends SketchProps {
-    index: number;
-    turtle: ITurtleModel;
-}
-export interface P5WrapperTurtleProps extends SketchProps {
-    // index: number;
-    // turtle: ITurtleModel;
-    artBoardList: IArtboardModel[];
-}
-
-export interface P5Instance extends p5 {
-    updateWithProps?: (props: SketchProps) => void;
-}
-
-export interface SketchProps {
-    [key: string]: any;
-}
-
-export interface Sketch {
-    (instance: p5): void;
-}
-
-export interface P5Instance extends p5 {
-    updateWithProps?: (props: SketchProps) => void;
+export interface IArtboardManagerViewProps {
+    /** Viewport dimensions as [width, height]. */
+    viewportDimensions: [number, number];
+    artboardMap: { [key: string]: string };
+    children: {
+        ArtboardSprite: (props: IArtboardSpriteProps) => JSX.Element;
+        Artboard: (props: IArtboardProps) => JSX.Element;
+    };
+    initialPosition: TArtboardSpritePosition;
+    initialHeading: number;
 }

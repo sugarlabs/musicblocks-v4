@@ -110,6 +110,7 @@ export default class Menu extends MessageUtils {
     /** Clears the artboards */
     private _clearArtboards(): void {
         console.log('clear artboards');
+        this.monitor.artboardManager.doMethod('clear');
     }
 
     /** Hides all the project builder bricks */

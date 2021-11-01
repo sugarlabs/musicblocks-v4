@@ -10,7 +10,7 @@ import { useForceUpdate } from '@/hooks/components';
 
 // -- other component ------------------------------------------------------------------------------
 
-import monitor from '@/monitor/Monitor';
+import monitor from '@/components/monitor/Monitor';
 
 // -- model component ------------------------------------------------------------------------------
 

@@ -7,14 +7,13 @@ import { TAppLanguage, TAppTheme } from '@/@types/config';
 // -- context --------------------------------------------------------------------------------------
 
 import { appConfigDefaults, ConfigContext, projectConfigDefaults } from '@/context/config';
-import { ArtBoardContext, ContextDefaultArtBoard } from '@/context/ArtBoardContext';
 
 // -- other components -----------------------------------------------------------------------------
 
-import monitor from '@/monitor/Monitor';
-import Menu from '@/components/menu/Menu';
-import Palette from '@/components/palette/Palette';
-import Manager from '@/components/artboard/Manager';
+import monitor from '@/components/monitor/Monitor';
+import Menu from '@/components/foreground/menu/Menu';
+import Palette from '@/components/foreground/palette/Palette';
+import ArtboardManager from '@/components/foreground/artboard/ArtboardManager';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
@@ -62,19 +61,14 @@ export default function App(): JSX.Element {
     setProjectConfig({ ...projectConfig, masterVolume });
   });
 
-  const [artBoardList, setArtBoardList] = useState(ContextDefaultArtBoard.artBoardList);
-  const numberOfArtboards = 5;
-
   // -- render -------------------------------------------------------------------------------------
 
   return (
     <ConfigContext.Provider value={{ appConfig, setAppConfig, projectConfig, setProjectConfig }}>
       <main id="app">
-        <ArtBoardContext.Provider value={{ artBoardList, setArtBoardList, numberOfArtboards }}>
-          <Manager />
-        </ArtBoardContext.Provider>
         <Menu />
         <Palette />
+        <ArtboardManager />
       </main>
     </ConfigContext.Provider>
   );

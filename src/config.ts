@@ -23,7 +23,18 @@ export const projectConfig: IProjectConfig = {
 
 // Other constants
 
+// -- Menu -----------------------------------------------------------------------------------------
+
 /** Duration before menu hide is triggered after cursor moves out of unhide zone */
 export const MENUAUTOHIDEDELAY = 2000;
 /** Whether menu is hidden on load (if menuAutoHide is `true`) */
 export const MENUHIDDENONLOAD = false;
+
+// -- Artboard -------------------------------------------------------------------------------------
+
+/** CSS `z-index` of the wrapper for the artboards */
+export const Z_INDEX_ARTBOARD_WRAPPER = 1;
+/** CSS `z-index` of the wrapper for the sprites */
+export const Z_INDEX_ARTBOARD_SPRITE_WRAPPER = 100;
+/** Stroke width (in pixels) of the lines drawn */
+export const ARTBOARD_LINE_WIDTH = 4;

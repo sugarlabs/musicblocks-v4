@@ -6,7 +6,7 @@ import { TAppLanguage } from '@/@types/config';
 
 // -- other components -----------------------------------------------------------------------------
 
-import Monitor from '@/monitor/Monitor';
+import Monitor from '@/components/monitor/Monitor';
 
 // -- context --------------------------------------------------------------------------------------
 

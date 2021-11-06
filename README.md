@@ -2,21 +2,48 @@
 
 A complete overhaul of [Music Blocks](https://github.com/sugarlabs/musicblocks).
 
+## Proposed Architecture
+
+![Component Architecture](docs/images/architecture/components.jpg)
+
+- 5 component clusters: **Foreground**, **Background**, **Syntax**, **Engine**, **Server**
+
+- **Foreground** cluster contains the UI components. These are the only ones which use *React* and
+follow *Model-View-ViewModel* (*MVVM*) architecture.
+
+- **Background** cluster contains the components which are specific to the application client
+(browser for now) but are not UI components. These are *TypeScript* classes that may wrap client
+specific libraries.
+
+- **Syntax** cluster contains the components that handle how Music Blocks programs are represented.
+These are not client specific.
+
+- **Engine** cluster contains the components responsible for handling the execution of Music Blocks
+programs and other computatation-driven actions like export to sheet music.
+
+- **Server** cluster contains the components that handle server side actions. This is part of a
+new feature proposal and are not a priority until the first stable release.
+
+- The **Monitor** and **Broker** components are bridges for inter-component communication.
+
+- The source code for the **Foreground** and **Background** clusters will reside in the
+[**musicblocks-v4**](https://github.com/sugarlabs/musicblocks-v4/) repository. The source code for
+the **Syntax** and **Engine** clusters will reside in the
+[**musicblocks-v4-lib**](https://github.com/sugarlabs/musicblocks-v4/) repository. **Monitor** will
+be part of the prior, and **Broker** will be part of the later.
+
+- The **musicblocks-v4-lib** will be bundled as an *NPM* package and imported as a dependency in
+**musicblocks-v4**.
+
 ## Contributing
 
 Please visit the [discussions](https://github.com/sugarlabs/musicblocks-v4/discussions) tab at the
 top of the repository to follow the planning progress.
 
-A prototype is being built currently. It'll be in the
-[**musicblocks-v4-lib**](https://github.com/sugarlabs/musicblocks-v4-lib) repository. For updates,
-follow the `develop` branch and the feature branches that branch out of it. All initial development
-shall take place in that repository. The said branch repository shall contain the core (engine) of
-the Music Blocks v4 application. A bundle shall be built there, which shall serve as the core of
-this application; this repository shall contain the user-end client which is to communicate with the
-said core through a broker module.
-
-The said repository has been added here as a submodule "_musicblocks-v4-lib_". Look out for issues
-in the [issues](https://github.com/sugarlabs/musicblocks-v4-lib/issues) tab of the repository.
+A prototype is being built currently. Parallel development will be done in the
+[**musicblocks-v4-lib**](https://github.com/sugarlabs/musicblocks-v4-lib) repository as mentioned
+above. For updates, follow the `develop` branch and the feature branches that branch out of it.
+Please look out for *Issues* tab of both repositories.
 
 ## Tech Stack
 

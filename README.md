@@ -184,8 +184,7 @@ machine.
     - For _Linux_, [install _Docker Engine_](https://docs.docker.com/engine/install/). You'll also
     need to [install _Docker Compose_](https://docs.docker.com/compose/install/).
 
-    - For _Windows_ or _Mac_ (_x86_64 / amd64_),
-    [install _Docker Desktop_](https://www.docker.com/products/docker-desktop).
+    - For _Windows_ or _Mac_, [install _Docker Desktop_](https://www.docker.com/products/docker-desktop).
 
 2. Open a terminal and navigate to working directory (where the source code will reside).
 

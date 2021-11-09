@@ -38,9 +38,9 @@ be part of the prior, and **Broker** will be part of the later.
 ## Contributing
 
 Please visit the [discussions](https://github.com/sugarlabs/musicblocks-v4/discussions) tab at the
-top of the repository to follow the planning progress.
+top of the repository to follow and/or discuss about the planning progress.
 
-A prototype is being built currently. Parallel development will be done in the
+A prototype has been built currently. Parallel development will be done in the
 [**musicblocks-v4-lib**](https://github.com/sugarlabs/musicblocks-v4-lib) repository as mentioned
 above. For updates, follow the `develop` branch and the feature branches that branch out of it.
 Please look out for *Issues* tab of both repositories.
@@ -53,12 +53,55 @@ code, for deployment on a web browser.
 
 ## Setup Development Environment
 
-_This project is containerized using [**docker**](https://www.docker.com/). Therefore, it requires
-**docker** to be installed on the development machine._
+### Without Docker
+
+This is a _**TypeScript**_ project that uses _**React**_. You'll just need
+_[**Node.js**](https://nodejs.org/en/)_ and _**NPM**_ installed on your development machine_.
+Although, this is sufficient to run, build, and test the project as a whole, you might need some
+extra tools for other development tasks.
+
+You'll need _**tsc**_ (_TypeScript Compiler_) to manually compile `.ts` files. You'll need
+_**ts-node**_ (_Node executable for TypeScript_) to manually execute `.ts` scripts directly. Finally,
+you'll need an _HTTP_ server like _**http-server**_ (_a HTTP server program_), if you want to serve
+files manually.
+
+Once _**NPM**_ is installed, to install the above, run
+
+```bash
+npm i -g http-server
+npm i -g typescript
+npm i -g ts-node
+```
+
+_**Note:**_ Users on _Linux_ and _Mac OS_ are required to add a `sudo` before these commands.
+
+Check installation using
+
+```bash
+node -v && npm -v && tsc -v && ts-node -v && http-server -v
+```
+
+Output should look like
+
+```bash
+v14.17.0
+6.14.13
+Version 4.3.2
+v10.0.0
+v0.12.3
+```
+
+### With Docker
+
+This project development tools have been containerized using [**docker**](https://www.docker.com/).
+Therefore, to use an execution sandbox, it requires **docker** to be installed on the development
+machine.
 
 1. Setup _docker_.
 
-    - For _Linux_, [install _Docker Engine_](https://docs.docker.com/engine/install/).
+    - For _Linux_, [install _Docker Engine_](https://docs.docker.com/engine/install/). You'll also
+    need to [install _Docker Compose_](https://docs.docker.com/compose/install/).
+
     - For _Windows_ or _Mac_ (_x86_64 / amd64_),
     [install _Docker Desktop_](https://www.docker.com/products/docker-desktop).
 
@@ -127,9 +170,24 @@ Windows) this repository using
     v0.12.3
     ```
 
-The steps you take from here depend on what you want to do:
+7. To shut down the _docker network_, run (in the terminal where you ran `docker-compose up -d` or
+`docker compose up -d`)
 
-- **Run test suites and run a development server**
+    ```bash
+    docker-compose down
+    ```
+
+    or (for _Docker v1.28_ and above)
+
+    ```bash
+    docker compose down
+    ```
+
+## Commands
+
+After you are set-up, the steps you take depend on what you want to do:
+
+- **Run a development server and test suites**
 
     1. To install all the dependencies (in `package.json`), run
 
@@ -146,7 +204,8 @@ The steps you take from here depend on what you want to do:
             ```
 
             This is spawned on `127.0.0.1:3000` inside the container, but mapped to `localhost:5000`
-            on host. Visit `localhost:5000` in a browser to view the webpage served.
+            on host. Visit `localhost:5000` in a browser to view the webpage served. If you are not
+            using the container, visit `localhost:3000`.
 
             Currently this will open a page with a "Hello world!" message.
 
@@ -175,24 +234,14 @@ The steps you take from here depend on what you want to do:
     ```
 
     This is spawned on `0.0.0.0:80` inside the container, but mapped to `localhost:5001` on host.
-    Visit `localhost:5001` in a browser to view the webpage served.
-
-- **Shut down docker network**
-
-    To shut down the _docker network_, run (in the terminal where you ran `docker-compose up -d` or
-    `docker compose up -d`)
-
-    ```bash
-    docker-compose down
-    ```
-
-    or (for _Docker v1.28_ and above)
-
-    ```bash
-    docker compose down
-    ```
+    Visit `localhost:5001` in a browser to view the webpage served. If you are not using the
+    container, visit `localhost:80`.
 
 - **Miscellaneous commands**
+
+    _**Note:**_ This requires _**Node**_ (_Node.js Runtime_), _**tsc**_ (_TypeScript Compiler_), and
+    _**ts-node**_ (_Node executable for TypeScript_) to be installed. If you are using _Docker_,
+    they'll be pre-installed in the container.
 
     - To launch the _Node runtime_, run
 

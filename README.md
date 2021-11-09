@@ -47,7 +47,7 @@ Please look out for *Issues* tab of both repositories.
 
 ### New Contributors
 
-Use the [discussions](https://github.com/sugarlabs/musicblocks-v4-lib/discussions) tab at the top of
+Use the [discussions](https://github.com/sugarlabs/musicblocks-v4/discussions) tab at the top of
 the repository to:
 
 - Ask questions you're wondering about.
@@ -61,7 +61,7 @@ Feel free. But, please don't spam :p.
 1. Your contributions need not necessarily have to address any discovered issue. If you encounter any,
 feel free to add a fix through a PR, or create a new issue ticket.
 
-2. Use [labels](https://github.com/sugarlabs/musicblocks-v4-lib/labels) on your issues and PRs.
+2. Use [labels](https://github.com/sugarlabs/musicblocks-v4/labels) on your issues and PRs.
 
 3. Do not spam with lots of PRs with little changes.
 

@@ -3,6 +3,46 @@
  * Class representing the singer component.
  */
 export default class {
+    // parameter used by pitch
+    private _scalarTransposition = 0;
+    private _transposition = 0;
+
+    // parameter used by notes
+    private _noteValue = {};
+    private _noteBeat = {};
+    private _noteDrums = {};
+    private _notePitches = {};
+    private _noteOctaves = {};
+    private _lastNotePlayed = null;
+    private _lastPitchPlayed = {};
+    private _currentOctave = 4;
+    private _noteDirection = 0;
+
+    // Music related parameter
+
+    private _notesPlayed = [0, 1];
+    private _tallyNotes = 0;
+
+    // Effect parameter
+    private _vibratoIntensity = [];
+    private _vibratoRate = [];
+    private _distortionAmount = [];
+    private _tremoloFrequency = [];
+    private _tremoloDepth = [];
+    private _rate = [];
+    private _octaves = [];
+    private _baseFrequency = [];
+    private _chorusRate = [];
+    private _delayTime = [];
+    private _chorusDepth = [];
+
+    // parameter to count notes, measure intervals, or generate lilypond output
+    private _justCounting = [];
+    private _justMeasuring = [];
+    private _firstPitch = [];
+    private _lastPitch = [];
+    private _suppressOutput = false;
+
     // ============ Contructor ================================================
     constructor() {
         // Initialise variables
@@ -59,14 +99,17 @@ export default class {
 
     // ============ Action ===============================================
     /**
-     * Playing a pitch
+     * processing a pitch
+     * @param {string} note - note value
+     * @param {number} octave - scale
      */
-    public playPitch(note: string, octave: number, cents: number): void {
-        // Play the pitch
+    public processPitch(note: string, octave: number): void {
+        // prcoess the pitch
     }
 
     /**
      * Playing a note
+     * @param {string} note - note to be played
      */
     public playNote(note: string): void {
         // Play the note

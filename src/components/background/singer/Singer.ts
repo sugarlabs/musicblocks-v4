@@ -61,14 +61,14 @@ export default class {
     /**
      * Playing a pitch
      */
-    public playPitch(note: String, octave: number, cents: number): void {
+    public playPitch(note: string, octave: number, cents: number): void {
         // Play the pitch
     }
 
     /**
      * Playing a note
      */
-    public playNote(note: String): void {
+    public playNote(note: string): void {
         // Play the note
     }
 

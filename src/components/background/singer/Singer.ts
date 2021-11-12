@@ -3,6 +3,45 @@
  * Class representing the singer component.
  */
 export default class {
+    // parameter used by pitch
+    public _scalarTransposition = 0;
+    public _transposition = 0;
+
+    // parameter used by notes
+    public _noteValue = {};
+    public _noteBeat = {};
+    public _noteDrums = {};
+    public _notePitches = {};
+    public _noteOctaves = {};
+    public _lastNotePlayed = null;
+    public _lastPitchPlayed = {};
+    public _currentOctave = 4;
+    public _noteDirection = 0;
+
+    // Music related parameter
+
+    public _notesPlayed = [0, 1];
+    public _tallyNotes = 0;
+
+    // Effect parameter
+    public _vibratoIntensity = [];
+    public _vibratoRate = [];
+    public _distortionAmount = [];
+    public _tremoloFrequency = [];
+    public _tremoloDepth = [];
+    public _rate = [];
+    public _octaves = [];
+    public _baseFrequency = [];
+    public _chorusRate = [];
+    public _delayTime = [];
+    public _chorusDepth = [];
+
+    // parameter to count notes, measure intervals, or generate lilypond output
+    public _justCounting = [];
+    public _justMeasuring = [];
+    public _firstPitch = [];
+    public _lastPitch = [];
+    public _suppressOutput = false;
     // ============ Contructor ================================================
     constructor() {
         // Initialise variables

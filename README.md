@@ -77,7 +77,7 @@ configurations and other bookkeeping.
 
   - **History** shall handle maintaining a log of application-level operations for rollback.
 
-In addition, a **Monitor** component shall be responsible for inter-component communication.
+In addition, a **Broker** component shall be responsible for inter-component communication.
 
 #### Plugins
 

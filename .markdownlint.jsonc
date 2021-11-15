@@ -37,7 +37,7 @@
   // MD007/ul-indent - Unordered list indentation
   "MD007": {
     // Spaces for indent
-    "indent": 4,
+    "indent": 2,
     // Whether to indent the first level of the list
     "start_indented": false
   },

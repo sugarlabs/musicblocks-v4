@@ -4,44 +4,116 @@ A complete overhaul of [Music Blocks](https://github.com/sugarlabs/musicblocks).
 
 ## Proposed Architecture
 
+The aim of the new architecture is modularity and extensibility. The idea is to create a core visual
+programming platform, and extend it with other features.
+
+- The source code for the components specific to the application wil reside in this
+[**musicblocks-v4**](https://github.com/sugarlabs/musicblocks-v4/) repository.
+
+- The source code for the programming framework will reside in the
+[**musicblocks-v4-lib**](https://github.com/sugarlabs/musicblocks-v4-lib/) repository.
+
+- **musicblocks-v4-lib** will be bundled as an _NPM_ package and imported as a dependency in
+**musicblocks-v4**.
+
+### Components
+
 ![Component Architecture](docs/images/architecture/components.jpg)
 
-- 5 component clusters: **Foreground**, **Background**, **Syntax**, **Engine**, **Server**
+#### Core
 
-- **Foreground** cluster contains the UI components. These are the only ones which use *React* and
-follow *Model-View-ViewModel* (*MVVM*) architecture.
+3 core components: **Interface**, **Syntax**, **Integration**
 
-- **Background** cluster contains the components which are specific to the application client
-(browser for now) but are not UI components. These are *TypeScript* classes that may wrap client
-specific libraries.
+- **Interface** component shall contain the UI components. These are the ones which use _React_ and
+follow _Model-View-ViewModel_ (_MVVM_) architecture.
 
-- **Syntax** cluster contains the components that handle how Music Blocks programs are represented.
-These are not client specific.
+  - **Menu** shall handle top level operations like running projects, managing projects, undo/redo,
+  application settings.
 
-- **Engine** cluster contains the components responsible for handling the execution of Music Blocks
-programs and other computatation-driven actions like export to sheet music.
+  - **Config** shall be used to configure the feature configurations.
 
-- **Server** cluster contains the components that handle server side actions. This is part of a
-new feature proposal and are not a priority until the first stable release.
+  - **Status** shall display the application status.
 
-- The **Monitor** and **Broker** components are bridges for inter-component communication.
+  - **Info** shall display logs.
 
-- The source code for the **Foreground** and **Background** clusters will reside in the
-[**musicblocks-v4**](https://github.com/sugarlabs/musicblocks-v4/) repository. The source code for
-the **Syntax** and **Engine** clusters will reside in the
-[**musicblocks-v4-lib**](https://github.com/sugarlabs/musicblocks-v4/) repository. **Monitor** will
-be part of the prior, and **Broker** will be part of the later.
+  - **Console** shall provide an interactive tool to run application level commands and
+  display messages (like a terminal).
 
-- The **musicblocks-v4-lib** will be bundled as an *NPM* package and imported as a dependency in
-**musicblocks-v4**.
+  - **Debugger** shall be used to debug Music Blocks programs by monitoring states.
+
+  - **Editor** shall be responsible to building Music Blocks programs in text form.
+
+  - **Planet** shall be a repository for openly shared projects.
+
+- **Syntax** component shall contain the programming framework. These are responsible for internal
+representation and execution of Music Blocks programs. This shall come with a factory set of program
+building syntax elements.
+
+  - **Elements** shall describe the rudimentary syntax element constructs — **data**, **expressions**,
+  **statements**, and **blocks**.
+
+  - **Specification** shall describe the ambient configurations (label, selective connectivity, etc.)
+  for syntax elements.
+
+  - **Warehouse** shall instantiate and maintain a table of syntax element instances.
+
+  - **Tree** shall respresent the syntax tree by maintaining the interconnections between syntax
+  elements.
+
+  - **Symbol Table** shall maintain the set of program variables.
+
+  - **Parser** shall handle the sequential traversal of syntax elements.
+
+  - **Interpreter** shall orchestrate running Music Blocks programs — exeution of syntax elements.
+
+- **Integrations** component shall contain the components responsible for handling application
+configurations and other bookkeeping.
+
+  - **Config** shall handle application specific configurations and loading of configured plugins.
+
+  - **i18n** shall handle internationalisation — managing language strings.
+
+  - **Projects** shall handle for creating, loading, merging, and exporting projects.
+
+  - **History** shall handle maintaining a log of application-level operations for rollback.
+
+In addition, a **Monitor** component shall be responsible for inter-component communication.
+
+#### Plugins
+
+2 kinds of plugins: **Features** and **Syntax Builders**
+
+- **Features** add new functionality to the application. These may add interface components and new
+set of syntax elements.
+
+- **Syntax Builders** add interfaces to build Music Blocks programs.
+
+Plugins may be extended themselves to add more optional functionalities.
+
+##### Plugin (Feature) - Painter
+
+This shall add artwork generating functionality, and a set of syntax elements to interact with them.
+
+##### Plugin (Feature) - Singer
+
+This shall add music generating functionality, and a set of syntax elements to interact with them.
+This shall be extended to add widgets for generating syntax element stacks.
+
+##### Plugin (Syntax Builder) - Bricks
+
+This shall add the functionality to build Music Blocks programs using visual bricks.
+
+### Wireframe
+
+![Wireframe](docs/images/architecture/wireframe.jpg)
 
 ## Contributing
 
 Please visit the [discussions](https://github.com/sugarlabs/musicblocks-v4/discussions) tab at the
 top of the repository to follow and/or discuss about the planning progress.
 
-A prototype has been built currently. Parallel development will be done in the
-[**musicblocks-v4-lib**](https://github.com/sugarlabs/musicblocks-v4-lib) repository as mentioned
+A prototype has been built currently. Parallel development of the programming framework will be done
+in the [**musicblocks-v4-lib**](https://github.com/sugarlabs/musicblocks-v4-lib) repository as mentioned
 above. For updates, follow the `develop` branch and the feature branches that branch out of it.
 Please look out for *Issues* tab of both repositories.
 
@@ -129,9 +201,9 @@ of ideas (Sugar Labs is a meritocracy)._
 
 ## Tech Stack
 
-Music Blocks v4 shall be built using `React 17 (with hooks)` and `TypeScript 4`. In addition,
-`SCSS` shall be used for styling. `Webpack` has been configured to transpile and bundle the source
-code, for deployment on a web browser.
+Music Blocks v4 shall be built using `TypeScript 4`and `React 17 (with hooks)`. In addition, `SCSS`
+shall be used for styling; `Webpack` will be configured to transpile and bundle the source code, for
+deployment on a web browser.
 
 ## Setup Development Environment
 
@@ -308,7 +380,7 @@ After you are set-up, the steps you take depend on what you want to do:
 
 - **HTTP server**
 
-    To spawn an _HTTP Server_ (uses _Python 3_'s `http.server`), run
+  To spawn an _HTTP Server_ (uses _Python 3_'s `http.server`), run
 
     ```bash
     npm run serve
@@ -320,35 +392,35 @@ After you are set-up, the steps you take depend on what you want to do:
 
 - **Miscellaneous commands**
 
-    _**Note:**_ This requires _**Node**_ (_Node.js Runtime_), _**tsc**_ (_TypeScript Compiler_), and
-    _**ts-node**_ (_Node executable for TypeScript_) to be installed. If you are using _Docker_,
-    they'll be pre-installed in the container.
+  _**Note:**_ This requires _**Node**_ (_Node.js Runtime_), _**tsc**_ (_TypeScript Compiler_), and
+  _**ts-node**_ (_Node executable for TypeScript_) to be installed. If you are using _Docker_, they'll
+  be pre-installed in the container.
 
-    - To launch the _Node runtime_, run
+  - To launch the _Node runtime_, run
 
-        ```bash
-        node
-        ```
+    ```bash
+    node
+    ```
 
-    - To run a _JavaScript_ file, say `file.js`, run
+  - To run a _JavaScript_ file, say `file.js`, run
 
-        ```bash
-        node file.js
-        ```
+    ```bash
+    node file.js
+    ```
 
-    - To transpile a _TypeScipt_ file, say `file.ts`, to _JavaScript_, run
+  - To transpile a _TypeScipt_ file, say `file.ts`, to _JavaScript_, run
 
-        ```bash
-        tsc file.ts
-        ```
+    ```bash
+    tsc file.ts
+    ```
 
-        This transpilation produces `file.js`.
+    This transpilation produces `file.js`.
 
-    - To run a _TypeScript_ file directly, say `file.ts`, run
+  - To run a _TypeScript_ file directly, say `file.ts`, run
 
-        ```bash
-        ts-node file.ts
-        ```
+    ```bash
+    ts-node file.ts
+    ```
 
 ## Editor
 

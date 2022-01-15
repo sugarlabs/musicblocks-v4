@@ -12,7 +12,7 @@ module.exports = {
         modules: [path.resolve(__dirname, 'src'), 'node_modules'],
         extensions: ['.tsx', '.ts', '.jsx', '.js'],
     },
-    entry: 'index.tsx',
+    entry: 'index.ts',
     output: {
         filename: '[name].[contenthash].js',
         path: path.join(__dirname, 'dist'),

@@ -4,10 +4,8 @@
 $padding: 0.25rem;
 $cluster-spacing: 0.25rem;
 $item-spacing: 0.5rem;
-$item-padding: 0.25rem;
 
 $item-width-main: 3rem;
-$item-width-auxiliary: 12rem;
 
 .toolbar {
   display: flex;
@@ -25,9 +23,13 @@ $item-width-auxiliary: 12rem;
 
     .toolbar-cluster-item {
       margin-top: $item-spacing;
-      padding: $item-padding;
+      padding: $toolbar-item-padding;
       border: 1px solid $border-light-grey;
       border-radius: $border-radius-rounded-box;
+
+      &:first-child {
+        margin-top: 0;
+      }
     }
   }
 }
@@ -41,28 +43,26 @@ $item-width-auxiliary: 12rem;
 
   #toolbar-main-cluster-a {
     .toolbar-main-cluster-a-item {
-      &:first-of-type {
-        margin-top: 0;
-      }
+      display: block;
     }
   }
 
   #toolbar-main-cluster-b {
     height: 100%;
-    flex-direction: column-reverse;
+    justify-content: flex-end;
 
     .toolbar-main-cluster-b-item {
-      &:last-of-type {
-        margin-top: 0;
-      }
+      display: block;
     }
   }
 }
 
 #toolbar-auxiliary {
   .toolbar-auxiliary-cluster {
+    align-items: flex-end;
+
     .toolbar-auxiliary-cluster-item {
-      width: $item-width-auxiliary;
+      display: block;
     }
   }
 
@@ -70,19 +70,15 @@ $item-width-auxiliary: 12rem;
     height: 100%;
 
     .toolbar-auxiliary-cluster-a-item {
-      &:first-of-type {
-        margin-top: 0;
-      }
+      display: block;
     }
   }
 
   #toolbar-auxiliary-cluster-b {
-    flex-direction: column-reverse;
+    justify-content: flex-end;
 
     .toolbar-auxiliary-cluster-b-item {
-      &:last-of-type {
-        margin-top: 0;
-      }
+      display: block;
     }
   }
 }

@@ -1,0 +1,41 @@
+@import '../../scss/values.scss';
+@import '../../scss/colors.scss';
+
+$width-box: 12rem;
+$width-btn-collapsed: 3rem;
+$height-btn-collapsed: 3rem;
+
+.toolbar-auxiliary-box {
+  position: relative;
+  width: $width-box;
+
+  .toolbar-auxiliary-box-content {
+    width: 100%;
+  }
+
+  .toolbar-auxiliary-box-collapse-btn {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    transform: translateX(-100%);
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    width: 1rem;
+    padding: 0;
+    border: 1px solid $border-light-grey;
+    border-radius: $border-radius-rounded-box;
+  }
+}
+
+.toolbar-auxiliary-collapsed-btn {
+  display: grid;
+  justify-content: center;
+  align-items: center;
+  width: $width-btn-collapsed;
+  height: $height-btn-collapsed;
+  padding: $toolbar-item-padding;
+  border: 1px solid $border-light-grey;
+  border-radius: $border-radius-rounded-box;
+}

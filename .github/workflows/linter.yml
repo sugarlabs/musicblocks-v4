@@ -49,7 +49,7 @@ jobs:
       - name: Lint Code Base
         uses: github/super-linter@v3.17.0
         env:
-          DEFAULT_BRANCH: main
+          DEFAULT_BRANCH: develop
           LINTER_RULES_PATH: /
           JAVASCRIPT_ES_CONFIG_FILE: .eslintrc.json
           TYPESCRIPT_ES_CONFIG_FILE: .eslintrc.json

@@ -47,7 +47,7 @@ jobs:
       # Run Super Linter #
       ####################
       - name: Lint new and edited files
-        uses: github/super-linter@v3.17.0
+        uses: github/super-linter/slim@v4
         env:
           DEFAULT_BRANCH: develop
           LINTER_RULES_PATH: /
@@ -61,3 +61,4 @@ jobs:
           VALIDATE_JAVASCRIPT_STANDARD: false
           VALIDATE_TYPESCRIPT_STANDARD: false
           VALIDATE_JSCPD: false
+          VALIDATE_NATURAL_LANGUAGE: false

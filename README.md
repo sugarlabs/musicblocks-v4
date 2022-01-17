@@ -77,7 +77,7 @@ configurations and other bookkeeping.
 
   - **History** shall handle maintaining a log of application-level operations for rollback.
 
-In addition, a **Monitor** component shall be responsible for inter-component communication.
+In addition, a **Broker** component shall be responsible for inter-component communication.
 
 #### Plugins
 
@@ -215,7 +215,7 @@ Although, this is sufficient to run, build, and test the project as a whole, you
 extra tools for other development tasks.
 
 You'll need _**tsc**_ (_TypeScript Compiler_) to manually compile `.ts` files. You'll need
-_**ts-node**_ (_Node executable for TypeScript_) to manually execute `.ts` scripts directly. Finally,
+_**ts-node**_ (_Node.js executable for TypeScript_) to manually execute `.ts` scripts directly. Finally,
 you'll need an _HTTP_ server like _**http-server**_ (_a HTTP server program_), if you want to serve
 files manually.
 
@@ -227,7 +227,7 @@ npm i -g typescript
 npm i -g ts-node
 ```
 
-_**Note:**_ Users on _Linux_ and _Mac OS_ are required to add a `sudo` before these commands.
+_**Note:**_ Users on _Linux_ and _MacOS_ are required to add a `sudo` before these commands.
 
 Check installation using
 
@@ -270,7 +270,7 @@ Windows) this repository using
 4. Build _docker image_ and launch _docker network_.
 
     _**Note:**_ A
-    [built initial development image](https://github.com/orgs/sugarlabs/packages/container/musicblocks/2948273?tag=4.0.0-dev)
+    [built initial development image](https://github.com/sugarlabs/musicblocks-v4/pkgs/container/musicblocks/2948273?tag=4.0.0-dev)
     has been published to
     [_Sugar Labs GitHub Container Registry_ (_GHCR_)](https://github.com/orgs/sugarlabs/packages?ecosystem=container),
     which can be pulled directly, so you don't have to build it again. Pull using
@@ -305,8 +305,8 @@ Windows) this repository using
     The _Alpine shell_ in the _docker container_ named _musicblocks-4.0.0-dev_ is spawned and
     standard input/output is connected to the terminal.
 
-6. _**Node**_ (_Node.js Runtime_), _**npm**_ (_Node Package Manager_), _**tsc**_ (_TypeScript
-    Compiler_), _**ts-node**_ (_Node executable for TypeScript_), and _**http-server**_ (_a HTTP
+6. _**Node.js**_ (_Node.js Runtime_), _**npm**_ (_Node.js Package Manager_), _**tsc**_ (_TypeScript
+    Compiler_), _**ts-node**_ (_Node.js executable for TypeScript_), and _**http-server**_ (_a HTTP
     server program_) should be installed. Check using
 
     ```bash
@@ -357,7 +357,7 @@ After you are set-up, the steps you take depend on what you want to do:
             ```
 
             This is spawned on `127.0.0.1:3000` inside the container, but mapped to `localhost:5000`
-            on host. Visit `localhost:5000` in a browser to view the webpage served. If you are not
+            on host. Visit `localhost:5000` in a browser to view the web page served. If you are not
             using the container, visit `localhost:3000`.
 
             Currently this will open a page with a "Hello world!" message.
@@ -387,16 +387,16 @@ After you are set-up, the steps you take depend on what you want to do:
     ```
 
     This is spawned on `0.0.0.0:80` inside the container, but mapped to `localhost:5001` on host.
-    Visit `localhost:5001` in a browser to view the webpage served. If you are not using the
+    Visit `localhost:5001` in a browser to view the web page served. If you are not using the
     container, visit `localhost:80`.
 
 - **Miscellaneous commands**
 
-  _**Note:**_ This requires _**Node**_ (_Node.js Runtime_), _**tsc**_ (_TypeScript Compiler_), and
-  _**ts-node**_ (_Node executable for TypeScript_) to be installed. If you are using _Docker_, they'll
+  _**Note:**_ This requires _**Node.js**_ (_Node.js Runtime_), _**tsc**_ (_TypeScript Compiler_), and
+  _**ts-node**_ (_Node.js executable for TypeScript_) to be installed. If you are using _Docker_, they'll
   be pre-installed in the container.
 
-  - To launch the _Node runtime_, run
+  - To launch the _Node.js runtime_, run
 
     ```bash
     node
@@ -426,7 +426,7 @@ After you are set-up, the steps you take depend on what you want to do:
 
 _All code is just plain text, so it doesn't really matter what you use to edit them._ However,
 using modern, feature-rich IDEs/text-editors like [_**Atom**_](https://atom.io/),
-[_**Brackets**_](http://brackets.io/), [_**WebStorm**_](https://www.jetbrains.com/webstorm/),
+[_**Brackets**_](https://brackets.io), [_**WebStorm**_](https://www.jetbrains.com/webstorm/),
 [_**Sublime Text**_](https://www.sublimetext.com/),
 [_**Visual Studio Code**_](https://code.visualstudio.com/), etc. makes life way easier. These come
 with a directory-tree explorer, and an integrated terminal, at the very least, while having support
@@ -437,9 +437,8 @@ _warning/error annotations_, _formatting_, _auto-refactoring_, tons of customiza
 _keyboard shortcuts_, etc.
 
 _**Visual Studio Code**_ (_**VSCode**_) is currently the most-popular code editor for reasons like
-being _lightweight_, _cleaner_, large marketplace of _extensions_, integrated _Source Control_
-features, _debugger_, _remote explorer_ support, _Regular Expression_ (_regex_) based find/replace,
-etc.
+being _lightweight_, _cleaner_, large marketplace of _extensions_, integrated _source control_
+features, _debugger_, _remote explorer_ support, _regular expression_ based find/replace, etc.
 
 In fact, a workspace configuration file for _vscode_`.vscode/settings.json` has already been added.
 Recommended extensions for this project are `Babel JavaScript`, `Docker`, `ESLint`, `Git Graph`,

@@ -20,13 +20,6 @@
   "[typescriptreact]": {
     "editor.tabSize": 2
   },
-  "[dart]": {
-    "editor.selectionHighlight": false,
-    "editor.suggest.snippetsPreventQuickSuggestions": false,
-    "editor.suggestSelection": "first",
-    "editor.tabCompletion": "onlySnippets",
-    "editor.wordBasedSuggestions": false
-  },
   "[markdown]": {
     "editor.wordWrap": "on",
     "editor.quickSuggestions": false,

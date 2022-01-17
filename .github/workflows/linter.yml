@@ -69,6 +69,7 @@ jobs:
           JAVASCRIPT_ES_CONFIG_FILE: .eslintrc
           TYPESCRIPT_ES_CONFIG_FILE: .eslintrc
           MARKDOWN_CONFIG_FILE: .markdownlint.jsonc
+          NATURAL_LANGUAGE_CONFIG_FILE: .textlintrc
           VALIDATE_ALL_CODEBASE: false
           VALIDATE_CSS: false
           VALIDATE_DOCKERFILE: false

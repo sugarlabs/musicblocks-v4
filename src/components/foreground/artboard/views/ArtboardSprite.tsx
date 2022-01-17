@@ -4,7 +4,7 @@ import 'jqueryui';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { IArtboardSpriteViewProps } from '@/@types/artboard';
+import { IArtboardSpriteViewProps } from '../../../../@types/artboard';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 

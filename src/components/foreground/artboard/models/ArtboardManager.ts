@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { IArtboardManagerModel } from '@/@types/artboard';
+import { IArtboardManagerModel } from '../../../../@types/artboard';
 
 // -- model component definition -------------------------------------------------------------------
 

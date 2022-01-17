@@ -2,17 +2,17 @@ import React, { useEffect, useState } from 'react';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { IMenuProps } from '@/@types/menu';
+import { IMenuProps } from '../../../../@types/menu';
 
 // -- config ---------------------------------------------------------------------------------------
 
-import { MENUAUTOHIDEDELAY, MENUHIDDENONLOAD } from '@/config';
-import configColors from '@/configColors.json';
+import { MENUAUTOHIDEDELAY, MENUHIDDENONLOAD } from '../../../../config';
+import configColors from '../../../../configColors.json';
 
 // -- other components -----------------------------------------------------------------------------
 
-import ArrowChevronLeft from '@/components/svg/arrow-chevron-left';
-import ArrowChevronRight from '@/components/svg/arrow-chevron-right';
+import ArrowChevronLeft from '../../../../components/svg/arrow-chevron-left';
+import ArrowChevronRight from '../../../../components/svg/arrow-chevron-right';
 import Checkbox from './Checkbox';
 import Slider from './Slider';
 

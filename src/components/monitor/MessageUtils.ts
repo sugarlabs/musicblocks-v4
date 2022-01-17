@@ -1,10 +1,10 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { IMessageUtils } from '@/@types/monitor';
+import { IMessageUtils } from '../../@types/monitor';
 
 // -- hooks ----------------------------------------------------------------------------------------
 
-import { useForceUpdate } from '@/hooks/components';
+import { useForceUpdate } from '../../hooks/components';
 
 // -- component definition -------------------------------------------------------------------------
 

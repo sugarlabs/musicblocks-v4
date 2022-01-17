@@ -1,7 +1,7 @@
 // -- types ----------------------------------------------------------------------------------------
 
 import { TAppLanguage } from '../@types/config';
-import { TBrickList } from '@/@types/palette';
+import { TBrickList } from '../@types/palette';
 
 // -- utilities ------------------------------------------------------------------------------------
 

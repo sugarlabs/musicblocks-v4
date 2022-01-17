@@ -1,9 +1,9 @@
 // -- useMessageEndpoint ---------------------------------------------------------------------------
 
-import { IMessageUtils } from '@/@types/monitor';
+import { IMessageUtils } from '../@types/monitor';
 
-import { MessageUtils } from '@/components/monitor/MessageUtils';
-import monitor, { Monitor } from '@/components/monitor/Monitor';
+import { MessageUtils } from '../components/monitor/MessageUtils';
+import monitor, { Monitor } from '../components/monitor/Monitor';
 
 const messageEndpointMap: { [key: string]: IMessageUtils } = {};
 

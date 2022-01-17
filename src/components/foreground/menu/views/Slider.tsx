@@ -2,7 +2,7 @@ import { createRef } from 'react';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { ISliderProps } from '@/@types/menu';
+import { ISliderProps } from '../../../../@types/menu';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 

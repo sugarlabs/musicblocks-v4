@@ -1,6 +1,6 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { IPaletteSectionProps } from '@/@types/palette';
+import { IPaletteSectionProps } from '../../../../@types/palette';
 
 // -- other components -----------------------------------------------------------------------------
 

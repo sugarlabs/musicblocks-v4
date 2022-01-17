@@ -1,11 +1,11 @@
 // -- hooks ----------------------------------------------------------------------------------------
 
-import { useMessageEndpoint } from '@/hooks/messages';
-import { useSignal } from '@/hooks/messages';
+import { useMessageEndpoint } from '../../../hooks/messages';
+import { useSignal } from '../../../hooks/messages';
 
 // -- other components -----------------------------------------------------------------------------
 
-import monitor from '@/components/monitor/Monitor';
+import monitor from '../../../components/monitor/Monitor';
 
 import ArtboardSprite from './ArtboardSprite';
 import Artboard from './Artboard';

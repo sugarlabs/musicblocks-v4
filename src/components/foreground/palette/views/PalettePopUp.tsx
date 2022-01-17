@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { IPalettePopUpProps } from '@/@types/palette';
+import { IPalettePopUpProps } from '../../../../@types/palette';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 

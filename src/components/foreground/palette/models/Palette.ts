@@ -1,6 +1,6 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { IPaletteModel, TBrickList } from '@/@types/palette';
+import { IPaletteModel, TBrickList } from '../../../../@types/palette';
 
 // -- model component definition -------------------------------------------------------------------
 

@@ -2,11 +2,11 @@ import { useState } from 'react';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { IArtboardSpriteProps, TArtboardSpritePosition } from '@/@types/artboard';
+import { IArtboardSpriteProps, TArtboardSpritePosition } from '../../../@types/artboard';
 
 // -- hooks ----------------------------------------------------------------------------------------
 
-import { useSignal } from '@/hooks/messages';
+import { useSignal } from '../../../hooks/messages';
 
 // -- model class ----------------------------------------------------------------------------------
 

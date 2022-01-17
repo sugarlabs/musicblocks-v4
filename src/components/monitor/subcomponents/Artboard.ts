@@ -5,7 +5,7 @@ import { Monitor } from '../Monitor';
 
 // -- utils ----------------------------------------------------------------------------------------
 
-import { getViewportDimensions } from '@/utils/ambience';
+import { getViewportDimensions } from '../../../utils/ambience';
 
 // -- subcomponent definition ----------------------------------------------------------------------
 

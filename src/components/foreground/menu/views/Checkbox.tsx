@@ -2,7 +2,7 @@ import { createRef } from 'react';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { ICheckboxProps } from '@/@types/menu';
+import { ICheckboxProps } from '../../../../@types/menu';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 

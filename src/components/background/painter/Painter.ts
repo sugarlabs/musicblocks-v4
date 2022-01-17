@@ -1,15 +1,15 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { IPainter, IPainterCallbacks } from '@/@types/painter';
-import { TArtboardDimensions, TArtboardSpritePosition } from '@/@types/artboard';
+import { IPainter, IPainterCallbacks } from '../../../@types/painter';
+import { TArtboardDimensions, TArtboardSpritePosition } from '../../../@types/artboard';
 
 // -- config ---------------------------------------------------------------------------------------
 
-import { ARTBOARD_LINE_WIDTH } from '@/config';
+import { ARTBOARD_LINE_WIDTH } from '../../../config';
 
 // -- utils ----------------------------------------------------------------------------------------
 
-import { degreesToRadians } from '@/utils/math';
+import { degreesToRadians } from '../../../utils/math';
 
 // -- other components -----------------------------------------------------------------------------
 

@@ -4,7 +4,7 @@ import {
     IArtboardSpriteModel,
     TArtboardSpriteColor,
     TArtboardSpritePosition,
-} from '@/@types/artboard';
+} from '../../../../@types/artboard';
 
 // -- model component definition -------------------------------------------------------------------
 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { IPaletteProps } from '@/@types/palette';
+import { IPaletteProps } from '../../../../@types/palette';
 
 // -- other components -----------------------------------------------------------------------------
 

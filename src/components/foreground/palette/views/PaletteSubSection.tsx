@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { IPaletteSubSectionProps } from '@/@types/palette';
+import { IPaletteSubSectionProps } from '../../../../@types/palette';
 
 // -- other components -----------------------------------------------------------------------------
 

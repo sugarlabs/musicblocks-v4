@@ -1,10 +1,10 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { IArtboardManagerViewProps } from '@/@types/artboard';
+import { IArtboardManagerViewProps } from '../../../../@types/artboard';
 
 // -- config ---------------------------------------------------------------------------------------
 
-import { Z_INDEX_ARTBOARD_SPRITE_WRAPPER, Z_INDEX_ARTBOARD_WRAPPER } from '@/config';
+import { Z_INDEX_ARTBOARD_SPRITE_WRAPPER, Z_INDEX_ARTBOARD_WRAPPER } from '../../../../config';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 

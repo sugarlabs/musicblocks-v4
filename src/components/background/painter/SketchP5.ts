@@ -2,8 +2,8 @@ import p5 from 'p5';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { ISketch } from '@/@types/painter';
-import { TArtboardDimensions } from '@/@types/artboard';
+import { ISketch } from '../../../@types/painter';
+import { TArtboardDimensions } from '../../../@types/artboard';
 
 // -- component definition -------------------------------------------------------------------------
 

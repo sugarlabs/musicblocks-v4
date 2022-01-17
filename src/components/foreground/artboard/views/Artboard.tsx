@@ -2,11 +2,11 @@ import { useEffect, useRef } from 'react';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { IArtboardViewProps, TArtboardSpritePosition } from '@/@types/artboard';
+import { IArtboardViewProps, TArtboardSpritePosition } from '../../../../@types/artboard';
 
 // -- other components -----------------------------------------------------------------------------
 
-import Painter from '@/components/background/painter/Painter';
+import Painter from '../../../../components/background/painter/Painter';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 

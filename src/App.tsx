@@ -2,18 +2,18 @@ import { useState } from 'react';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { TAppLanguage, TAppTheme } from '@/@types/config';
+import { TAppLanguage, TAppTheme } from './@types/config';
 
 // -- context --------------------------------------------------------------------------------------
 
-import { appConfigDefaults, ConfigContext, projectConfigDefaults } from '@/context/config';
+import { appConfigDefaults, ConfigContext, projectConfigDefaults } from './context/config';
 
 // -- other components -----------------------------------------------------------------------------
 
-import monitor from '@/components/monitor/Monitor';
-import Menu from '@/components/foreground/menu/Menu';
-import Palette from '@/components/foreground/palette/Palette';
-import ArtboardManager from '@/components/foreground/artboard/ArtboardManager';
+import monitor from './components/monitor/Monitor';
+import Menu from './components/foreground/menu/Menu';
+import Palette from './components/foreground/palette/Palette';
+import ArtboardManager from './components/foreground/artboard/ArtboardManager';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { TBrickList } from '@/@types/palette';
+import { TBrickList } from '../../../@types/palette';
 
 // -- other components -----------------------------------------------------------------------------
 
@@ -13,7 +13,7 @@ import {
     collectBrickList,
     collectPaletteSections,
     collectPaletteSubSections,
-} from '@/utils/config';
+} from '../../../utils/config';
 
 // -- subcomponent definition ----------------------------------------------------------------------
 

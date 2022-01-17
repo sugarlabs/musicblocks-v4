@@ -2,16 +2,16 @@ import { useState } from 'react';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { IArtboardProps, TArtboardSpritePosition } from '@/@types/artboard';
+import { IArtboardProps, TArtboardSpritePosition } from '../../../@types/artboard';
 
 // -- hooks ----------------------------------------------------------------------------------------
 
-// import { useMessageEndpoint } from '@/hooks/messages';
-import { useSignal } from '@/hooks/messages';
+// import { useMessageEndpoint } from '../../../hooks/messages';
+import { useSignal } from '../../../hooks/messages';
 
 // -- other components -----------------------------------------------------------------------------
 
-// import monitor from '@/monitor/Monitor';
+// import monitor from '../../../monitor/Monitor';
 
 // -- model component ------------------------------------------------------------------------------
 

@@ -2,15 +2,15 @@ import { useContext, useEffect } from 'react';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { TAppLanguage } from '@/@types/config';
+import { TAppLanguage } from '../../../@types/config';
 
 // -- other components -----------------------------------------------------------------------------
 
-import Monitor from '@/components/monitor/Monitor';
+import Monitor from '../../../components/monitor/Monitor';
 
 // -- context --------------------------------------------------------------------------------------
 
-import { ConfigContext } from '@/context/config';
+import { ConfigContext } from '../../../context/config';
 
 // -- model component ------------------------------------------------------------------------------
 

@@ -2,15 +2,15 @@ import { useEffect } from 'react';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { TBrickList } from '@/@types/palette';
+import { TBrickList } from '../../../@types/palette';
 
 // -- hooks ----------------------------------------------------------------------------------------
 
-import { useForceUpdate } from '@/hooks/components';
+import { useForceUpdate } from '../../../hooks/components';
 
 // -- other component ------------------------------------------------------------------------------
 
-import monitor from '@/components/monitor/Monitor';
+import monitor from '../../../components/monitor/Monitor';
 
 // -- model component ------------------------------------------------------------------------------
 

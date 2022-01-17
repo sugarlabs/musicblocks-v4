@@ -1,6 +1,6 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { IArtboardModel, TArtboardSpritePosition } from '@/@types/artboard';
+import { IArtboardModel, TArtboardSpritePosition } from '../../../../@types/artboard';
 
 // -- model component definition -------------------------------------------------------------------
 

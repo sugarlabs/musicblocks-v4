@@ -1,6 +1,6 @@
 // -- types ----------------------------------------------------------------------------------------
 
-import { IAppConfig, IProjectConfig } from '@/@types/context';
+import { IAppConfig, IProjectConfig } from './@types/context';
 
 // -- constants ------------------------------------------------------------------------------------
 

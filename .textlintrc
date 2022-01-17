@@ -1,0 +1,7 @@
+{
+    "rules": {
+        "no-dead-link": true,
+        "no-empty-section": true,
+        "terminology": true
+    }
+}

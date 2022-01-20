@@ -18,68 +18,7 @@ programming platform, and extend it with other features.
 
 ### Components
 
-![Component Architecture](docs/images/architecture/components.jpg)
-
-#### Core
-
-3 core components: **Interface**, **Syntax**, **Integration**
-
-- **Interface** component shall contain the UI components. These are the ones which use _React_ and
-follow _Model-View-ViewModel_ (_MVVM_) architecture.
-
-  - **Menu** shall handle top level operations like running projects, managing projects, undo/redo,
-  application settings.
-
-  - **Config** shall be used to configure the feature configurations.
-
-  - **Status** shall display the application status.
-
-  - **Info** shall display logs.
-
-  - **Console** shall provide an interactive tool to run application level commands and
-  display messages (like a terminal).
-
-  - **Debugger** shall be used to debug Music Blocks programs by monitoring states.
-
-  - **Editor** shall be responsible to building Music Blocks programs in text form.
-
-  - **Planet** shall be a repository for openly shared projects.
-
-- **Syntax** component shall contain the programming framework. These are responsible for internal
-representation and execution of Music Blocks programs. This shall come with a factory set of program
-building syntax elements.
-
-  - **Elements** shall describe the rudimentary syntax element constructs — **data**, **expressions**,
-  **statements**, and **blocks**.
-
-  - **Specification** shall describe the ambient configurations (label, selective connectivity, etc.)
-  for syntax elements.
-
-  - **Warehouse** shall instantiate and maintain a table of syntax element instances.
-
-  - **Tree** shall respresent the syntax tree by maintaining the interconnections between syntax
-  elements.
-
-  - **Symbol Table** shall maintain the set of program variables.
-
-  - **Parser** shall handle the sequential traversal of syntax elements.
-
-  - **Interpreter** shall orchestrate running Music Blocks programs — exeution of syntax elements.
-
-- **Integrations** component shall contain the components responsible for handling application
-configurations and other bookkeeping.
-
-  - **Config** shall handle application specific configurations and loading of configured plugins.
-
-  - **i18n** shall handle internationalisation — managing language strings.
-
-  - **Projects** shall handle for creating, loading, merging, and exporting projects.
-
-  - **History** shall handle maintaining a log of application-level operations for rollback.
-
-In addition, a **Monitor** component shall be responsible for inter-component communication.
-
-#### Plugins
+All components will be plugins to the barebone UI and the programming framework.
 
 2 kinds of plugins: **Features** and **Syntax Builders**
 
@@ -90,16 +29,16 @@ set of syntax elements.
 
 Plugins may be extended themselves to add more optional functionalities.
 
-##### Plugin (Feature) - Painter
+#### Plugin (Feature) - Painter
 
 This shall add artwork generating functionality, and a set of syntax elements to interact with them.
 
-##### Plugin (Feature) - Singer
+#### Plugin (Feature) - Singer
 
 This shall add music generating functionality, and a set of syntax elements to interact with them.
 This shall be extended to add widgets for generating syntax element stacks.
 
-##### Plugin (Syntax Builder) - Bricks
+#### Plugin (Syntax Builder) - Bricks
 
 This shall add the functionality to build Music Blocks programs using visual bricks.
 
@@ -201,48 +140,54 @@ of ideas (Sugar Labs is a meritocracy)._
 
 ## Tech Stack
 
-Music Blocks v4 shall be built using `TypeScript 4`and `React 17 (with hooks)`. In addition, `SCSS`
-shall be used for styling; `Webpack` will be configured to transpile and bundle the source code, for
-deployment on a web browser.
+Music Blocks v4 shall be built using `TypeScript 4`and `Vue 3`. In addition, `SCSS` shall be used for
+styling; `Webpack` will be configured to transpile and bundle the source code, for deployment on a web
+browser.
 
 ## Setup Development Environment
 
 ### Without Docker
 
-This is a _**TypeScript**_ project that uses _**React**_. You'll just need
-_[**Node.js**](https://nodejs.org/en/)_ and _**NPM**_ installed on your development machine_.
-Although, this is sufficient to run, build, and test the project as a whole, you might need some
-extra tools for other development tasks.
+This is a _**TypeScript**_ project that uses _**Vue**_. You'll just need
+_[**Node.js**](https://nodejs.org/en/)_ and _[**Yarn**](https://yarnpkg.com)_ installed on your
+development machine. Although, this is sufficient to run, build, and test the project as a whole, you
+might need some extra tools for other development tasks.
+
+_**Node.js**_ comes with _**NPM**_ installed. Install yarn using
+
+```bash
+npm i -g yarn
+```
 
 You'll need _**tsc**_ (_TypeScript Compiler_) to manually compile `.ts` files. You'll need
-_**ts-node**_ (_Node executable for TypeScript_) to manually execute `.ts` scripts directly. Finally,
+_**ts-node**_ (_Node.js executable for TypeScript_) to manually execute `.ts` scripts directly. Finally,
 you'll need an _HTTP_ server like _**http-server**_ (_a HTTP server program_), if you want to serve
 files manually.
 
-Once _**NPM**_ is installed, to install the above, run
+Once _**Yarn**_ is installed, to install the above, run
 
 ```bash
-npm i -g http-server
-npm i -g typescript
-npm i -g ts-node
+yarn global add http-server
+yarn global add typescript
+yarn global add ts-node
 ```
 
-_**Note:**_ Users on _Linux_ and _Mac OS_ are required to add a `sudo` before these commands.
+_**Note:**_ Users on _Linux_ and _MacOS_ are required to add a `sudo` before these commands.
 
 Check installation using
 
 ```bash
-node -v && npm -v && tsc -v && ts-node -v && http-server -v
+node -v && yarn -v && tsc -v && ts-node -v && http-server -v
 ```
 
 Output should look like
 
 ```bash
-v14.17.0
-6.14.13
-Version 4.3.2
-v10.0.0
-v0.12.3
+v16.13.2
+1.22.15
+Version 4.5.4
+v10.4.0
+v14.1.0
 ```
 
 ### With Docker
@@ -270,7 +215,7 @@ Windows) this repository using
 4. Build _docker image_ and launch _docker network_.
 
     _**Note:**_ A
-    [built initial development image](https://github.com/orgs/sugarlabs/packages/container/musicblocks/2948273?tag=4.0.0-dev)
+    [built initial development image](https://github.com/sugarlabs/musicblocks-v4/pkgs/container/musicblocks/2948273?tag=4.0.0-dev)
     has been published to
     [_Sugar Labs GitHub Container Registry_ (_GHCR_)](https://github.com/orgs/sugarlabs/packages?ecosystem=container),
     which can be pulled directly, so you don't have to build it again. Pull using
@@ -305,22 +250,22 @@ Windows) this repository using
     The _Alpine shell_ in the _docker container_ named _musicblocks-4.0.0-dev_ is spawned and
     standard input/output is connected to the terminal.
 
-6. _**Node**_ (_Node.js Runtime_), _**npm**_ (_Node Package Manager_), _**tsc**_ (_TypeScript
-    Compiler_), _**ts-node**_ (_Node executable for TypeScript_), and _**http-server**_ (_a HTTP
+6. _**Node.js**_ (_Node.js Runtime_), _**yarn**_ (_Yarn Package Manager_), _**tsc**_ (_TypeScript
+    Compiler_), _**ts-node**_ (_Node.js executable for TypeScript_), and _**http-server**_ (_a HTTP
     server program_) should be installed. Check using
 
     ```bash
-    node -v && npm -v && tsc -v && ts-node -v && http-server -v
+    node -v && yarn -v && tsc -v && ts-node -v && http-server -v
     ```
 
     Output should look like
 
     ```bash
-    v14.17.0
-    6.14.13
-    Version 4.3.2
-    v10.0.0
-    v0.12.3
+    v16.13.2
+    1.22.15
+    Version 4.5.4
+    v10.4.0
+    v14.1.0
     ```
 
 7. To shut down the _docker network_, run (in the terminal where you ran `docker-compose up -d` or
@@ -345,33 +290,31 @@ After you are set-up, the steps you take depend on what you want to do:
     1. To install all the dependencies (in `package.json`), run
 
         ```bash
-        npm ci
+        yarn install --frozen-lockfile
         ```
 
-    2. Run _React scripts_.
+    2. Run _Vue scripts_.
 
         - For unoptimized development serving, run
 
             ```bash
-            npm start
+            yarn run serve
             ```
 
-            This is spawned on `127.0.0.1:3000` inside the container, but mapped to `localhost:5000`
-            on host. Visit `localhost:5000` in a browser to view the webpage served. If you are not
-            using the container, visit `localhost:3000`.
+            Visit `localhost:8080` in a browser to view the web page served.
 
             Currently this will open a page with a "Hello world!" message.
-
-        - For testing, run
-
-            ```bash
-            npm run test
-            ```
 
         - For generating a production build, run
 
             ```bash
-            npm run build
+            yarn run build
+            ```
+
+        - For linting the codebase, run
+
+            ```bash
+            yarn run lint
             ```
 
         _**Note:**_ If you're running using _Docker Desktop_ on _Windows_ or _Mac_, you might experience
@@ -380,23 +323,21 @@ After you are set-up, the steps you take depend on what you want to do:
 
 - **HTTP server**
 
-  To spawn an _HTTP Server_ (uses _Python 3_'s `http.server`), run
+  To spawn an _HTTP Server_, run
 
     ```bash
-    npm run serve
+    http-server -a 127.0.0.1 -p 8000
     ```
 
-    This is spawned on `0.0.0.0:80` inside the container, but mapped to `localhost:5001` on host.
-    Visit `localhost:5001` in a browser to view the webpage served. If you are not using the
-    container, visit `localhost:80`.
+    Visit `localhost:8000` in a browser to view the web page served.
 
 - **Miscellaneous commands**
 
-  _**Note:**_ This requires _**Node**_ (_Node.js Runtime_), _**tsc**_ (_TypeScript Compiler_), and
-  _**ts-node**_ (_Node executable for TypeScript_) to be installed. If you are using _Docker_, they'll
+  _**Note:**_ This requires _**Node.js**_ (_Node.js Runtime_), _**tsc**_ (_TypeScript Compiler_), and
+  _**ts-node**_ (_Node.js executable for TypeScript_) to be installed. If you are using _Docker_, they'll
   be pre-installed in the container.
 
-  - To launch the _Node runtime_, run
+  - To launch the _Node.js runtime_, run
 
     ```bash
     node
@@ -426,7 +367,7 @@ After you are set-up, the steps you take depend on what you want to do:
 
 _All code is just plain text, so it doesn't really matter what you use to edit them._ However,
 using modern, feature-rich IDEs/text-editors like [_**Atom**_](https://atom.io/),
-[_**Brackets**_](http://brackets.io/), [_**WebStorm**_](https://www.jetbrains.com/webstorm/),
+[_**Brackets**_](https://brackets.io/), [_**WebStorm**_](https://www.jetbrains.com/webstorm/),
 [_**Sublime Text**_](https://www.sublimetext.com/),
 [_**Visual Studio Code**_](https://code.visualstudio.com/), etc. makes life way easier. These come
 with a directory-tree explorer, and an integrated terminal, at the very least, while having support
@@ -438,7 +379,7 @@ _keyboard shortcuts_, etc.
 
 _**Visual Studio Code**_ (_**VSCode**_) is currently the most-popular code editor for reasons like
 being _lightweight_, _cleaner_, large marketplace of _extensions_, integrated _Source Control_
-features, _debugger_, _remote explorer_ support, _Regular Expression_ (_regex_) based find/replace,
+features, _debugger_, _remote explorer_ support, _Regular Expression_ (_regular expression_) based find/replace,
 etc.
 
 In fact, a workspace configuration file for _vscode_`.vscode/settings.json` has already been added.

@@ -12,68 +12,45 @@
   ],
   "author": "Anindya Kundu <anindya.k22@outlook.com> (https://github.com/meganindya/)",
   "license": "AGPL-3.0",
-  "module": "true",
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint && textlint --rule terminology --rule no-empty-section --rule no-dead-link README.md"
+  },
+  "dependencies": {
+    "core-js": "^3.6.5",
+    "vue": "^3.0.0",
+    "vue-class-component": "^8.0.0-0",
+    "vuex": "^4.0.0-0"
+  },
   "devDependencies": {
-    "@types/jest": "^26.0.22",
-    "@types/jquery": "^3.5.8",
-    "@types/jqueryui": "^1.12.16",
-    "@types/node": "^12.20.7",
-    "@types/p5": "^1.3.0",
-    "@types/react": "^17.0.3",
-    "@types/react-dom": "^17.0.3",
-    "@types/uuid": "^8.3.1",
-    "craco-alias": "^3.0.1",
+    "@typescript-eslint/eslint-plugin": "^4.18.0",
+    "@typescript-eslint/parser": "^4.18.0",
+    "@vue/cli-plugin-babel": "~4.5.0",
+    "@vue/cli-plugin-eslint": "~4.5.0",
+    "@vue/cli-plugin-typescript": "~4.5.0",
+    "@vue/cli-plugin-vuex": "~4.5.0",
+    "@vue/cli-service": "~4.5.0",
+    "@vue/compiler-sfc": "^3.0.0",
+    "@vue/eslint-config-prettier": "^6.0.0",
+    "@vue/eslint-config-typescript": "^7.0.0",
+    "eslint": "^6.7.2",
     "eslint-plugin-json": "^3.1.0",
-    "jqueryui": "^1.11.1",
+    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-vue": "^7.0.0",
+    "prettier": "^2.2.1",
+    "prettier-eslint": "^13.0.0",
+    "sass": "^1.26.5",
+    "sass-loader": "^8.0.2",
     "textlint": "^12.1.0",
     "textlint-rule-no-dead-link": "^4.8.0",
     "textlint-rule-no-empty-section": "^1.1.0",
-    "textlint-rule-terminology": "^2.1.5"
+    "textlint-rule-terminology": "^2.1.5",
+    "typescript": "~4.1.5"
   },
-  "dependencies": {
-    "@craco/craco": "^6.3.0",
-    "@testing-library/jest-dom": "^5.11.10",
-    "@testing-library/react": "^11.2.6",
-    "@testing-library/user-event": "^12.8.3",
-    "eslint-config-prettier": "^8.1.0",
-    "eslint-plugin-prettier": "^3.4.0",
-    "jquery": "^3.6.0",
-    "p5": "^1.3.1",
-    "prettier": "2.3.1",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-scripts": "4.0.3",
-    "sass": "^1.32.8",
-    "typescript": "^4.2.4",
-    "uuid": "^8.3.2",
-    "web-vitals": "^1.1.1"
-  },
-  "scripts": {
-    "start": "craco start",
-    "build": "craco build",
-    "test": "craco test",
-    "eject": "craco eject",
-    "serve": "http-server . -p 80"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "eslintIgnore": [
-    "craco.config.js"
-  ],
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  }
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
 }

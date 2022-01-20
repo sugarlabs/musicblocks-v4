@@ -2,13 +2,13 @@
 FROM node:lts-alpine
 
 # install simple http server for serving static content
-RUN npm install -g http-server
+RUN yarn global add http-server
 
 # install typescript compiler
-RUN npm install -g typescript
+RUN yarn global add typescript
 
 # install ts-node (to run/debug .ts files without manual transpiling)
-RUN npm install -g ts-node
+RUN yarn global add ts-node
 
 # set /app as working directory (in development mode for mounting source code)
 WORKDIR /app
@@ -17,7 +17,8 @@ WORKDIR /app
 CMD sh
 
 # Listen on ports
-EXPOSE 80 3000
+EXPOSE 8080 8080
+EXPOSE 8000 8000
 
 # Add label for GitHub container registry
 LABEL org.opencontainers.image.description='An initial development image based on the official \

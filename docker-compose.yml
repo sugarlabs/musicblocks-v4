@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 services:
   musicblocks:
     build: ./
@@ -6,8 +6,8 @@ services:
     env_file:
       - ./env/development.env
     ports:
-      - "5000:3000"
-      - "5001:80"
+      - '8080:8080'
+      - '8000:8000'
     volumes:
       - ./:/app/
     container_name: musicblocks-4.0.0-dev

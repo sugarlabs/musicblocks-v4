@@ -1,35 +1,38 @@
 {
-  "editor.rulers": [100],
-  "editor.renderWhitespace": "boundary",
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "javascript.updateImportsOnFileMove.enabled": "always",
-  "typescript.updateImportsOnFileMove.enabled": "always",
-  "editor.formatOnSave": true,
-  "editor.formatOnType": false,
-  "editor.selectionHighlight": true,
-  "editor.tabSize": 4,
-  "[json]": {
-    "editor.tabSize": 2
-  },
-  "[html]": {
-    "editor.suggest.insertMode": "insert"
-  },
-  "[scss]": {
-    "editor.tabSize": 2
-  },
-  "[typescriptreact]": {
-    "editor.tabSize": 2
-  },
-  "[dart]": {
-    "editor.selectionHighlight": false,
-    "editor.suggest.snippetsPreventQuickSuggestions": false,
-    "editor.suggestSelection": "first",
-    "editor.tabCompletion": "onlySnippets",
-    "editor.wordBasedSuggestions": false
-  },
-  "[markdown]": {
-    "editor.wordWrap": "on",
-    "editor.quickSuggestions": false,
-    "editor.formatOnSave": false
-  }
+    "editor.rulers": [100],
+    "editor.renderWhitespace": "boundary",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "javascript.updateImportsOnFileMove.enabled": "always",
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "editor.formatOnSave": true,
+    "editor.formatOnType": false,
+    "editor.selectionHighlight": true,
+    "editor.tabSize": 4,
+    "vetur.format.defaultFormatter.scss": "prettier",
+    "vetur.format.defaultFormatter.css": "prettier",
+    "vetur.format.defaultFormatter.js": "prettier-eslint",
+    "vetur.format.defaultFormatter.ts": "prettier",
+    "vetur.format.defaultFormatter.html": "js-beautify-html",
+    "[json]": {
+        "editor.tabSize": 2
+    },
+    "[html]": {
+        "editor.tabSize": 2,
+        "editor.suggest.insertMode": "insert"
+    },
+    "[scss]": {
+        "editor.tabSize": 2
+    },
+    "[typescriptreact]": {
+        "editor.tabSize": 2
+    },
+    "[markdown]": {
+        "editor.wordWrap": "on",
+        "editor.quickSuggestions": false,
+        "editor.formatOnSave": false
+    },
+    "[vue]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "octref.vetur"
+    }
 }

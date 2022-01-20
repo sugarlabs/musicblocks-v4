@@ -1,0 +1,189 @@
+{
+  "root": true,
+
+  "env": {
+    "node": true
+  },
+
+  "extends": [
+    "plugin:vue/vue3-essential",
+    "plugin:vue/recommended",
+    "eslint:recommended",
+    "@vue/typescript/recommended",
+    "@vue/prettier",
+    "@vue/prettier/@typescript-eslint",
+    "plugin:json/recommended-with-comments"
+  ],
+
+  "parserOptions": {
+    "ecmaVersion": 2020
+  },
+
+  "rules": {
+    "vue/attribute-hyphenation": "warn",
+    "vue/attributes-order": "warn",
+    "vue/block-lang": [
+      "warn",
+      {
+        "script": {
+          "lang": "ts"
+        },
+        "style": {
+          "lang": "scss"
+        }
+      }
+    ],
+    "vue/block-tag-newline": "warn",
+    "vue/component-definition-name-casing": "error",
+    "vue/component-name-in-template-casing": "error",
+    "vue/component-tags-order": "error",
+    "vue/custom-event-name-casing": "error",
+    "vue/html-closing-bracket-newline": "warn",
+    "vue/html-closing-bracket-spacing": "warn",
+    "vue/html-comment-content-newline": "warn",
+    "vue/html-comment-content-spacing": "warn",
+    "vue/html-comment-indent": "warn",
+    "vue/html-end-tags": "error",
+    "vue/html-indent": [
+      "warn",
+      2,
+      {
+        "attribute": 1,
+        "baseIndent": 1,
+        "closeBracket": 0,
+        "alignAttributesVertically": true,
+        "ignores": []
+      }
+    ],
+    "vue/html-quotes": "error",
+    "vue/max-attributes-per-line": "warn",
+    "vue/max-len": [
+      "warn",
+      {
+        "code": 100,
+        "template": 100,
+        "tabWidth": 2,
+        "comments": 100,
+        "ignorePattern": "",
+        "ignoreComments": false,
+        "ignoreTrailingComments": false,
+        "ignoreUrls": true,
+        "ignoreStrings": false,
+        "ignoreTemplateLiterals": false,
+        "ignoreRegExpLiterals": false,
+        "ignoreHTMLAttributeValues": false,
+        "ignoreHTMLTextContents": false
+      }
+    ],
+    "vue/multiline-html-element-content-newline": "warn",
+    "vue/mustache-interpolation-spacing": "warn",
+    "vue/name-property-casing": "error",
+    "vue/no-arrow-functions-in-watch": "error",
+    "vue/no-async-in-computed-properties": "error",
+    "vue/no-bare-strings-in-template": "warn",
+    "vue/no-computed-properties-in-data": "error",
+    "vue/no-confusing-v-for-v-if": "error",
+    "vue/no-custom-modifiers-on-v-model": "error",
+    "vue/no-deprecated-data-object-declaration": "error",
+    "vue/no-deprecated-destroyed-lifecycle": "error",
+    "vue/no-deprecated-dollar-listeners-api": "error",
+    "vue/no-deprecated-dollar-scopedslots-api": "error",
+    "vue/no-deprecated-events-api": "error",
+    "vue/no-deprecated-filter": "error",
+    "vue/no-deprecated-functional-template": "error",
+    "vue/no-deprecated-html-element-is": "error",
+    "vue/no-deprecated-inline-template": "error",
+    "vue/no-deprecated-props-default-this": "error",
+    "vue/no-deprecated-router-link-tag-prop": "error",
+    "vue/no-deprecated-scope-attribute": "error",
+    "vue/no-deprecated-slot-attribute": "error",
+    "vue/no-deprecated-slot-scope-attribute": "error",
+    "vue/no-deprecated-v-bind-sync": "error",
+    "vue/no-deprecated-v-is": "error",
+    "vue/no-deprecated-v-on-native-modifier": "error",
+    "vue/no-deprecated-v-on-number-modifiers": "error",
+    "vue/no-deprecated-vue-config-keycodes": "error",
+    "vue/no-dupe-keys": "error",
+    "vue/no-dupe-v-else-if": "error",
+    "vue/no-duplicate-attr-inheritance": "error",
+    "vue/no-invalid-model-keys": "error",
+    "vue/no-irregular-whitespace": "error",
+    "vue/no-lifecycle-after-await": "error",
+    "vue/no-lone-template": "warn",
+    "vue/no-multi-spaces": "warn",
+    "vue/no-multiple-objects-in-class": "error",
+    "vue/no-multiple-template-root": "off",
+    "vue/no-mutating-props": "error",
+    "vue/no-parsing-error": "error",
+    "vue/no-potential-component-option-typo": "error",
+    "vue/no-reserved-component-names": "error",
+    "vue/no-reserved-keys": "error",
+    "vue/no-side-effects-in-computed-properties": "error",
+    "vue/no-spaces-around-equal-signs-in-attribute": "warn",
+    "vue/no-template-key": "warn",
+    "vue/no-template-shadow": "error",
+    "vue/no-template-target-blank": "warn",
+    "vue/no-textarea-mustache": "warn",
+    "vue/no-unused-components": "warn",
+    "vue/no-unused-properties": "warn",
+    "vue/no-unused-refs": "warn",
+    "vue/no-unused-vars": "warn",
+    "vue/no-use-computed-property-like-method": "error",
+    "vue/no-useless-template-attributes": "warn",
+    "vue/no-v-for-template-key-on-child": "warn",
+    "vue/one-component-per-file": "error",
+    "vue/order-in-components": "warn",
+    "vue/padding-line-between-blocks": "error",
+    "vue/prop-name-casing": "error",
+    "vue/require-default-prop": "error",
+    "vue/require-emit-validator": "warn",
+    "vue/require-explicit-emits": "warn",
+    "vue/require-prop-type-constructor": "error",
+    "vue/require-prop-types": "warn",
+    "vue/require-v-for-key": "warn",
+    "vue/require-valid-default-prop": "warn",
+    "vue/script-indent": [
+      "warn",
+      2,
+      {
+        "baseIndent": 0,
+        "switchCase": 0,
+        "ignores": []
+      }
+    ],
+
+    "no-console": "off",
+    "no-debugger": "off",
+    "no-mixed-spaces-and-tabs": "warn",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "no-use-before-define": "off",
+    "@typescript-eslint/no-use-before-define": ["error", "nofunc"],
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "semi": ["error", "always"],
+    "prefer-const": ["off"],
+    "max-len": [
+      "warn",
+      {
+        "code": 100,
+        "comments": 100,
+        "ignorePattern": "",
+        "ignoreComments": false,
+        "ignoreTrailingComments": false,
+        "ignoreUrls": true,
+        "ignoreStrings": false,
+        "ignoreTemplateLiterals": false,
+        "ignoreRegExpLiterals": false
+      }
+    ],
+    "no-trailing-spaces": ["warn", { "skipBlankLines": true, "ignoreComments": true }],
+    "no-duplicate-case": "error",
+    "no-irregular-whitespace": "warn"
+  }
+}

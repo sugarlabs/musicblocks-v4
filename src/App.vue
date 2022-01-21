@@ -1,10 +1,10 @@
+<!-- == TEMPLATE =============================================================================== -->
+
 <template>
-  <img
-    :alt="`${'Vue logo'}`"
-    src="./assets/logo.png"
-  />
-  <HelloWorld msg="Welcome to Your Vue.js + TypeScript App" />
+  <HelloWorld msg="Music Blocks" />
 </template>
+
+<!-- == SCRIPT ================================================================================= -->
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
@@ -17,6 +17,8 @@ import HelloWorld from './components/HelloWorld.vue';
 })
 export default class App extends Vue {}
 </script>
+
+<!-- == STYLE ================================================================================== -->
 
 <style lang="scss">
 #app {

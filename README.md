@@ -210,7 +210,7 @@ deployment on a web browser.
 ### Without Docker
 
 This is a _**TypeScript**_ project that uses _**React**_. You'll just need
-_[**Node.js**](https://nodejs.org/en/)_ and _**NPM**_ installed on your development machine_.
+_[**Node.js**](https://nodejs.org/en/)_ and _**Yarn**_ installed on your development machine_.
 Although, this is sufficient to run, build, and test the project as a whole, you might need some
 extra tools for other development tasks.
 
@@ -219,12 +219,19 @@ _**ts-node**_ (_Node.js executable for TypeScript_) to manually execute `.ts` sc
 you'll need an _HTTP_ server like _**http-server**_ (_a HTTP server program_), if you want to serve
 files manually.
 
-Once _**NPM**_ is installed, to install the above, run
+Installing _**Node.js**_ will by default install **_NPM_** (_Node.js Package Manager_). Use it to install
+_**Yarn**_ using
 
 ```bash
-npm i -g http-server
-npm i -g typescript
-npm i -g ts-node
+npm i -g yarn
+```
+
+Once _**Yarn**_ is installed, to install the above, run
+
+```bash
+yarn global add http-server
+yarn global add typescript
+yarn global add ts-node
 ```
 
 _**Note:**_ Users on _Linux_ and _MacOS_ are required to add a `sudo` before these commands.
@@ -232,17 +239,17 @@ _**Note:**_ Users on _Linux_ and _MacOS_ are required to add a `sudo` before the
 Check installation using
 
 ```bash
-node -v && npm -v && tsc -v && ts-node -v && http-server -v
+node -v && yarn -v && tsc -v && ts-node -v && http-server -v
 ```
 
 Output should look like
 
 ```bash
-v14.17.0
-6.14.13
-Version 4.3.2
-v10.0.0
-v0.12.3
+v16.13.2
+1.22.15
+Version 4.5.5
+v10.4.0
+v14.1.0
 ```
 
 ### With Docker
@@ -305,22 +312,22 @@ Windows) this repository using
     The _Alpine shell_ in the _docker container_ named _musicblocks-4.0.0-dev_ is spawned and
     standard input/output is connected to the terminal.
 
-6. _**Node.js**_ (_Node.js Runtime_), _**npm**_ (_Node.js Package Manager_), _**tsc**_ (_TypeScript
+6. _**Node.js**_ (_Node.js Runtime_), _**yarn**_ (_Yarn Package Manager_), _**tsc**_ (_TypeScript
     Compiler_), _**ts-node**_ (_Node.js executable for TypeScript_), and _**http-server**_ (_a HTTP
     server program_) should be installed. Check using
 
     ```bash
-    node -v && npm -v && tsc -v && ts-node -v && http-server -v
+    node -v && yarn -v && tsc -v && ts-node -v && http-server -v
     ```
 
     Output should look like
 
     ```bash
-    v14.17.0
-    6.14.13
-    Version 4.3.2
-    v10.0.0
-    v0.12.3
+    v16.13.2
+    1.22.15
+    Version 4.5.5
+    v10.4.0
+    v14.1.0
     ```
 
 7. To shut down the _docker network_, run (in the terminal where you ran `docker-compose up -d` or
@@ -345,7 +352,7 @@ After you are set-up, the steps you take depend on what you want to do:
     1. To install all the dependencies (in `package.json`), run
 
         ```bash
-        npm ci
+        yarn install --frozen-lockfile
         ```
 
     2. Run _React scripts_.
@@ -353,25 +360,31 @@ After you are set-up, the steps you take depend on what you want to do:
         - For unoptimized development serving, run
 
             ```bash
-            npm start
+            yarn run start
             ```
 
             This is spawned on `127.0.0.1:3000` inside the container, but mapped to `localhost:5000`
             on host. Visit `localhost:5000` in a browser to view the web page served. If you are not
             using the container, visit `localhost:3000`.
 
-            Currently this will open a page with a "Hello world!" message.
-
-        - For testing, run
-
-            ```bash
-            npm run test
-            ```
+            Currently this will open a page with a "Hello world!" message.````
 
         - For generating a production build, run
 
             ```bash
-            npm run build
+            yarn run build
+            ```
+
+        - For testing, run
+
+            ```bash
+            yarn run test
+            ```
+
+        - For linting the code base, run
+
+            ```bash
+            yarn run test
             ```
 
         _**Note:**_ If you're running using _Docker Desktop_ on _Windows_ or _Mac_, you might experience
@@ -383,7 +396,7 @@ After you are set-up, the steps you take depend on what you want to do:
   To spawn an _HTTP Server_ (uses _Python 3_'s `http.server`), run
 
     ```bash
-    npm run serve
+    yarn run serve
     ```
 
     This is spawned on `0.0.0.0:80` inside the container, but mapped to `localhost:5001` on host.

@@ -41,7 +41,7 @@
     "extends": [
         "eslint:recommended",
         "plugin:@typescript-eslint/recommended",
-        "plugin:prettier/recommended",
+        "prettier",
         "plugin:json/recommended-with-comments"
     ]
 }

@@ -1,4 +1,4 @@
-import { mount } from './painter/painter';
+import { mount } from './painter';
 
 const root = document.getElementById('root')!;
 

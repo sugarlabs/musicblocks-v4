@@ -13,7 +13,7 @@ programming platform, and extend it with other features.
 - The source code for the programming framework will reside in the
 [**musicblocks-v4-lib**](https://github.com/sugarlabs/musicblocks-v4-lib/) repository.
 
-- **musicblocks-v4-lib** will be bundled as an _NPM_ package and imported as a dependency in
+- **musicblocks-v4-lib** will be bundled as an _npm_ package and imported as a dependency in
 **musicblocks-v4**.
 
 ### Components
@@ -210,7 +210,7 @@ deployment on a web browser.
 ### Without Docker
 
 This is a _**TypeScript**_ project that uses _**React**_. You'll just need
-_[**Node.js**](https://nodejs.org/en/)_ and _**NPM**_ installed on your development machine_.
+_[**Node.js**](https://nodejs.org/en/)_ and _**npm**_ installed on your development machine_.
 Although, this is sufficient to run, build, and test the project as a whole, you might need some
 extra tools for other development tasks.
 
@@ -219,7 +219,7 @@ _**ts-node**_ (_Node.js executable for TypeScript_) to manually execute `.ts` sc
 you'll need an _HTTP_ server like _**http-server**_ (_a HTTP server program_), if you want to serve
 files manually.
 
-Once _**NPM**_ is installed, to install the above, run
+Once _**npm**_ is installed, to install the above, run
 
 ```bash
 npm i -g http-server
@@ -337,6 +337,20 @@ Windows) this repository using
     ```
 
 ## Commands
+
+**Note: This repository uses `sugarlabs/musicblocks-v4-lib` as an _npm_ package which is published to
+the _GitHub npm Registry_ of Sugar Labs. Before you install the dependencies you need to make sure that
+your _GitHub Personal Access Token_ (_PAT_) is stored in your local system's _npm_ configuration file
+`.npmrc`.**
+
+Learn
+[how to create a _PAT_](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token#creating-a-token).
+
+Add your _PAT_ to `.npmrc` using
+
+```bash
+echo "//npm.pkg.github.com/:_authToken=[YOUR_GITHUB_PERSONAL_ACCESS_TOKEN]" >> ~/.npmrc
+```
 
 After you are set-up, the steps you take depend on what you want to do:
 

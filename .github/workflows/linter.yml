@@ -56,7 +56,9 @@ jobs:
       ########################
       - name: Install dependencies
         run: |
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
           npm ci
+          rm -rf .npmrc
 
       ####################
       # Run Super Linter #
@@ -64,6 +66,7 @@ jobs:
       - name: Lint new and edited files
         uses: github/super-linter/slim@v4
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BRANCH: develop
           LINTER_RULES_PATH: /
           JAVASCRIPT_ES_CONFIG_FILE: .eslintrc

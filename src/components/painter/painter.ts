@@ -1,18 +1,118 @@
 import * as sketchP5 from './sketchP5';
+import { setup, updatePosition, updateHeading } from './sprite';
+import { radToDeg } from './utils';
 
+// -- private variables ----------------------------------------------------------------------------
+
+/** Sprite parameters. */
+const _params = {
+    position: {
+        x: 0,
+        y: 0,
+    },
+    heading: 90,
+};
+
+/** Proxy to the sprite parameters. */
+const params = new Proxy(_params, {
+    set: (_, key, value) => {
+        if (key === 'position') {
+            _params.position = value;
+            updatePosition(value.x, value.y);
+        } else if (key === 'heading') {
+            _params.heading = value;
+            updateHeading(value);
+        }
+        return true;
+    },
+});
+
+// -- private functions ----------------------------------------------------------------------------
+
+/**
+ * Moves the sprite forward (positive distance) or backward (negative distance).
+ * @param distance - distance to move
+ */
+function move(distance: number): void {
+    const [x1, y1, x2, y2] = [
+        params.position.x,
+        params.position.y,
+        params.position.x + distance * Math.cos(radToDeg(params.heading)),
+        params.position.y + distance * Math.sin(radToDeg(params.heading)),
+    ];
+
+    params.position = { x: x2, y: y2 };
+
+    sketchP5.drawLine(x1, y1, x2, y2);
+}
+
+/**
+ * Turns the head of the sprite right (positive angle) or left (negative angle).
+ * @param angle - delta angle
+ */
+function turn(angle: number): void {
+    params.heading += angle;
+}
+
+// -- public functions -----------------------------------------------------------------------------
+
+/**
+ * Moves the sprite forward
+ * @param distance - distance to move
+ */
+export function moveForward(distance: number): void {
+    move(distance);
+}
+
+/**
+ * Moves the sprite backward
+ * @param distance - distance to move
+ */
+export function moveBackward(distance: number): void {
+    move(-distance);
+}
+
+/**
+ * Turns the head of the sprite right.
+ * @param angle - delta angle
+ */
+export function turnRight(angle: number): void {
+    turn(angle);
+}
+
+/**
+ * Turns the head of the sprite left.
+ * @param angle - delta angle
+ */
+export function turnleft(angle: number): void {
+    turn(-angle);
+}
+
+/**
+ * Initializes the Painter DOM.
+ * @param container - DOM container of the Painter
+ */
 export function mount(container: HTMLElement): void {
     const reset = () => {
-        1;
+        params.position = { x: 0, y: 0 };
+        params.heading = 90;
+
+        sketchP5.clear();
     };
 
     const run = () => {
         reset();
 
-        sketchP5.setBackground(127);
-        sketchP5.setBackground(255, 255, 0);
+        // sketchP5.setBackground(127);
+        // sketchP5.setBackground(255, 255, 0);
         sketchP5.setThickness(4);
         sketchP5.setColor(255, 0, 0);
-        sketchP5.drawLine(0, 0, 400, 400);
+
+        setTimeout(() => moveForward(200), 0);
+        setTimeout(() => turnRight(90), 500);
+        setTimeout(() => moveBackward(400), 1000);
+        setTimeout(() => turnleft(270), 1500);
+        setTimeout(() => moveForward(200), 2000);
     };
 
     function mountDOM(): void {
@@ -89,6 +189,7 @@ export function mount(container: HTMLElement): void {
         artboardWrapper.appendChild(artboardInteractor);
 
         sketchP5.setup(artboardCanvas);
+        setup(artboardInteractor);
 
         controlRun.addEventListener('click', () => run());
         controlRst.addEventListener('click', () => reset());

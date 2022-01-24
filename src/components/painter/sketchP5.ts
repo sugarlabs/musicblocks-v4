@@ -12,12 +12,15 @@ let sketch: p5;
 export function setup(container: HTMLElement): void {
     const { width, height } = container.getBoundingClientRect();
 
-    new p5((p) => {
+    new p5((p: p5) => {
         sketch = p;
 
         p.setup = () => {
             p.createCanvas(width, height);
             p.noLoop();
+            p.translate(p.width / 2, p.height / 2);
+            p.angleMode(p.DEGREES);
+            p.rotate(180);
         };
     }, container);
 }
@@ -79,4 +82,11 @@ export function setBackground(v1: number, v2?: number, v3?: number): void {
     } else {
         sketch.background(v1);
     }
+}
+
+/**
+ * Clears the canvas.
+ */
+export function clear(): void {
+    sketch.clear();
 }

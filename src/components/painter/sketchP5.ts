@@ -37,6 +37,53 @@ export function drawLine(x1: number, y1: number, x2: number, y2: number): void {
 }
 
 /**
+ * Draws a point.
+ * @param x - x co-ordinate of the point
+ * @param y - y co-ordinate of the point
+ */
+export function drawPoint(x: number, y: number): void {
+    sketch.point(x, y);
+}
+
+/**
+ * Draws a arc.
+ * @param x - x co-ordinate of arc's ellipse
+ * @param y - y co-ordinate of arc's ellipse
+ * @param w - width of arc's ellipse
+ * @param h - height of arc's ellipse
+ * @param start - angle to start the arc - in Radians
+ * @param stop - angle to stop the arc - in Radians
+ */
+export function drawArc(
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    start: number,
+    stop: number): void {
+    sketch.arc(x, y, w, h, start, stop);
+}
+
+/**
+ * Draws a bezier.
+ * @param x1 - x co-ordinate of anchor point 1
+ * @param y1 - y co-ordinate of anchor point 1
+ * @param x2 - x co-ordinate of control point 1
+ * @param y2 - y co-ordinate of control point 1
+ * @param x3 - x co-ordinate of control point 2
+ * @param y3 - y co-ordinate of control point 2
+ * @param x4 - x co-ordinate of anchor point 2
+ * @param y4 - y co-ordinate of anchor point 2
+ */
+export function drawBezier(
+    x1: number, y1: number,
+    x2: number, y2: number,
+    x3: number, y3: number,
+    x4: number, y4: number): void {
+    sketch.bezier(x1, y1, x2, y2, x3, y3, x4, y4);
+}
+
+/**
  * Sets drawing color.
  * @param value - greyscale value
  */

@@ -46,7 +46,7 @@ export function drawPoint(x: number, y: number): void {
 }
 
 /**
- * Draws a arc.
+ * Draws an arc.
  * @param x - x co-ordinate of arc's ellipse
  * @param y - y co-ordinate of arc's ellipse
  * @param w - width of arc's ellipse
@@ -60,12 +60,13 @@ export function drawArc(
     w: number,
     h: number,
     start: number,
-    stop: number): void {
-    sketch.arc(x, y, w, h, start, stop);
+    stop: number,
+): void {
+    sketch.arc(x, y, w, h, start, stop, sketch.OPEN);
 }
 
 /**
- * Draws a bezier.
+ * Draws a bezier curve.
  * @param x1 - x co-ordinate of anchor point 1
  * @param y1 - y co-ordinate of anchor point 1
  * @param x2 - x co-ordinate of control point 1
@@ -76,11 +77,43 @@ export function drawArc(
  * @param y4 - y co-ordinate of anchor point 2
  */
 export function drawBezier(
-    x1: number, y1: number,
-    x2: number, y2: number,
-    x3: number, y3: number,
-    x4: number, y4: number): void {
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    x3: number,
+    y3: number,
+    x4: number,
+    y4: number,
+): void {
     sketch.bezier(x1, y1, x2, y2, x3, y3, x4, y4);
+}
+
+/**
+ * Sets fill color.
+ * @param value - greyscale value
+ */
+export function setFillOn(value: number): void;
+/**
+ * Sets fill color.
+ * @param v1 - red channel value
+ * @param v2 - green channel value
+ * @param v3 - blue channel value
+ */
+export function setFillOn(v1: number, v2?: number, v3?: number): void;
+export function setFillOn(v1: number, v2?: number, v3?: number): void {
+    if (typeof v2 === 'number' && typeof v3 === 'number') {
+        sketch.fill(v1, v2, v3);
+    } else {
+        sketch.fill(v1);
+    }
+}
+
+/**
+ * Clears the fill color.
+ */
+export function setFillOff(): void {
+    sketch.noFill();
 }
 
 /**

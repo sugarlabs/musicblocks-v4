@@ -3,8 +3,8 @@
 /** DOM element representing the sprite. */
 let sprite: HTMLElement;
 
-/** Sprite parameters. */
-const params = {
+/** Sprite state parameters. */
+const state = {
     /** Co-ordinates of the sprite. */
     position: {
         /** x co-ordinate of the sprite. */
@@ -45,16 +45,16 @@ export function setup(interactor: HTMLElement): void {
  * @param y - y co-ordinate
  */
 export function updatePosition(x: number, y: number): void {
-    params.position = { x, y };
-    sprite.style.left = `calc(50% - ${params.position.x}px)`;
-    sprite.style.bottom = `calc(50% + ${params.position.y}px)`;
+    state.position = { x, y };
+    sprite.style.left = `calc(50% - ${state.position.x}px)`;
+    sprite.style.bottom = `calc(50% + ${state.position.y}px)`;
 }
 
 /**
  * Updates the heading of the sprite.
- * @param heading - heading angle
+ * @param heading - heading anglestate
  */
 export function updateHeading(heading: number): void {
-    params.heading = heading - 90;
-    sprite.style.transform = `translate(-50%, 50%) rotate(${params.heading}deg)`;
+    state.heading = heading - 90;
+    sprite.style.transform = `translate(-50%, 50%) rotate(${state.heading}deg)`;
 }

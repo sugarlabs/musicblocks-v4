@@ -27,6 +27,7 @@ import painterSpecification from './painter';
 
 registerElementSpecificationEntries(painterSpecification);
 registerElementSpecificationEntry('value-number', librarySpecification['value-number']);
+registerElementSpecificationEntry('repeat', librarySpecification['repeat']);
 
 window.addEventListener('runevent', () => {
     generateFromSnapshot({
@@ -51,44 +52,72 @@ window.addEventListener('runevent', () => {
                     },
                 },
                 {
-                    elementName: 'move-forward',
+                    elementName: 'repeat',
                     argMap: {
-                        steps: {
+                        times: {
+                            elementName: 'value-number',
+                        },
+                    },
+                    scope: [
+                        {
+                            elementName: 'move-forward',
+                            argMap: {
+                                steps: {
+                                    elementName: 'value-number',
+                                },
+                            },
+                        },
+                        {
+                            elementName: 'turn-right',
+                            argMap: {
+                                angle: {
+                                    elementName: 'value-number',
+                                },
+                            },
+                        },
+                    ],
+                },
+                {
+                    elementName: 'set-color',
+                    argMap: {
+                        value: {
                             elementName: 'value-number',
                         },
                     },
                 },
                 {
-                    elementName: 'turn-right',
+                    elementName: 'set-thickness',
                     argMap: {
-                        angle: {
+                        value: {
                             elementName: 'value-number',
                         },
                     },
                 },
                 {
-                    elementName: 'move-forward',
+                    elementName: 'repeat',
                     argMap: {
-                        steps: {
+                        times: {
                             elementName: 'value-number',
                         },
                     },
-                },
-                {
-                    elementName: 'turn-left',
-                    argMap: {
-                        angle: {
-                            elementName: 'value-number',
+                    scope: [
+                        {
+                            elementName: 'move-forward',
+                            argMap: {
+                                steps: {
+                                    elementName: 'value-number',
+                                },
+                            },
                         },
-                    },
-                },
-                {
-                    elementName: 'move-backward',
-                    argMap: {
-                        steps: {
-                            elementName: 'value-number',
+                        {
+                            elementName: 'turn-left',
+                            argMap: {
+                                angle: {
+                                    elementName: 'value-number',
+                                },
+                            },
                         },
-                    },
+                    ],
                 },
             ],
         ],
@@ -104,24 +133,37 @@ window.addEventListener('runevent', () => {
     )!.instance.updateLabel('4');
     getInstance(
         // @ts-ignore
-        getNode(generateSnapshot().crumbs[0][2]['argMap']['steps'].nodeID)!.instanceID,
-    )!.instance.updateLabel('100');
+        getNode(generateSnapshot().crumbs[0][2]['argMap']['times'].nodeID)!.instanceID,
+    )!.instance.updateLabel('6');
     getInstance(
         // @ts-ignore
-        getNode(generateSnapshot().crumbs[0][3]['argMap']['angle'].nodeID)!.instanceID,
-    )!.instance.updateLabel('90');
+        getNode(generateSnapshot().crumbs[0][2]['scope'][0]['argMap']['steps'].nodeID)!.instanceID,
+    )!.instance.updateLabel('200');
     getInstance(
         // @ts-ignore
-        getNode(generateSnapshot().crumbs[0][4]['argMap']['steps'].nodeID)!.instanceID,
-    )!.instance.updateLabel('100');
+        getNode(generateSnapshot().crumbs[0][2]['scope'][1]['argMap']['angle'].nodeID)!.instanceID,
+    )!.instance.updateLabel('60');
+
     getInstance(
         // @ts-ignore
-        getNode(generateSnapshot().crumbs[0][5]['argMap']['angle'].nodeID)!.instanceID,
-    )!.instance.updateLabel('90');
+        getNode(generateSnapshot().crumbs[0][3]['argMap']['value'].nodeID)!.instanceID,
+    )!.instance.updateLabel('9');
     getInstance(
         // @ts-ignore
-        getNode(generateSnapshot().crumbs[0][6]['argMap']['steps'].nodeID)!.instanceID,
-    )!.instance.updateLabel('100');
+        getNode(generateSnapshot().crumbs[0][4]['argMap']['value'].nodeID)!.instanceID,
+    )!.instance.updateLabel('4');
+    getInstance(
+        // @ts-ignore
+        getNode(generateSnapshot().crumbs[0][5]['argMap']['times'].nodeID)!.instanceID,
+    )!.instance.updateLabel('6');
+    getInstance(
+        // @ts-ignore
+        getNode(generateSnapshot().crumbs[0][5]['scope'][0]['argMap']['steps'].nodeID)!.instanceID,
+    )!.instance.updateLabel('200');
+    getInstance(
+        // @ts-ignore
+        getNode(generateSnapshot().crumbs[0][5]['scope'][1]['argMap']['angle'].nodeID)!.instanceID,
+    )!.instance.updateLabel('60');
 
     run(getCrumbs()[0].nodeID);
 });

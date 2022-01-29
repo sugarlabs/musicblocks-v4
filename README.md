@@ -343,6 +343,8 @@ the _GitHub npm Registry_ of Sugar Labs. Before you install the dependencies you
 your _GitHub Personal Access Token_ (_PAT_) is stored in your local system's _npm_ configuration file
 `.npmrc`.**
 
+**Note: Be sure to request permission for ```read: packages```**
+
 Learn
 [how to create a _PAT_](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token#creating-a-token).
 

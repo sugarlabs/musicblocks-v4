@@ -1,6 +1,7 @@
-const path = require('path')
+const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = {
     entry: './src/index.ts',
@@ -52,5 +53,30 @@ module.exports = {
             manifest: "./public/manifest.json"
         }),
         new MiniCssExtractPlugin()
-    ]
-}
+    ],
+    optimization: {     /** optimize build plugins */
+        runtimeChunk: {
+            name: entrypoint => `runtimechunk~${entrypoint.name}`
+        },
+        splitChunks: {
+            cacheGroups: {
+                vendor: {
+                    name: "node_vendors",
+                    test: /[\\/]node_modules[\\/]/,
+                    chunks: "all",
+                }
+            }
+        },
+        moduleIds: 'deterministic',
+        minimize: true,
+        minimizer: [new TerserPlugin({
+            terserOptions: {
+                format: {
+                    comments: false,
+                },
+            },
+            extractComments: false,
+            parallel: true, /** enable parallel running */
+        }),]
+    }
+};

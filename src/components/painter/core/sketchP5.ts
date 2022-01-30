@@ -1,5 +1,4 @@
 import p5 from 'p5';
-
 // -------------------------------------------------------------------------------------------------
 
 /** p5 sketch instance. */
@@ -168,5 +167,5 @@ export function setBackground(v1: number, v2?: number, v3?: number): void {
  * Clears the canvas.
  */
 export function clear(): void {
-    sketch.clear();
+    // sketch.clear();
 }

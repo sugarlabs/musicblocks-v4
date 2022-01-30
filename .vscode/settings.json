@@ -31,5 +31,8 @@
     "editor.wordWrap": "on",
     "editor.quickSuggestions": false,
     "editor.formatOnSave": false
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
   }
 }

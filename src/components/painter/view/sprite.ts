@@ -1,4 +1,9 @@
+import mouseSVG from './resources/mouse.svg';
+
 // -- private variables ----------------------------------------------------------------------------
+
+/** Source URL of the sprite's SVG. */
+const _spriteSrc = mouseSVG;
 
 /** DOM element representing the sprite. */
 let sprite: HTMLElement;
@@ -21,22 +26,33 @@ const state = {
 /**
  * Initializes the sprite.
  * @param interactor - DOM container for the interactor (wrapper for the sprite)
+ * @param spriteFillColor - sprite's `fill` color with default value of `"#a0a0a0"`
+ * @param spriteStrokeColor - sprite's `stroke` color with with default value of `"#000000"`
  */
-export function setup(interactor: HTMLElement): void {
-    interactor.style.position = 'absolute';
+export function setup(
+    interactor: HTMLElement,
+    spriteFillColor = '#a0a0a0',
+    spriteStrokeColor = '#000000',
+): void {
+    (async () => {
+        interactor.style.position = 'absolute';
 
-    const spriteElem = document.createElement('div');
-    spriteElem.style.position = 'absolute';
-    spriteElem.style.left = '50%';
-    spriteElem.style.bottom = '50%';
-    spriteElem.style.transform = 'translate(-50%, 50%)';
-    spriteElem.style.width = '2rem';
-    spriteElem.style.height = '2.5rem';
-    spriteElem.style.clipPath = 'polygon(50% 0, 100% 85%, 0% 85%)';
-    spriteElem.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-    interactor.appendChild(spriteElem);
+        const spriteWrapper = document.createElement('div');
+        spriteWrapper.innerHTML =
+            // fetches the SVG source string from the .svg source file's URL
+            (await fetch(_spriteSrc).then((res) => res.text()))
+                .replace('fill_color', spriteFillColor)
+                .replaceAll('stroke_color', spriteStrokeColor);
+        const spriteElem = spriteWrapper.children[0] as HTMLElement;
+        spriteElem.style.position = 'absolute';
+        spriteElem.style.left = '50%';
+        spriteElem.style.bottom = '50%';
+        spriteElem.style.transform = 'translate(-50%, 50%)';
 
-    sprite = spriteElem;
+        interactor.appendChild(spriteElem);
+
+        sprite = spriteElem as unknown as HTMLElement;
+    })();
 }
 
 /**

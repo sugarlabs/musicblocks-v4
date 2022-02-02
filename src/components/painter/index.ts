@@ -41,7 +41,7 @@ import {
 /**
  * Syntax element specification object for the Painter component.
  */
-const specification: {
+export const specification: {
     [identifier: string]:
         | IElementSpecificationEntryData
         | IElementSpecificationEntryExpression
@@ -85,5 +85,3 @@ const specification: {
         prototype: ElementSetThickness,
     },
 };
-
-export default specification;

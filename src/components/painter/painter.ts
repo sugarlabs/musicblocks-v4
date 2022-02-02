@@ -90,7 +90,7 @@ export function reset(): void {
 export function run(): void {
     reset();
 
-    window.dispatchEvent(new Event('runevent'));
+    window.dispatchEvent(new Event('runprogram'));
 
     // _sketch.setBackground(127);
     // _sketch.setBackground(255, 255, 0);

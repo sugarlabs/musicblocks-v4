@@ -6,15 +6,7 @@ reportWebVitals();
 
 // =================================================================================================
 
-import React from 'react';
-import ReactDOM from 'react-dom';
-
-import App from './view/App';
-
-ReactDOM.render(
-    React.createElement(React.StrictMode, null, App()),
-    document.getElementById('root'),
-);
+import './view';
 
 setTimeout(() => import('./config'));
 

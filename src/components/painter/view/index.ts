@@ -1,16 +1,16 @@
 import { ISketch } from '../@types';
 
+import { createItem } from '../../../view';
 import { setup as setupSprite } from './sprite';
 
 let _artboardSketch: HTMLElement;
-let _controlRun: HTMLElement;
-let _controlRst: HTMLElement;
 
 /**
  * Initializes the Painter DOM.
- * @param container - DOM container of the Painter
  */
-export function mount(container: HTMLElement): void {
+export function mount(): void {
+    const container = createItem({ location: 'workspace' });
+
     container.style.display = 'flex';
     container.classList.add('artboard-container');
     container.style.flexDirection = 'row';
@@ -18,32 +18,9 @@ export function mount(container: HTMLElement): void {
     container.style.height = '100%';
     container.style.overflow = 'hidden';
 
-    const control = document.createElement('section');
-    control.style.display = 'flex';
-    control.style.flexDirection = 'column';
-    control.style.justifyContent = 'center';
-    control.style.boxSizing = 'border-box';
-    control.style.height = '100%';
-    control.style.padding = '0.5rem';
-    control.style.backgroundColor = 'white';
-    container.appendChild(control);
-
-    _controlRun = document.createElement('button');
-    _controlRun.innerHTML = 'RUN';
-    _controlRun.style.width = '3.5rem';
-    _controlRun.style.height = '3.5rem';
-    control.appendChild(_controlRun);
-
-    _controlRst = document.createElement('button');
-    _controlRst.innerHTML = 'RESET';
-    _controlRst.style.width = '3.5rem';
-    _controlRst.style.height = '3.5rem';
-    _controlRst.style.marginTop = '1rem';
-    control.appendChild(_controlRst);
-
     const artboardContainer = document.createElement('section');
     artboardContainer.style.boxSizing = 'border-box';
-    artboardContainer.style.width = 'calc(100% - 4.5rem)';
+    artboardContainer.style.width = '100%';
     artboardContainer.style.height = '100%';
     artboardContainer.style.padding = '0.5rem';
     artboardContainer.style.backgroundColor = 'silver';
@@ -88,12 +65,4 @@ export function mount(container: HTMLElement): void {
 
 export function mountSketch(sketch: ISketch): void {
     sketch.setup(_artboardSketch!);
-}
-
-export function setupAction(action: 'run' | 'reset', callback: CallableFunction): void {
-    if (action === 'run') {
-        _controlRun.addEventListener('click', () => callback());
-    } else if (action === 'reset') {
-        _controlRst.addEventListener('click', () => callback());
-    }
 }

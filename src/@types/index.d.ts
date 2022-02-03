@@ -19,12 +19,15 @@ import {
 /** Interface representing a component's API. */
 export interface IComponent {
     /**
-     * Sets up the component inside the DOM container.
-     * @param container DOM container
+     * Mounts the component (loads subcomponents, mounts DOM elements, etc.).
      */
-    mount(container: HTMLElement): void;
+    mount(): void;
+    /**
+     * Sets up the component — initializes component after it is mounted.
+     */
+    setup(): void;
     /** Syntax element specification object for the component. */
-    specification: {
+    specification?: {
         [identifier: string]:
             | IElementSpecificationEntryData
             | IElementSpecificationEntryExpression

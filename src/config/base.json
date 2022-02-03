@@ -1,6 +1,9 @@
 {
   "components": [
     {
+      "name": "menu"
+    },
+    {
       "name": "painter",
       "elements": true
     }

@@ -4,8 +4,10 @@ export interface IConfig {
     components: {
         /** Name of the component. */
         name: string;
+        /** Names of the components that precede it in dependency graph. */
+        parents?: string[];
         /** Names of the syntax elements to register. */
-        elements: string[] | boolean;
+        elements?: string[] | boolean;
     }[];
 }
 

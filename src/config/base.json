@@ -5,6 +5,7 @@
     },
     {
       "name": "painter",
+      "parents": ["menu"],
       "elements": true
     }
   ]

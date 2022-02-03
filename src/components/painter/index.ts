@@ -1,21 +1,30 @@
-import { mount as mountView, mountSketch, setupAction } from './view';
+import { IComponentMenu } from '../../@types/components/menu';
+
+import { getComponent } from '../../config';
+
+import { mount as mountView, mountSketch } from './view';
 import { sketch, run, reset } from './painter';
 
 // -- public functions -----------------------------------------------------------------------------
 
 /**
- * Sets up the Painter component inside the DOM container.
- * @param container DOM container
+ * Mounts the Painter component.
  */
-export function mount(container: HTMLElement): void {
-    mountView(container);
+export function mount(): void {
+    mountView();
 
-    setTimeout(() => {
-        mountSketch(sketch);
+    setTimeout(() => mountSketch(sketch));
+}
 
-        setupAction('run', run);
-        setupAction('reset', reset);
-    });
+/**
+ * Initializes the Painter component; mounts the hooks.
+ */
+export function setup(): void {
+    const menu = getComponent('menu') as IComponentMenu;
+    if (menu) {
+        menu.mountHook('run', run);
+        menu.mountHook('reset', reset);
+    }
 }
 
 // == specification ================================================================================
@@ -41,7 +50,7 @@ import {
 /**
  * Syntax element specification object for the Painter component.
  */
-const specification: {
+export const specification: {
     [identifier: string]:
         | IElementSpecificationEntryData
         | IElementSpecificationEntryExpression
@@ -85,5 +94,3 @@ const specification: {
         prototype: ElementSetThickness,
     },
 };
-
-export default specification;

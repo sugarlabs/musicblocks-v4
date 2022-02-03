@@ -1,0 +1,51 @@
+#toolbar {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+
+  .toolbar-cluster {
+    flex-shrink: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 0.25rem 0;
+
+    .toolbar-cluster-item {
+      width: 3rem;
+      margin: 0.25rem 0;
+      padding: 0.25rem;
+      border: 1px solid silver;
+      border-radius: 0.25rem;
+
+      &:first-child,
+      &:last-child {
+        margin: 0;
+      }
+
+      &.toolbar-cluster-item-btn {
+        height: 3rem;
+        border: 1px solid silver;
+        border-radius: 0.25rem;
+        background-color: lightgray;
+        cursor: pointer;
+        transition: all 0.25s ease;
+
+        &:hover {
+          background-color: silver;
+        }
+      }
+    }
+
+    &#toolbar-cluster-a {
+      justify-content: flex-start;
+      padding-top: 0;
+    }
+
+    &#toolbar-cluster-b {
+      justify-content: flex-end;
+      padding-bottom: 0;
+    }
+  }
+}

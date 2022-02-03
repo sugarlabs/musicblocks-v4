@@ -88,15 +88,10 @@ export function reset(): void {
  * @description dummy implementation for now.
  */
 export function run(): void {
-    reset();
-
-    window.dispatchEvent(new Event('runevent'));
-
     // _sketch.setBackground(127);
     // _sketch.setBackground(255, 255, 0);
     // _sketch.setThickness(4);
     // _sketch.setColor(255, 0, 0);
-
     // setTimeout(() => moveForward(200), 0);
     // setTimeout(() => turnRight(90), 500);
     // setTimeout(() => moveBackward(400), 1000);

@@ -1,0 +1,12 @@
+{
+  "components": [
+    {
+      "name": "menu"
+    },
+    {
+      "name": "painter",
+      "parents": ["menu"],
+      "elements": true
+    }
+  ]
+}

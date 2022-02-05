@@ -1,0 +1,56 @@
+#editor {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+
+  > * {
+    width: 100%;
+    margin: 0;
+  }
+
+  #editor-codebox {
+    flex-shrink: 1;
+    height: 100%;
+    padding: 0.5rem;
+    border: 1px solid silver;
+    border-bottom: none;
+    border-radius: 0.25rem 0.25rem 0 0;
+    font-size: 0.9rem;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    resize: none;
+
+    &:focus {
+      box-shadow: none;
+      border: 1px solid blue;
+      outline: none;
+    }
+  }
+
+  #editor-btn-build {
+    flex-shrink: 0;
+    height: 2rem;
+    border: 1px solid silver;
+    text-transform: uppercase;
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.25s ease;
+
+    &:hover {
+      background-color: #eee;
+    }
+  }
+
+  #editor-status {
+    height: 2.5rem;
+    margin: 0;
+    padding: 0.5rem;
+    border: 1px solid silver;
+    border-top: none;
+    border-radius: 0 0 0.25rem 0.25rem;
+    font-size: 0.9rem;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+  }
+}

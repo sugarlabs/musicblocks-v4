@@ -1,9 +1,13 @@
-import { createItem } from '../../../view';
+import { createItem } from '@/view';
 
 import './index.scss';
 
+// -- private variables ----------------------------------------------------------------------------
+
 let _menuBtnRun: HTMLButtonElement;
 let _menuBtnRst: HTMLButtonElement;
+
+// -- public functions -----------------------------------------------------------------------------
 
 /**
  * Sets up the DOM.
@@ -12,7 +16,7 @@ export function setup(): void {
     const menu = createItem({
         location: 'toolbar',
         type: 'container',
-        position: 'cluster-a',
+        position: 'cluster-b',
     });
     _menuBtnRun = document.createElement('button');
     menu.appendChild(_menuBtnRun);

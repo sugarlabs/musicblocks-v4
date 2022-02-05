@@ -153,6 +153,18 @@ export function getComponent(name: string): IComponent | null {
     let config: IConfig;
 
     try {
+        if (process.env['NODE_ENV'] === 'development') {
+            const configModule = await import(`./${_configFile}-dev.json`);
+            config = configModule.default;
+        } else {
+            throw Error();
+        }
+    } catch (e) {
+        const configModule = await import(`./${_configFile}.json`);
+        config = configModule.default;
+    }
+
+    try {
         const configModule = await import(`./${_configFile}-dev.json`);
         config = configModule.default;
     } catch (e) {

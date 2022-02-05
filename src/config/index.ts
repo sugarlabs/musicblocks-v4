@@ -149,8 +149,16 @@ export function getComponent(name: string): IComponent | null {
 // -------------------------------------------------------------------------------------------------
 
 // load the config file
-import(`./${_configFile}.json`).then((_config) => {
-    const config: IConfig = _config.default;
+(async () => {
+    let config: IConfig;
+
+    try {
+        const configModule = await import(`./${_configFile}-dev.json`);
+        config = configModule.default;
+    } catch (e) {
+        const configModule = await import(`./${_configFile}.json`);
+        config = configModule.default;
+    }
 
     let importPromises: Promise<[string, IComponent]>[] = [];
 
@@ -234,4 +242,4 @@ import(`./${_configFile}.json`).then((_config) => {
             setTimeout(() => component.setup());
         });
     });
-});
+})();

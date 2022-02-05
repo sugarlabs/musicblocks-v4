@@ -8,7 +8,7 @@ ReactDOM.render(
     document.getElementById('root'),
 );
 
-// -------------------------------------------------------------------------------------------------
+// -- private functions ----------------------------------------------------------------------------
 
 function _createToolbarItem(
     type: 'container' | 'button',
@@ -19,7 +19,7 @@ function _createToolbarItem(
 
     item.classList.add('toolbar-cluster-item');
     if (type === 'button') {
-        item.classList.add('ttolbar-cluster-item-btn');
+        item.classList.add('toolbar-cluster-item-btn');
     }
 
     return item;
@@ -32,12 +32,25 @@ function _createWorkspaceItem(): HTMLElement {
     return wrapper;
 }
 
+// -- public functions -----------------------------------------------------------------------------
+
+/**
+ * Creates a new component in the UI framework.
+ * @param params component parameters
+ * @returns DOM element of the new component
+ */
 export function createItem(
     params:
-        | { location: 'workspace' }
         | {
+              /** location to mount component */
+              location: 'workspace';
+          }
+        | {
+              /** location to mount component */
               location: 'toolbar';
+              /** whether component is a toolbar container item or a toolbar button */
               type: 'container' | 'button';
+              /** cluster (group of component items) */
               position: 'cluster-a' | 'cluster-b';
           },
 ): HTMLElement {
@@ -47,3 +60,5 @@ export function createItem(
         return _createWorkspaceItem();
     }
 }
+
+export { setToolbarExtended, unsetToolbarExtended } from './components/Toolbar';

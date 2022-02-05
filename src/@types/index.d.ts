@@ -11,12 +11,7 @@ export interface IConfig {
     }[];
 }
 
-import {
-    IElementSpecificationEntryBlock,
-    IElementSpecificationEntryData,
-    IElementSpecificationEntryExpression,
-    IElementSpecificationEntryStatement,
-} from '@sugarlabs/musicblocks-v4-lib/@types/specification';
+import { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
 
 /** Interface representing a component's API. */
 export interface IComponent {
@@ -30,10 +25,6 @@ export interface IComponent {
     setup(): void;
     /** Syntax element specification object for the component. */
     specification?: {
-        [identifier: string]:
-            | IElementSpecificationEntryData
-            | IElementSpecificationEntryExpression
-            | IElementSpecificationEntryStatement
-            | IElementSpecificationEntryBlock;
+        [identifier: string]: IElementSpecification;
     };
 }

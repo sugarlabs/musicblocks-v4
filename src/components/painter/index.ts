@@ -29,12 +29,7 @@ export function setup(): void {
 
 // == specification ================================================================================
 
-import {
-    IElementSpecificationEntryBlock,
-    IElementSpecificationEntryData,
-    IElementSpecificationEntryExpression,
-    IElementSpecificationEntryStatement,
-} from '@sugarlabs/musicblocks-v4-lib/@types/specification';
+import { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
 
 import {
     ElementMoveForward,
@@ -51,11 +46,7 @@ import {
  * Syntax element specification object for the Painter component.
  */
 export const specification: {
-    [identifier: string]:
-        | IElementSpecificationEntryData
-        | IElementSpecificationEntryExpression
-        | IElementSpecificationEntryStatement
-        | IElementSpecificationEntryBlock;
+    [identifier: string]: IElementSpecification;
 } = {
     'move-forward': {
         label: 'forward',

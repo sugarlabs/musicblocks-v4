@@ -65,4 +65,11 @@ export function mount(): void {
 
 export function mountSketch(sketch: ISketch): void {
     sketch.setup(_artboardSketch!);
+
+    setTimeout(() => {
+        const sketchCanvas = _artboardSketch.children[0] as HTMLCanvasElement;
+        sketchCanvas.style.position = 'absolute';
+        sketchCanvas.style.left = '50%';
+        sketchCanvas.style.transform = 'translateX(-50%)';
+    });
 }

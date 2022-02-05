@@ -1,10 +1,25 @@
+import { getCrumbs, run } from '@sugarlabs/musicblocks-v4-lib';
+
 import { getButtons, setup as setupView } from './view';
+
+// -- public functions -----------------------------------------------------------------------------
 
 /**
  * Mounts the Menu component.
  */
 export function mount(): void {
     setupView();
+}
+
+/**
+ * Initializes the Menu component.
+ */
+export function setup(): void {
+    const buttons = getButtons();
+    buttons.run.addEventListener('click', () => {
+        const crumbs = getCrumbs();
+        if (crumbs.length !== 0) run(getCrumbs()[0].nodeID);
+    });
 }
 
 export function mountHook(name: 'run', callback: CallableFunction): void;
@@ -22,12 +37,4 @@ export function mountHook(name: string, callback: CallableFunction): void {
     } else if (name === 'reset') {
         buttons.reset.addEventListener('click', () => callback());
     }
-}
-
-/**
- * Initializes the Menu component.
- */
-export function setup(): void {
-    const buttons = getButtons();
-    buttons.run.addEventListener('click', () => window.dispatchEvent(new Event('runprogram')));
 }

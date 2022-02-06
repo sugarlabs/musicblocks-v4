@@ -35,8 +35,6 @@ export function setup(
     spriteStrokeColor = '#000000',
 ): void {
     (async () => {
-        interactor.style.position = 'absolute';
-
         const spriteWrapper = document.createElement('div');
         spriteWrapper.innerHTML =
             // fetches the SVG source string from the .svg source file's URL

@@ -1,12 +1,4 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-
-import App from './App';
-
-ReactDOM.render(
-    React.createElement(React.StrictMode, null, App()),
-    document.getElementById('root'),
-);
+import './components';
 
 // -- private functions ----------------------------------------------------------------------------
 
@@ -61,4 +53,4 @@ export function createItem(
     }
 }
 
-export { setToolbarExtended, unsetToolbarExtended } from './components/Toolbar';
+export { setToolbarExtended, unsetToolbarExtended } from './components/toolbar';

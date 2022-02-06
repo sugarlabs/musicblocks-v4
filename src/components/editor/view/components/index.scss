@@ -1,0 +1,96 @@
+@import '@/scss/colors';
+
+#editor {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+
+  > * {
+    width: 100%;
+    margin: 0;
+  }
+
+  #editor-codebox {
+    flex-shrink: 1;
+    height: 100%;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 0.25rem 0.25rem;
+    font-size: 0.9rem;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    color: $text-dark;
+    resize: none;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  #editor-console {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    height: 2.5rem;
+    border-radius: 0 0 0.25rem 0.25rem;
+
+    > * {
+      box-sizing: border-box;
+      height: 100%;
+    }
+
+    #editor-status-wrapper {
+      flex-shrink: 1;
+      width: 100%;
+      margin-right: 0.5rem;
+
+      #editor-status {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.9rem;
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: bold;
+        color: $text-dark;
+        background-color: $background-light;
+        overflow: auto;
+      }
+    }
+
+    #editor-btn-build {
+      flex-shrink: 0;
+      width: 2.5rem;
+      padding: 0.5rem;
+      border: none;
+      border-radius: 0.25rem;
+      text-transform: uppercase;
+      background-color: white;
+      cursor: pointer;
+      transition: all 0.25s ease;
+
+      svg {
+        width: 100%;
+        height: 100%;
+
+        .path-fill {
+          fill: $mb-accent;
+          transition: all 0.25s ease;
+        }
+      }
+
+      &:hover {
+        svg {
+          .path-fill {
+            fill: $mb-accent-light;
+          }
+        }
+      }
+    }
+  }
+}

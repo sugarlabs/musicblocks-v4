@@ -1,6 +1,13 @@
+import { useEffect, useRef } from 'react';
+
+// -- resources ------------------------------------------------------------------------------------
+
+import pinSVG from './resources/pin.svg';
+import unpinSVG from './resources/unpin.svg';
+
 // -- stylesheet -----------------------------------------------------------------------------------
 
-import './Toolbar.scss';
+import './index.scss';
 
 // -- component definition -------------------------------------------------------------------------
 
@@ -10,6 +17,23 @@ import './Toolbar.scss';
  * @returns root JSX element of the Toolbar component
  */
 export default function (): JSX.Element {
+  const btnPinRef = useRef(null);
+  const btnUnpinRef = useRef(null);
+
+  useEffect(() => {
+    btnPinRef.current!;
+    btnUnpinRef.current!;
+
+    const loadSVG = (element: HTMLButtonElement, svgSrc: string) => {
+      fetch(svgSrc)
+        .then((res) => res.text())
+        .then((svg) => (element.innerHTML = svg));
+    };
+
+    loadSVG(btnPinRef.current!, pinSVG);
+    loadSVG(btnUnpinRef.current!, unpinSVG);
+  }, []);
+
   return (
     <div id="toolbar-wrapper">
       <section id="toolbar">
@@ -21,7 +45,7 @@ export default function (): JSX.Element {
           <h3 className="toolbar-extended-head-title" id="toolbar-float-title">
             Header
           </h3>
-          <button className="toolbar-extended-head-btn" id="toolbar-float-btn-pin">
+          <button className="toolbar-extended-head-btn" id="toolbar-float-btn-pin" ref={btnPinRef}>
             Pin
           </button>
         </div>
@@ -32,7 +56,11 @@ export default function (): JSX.Element {
           <h3 className="toolbar-extended-head-title" id="toolbar-pinned-title">
             Header
           </h3>
-          <button className="toolbar-extended-head-btn" id="toolbar-pinned-btn-unpin">
+          <button
+            className="toolbar-extended-head-btn"
+            id="toolbar-pinned-btn-unpin"
+            ref={btnUnpinRef}
+          >
             Unpin
           </button>
         </div>

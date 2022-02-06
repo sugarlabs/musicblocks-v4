@@ -1,7 +1,7 @@
 import { createItem } from '@/view';
 import { buildProgram } from '../core';
 
-import './index.scss';
+import { setup as setupComponent } from './components';
 
 // -- private variables ----------------------------------------------------------------------------
 
@@ -19,19 +19,14 @@ function _createEditor(): void {
     _editor = document.createElement('div');
     _editor.id = 'editor';
 
-    const codeBox = document.createElement('textarea');
-    codeBox.id = 'editor-codebox';
-    _editor.appendChild(codeBox);
+    setupComponent(_editor).then(({ codeBox, status, btnBuild }) => {
+        _editorStatus = status;
 
-    const btnBuild = document.createElement('button');
-    btnBuild.id = 'editor-btn-build';
-    _editor.appendChild(btnBuild);
+        codeBox.addEventListener('input', () => {
+            _editorStatus.innerHTML = '';
+        });
 
-    _editorStatus = document.createElement('p');
-    _editorStatus.id = 'editor-status';
-    _editor.appendChild(_editorStatus);
-
-    codeBox.innerHTML = `set-thickness value:4
+        codeBox.innerHTML = `set-thickness value:4
 set-color value:5
 repeat times:6
   move-forward steps:100
@@ -41,7 +36,7 @@ repeat times:6
   move-forward steps:100
   turn-left angle:60`;
 
-    codeBox.innerHTML = `set-thickness value:4
+        codeBox.innerHTML = `set-thickness value:4
 set-color value:5
 move-forward steps:100
 turn-right angle:60
@@ -52,17 +47,12 @@ turn-right angle:60
 move-forward steps:100
 turn-right angle:60`;
 
-    codeBox.addEventListener('input', () => {
-        _editorStatus.innerHTML = '';
-    });
-
-    btnBuild.innerHTML = 'Build';
-
-    btnBuild.addEventListener('click', () => {
-        (async () => {
-            const response = await buildProgram(codeBox.value);
-            _editorStatus.innerHTML = response ? 'Successfully Built' : 'Invalid Code';
-        })();
+        btnBuild.addEventListener('click', () => {
+            (async () => {
+                const response = await buildProgram(codeBox.value);
+                _editorStatus.innerHTML = response ? 'Successfully Built' : 'Invalid Code';
+            })();
+        });
     });
 }
 

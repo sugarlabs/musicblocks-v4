@@ -2,6 +2,7 @@ import { createItem } from '@/view';
 import { buildProgram } from '../core';
 
 import { setup as setupComponent } from './components';
+import { setButtonImg, setup as setupButton } from './components/button';
 
 // -- private variables ----------------------------------------------------------------------------
 
@@ -56,16 +57,22 @@ turn-right angle:60`;
     });
 }
 
+/**
+ * Creates the DOM of the editor's toolbar button.
+ */
+function _createToolbarButton(): void {
+    _editorToolbarBtn = createItem({ location: 'toolbar', type: 'button', position: 'cluster-a' });
+    setupButton(_editorToolbarBtn);
+}
+
 // -- public functions -----------------------------------------------------------------------------
 
 /**
  * Sets up the DOM elements.
  */
 export function setup(): void {
-    _editorToolbarBtn = createItem({ location: 'toolbar', type: 'button', position: 'cluster-a' });
-    _editorToolbarBtn.innerHTML = 'CODE';
-
     _createEditor();
+    _createToolbarButton();
 }
 
 /**
@@ -75,6 +82,14 @@ export function setup(): void {
  */
 export function getElement(element: 'button' | 'editor'): HTMLElement {
     return element === 'button' ? _editorToolbarBtn : _editor;
+}
+
+/**
+ * Sets the icon for the editor's toolbar button based on whether it is clicked or not.
+ * @param state `clicked` or `unclicked`
+ */
+export function setButtonState(state: 'clicked' | 'unclicked'): void {
+    setButtonImg(state === 'clicked' ? 'cross' : 'code');
 }
 
 /**

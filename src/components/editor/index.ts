@@ -3,7 +3,7 @@ import { IComponentMenu } from '@/@types/components/menu';
 import { getComponent } from '@/config';
 import { setToolbarExtended, unsetToolbarExtended } from '@/view';
 
-import { getElement, resetStatus, setup as setupView } from './view';
+import { getElement, resetStatus, setButtonState, setup as setupView } from './view';
 import { resetProgram } from './core';
 
 // -- public functions -----------------------------------------------------------------------------
@@ -47,10 +47,10 @@ export function setup(): void {
 
     btn.addEventListener('click', () => {
         if (state === 'initial') {
-            btn.innerHTML = '&times;';
+            setButtonState('clicked');
             setState('float');
         } else {
-            btn.innerHTML = 'CODE';
+            setButtonState('unclicked');
             setState('initial');
         }
     });

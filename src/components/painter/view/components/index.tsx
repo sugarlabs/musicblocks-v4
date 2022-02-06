@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 
+import { setupCartesian } from './utils/background';
+
 // -- stylesheet -----------------------------------------------------------------------------------
 
 import './index.scss';
@@ -17,18 +19,21 @@ let _interactor: HTMLDivElement;
  * @returns root JSX element of the Painter component
  */
 function Painter(): JSX.Element {
+  const backgroundRef = useRef(null);
   const artboardRef = useRef(null);
   const interactorRef = useRef(null);
 
   useEffect(() => {
     _artboard = artboardRef.current!;
     _interactor = interactorRef.current!;
+
+    setupCartesian(backgroundRef.current!);
   }, []);
 
   return (
     <>
       <section id="artboard-wrapper">
-        <div id="artboard-background"></div>
+        <div id="artboard-background" ref={backgroundRef}></div>
         <div id="artboard-container">
           <div className="artboard" ref={artboardRef}></div>
         </div>

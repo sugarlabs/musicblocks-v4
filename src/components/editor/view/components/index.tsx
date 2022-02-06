@@ -40,7 +40,9 @@ function Editor(): JSX.Element {
     <div id="editor">
       <textarea id="editor-codebox" ref={codeBoxRef}></textarea>
       <div id="editor-console">
-        <p id="editor-status" ref={statusRef}></p>
+        <div id="editor-status-wrapper">
+          <p id="editor-status" ref={statusRef}></p>
+        </div>
         <button id="editor-btn-build" ref={btnBuildRef}></button>
       </div>
     </div>

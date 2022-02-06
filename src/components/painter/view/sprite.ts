@@ -6,7 +6,7 @@ import mouseSVG from './resources/mouse.svg';
 const _spriteSrc = mouseSVG;
 
 /** DOM element representing the sprite. */
-let sprite: HTMLElement;
+let _sprite: HTMLElement;
 
 /** Sprite state parameters. */
 const state = {
@@ -26,30 +26,23 @@ const state = {
 /**
  * Initializes the sprite.
  * @param interactor - DOM container for the interactor (wrapper for the sprite)
- * @param spriteFillColor - sprite's `fill` color with default value of `"#a0a0a0"`
- * @param spriteStrokeColor - sprite's `stroke` color with with default value of `"#000000"`
  */
-export function setup(
-    interactor: HTMLElement,
-    spriteFillColor = '#a0a0a0',
-    spriteStrokeColor = '#000000',
-): void {
+export function setup(interactor: HTMLElement): void {
     (async () => {
         const spriteWrapper = document.createElement('div');
         spriteWrapper.innerHTML =
             // fetches the SVG source string from the .svg source file's URL
-            (await fetch(_spriteSrc).then((res) => res.text()))
-                .replace('fill_color', spriteFillColor)
-                .replaceAll('stroke_color', spriteStrokeColor);
+            await fetch(_spriteSrc).then((res) => res.text());
+
         const spriteElem = spriteWrapper.children[0] as HTMLElement;
-        spriteElem.style.position = 'absolute';
+        spriteElem.classList.add('artboard-sprite');
         spriteElem.style.left = '50%';
         spriteElem.style.bottom = '50%';
         spriteElem.style.transform = 'translate(-50%, 50%)';
 
         interactor.appendChild(spriteElem);
 
-        sprite = spriteElem as unknown as HTMLElement;
+        _sprite = spriteElem;
     })();
 }
 
@@ -60,8 +53,8 @@ export function setup(
  */
 export function updatePosition(x: number, y: number): void {
     state.position = { x, y };
-    sprite.style.left = `calc(50% - ${state.position.x}px)`;
-    sprite.style.bottom = `calc(50% + ${state.position.y}px)`;
+    _sprite.style.left = `calc(50% - ${state.position.x}px)`;
+    _sprite.style.bottom = `calc(50% + ${state.position.y}px)`;
 }
 
 /**
@@ -70,5 +63,48 @@ export function updatePosition(x: number, y: number): void {
  */
 export function updateHeading(heading: number): void {
     state.heading = heading - 90;
-    sprite.style.transform = `translate(-50%, 50%) rotate(${state.heading}deg)`;
+    _sprite.style.transform = `translate(-50%, 50%) rotate(${state.heading}deg)`;
+}
+
+/**
+ * Defaults the color accent of the sprite.
+ */
+export function updateAccent(type: 'unset'): void;
+/**
+ * Sets the color accent of the sprite.
+ * @param fill fill color
+ * @param stroke stroke color
+ */
+export function updateAccent(type: 'set', fill: string, stroke: string): void;
+export function updateAccent(type: 'set' | 'unset', fill?: string, stroke?: string): void {
+    if (type === 'unset') {
+        _sprite.querySelectorAll('.path-fill').forEach((item) => {
+            item.classList.add('path-fill-default');
+            item.setAttribute('fill', '');
+        });
+        _sprite.querySelectorAll('.path-stroke').forEach((item) => {
+            item.classList.add('path-stroke-default');
+            item.setAttribute('stroke', '');
+        });
+        _sprite.querySelectorAll('.path-fill-stroke').forEach((item) => {
+            item.classList.add('path-fill-stroke-default');
+            item.setAttribute('fill', '');
+            item.setAttribute('stroke', '');
+        });
+        return;
+    }
+
+    _sprite.querySelectorAll('.path-fill').forEach((item) => {
+        item.classList.remove('path-fill-default');
+        item.setAttribute('fill', fill!);
+    });
+    _sprite.querySelectorAll('.path-stroke').forEach((item) => {
+        item.classList.remove('path-stroke-default');
+        item.setAttribute('stroke', stroke!);
+    });
+    _sprite.querySelectorAll('.path-fill-stroke').forEach((item) => {
+        item.classList.remove('path-fill-stroke-default');
+        item.setAttribute('fill', stroke!);
+        item.setAttribute('stroke', stroke!);
+    });
 }

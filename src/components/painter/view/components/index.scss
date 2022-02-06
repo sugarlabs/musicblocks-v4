@@ -42,6 +42,23 @@
       right: 0;
       bottom: 0;
       left: 0;
+
+      .artboard-sprite {
+        position: absolute;
+
+        .path-fill.path-fill-default {
+          fill: #a0a0a0;
+        }
+
+        .path-stroke.path-stroke-default {
+          stroke: #000000;
+        }
+
+        .path-fill-stroke.path-fill-stroke-default {
+          fill: #000000;
+          stroke: #000000;
+        }
+      }
     }
   }
 }

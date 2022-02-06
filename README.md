@@ -13,7 +13,7 @@ programming platform, and extend it with other features.
 - The source code for the programming framework will reside in the
 [**musicblocks-v4-lib**](https://github.com/sugarlabs/musicblocks-v4-lib/) repository.
 
-- **musicblocks-v4-lib** will be bundled as an _npm_ package and imported as a dependency in
+- **musicblocks-v4-lib** is bundled as an _npm_ package and imported as a dependency in
 **musicblocks-v4**.
 
 ### Components

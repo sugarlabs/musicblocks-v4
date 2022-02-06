@@ -29,7 +29,11 @@ export function buildProgram(code: string): Promise<boolean> {
         for (const line of lines) {
             const units = line.split(' ');
             if (
-                !(units.length === 2 || (units.length === 4 && units[0] === '' && units[1] === ''))
+                !(
+                    units.length === 2 ||
+                    units.length === 3 ||
+                    (units.length === 4 && units[0] === '' && units[1] === '')
+                )
             ) {
                 return false;
             }

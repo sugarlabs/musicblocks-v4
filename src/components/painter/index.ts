@@ -41,6 +41,7 @@ import {
     ElementMoveBackward,
     ElementTurnLeft,
     ElementTurnRight,
+    ElementSetXY,
     ElementSetColor,
     ElementSetThickness,
 } from './painter';
@@ -80,6 +81,12 @@ export const specification: {
         type: 'Statement',
         category: 'Graphics',
         prototype: ElementTurnRight,
+    },
+    'set-xy': {
+        label: 'set xy',
+        type: 'Statement',
+        category: 'Graphics',
+        prototype: ElementSetXY,
     },
     'set-color': {
         label: 'set color',

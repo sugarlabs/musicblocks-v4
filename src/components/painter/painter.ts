@@ -175,6 +175,32 @@ export class ElementTurnLeft extends ElementStatement {
 
 /**
  * @class
+ * Defines a `graphics` statement element that updates the sprite position to (x, y).
+ */
+export class ElementSetXY extends ElementStatement {
+    constructor() {
+        super('set-xy' as TElementName, 'set-xy', { x: ['number'], y: ['number'] });
+    }
+
+    /**
+     * Updates the sprite position to (`x`, `y`).
+     */
+    onVisit(params: { [key: string]: TData }): void {
+        const [x1, y1, x2, y2] = [
+            _state.position.x,
+            _state.position.y,
+            -params['x'] as number,
+            params['y'] as number,
+        ];
+
+        _state.position = { x: x2, y: y2 };
+
+        sketch.drawLine(x1, y1, x2, y2);
+    }
+}
+
+/**
+ * @class
  * Defines a `pen` statement element that sets the pen color.
  */
 export class ElementSetColor extends ElementStatement {

@@ -21,24 +21,45 @@ registerElementSpecificationEntries(librarySpecification);
  * @returns a `Promise` that returns whether the process was successful
  */
 export function buildProgram(code: string): Promise<boolean> {
+    /**
+     * Validates the editor's code.
+     *  @returns `true` if the editor's code is valid else `false`
+     */
     function checkValidity(): boolean {
-        /*
-         * dummy logic
-         */
         const lines = code.split('\n');
+        let previousIndentations = 0;
         for (const line of lines) {
             const units = line.split(' ');
+
+            let currentIndentations = 0;
+            for (let identationIndex = 0; identationIndex < units.length; identationIndex++) {
+                if (units[identationIndex] == '') {
+                    currentIndentations++;
+                } else {
+                    break;
+                }
+            }
             if (
-                !(
-                    units.length === 2 ||
-                    units.length === 3 ||
-                    (units.length === 4 && units[0] === '' && units[1] === '')
-                )
+                currentIndentations > previousIndentations &&
+                currentIndentations != previousIndentations + 2
             ) {
                 return false;
             }
-        }
+            if (currentIndentations == units.length) {
+                return false;
+            }
 
+            previousIndentations = currentIndentations;
+            // const instructionName = units[currentIndentations];
+            for (let argIndex = currentIndentations + 1; argIndex < units.length; argIndex++) {
+                const argBreakingIndex = units[argIndex].indexOf(':');
+                if (argBreakingIndex == -1) {
+                    return false;
+                }
+                // const argName = units[argIndex].slice(0, argBreakingIndex);
+                // const argValue = units[argIndex].slice(argBreakingIndex + 1);
+            }
+        }
         return true;
     }
 

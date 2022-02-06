@@ -47,16 +47,16 @@
         position: absolute;
 
         .path-fill.path-fill-default {
-          fill: #a0a0a0;
+          fill: $mb-highlight;
         }
 
         .path-stroke.path-stroke-default {
-          stroke: #000000;
+          stroke: $mb-accent-dark;
         }
 
         .path-fill-stroke.path-fill-stroke-default {
-          fill: #000000;
-          stroke: #000000;
+          fill: $mb-accent-dark;
+          stroke: $mb-accent-dark;
         }
       }
     }

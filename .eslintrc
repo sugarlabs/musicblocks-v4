@@ -19,7 +19,7 @@
             }
         ],
         "no-use-before-define": "off",
-        "@typescript-eslint/no-use-before-define": ["error"],
+        "@typescript-eslint/no-use-before-define": ["error", "nofunc"],
         "@typescript-eslint/no-non-null-assertion": "off",
         "semi": ["error", "always"],
         "prefer-const": ["off"],

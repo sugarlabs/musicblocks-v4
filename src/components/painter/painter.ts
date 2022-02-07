@@ -207,6 +207,22 @@ export class ElementSetXY extends ElementStatement {
         sketch.drawLine(x1, y1, x2, y2);
     }
 }
+/**
+ * @class
+ * Defines a `graphics` statement element that updates the sprite heading to the angle(degrees).
+ */
+ export class ElementSetHeading extends ElementStatement {
+    constructor() {
+        super('set-heading' as TElementName, 'set-heading', { angle: ['number'] });
+    }
+    /**
+     * Set the sprite heading to the `angle`.
+     */
+     onVisit(params: { [key: string]: TData }): void {
+         const angle = params['angle'] as number;
+        _state.heading = angle;
+    }
+}
 
 /**
  * @class

@@ -175,7 +175,7 @@ export class ElementTurnLeft extends ElementStatement {
     }
 
     /**
-     * Rotates the sprite left sby `angle`.
+     * Rotates the sprite left by `angle`.
      */
     onVisit(params: { [key: string]: TData }): void {
         _turn(params['angle'] as number);
@@ -207,20 +207,21 @@ export class ElementSetXY extends ElementStatement {
         sketch.drawLine(x1, y1, x2, y2);
     }
 }
+
 /**
  * @class
- * Defines a `graphics` statement element that updates the sprite heading to the angle(degrees).
+ * Defines a `graphics` statement element that updates the sprite heading.
  */
- export class ElementSetHeading extends ElementStatement {
+export class ElementSetHeading extends ElementStatement {
     constructor() {
         super('set-heading' as TElementName, 'set-heading', { angle: ['number'] });
     }
+
     /**
-     * Set the sprite heading to the `angle`.
+     * Sets the sprite heading to the `angle`.
      */
-     onVisit(params: { [key: string]: TData }): void {
-         const angle = params['angle'] as number;
-        _state.heading = angle;
+    onVisit(params: { [key: string]: TData }): void {
+        _state.heading = (params['angle'] as number) + 90;
     }
 }
 

@@ -30,6 +30,9 @@ export function setup(): Promise<void> {
             menu.mountHook('run', run);
             menu.mountHook('reset', reset);
         }
+
+        reset();
+
         resolve();
     });
 }

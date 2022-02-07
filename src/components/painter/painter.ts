@@ -27,8 +27,8 @@ const _state = new Proxy(_stateObj, {
             _stateObj.position = value;
             updatePosition(value.x, value.y);
         } else if (key === 'heading') {
-            _stateObj.heading = value;
-            updateHeading(value);
+            _stateObj.heading = (value + 360) % 360;
+            updateHeading((value + 360 - 90) % 360);
         } else if (key === 'drawing') {
             _stateObj.drawing = value;
         }
@@ -63,7 +63,7 @@ function _move(distance: number): void {
 }
 
 /**
- * Helper function that turns the head of the sprite right (+ve angle) or left (-ve angle).
+ * Helper function that turns the head of the sprite left (+ve angle) or right (-ve angle).
  * @param angle - delta angle
  */
 function _turn(angle: number): void {
@@ -161,7 +161,7 @@ export class ElementTurnRight extends ElementStatement {
      * Rotates the sprite right by `angle`.
      */
     onVisit(params: { [key: string]: TData }): void {
-        _turn(params['angle'] as number);
+        _turn(-params['angle'] as number);
     }
 }
 
@@ -178,7 +178,7 @@ export class ElementTurnLeft extends ElementStatement {
      * Rotates the sprite left sby `angle`.
      */
     onVisit(params: { [key: string]: TData }): void {
-        _turn(-params['angle'] as number);
+        _turn(params['angle'] as number);
     }
 }
 

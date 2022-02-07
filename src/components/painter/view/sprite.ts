@@ -43,7 +43,7 @@ export function setup(interactor: HTMLElement): void {
  * @param y - y co-ordinate
  */
 export function updatePosition(x: number, y: number): void {
-    _sprite.style.left = `calc(50% - ${x}px)`;
+    _sprite.style.left = `calc(50% + ${x}px)`;
     _sprite.style.bottom = `calc(50% + ${y}px)`;
 }
 
@@ -52,7 +52,7 @@ export function updatePosition(x: number, y: number): void {
  * @param heading - heading anglestate
  */
 export function updateHeading(heading: number): void {
-    _sprite.style.transform = `translate(-50%, 50%) rotate(${heading - 90}deg)`;
+    _sprite.style.transform = `translate(-50%, 50%) rotate(${-heading}deg)`;
 }
 
 /**

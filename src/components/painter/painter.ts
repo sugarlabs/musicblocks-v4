@@ -7,14 +7,18 @@ import { radToDeg } from './core/utils';
 
 // -- private variables ----------------------------------------------------------------------------
 
-/** Sprite state parameters. */
-const _stateObj = {
+/** Default state parameter values of the sprite. */
+const _defaultStateValues = {
     position: {
         x: 0,
         y: 0,
     },
     heading: 90,
+    drawing: true,
 };
+
+/** Sprite state parameters. */
+const _stateObj = { ..._defaultStateValues };
 
 /** Proxy to the sprite state parameters. */
 const _state = new Proxy(_stateObj, {
@@ -25,6 +29,8 @@ const _state = new Proxy(_stateObj, {
         } else if (key === 'heading') {
             _stateObj.heading = value;
             updateHeading(value);
+        } else if (key === 'drawing') {
+            _stateObj.drawing = value;
         }
         return true;
     },
@@ -51,7 +57,9 @@ function _move(distance: number): void {
 
     _state.position = { x: x2, y: y2 };
 
-    sketch.drawLine(x1, y1, x2, y2);
+    if (_state.drawing) {
+        sketch.drawLine(x1, y1, x2, y2);
+    }
 }
 
 /**
@@ -77,8 +85,9 @@ export function setup(container: HTMLElement): void {
  * @description dummy implementation for now.
  */
 export function reset(): void {
-    _state.position = { x: 0, y: 0 };
-    _state.heading = 90;
+    _state.position = { ..._defaultStateValues.position };
+    _state.heading = _defaultStateValues.heading;
+    _state.drawing = _defaultStateValues.drawing;
 
     sketch.clear();
 }
@@ -243,5 +252,39 @@ export class ElementSetThickness extends ElementStatement {
      */
     onVisit(params: { [key: string]: TData }): void {
         sketch.setThickness(params['value'] as number);
+    }
+}
+
+/**
+ * @class
+ * Defines a `pen` statement element that sets the pen thickness.
+ */
+export class ElementPenUp extends ElementStatement {
+    constructor() {
+        super('pen-up' as TElementName, 'pen-up', {});
+    }
+
+    /**
+     * Disables drawing while moving.
+     */
+    onVisit(): void {
+        _state.drawing = false;
+    }
+}
+
+/**
+ * @class
+ * Defines a `pen` statement element that sets the pen thickness.
+ */
+export class ElementPenDown extends ElementStatement {
+    constructor() {
+        super('pen-down' as TElementName, 'pen-down', {});
+    }
+
+    /**
+     * Enables drawing while moving.
+     */
+    onVisit(): void {
+        _state.drawing = true;
     }
 }

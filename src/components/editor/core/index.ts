@@ -30,6 +30,7 @@ export function buildProgram(code: string): Promise<boolean> {
             const units = line.split(' ');
             if (
                 !(
+                    units.length === 1 ||
                     units.length === 2 ||
                     units.length === 3 ||
                     (units.length === 4 && units[0] === '' && units[1] === '')

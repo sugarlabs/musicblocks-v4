@@ -10,19 +10,6 @@ let _sprite: HTMLElement;
 /** SVG element of the sprite. */
 let _spriteSVG: SVGElement;
 
-/** Sprite state parameters. */
-const state = {
-    /** Co-ordinates of the sprite. */
-    position: {
-        /** x co-ordinate of the sprite. */
-        x: 0,
-        /** y co-ordinate of the sprite. */
-        y: 0,
-    },
-    /** Heading of the sprite. */
-    heading: 0,
-};
-
 // -- public functions -----------------------------------------------------------------------------
 
 /**
@@ -56,9 +43,8 @@ export function setup(interactor: HTMLElement): void {
  * @param y - y co-ordinate
  */
 export function updatePosition(x: number, y: number): void {
-    state.position = { x, y };
-    _sprite.style.left = `calc(50% - ${state.position.x}px)`;
-    _sprite.style.bottom = `calc(50% + ${state.position.y}px)`;
+    _sprite.style.left = `calc(50% - ${x}px)`;
+    _sprite.style.bottom = `calc(50% + ${y}px)`;
 }
 
 /**
@@ -66,8 +52,7 @@ export function updatePosition(x: number, y: number): void {
  * @param heading - heading anglestate
  */
 export function updateHeading(heading: number): void {
-    state.heading = heading - 90;
-    _sprite.style.transform = `translate(-50%, 50%) rotate(${state.heading}deg)`;
+    _sprite.style.transform = `translate(-50%, 50%) rotate(${heading - 90}deg)`;
 }
 
 /**

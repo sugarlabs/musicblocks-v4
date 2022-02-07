@@ -5,8 +5,10 @@ import mouseSVG from './resources/mouse.svg';
 /** Source URL of the sprite's SVG. */
 const _spriteSrc = mouseSVG;
 
-/** DOM element representing the sprite. */
+/** DOM element representing the sprite wrapper. */
 let _sprite: HTMLElement;
+/** SVG element of the sprite. */
+let _spriteSVG: SVGElement;
 
 /** Sprite state parameters. */
 const state = {
@@ -30,19 +32,21 @@ const state = {
 export function setup(interactor: HTMLElement): void {
     (async () => {
         const spriteWrapper = document.createElement('div');
+        spriteWrapper.classList.add('artboard-sprite-wrapper');
+        spriteWrapper.style.left = '50%';
+        spriteWrapper.style.bottom = '50%';
+        spriteWrapper.style.transform = 'translate(-50%, 50%)';
         spriteWrapper.innerHTML =
             // fetches the SVG source string from the .svg source file's URL
             await fetch(_spriteSrc).then((res) => res.text());
 
-        const spriteElem = spriteWrapper.children[0] as HTMLElement;
+        const spriteElem = spriteWrapper.children[0] as SVGElement;
         spriteElem.classList.add('artboard-sprite');
-        spriteElem.style.left = '50%';
-        spriteElem.style.bottom = '50%';
-        spriteElem.style.transform = 'translate(-50%, 50%)';
 
-        interactor.appendChild(spriteElem);
+        interactor.appendChild(spriteWrapper);
 
-        _sprite = spriteElem;
+        _sprite = spriteWrapper;
+        _spriteSVG = spriteElem;
     })();
 }
 
@@ -78,15 +82,15 @@ export function updateAccent(type: 'unset'): void;
 export function updateAccent(type: 'set', fill: string, stroke: string): void;
 export function updateAccent(type: 'set' | 'unset', fill?: string, stroke?: string): void {
     if (type === 'unset') {
-        _sprite.querySelectorAll('.path-fill').forEach((item) => {
+        _spriteSVG.querySelectorAll('.path-fill').forEach((item) => {
             item.classList.add('path-fill-default');
             item.setAttribute('fill', '');
         });
-        _sprite.querySelectorAll('.path-stroke').forEach((item) => {
+        _spriteSVG.querySelectorAll('.path-stroke').forEach((item) => {
             item.classList.add('path-stroke-default');
             item.setAttribute('stroke', '');
         });
-        _sprite.querySelectorAll('.path-fill-stroke').forEach((item) => {
+        _spriteSVG.querySelectorAll('.path-fill-stroke').forEach((item) => {
             item.classList.add('path-fill-stroke-default');
             item.setAttribute('fill', '');
             item.setAttribute('stroke', '');
@@ -94,15 +98,15 @@ export function updateAccent(type: 'set' | 'unset', fill?: string, stroke?: stri
         return;
     }
 
-    _sprite.querySelectorAll('.path-fill').forEach((item) => {
+    _spriteSVG.querySelectorAll('.path-fill').forEach((item) => {
         item.classList.remove('path-fill-default');
         item.setAttribute('fill', fill!);
     });
-    _sprite.querySelectorAll('.path-stroke').forEach((item) => {
+    _spriteSVG.querySelectorAll('.path-stroke').forEach((item) => {
         item.classList.remove('path-stroke-default');
         item.setAttribute('stroke', stroke!);
     });
-    _sprite.querySelectorAll('.path-fill-stroke').forEach((item) => {
+    _spriteSVG.querySelectorAll('.path-fill-stroke').forEach((item) => {
         item.classList.remove('path-fill-stroke-default');
         item.setAttribute('fill', stroke!);
         item.setAttribute('stroke', stroke!);

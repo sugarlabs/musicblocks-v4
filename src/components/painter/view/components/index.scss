@@ -53,20 +53,39 @@
       bottom: 0;
       left: 0;
 
-      .artboard-sprite {
+      .artboard-sprite-wrapper {
         position: absolute;
 
-        .path-fill.path-fill-default {
-          fill: $mb-accent-light;
+        .artboard-sprite {
+          opacity: 0.75;
+
+          .path-fill.path-fill-default {
+            fill: $mb-accent-light;
+          }
+
+          .path-stroke.path-stroke-default {
+            stroke: $mb-accent-dark;
+          }
+
+          .path-fill-stroke.path-fill-stroke-default {
+            fill: $mb-accent-dark;
+            stroke: $mb-accent-dark;
+          }
         }
 
-        .path-stroke.path-stroke-default {
-          stroke: $mb-accent-dark;
-        }
-
-        .path-fill-stroke.path-fill-stroke-default {
-          fill: $mb-accent-dark;
-          stroke: $mb-accent-dark;
+        &::after {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          display: table;
+          content: ' ';
+          width: 0.25rem;
+          height: 0.25rem;
+          border: 1px solid $text-dark;
+          border-radius: 50%;
+          background-color: $background-light;
+          opacity: 0.5;
         }
       }
     }

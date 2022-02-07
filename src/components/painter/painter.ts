@@ -308,3 +308,21 @@ export class ElementSetBackground extends ElementStatement {
         updateBackgroundColor('set', _colorMap[value]);
     }
 }
+
+/**
+ * @class
+ * Defines a `pen` statement element that clears the canvas and the background.
+ */
+export class ElementClear extends ElementStatement {
+    constructor() {
+        super('clear' as TElementName, 'clear', {});
+    }
+
+    /**
+     * Clears the canvas and the background.
+     */
+    onVisit(): void {
+        sketch.clear();
+        updateBackgroundColor('unset');
+    }
+}

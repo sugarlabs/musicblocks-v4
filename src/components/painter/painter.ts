@@ -2,6 +2,7 @@ import { ISketch } from './@types';
 
 import * as sketchP5 from './core/sketchP5';
 import { updatePosition, updateHeading } from './view/sprite';
+import { updateBackgroundColor } from './view';
 
 import { radToDeg } from './core/utils';
 
@@ -35,6 +36,19 @@ const _state = new Proxy(_stateObj, {
         return true;
     },
 });
+
+const _colorMap: [number, number, number][] = [
+    [255, 241, 0],
+    [255, 140, 0],
+    [232, 17, 35],
+    [236, 0, 140],
+    [104, 33, 122],
+    [0, 24, 143],
+    [0, 188, 242],
+    [0, 178, 148],
+    [0, 158, 73],
+    [186, 216, 10],
+];
 
 // -- public variables -----------------------------------------------------------------------------
 
@@ -90,6 +104,7 @@ export function reset(): void {
     _state.drawing = _defaultStateValues.drawing;
 
     sketch.clear();
+    updateBackgroundColor('unset');
 }
 
 /**
@@ -239,19 +254,7 @@ export class ElementSetColor extends ElementStatement {
      */
     onVisit(params: { [key: string]: TData }): void {
         const value = ((params['value'] as number) - 1) % 10;
-        const colorMap: [number, number, number][] = [
-            [255, 241, 0],
-            [255, 140, 0],
-            [232, 17, 35],
-            [236, 0, 140],
-            [104, 33, 122],
-            [0, 24, 143],
-            [0, 188, 242],
-            [0, 178, 148],
-            [0, 158, 73],
-            [186, 216, 10],
-        ];
-        sketch.setColor(...colorMap[value]);
+        sketch.setColor(..._colorMap[value]);
     }
 }
 
@@ -303,5 +306,41 @@ export class ElementPenDown extends ElementStatement {
      */
     onVisit(): void {
         _state.drawing = true;
+    }
+}
+
+/**
+ * @class
+ * Defines a `pen` statement element that sets the background color.
+ */
+export class ElementSetBackground extends ElementStatement {
+    constructor() {
+        super('set-background' as TElementName, 'set-background', { value: ['number'] });
+    }
+
+    /**
+     * Sets the background color to the `value`.
+     */
+    onVisit(params: { [key: string]: TData }): void {
+        const value = ((params['value'] as number) - 1) % 10;
+        updateBackgroundColor('set', _colorMap[value]);
+    }
+}
+
+/**
+ * @class
+ * Defines a `pen` statement element that clears the canvas and the background.
+ */
+export class ElementClear extends ElementStatement {
+    constructor() {
+        super('clear' as TElementName, 'clear', {});
+    }
+
+    /**
+     * Clears the canvas and the background.
+     */
+    onVisit(): void {
+        sketch.clear();
+        updateBackgroundColor('unset');
     }
 }

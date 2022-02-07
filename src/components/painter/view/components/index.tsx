@@ -10,6 +10,7 @@ import './index.scss';
 // -- private variables ----------------------------------------------------------------------------
 
 let _artboard: HTMLDivElement;
+let _artboardBackground: HTMLDivElement;
 let _interactor: HTMLDivElement;
 
 let _mountedCallback: CallableFunction;
@@ -23,10 +24,12 @@ let _mountedCallback: CallableFunction;
 function Painter(): JSX.Element {
   const backgroundRef = useRef(null);
   const artboardRef = useRef(null);
+  const artboardBackgroundRef = useRef(null);
   const interactorRef = useRef(null);
 
   useEffect(() => {
     _artboard = artboardRef.current!;
+    _artboardBackground = artboardBackgroundRef.current!;
     _interactor = interactorRef.current!;
 
     _mountedCallback();
@@ -40,6 +43,7 @@ function Painter(): JSX.Element {
         <div id="artboard-background" ref={backgroundRef}></div>
         <div id="artboard-container">
           <div className="artboard" ref={artboardRef}></div>
+          <div className="artboard-background" ref={artboardBackgroundRef}></div>
         </div>
         <div id="artboard-interactor" ref={interactorRef}></div>
       </section>
@@ -54,6 +58,7 @@ function Painter(): JSX.Element {
  */
 export function setup(container: HTMLElement): Promise<{
   artboard: HTMLDivElement;
+  artboardBackground: HTMLDivElement;
   interactor: HTMLDivElement;
 }> {
   return new Promise((resolve) => {
@@ -63,6 +68,7 @@ export function setup(container: HTMLElement): Promise<{
       requestAnimationFrame(() => {
         resolve({
           artboard: _artboard,
+          artboardBackground: _artboardBackground,
           interactor: _interactor,
         });
       });

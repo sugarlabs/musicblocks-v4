@@ -52,6 +52,8 @@ import {
     ElementSetThickness,
     ElementPenUp,
     ElementPenDown,
+    ElementSetBackground,
+    ElementClear,
 } from './painter';
 
 // -------------------------------------------------------------------------------------------------
@@ -121,5 +123,17 @@ export const specification: {
         type: 'Statement',
         category: 'Pen',
         prototype: ElementPenDown,
+    },
+    'set-background': {
+        label: 'set background',
+        type: 'Statement',
+        category: 'Pen',
+        prototype: ElementSetBackground,
+    },
+    'clear': {
+        label: 'clear',
+        type: 'Statement',
+        category: 'Pen',
+        prototype: ElementClear,
     },
 };

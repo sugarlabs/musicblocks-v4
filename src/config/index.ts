@@ -164,14 +164,6 @@ export function getComponent(name: string): IComponent | null {
         config = configModule.default;
     }
 
-    try {
-        const configModule = await import(`./${_configFile}-dev.json`);
-        config = configModule.default;
-    } catch (e) {
-        const configModule = await import(`./${_configFile}.json`);
-        config = configModule.default;
-    }
-
     let importPromises: Promise<[string, IComponent]>[] = [];
 
     /*
@@ -217,12 +209,9 @@ export function getComponent(name: string): IComponent | null {
         // import the component module using the component name in the component entry
         importPromises.push(
             import(`../components/${componentEntry.name}`).then((component: IComponent) => {
-                // mount the component
-                component.mount();
-
                 if ('elements' in componentEntry) {
-                    // register the syntax elements specified in the component entry from the component
-                    // module's specification
+                    // register the syntax elements specified in the component entry from the
+                    // component module's specification
                     if (typeof componentEntry.elements === 'boolean') {
                         if (componentEntry.elements) {
                             registerElementSpecificationEntries(component.specification!);
@@ -241,17 +230,28 @@ export function getComponent(name: string): IComponent | null {
                     }
                 }
 
-                return [componentEntry.name, component];
+                return new Promise((resolve) => {
+                    // mount the component
+                    component.mount().then(() => resolve([componentEntry.name, component]));
+                });
             }),
         );
     });
 
     Promise.all(importPromises).then((components) => {
-        components.forEach(([name, component]) => {
-            _components[name] = component;
+        const iterator = components.entries();
 
-            // initializes the components after they are mounted
-            setTimeout(() => component.setup());
-        });
+        const setupComponent = (
+            iteratorResult: IteratorResult<[number, [string, IComponent]], unknown>,
+        ) => {
+            if (iteratorResult.done) return;
+
+            const [_, [name, component]] = iteratorResult.value;
+            _components[name] = component;
+            // initialize the components after they are mounted
+            component.setup().then(() => setupComponent(iterator.next()));
+        };
+
+        setupComponent(iterator.next());
     });
 })();

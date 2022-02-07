@@ -20,7 +20,7 @@ export function setup(container: HTMLElement): void {
             p.noLoop();
             p.translate(p.width / 2, p.height / 2);
             p.angleMode(p.DEGREES);
-            p.rotate(180);
+            p.scale(1, -1);
         };
     }, container);
 }

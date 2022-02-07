@@ -30,6 +30,9 @@ export function setup(): Promise<void> {
             menu.mountHook('run', run);
             menu.mountHook('reset', reset);
         }
+
+        reset();
+
         resolve();
     });
 }
@@ -46,6 +49,8 @@ import {
     ElementSetXY,
     ElementSetColor,
     ElementSetThickness,
+    ElementPenUp,
+    ElementPenDown,
 } from './painter';
 
 // -------------------------------------------------------------------------------------------------
@@ -97,5 +102,17 @@ export const specification: {
         type: 'Statement',
         category: 'Pen',
         prototype: ElementSetThickness,
+    },
+    'pen-up': {
+        label: 'pen up',
+        type: 'Statement',
+        category: 'Pen',
+        prototype: ElementPenUp,
+    },
+    'pen-down': {
+        label: 'pen down',
+        type: 'Statement',
+        category: 'Pen',
+        prototype: ElementPenDown,
     },
 };

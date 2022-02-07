@@ -15,6 +15,8 @@ let _codeBox: HTMLTextAreaElement;
 let _status: HTMLParagraphElement;
 let _btnBuild: HTMLButtonElement;
 
+let _mountedCallback: CallableFunction;
+
 // -- component definition -------------------------------------------------------------------------
 
 /**
@@ -30,6 +32,8 @@ function Editor(): JSX.Element {
     _codeBox = codeBoxRef.current!;
     _status = statusRef.current!;
     _btnBuild = btnBuildRef.current!;
+
+    _mountedCallback();
 
     fetch(buildSVG)
       .then((res) => res.text())
@@ -59,15 +63,16 @@ export function setup(container: HTMLElement): Promise<{
   status: HTMLParagraphElement;
   btnBuild: HTMLButtonElement;
 }> {
-  ReactDOM.render(<Editor />, container);
-
   return new Promise((resolve) => {
-    setTimeout(() =>
-      resolve({
-        codeBox: _codeBox,
-        status: _status,
-        btnBuild: _btnBuild,
-      }),
-    );
+    ReactDOM.render(<Editor />, container);
+
+    _mountedCallback = () =>
+      requestAnimationFrame(() =>
+        resolve({
+          codeBox: _codeBox,
+          status: _status,
+          btnBuild: _btnBuild,
+        }),
+      );
   });
 }

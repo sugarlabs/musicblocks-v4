@@ -13,13 +13,17 @@ let _artboardSketch: HTMLElement;
 /**
  * Initializes the Painter DOM.
  */
-export function mount(): void {
-    const container = createItem({ location: 'workspace' });
-    container.id = 'painter';
+export function mount(): Promise<void> {
+    return new Promise((resolve) => {
+        const container = createItem({ location: 'workspace' });
+        container.id = 'painter';
 
-    setupComponent(container).then(({ artboard, interactor }) => {
-        _artboardSketch = artboard;
-        setupSprite(interactor);
+        setupComponent(container).then(({ artboard, interactor }) => {
+            _artboardSketch = artboard;
+            setupSprite(interactor);
+
+            resolve();
+        });
     });
 }
 
@@ -27,13 +31,17 @@ export function mount(): void {
  * Mounts the sketch canvas inside the artboard.
  * @param sketch sketch instance
  */
-export function mountSketch(sketch: ISketch): void {
-    sketch.setup(_artboardSketch!);
+export function mountSketch(sketch: ISketch): Promise<void> {
+    return new Promise((resolve) => {
+        sketch.setup(_artboardSketch!);
 
-    setTimeout(() => {
-        const sketchCanvas = _artboardSketch.children[0] as HTMLCanvasElement;
-        sketchCanvas.style.position = 'absolute';
-        sketchCanvas.style.left = '50%';
-        sketchCanvas.style.transform = 'translateX(-50%)';
+        requestAnimationFrame(() => {
+            const sketchCanvas = _artboardSketch.children[0] as HTMLCanvasElement;
+            sketchCanvas.style.position = 'absolute';
+            sketchCanvas.style.left = '50%';
+            sketchCanvas.style.transform = 'translateX(-50%)';
+
+            resolve();
+        });
     });
 }

@@ -16,18 +16,19 @@ let _editorStatus: HTMLParagraphElement;
 /**
  * Creates the DOM of the editor.
  */
-function _createEditor(): void {
-    _editor = document.createElement('div');
-    _editor.id = 'editor';
+function _createEditor(): Promise<void> {
+    return new Promise((resolve) => {
+        _editor = document.createElement('div');
+        _editor.id = 'editor';
 
-    setupComponent(_editor).then(({ codeBox, status, btnBuild }) => {
-        _editorStatus = status;
+        setupComponent(_editor).then(({ codeBox, status, btnBuild }) => {
+            _editorStatus = status;
 
-        codeBox.addEventListener('input', () => {
-            _editorStatus.innerHTML = '';
-        });
+            codeBox.addEventListener('input', () => {
+                _editorStatus.innerHTML = '';
+            });
 
-        codeBox.innerHTML = `set-thickness value:4
+            codeBox.innerHTML = `set-thickness value:4
 set-color value:5
 repeat times:6
   move-forward steps:100
@@ -37,7 +38,7 @@ repeat times:6
   move-forward steps:100
   turn-left angle:60`;
 
-        codeBox.innerHTML = `set-thickness value:4
+            codeBox.innerHTML = `set-thickness value:4
 set-color value:5
 move-forward steps:100
 turn-right angle:60
@@ -48,11 +49,14 @@ turn-right angle:60
 move-forward steps:100
 turn-right angle:60`;
 
-        btnBuild.addEventListener('click', () => {
-            (async () => {
-                const response = await buildProgram(codeBox.value);
-                _editorStatus.innerHTML = response ? 'Successfully Built' : 'Invalid Code';
-            })();
+            btnBuild.addEventListener('click', () => {
+                (async () => {
+                    const response = await buildProgram(codeBox.value);
+                    _editorStatus.innerHTML = response ? 'Successfully Built' : 'Invalid Code';
+                })();
+            });
+
+            resolve();
         });
     });
 }
@@ -60,9 +64,16 @@ turn-right angle:60`;
 /**
  * Creates the DOM of the editor's toolbar button.
  */
-function _createToolbarButton(): void {
-    _editorToolbarBtn = createItem({ location: 'toolbar', type: 'button', position: 'cluster-a' });
-    setupButton(_editorToolbarBtn);
+function _createToolbarButton(): Promise<void> {
+    return new Promise((resolve) => {
+        _editorToolbarBtn = createItem({
+            location: 'toolbar',
+            type: 'button',
+            position: 'cluster-a',
+        });
+        setupButton(_editorToolbarBtn);
+        requestAnimationFrame(() => resolve());
+    });
 }
 
 // -- public functions -----------------------------------------------------------------------------
@@ -70,9 +81,14 @@ function _createToolbarButton(): void {
 /**
  * Sets up the DOM elements.
  */
-export function setup(): void {
-    _createEditor();
-    _createToolbarButton();
+export function setup(): Promise<void> {
+    return new Promise((resolve) => {
+        (async () => {
+            await _createEditor();
+            await _createToolbarButton();
+            resolve();
+        })();
+    });
 }
 
 /**

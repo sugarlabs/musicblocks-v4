@@ -7,18 +7,24 @@ import { getButtons, setup as setupView } from './view';
 /**
  * Mounts the Menu component.
  */
-export function mount(): void {
-    setupView();
+export function mount(): Promise<void> {
+    return setupView();
 }
 
 /**
  * Initializes the Menu component.
  */
-export function setup(): void {
-    const buttons = getButtons();
-    buttons.run.addEventListener('click', () => {
-        const crumbs = getCrumbs();
-        if (crumbs.length !== 0) run(getCrumbs()[0].nodeID);
+export function setup(): Promise<void> {
+    return new Promise((resolve) => {
+        requestAnimationFrame(() => {
+            const buttons = getButtons();
+            buttons.run.addEventListener('click', () => {
+                const crumbs = getCrumbs();
+                if (crumbs.length !== 0) run(getCrumbs()[0].nodeID);
+            });
+
+            resolve();
+        });
     });
 }
 

@@ -104,6 +104,7 @@ export function reset(): void {
     _state.drawing = _defaultStateValues.drawing;
 
     sketch.clear();
+    updateBackgroundColor('unset');
 }
 
 /**

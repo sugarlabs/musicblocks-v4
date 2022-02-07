@@ -18,11 +18,11 @@ export interface IComponent {
     /**
      * Mounts the component (loads subcomponents, mounts DOM elements, etc.).
      */
-    mount(): void;
+    mount(): Promise<void>;
     /**
      * Sets up the component — initializes component after it is mounted.
      */
-    setup(): void;
+    setup(): Promise<void>;
     /** Syntax element specification object for the component. */
     specification?: {
         [identifier: string]: IElementSpecification;

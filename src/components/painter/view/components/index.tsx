@@ -12,6 +12,8 @@ import './index.scss';
 let _artboard: HTMLDivElement;
 let _interactor: HTMLDivElement;
 
+let _mountedCallback: CallableFunction;
+
 // -- component definition -------------------------------------------------------------------------
 
 /**
@@ -26,6 +28,8 @@ function Painter(): JSX.Element {
   useEffect(() => {
     _artboard = artboardRef.current!;
     _interactor = interactorRef.current!;
+
+    _mountedCallback();
 
     setupCartesian(backgroundRef.current!);
   }, []);
@@ -52,14 +56,15 @@ export function setup(container: HTMLElement): Promise<{
   artboard: HTMLDivElement;
   interactor: HTMLDivElement;
 }> {
-  ReactDOM.render(<Painter />, container);
-
   return new Promise((resolve) => {
-    setTimeout(() =>
-      resolve({
-        artboard: _artboard,
-        interactor: _interactor,
-      }),
-    );
+    ReactDOM.render(<Painter />, container);
+
+    _mountedCallback = () =>
+      requestAnimationFrame(() => {
+        resolve({
+          artboard: _artboard,
+          interactor: _interactor,
+        });
+      });
   });
 }

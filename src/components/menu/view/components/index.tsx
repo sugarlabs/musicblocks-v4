@@ -1,15 +1,23 @@
 import { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 
+// -- resources ------------------------------------------------------------------------------------
+
+import svgRun from '../resources/run.svg';
+import svgStop from '../resources/stop.svg';
+import svgReset from '../resources/reset.svg';
+
 // -- stylesheet -----------------------------------------------------------------------------------
 
 import './index.scss';
 
 // -- private variables ----------------------------------------------------------------------------
 
-let btnRun: HTMLButtonElement;
-let btnStop: HTMLButtonElement;
-let btnReset: HTMLButtonElement;
+let _btnRun: HTMLButtonElement;
+let _btnStop: HTMLButtonElement;
+let _btnReset: HTMLButtonElement;
+
+let _mountedCallback: CallableFunction;
 
 // -- component definition -------------------------------------------------------------------------
 
@@ -18,15 +26,18 @@ let btnReset: HTMLButtonElement;
  * @params props React props (SVG sources)
  * @returns root JSX element of the Menu component
  */
-function Menu(props: {
-  svgs: { run: string; stop: string; reset: string };
-  labels: { run: string; stop: string; reset: string };
-}): JSX.Element {
+function Menu(props: { labels: { run: string; stop: string; reset: string } }): JSX.Element {
   const btnRunRef = useRef(null);
   const btnStopRef = useRef(null);
   const btnResetRef = useRef(null);
 
   useEffect(() => {
+    _btnRun = btnRunRef.current!;
+    _btnStop = btnStopRef.current!;
+    _btnReset = btnResetRef.current!;
+
+    _mountedCallback();
+
     const loadSVG = (element: HTMLElement, svgSrc: string) => {
       fetch(svgSrc)
         .then((res) => res.text())
@@ -34,13 +45,9 @@ function Menu(props: {
         .then(() => (element.children[1] as SVGElement).classList.add('menu-btn-img'));
     };
 
-    loadSVG(btnRunRef.current! as HTMLElement, props.svgs.run);
-    loadSVG(btnStopRef.current! as HTMLElement, props.svgs.stop);
-    loadSVG(btnResetRef.current! as HTMLElement, props.svgs.reset);
-
-    btnRun = btnRunRef.current!;
-    btnStop = btnStopRef.current!;
-    btnReset = btnResetRef.current!;
+    loadSVG(btnRunRef.current! as HTMLElement, svgRun);
+    loadSVG(btnStopRef.current! as HTMLElement, svgStop);
+    loadSVG(btnResetRef.current! as HTMLElement, svgReset);
   }, []);
 
   return (
@@ -67,7 +74,6 @@ function Menu(props: {
 export function setup(
   container: HTMLElement,
   props: {
-    svgs: { run: string; stop: string; reset: string };
     labels: { run: string; stop: string; reset: string };
   },
 ): Promise<{
@@ -75,15 +81,16 @@ export function setup(
   btnStop: HTMLButtonElement;
   btnReset: HTMLButtonElement;
 }> {
-  ReactDOM.render(<Menu svgs={props.svgs} labels={props.labels} />, container);
-
   return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        btnRun,
-        btnStop,
-        btnReset,
+    ReactDOM.render(<Menu labels={props.labels} />, container);
+
+    _mountedCallback = () =>
+      requestAnimationFrame(() => {
+        resolve({
+          btnRun: _btnRun,
+          btnStop: _btnStop,
+          btnReset: _btnReset,
+        });
       });
-    });
   });
 }

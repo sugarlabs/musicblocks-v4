@@ -8,7 +8,7 @@ reportWebVitals();
 
 import './view';
 
-setTimeout(() => import('./config'));
+requestAnimationFrame(() => import('./config'));
 
 // =================================================================================================
 

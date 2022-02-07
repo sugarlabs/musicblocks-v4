@@ -10,21 +10,28 @@ import { sketch, run, reset } from './painter';
 /**
  * Mounts the Painter component.
  */
-export function mount(): void {
-    mountView();
-
-    setTimeout(() => mountSketch(sketch));
+export function mount(): Promise<void> {
+    return new Promise((resolve) => {
+        (async () => {
+            await mountView();
+            await mountSketch(sketch);
+            resolve();
+        })();
+    });
 }
 
 /**
  * Initializes the Painter component; mounts the hooks.
  */
-export function setup(): void {
-    const menu = getComponent('menu') as IComponentMenu;
-    if (menu) {
-        menu.mountHook('run', run);
-        menu.mountHook('reset', reset);
-    }
+export function setup(): Promise<void> {
+    return new Promise((resolve) => {
+        const menu = getComponent('menu') as IComponentMenu;
+        if (menu) {
+            menu.mountHook('run', run);
+            menu.mountHook('reset', reset);
+        }
+        resolve();
+    });
 }
 
 // == specification ================================================================================

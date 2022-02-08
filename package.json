@@ -43,7 +43,7 @@
     "typescript": "^4.2.4"
   },
   "dependencies": {
-    "@sugarlabs/musicblocks-v4-lib": "^1.0.0",
+    "@sugarlabs/musicblocks-v4-lib": "^1.0.1",
     "jquery": "^3.6.0",
     "p5": "^1.4.0",
     "react": "^17.0.2",

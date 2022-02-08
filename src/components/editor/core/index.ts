@@ -4,8 +4,6 @@ import {
     ITreeSnapshotInput,
     generateFromSnapshot,
     generateSnapshot,
-    getInstance,
-    getNode,
     registerElementSpecificationEntries,
     resetSyntaxTree,
 } from '@sugarlabs/musicblocks-v4-lib';
@@ -47,20 +45,21 @@ export function buildProgram(code: string): Promise<boolean> {
         // dummy program build (for debugging)
         // import('./dummy');
 
-        const snapshotInput: ITreeSnapshotInput = { process: [], routine: [], crumbs: [[]] };
-        const crumb = snapshotInput.crumbs[0];
+        const snapshot: ITreeSnapshotInput = { process: [], routine: [], crumbs: [[]] };
+        const crumb = snapshot.crumbs[0];
 
-        const addInstruction = (units: string[], index: number) => {
+        const addInstruction = (units: string[]) => {
             const elementName = units[0];
             const argMap = {};
 
             let args: [string, string][] = units
                 .slice(1)
                 .map((unit) => unit.split(':') as [string, string]);
-            args.forEach(([param, _]) => {
+            args.forEach(([param, value]) => {
                 // @ts-ignore
                 argMap[param] = {
                     elementName: 'value-number',
+                    value,
                 };
             });
 
@@ -68,27 +67,14 @@ export function buildProgram(code: string): Promise<boolean> {
                 elementName,
                 argMap,
             });
-
-            return (snapshot: ITreeSnapshotInput) => {
-                args.forEach(([param, value]) => {
-                    getInstance(
-                        // @ts-ignore
-                        getNode(snapshot.crumbs[0][index]['argMap'][param].nodeID)!.instanceID,
-                    )!.instance.updateLabel(value);
-                });
-            };
         };
 
-        const callbacks = [];
-        for (const [i, line] of code.split('\n').entries()) {
+        for (const line of code.split('\n')) {
             const units = line.split(' ');
-            callbacks.push(addInstruction(units, i));
+            addInstruction(units);
         }
 
-        generateFromSnapshot(snapshotInput);
-        const snapshot = generateSnapshot();
-
-        callbacks.forEach((callback) => callback.call(null, snapshot));
+        generateFromSnapshot(snapshot);
     }
 
     return new Promise((resolve) => {

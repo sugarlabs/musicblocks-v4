@@ -126,8 +126,6 @@ export function run(): void {
 // -- public classes -------------------------------------------------------------------------------
 
 import { ElementStatement, TData } from '@sugarlabs/musicblocks-v4-lib';
-/** @todo This shouldn't be required. */
-import { TElementName } from '@sugarlabs/musicblocks-v4-lib/@types/specification';
 
 /**
  * @class
@@ -135,7 +133,7 @@ import { TElementName } from '@sugarlabs/musicblocks-v4-lib/@types/specification
  */
 export class ElementMoveForward extends ElementStatement {
     constructor() {
-        super('move-forward' as TElementName, 'forward', { steps: ['number'] });
+        super('move-forward', 'forward', { steps: ['number'] });
     }
 
     /**
@@ -152,7 +150,7 @@ export class ElementMoveForward extends ElementStatement {
  */
 export class ElementMoveBackward extends ElementStatement {
     constructor() {
-        super('move-backward' as TElementName, 'backward', { steps: ['number'] });
+        super('move-backward', 'backward', { steps: ['number'] });
     }
 
     /**
@@ -169,7 +167,7 @@ export class ElementMoveBackward extends ElementStatement {
  */
 export class ElementTurnRight extends ElementStatement {
     constructor() {
-        super('turn-right' as TElementName, 'right', { angle: ['number'] });
+        super('turn-right', 'right', { angle: ['number'] });
     }
 
     /**
@@ -186,7 +184,7 @@ export class ElementTurnRight extends ElementStatement {
  */
 export class ElementTurnLeft extends ElementStatement {
     constructor() {
-        super('turn-left' as TElementName, 'left', { angle: ['number'] });
+        super('turn-left', 'left', { angle: ['number'] });
     }
 
     /**
@@ -203,7 +201,7 @@ export class ElementTurnLeft extends ElementStatement {
  */
 export class ElementSetXY extends ElementStatement {
     constructor() {
-        super('set-xy' as TElementName, 'set-xy', { x: ['number'], y: ['number'] });
+        super('set-xy', 'set-xy', { x: ['number'], y: ['number'] });
     }
 
     /**
@@ -229,7 +227,7 @@ export class ElementSetXY extends ElementStatement {
  */
 export class ElementSetHeading extends ElementStatement {
     constructor() {
-        super('set-heading' as TElementName, 'set-heading', { angle: ['number'] });
+        super('set-heading', 'set-heading', { angle: ['number'] });
     }
 
     /**
@@ -246,7 +244,7 @@ export class ElementSetHeading extends ElementStatement {
  */
 export class ElementSetColor extends ElementStatement {
     constructor() {
-        super('set-color' as TElementName, 'set color', { value: ['number'] });
+        super('set-color', 'set color', { value: ['number'] });
     }
 
     /**
@@ -264,7 +262,7 @@ export class ElementSetColor extends ElementStatement {
  */
 export class ElementSetThickness extends ElementStatement {
     constructor() {
-        super('set-thickness' as TElementName, 'set-thickness', { value: ['number'] });
+        super('set-thickness', 'set-thickness', { value: ['number'] });
     }
 
     /**
@@ -281,7 +279,7 @@ export class ElementSetThickness extends ElementStatement {
  */
 export class ElementPenUp extends ElementStatement {
     constructor() {
-        super('pen-up' as TElementName, 'pen-up', {});
+        super('pen-up', 'pen-up', {});
     }
 
     /**
@@ -298,7 +296,7 @@ export class ElementPenUp extends ElementStatement {
  */
 export class ElementPenDown extends ElementStatement {
     constructor() {
-        super('pen-down' as TElementName, 'pen-down', {});
+        super('pen-down', 'pen-down', {});
     }
 
     /**
@@ -315,7 +313,7 @@ export class ElementPenDown extends ElementStatement {
  */
 export class ElementSetBackground extends ElementStatement {
     constructor() {
-        super('set-background' as TElementName, 'set-background', { value: ['number'] });
+        super('set-background', 'set-background', { value: ['number'] });
     }
 
     /**
@@ -333,7 +331,7 @@ export class ElementSetBackground extends ElementStatement {
  */
 export class ElementClear extends ElementStatement {
     constructor() {
-        super('clear' as TElementName, 'clear', {});
+        super('clear', 'clear', {});
     }
 
     /**

@@ -62,6 +62,7 @@ export function drawArc(
     start: number,
     stop: number,
 ): void {
+    sketch.noFill();
     sketch.arc(x, y, w, h, start, stop, sketch.OPEN);
 }
 

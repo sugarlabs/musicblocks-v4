@@ -4,7 +4,7 @@
  * @returns value in degrees
  */
 export function radToDeg(radians: number): number {
-    return (radians / 180) * Math.PI;
+    return (radians / Math.PI) * 180;
 }
 
 /**

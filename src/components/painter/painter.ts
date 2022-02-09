@@ -4,7 +4,7 @@ import * as sketchP5 from './core/sketchP5';
 import { updatePosition, updateHeading } from './view/sprite';
 import { updateBackgroundColor } from './view';
 
-import { degToRad, radToDeg } from './core/utils';
+import { degToRad } from './core/utils';
 
 // -- private variables ----------------------------------------------------------------------------
 
@@ -65,8 +65,8 @@ function _move(distance: number): void {
     const [x1, y1, x2, y2] = [
         _state.position.x,
         _state.position.y,
-        _state.position.x + distance * Math.cos(radToDeg(_state.heading)),
-        _state.position.y + distance * Math.sin(radToDeg(_state.heading)),
+        _state.position.x + distance * Math.cos(degToRad(_state.heading)),
+        _state.position.y + distance * Math.sin(degToRad(_state.heading)),
     ];
 
     _state.position = { x: x2, y: y2 };
@@ -217,7 +217,9 @@ export class ElementSetXY extends ElementStatement {
 
         _state.position = { x: x2, y: y2 };
 
-        sketch.drawLine(x1, y1, x2, y2);
+        if (_state.drawing) {
+            sketch.drawLine(x1, y1, x2, y2);
+        }
     }
 }
 

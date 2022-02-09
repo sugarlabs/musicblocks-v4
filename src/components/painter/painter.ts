@@ -4,7 +4,7 @@ import * as sketchP5 from './core/sketchP5';
 import { updatePosition, updateHeading } from './view/sprite';
 import { updateBackgroundColor } from './view';
 
-import { radToDeg } from './core/utils';
+import { degToRad, radToDeg } from './core/utils';
 
 // -- private variables ----------------------------------------------------------------------------
 
@@ -240,7 +240,7 @@ export class ElementSetHeading extends ElementStatement {
 
 /**
  * @class
- * Defines a `graphics` statement element that updates the sprite heading and position to form an arc.
+ * Defines a `graphics` statement element that moves the sprite along an arc.
  */
 export class ElementDrawArc extends ElementStatement {
     constructor() {
@@ -248,20 +248,29 @@ export class ElementDrawArc extends ElementStatement {
     }
 
     /**
-     * Moves the sprite in arc according to the `radius` and `angle`.
+     * Moves the sprite along arc with `radius` and `angle`.
      */
     onVisit(params: { [key: string]: TData }): void {
-        const dir = -Math.sign(params['angle'] as number);
-        const angle = Math.abs(params['angle'] as number);
         const radius = params['radius'] as number;
+        const angle = params['angle'] as number;
 
-        const arcLength = ((2 * Math.PI * radius * angle) / 360) as number;
-        const stepLength = (arcLength / angle) as number;
+        const direction = Math.sign(angle);
+        const theta = direction === 1 ? _state.heading + angle - 90 : _state.heading + angle + 90;
 
-        for (let i = 0; i < angle; i++) {
-            _state.heading += dir;
-            _move(stepLength);
-        }
+        const [xCentre, yCentre] = [
+            _state.position.x + radius * Math.cos(degToRad(_state.heading + direction * 90)),
+            _state.position.y + radius * Math.sin(degToRad(_state.heading + direction * 90)),
+        ];
+
+        const [startAngle, stopAngle] =
+            direction === 1 ? [theta - angle, theta] : [theta, theta - angle];
+        sketch.drawArc(xCentre, yCentre, radius * 2, radius * 2, startAngle, stopAngle);
+
+        _state.heading += angle;
+        _state.position = {
+            x: xCentre + radius * Math.cos(degToRad(theta)),
+            y: yCentre + radius * Math.sin(degToRad(theta)),
+        };
     }
 }
 

@@ -4,7 +4,7 @@ import * as sketchP5 from './core/sketchP5';
 import { updatePosition, updateHeading } from './view/sprite';
 import { updateBackgroundColor } from './view';
 
-import { radToDeg } from './core/utils';
+import { degToRad, radToDeg } from './core/utils';
 
 // -- private variables ----------------------------------------------------------------------------
 
@@ -235,6 +235,42 @@ export class ElementSetHeading extends ElementStatement {
      */
     onVisit(params: { [key: string]: TData }): void {
         _state.heading = (params['angle'] as number) + 90;
+    }
+}
+
+/**
+ * @class
+ * Defines a `graphics` statement element that moves the sprite along an arc.
+ */
+export class ElementDrawArc extends ElementStatement {
+    constructor() {
+        super('draw-arc', 'draw-arc', { radius: ['number'], angle: ['number'] });
+    }
+
+    /**
+     * Moves the sprite along arc with `radius` and `angle`.
+     */
+    onVisit(params: { [key: string]: TData }): void {
+        const radius = params['radius'] as number;
+        const angle = params['angle'] as number;
+
+        const direction = Math.sign(angle);
+        const theta = direction === 1 ? _state.heading + angle - 90 : _state.heading + angle + 90;
+
+        const [xCentre, yCentre] = [
+            _state.position.x + radius * Math.cos(degToRad(_state.heading + direction * 90)),
+            _state.position.y + radius * Math.sin(degToRad(_state.heading + direction * 90)),
+        ];
+
+        const [startAngle, stopAngle] =
+            direction === 1 ? [theta - angle, theta] : [theta, theta - angle];
+        sketch.drawArc(xCentre, yCentre, radius * 2, radius * 2, startAngle, stopAngle);
+
+        _state.heading += angle;
+        _state.position = {
+            x: xCentre + radius * Math.cos(degToRad(theta)),
+            y: yCentre + radius * Math.sin(degToRad(theta)),
+        };
     }
 }
 

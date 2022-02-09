@@ -48,6 +48,7 @@ import {
     ElementTurnRight,
     ElementSetXY,
     ElementSetHeading,
+    ElementDrawArc,
     ElementSetColor,
     ElementSetThickness,
     ElementPenUp,
@@ -99,6 +100,12 @@ export const specification: {
         type: 'Statement',
         category: 'Graphics',
         prototype: ElementSetHeading,
+    },
+    'draw-arc': {
+        label: 'draw arc',
+        type: 'Statement',
+        category: 'Graphics',
+        prototype: ElementDrawArc,
     },
     'set-color': {
         label: 'set color',

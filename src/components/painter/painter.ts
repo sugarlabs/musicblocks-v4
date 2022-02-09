@@ -240,6 +240,33 @@ export class ElementSetHeading extends ElementStatement {
 
 /**
  * @class
+ * Defines a `graphics` statement element that updates the sprite heading and position to form an arc.
+ */
+export class ElementDrawArc extends ElementStatement {
+    constructor() {
+        super('draw-arc', 'draw-arc', { radius: ['number'], angle: ['number'] });
+    }
+
+    /**
+     * Moves the sprite in arc according to the `radius` and `angle`.
+     */
+    onVisit(params: { [key: string]: TData }): void {
+        const dir = -Math.sign(params['angle'] as number);
+        const angle = Math.abs(params['angle'] as number);
+        const radius = params['radius'] as number;
+
+        const arcLength = ((2 * Math.PI * radius * angle) / 360) as number;
+        const stepLength = (arcLength / angle) as number;
+
+        for (let i = 0; i < angle; i++) {
+            _state.heading += dir;
+            _move(stepLength);
+        }
+    }
+}
+
+/**
+ * @class
  * Defines a `pen` statement element that sets the pen color.
  */
 export class ElementSetColor extends ElementStatement {

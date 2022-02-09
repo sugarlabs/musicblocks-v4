@@ -217,7 +217,9 @@ export class ElementSetXY extends ElementStatement {
 
         _state.position = { x: x2, y: y2 };
 
-        sketch.drawLine(x1, y1, x2, y2);
+        if (_state.drawing) {
+            sketch.drawLine(x1, y1, x2, y2);
+        }
     }
 }
 

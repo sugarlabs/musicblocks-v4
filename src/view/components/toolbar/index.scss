@@ -34,15 +34,6 @@
         &:last-child {
           margin: 0;
         }
-
-        &.toolbar-cluster-item-btn {
-          height: 2.5rem;
-          border: none;
-          border-radius: 0.25rem;
-          background-color: $background-light;
-          cursor: pointer;
-          transition: all 0.25s ease;
-        }
       }
 
       &#toolbar-cluster-a {

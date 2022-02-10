@@ -46,7 +46,7 @@ function Menu(props: { states: { running: boolean } }): JSX.Element {
       fetch(svgSrc)
         .then((res) => res.text())
         .then((svg) => (element.innerHTML += svg))
-        .then(() => (element.children[1] as SVGElement).classList.add('menu-btn-img'));
+        .then(() => (element.children[1] as SVGElement).classList.add('toolbar-btn-img'));
     };
 
     loadSVG(btnRunRef.current! as HTMLElement, svgRun);
@@ -57,23 +57,27 @@ function Menu(props: { states: { running: boolean } }): JSX.Element {
   return (
     <>
       <button
-        className={`menu-btn ${props.states['running'] ? 'menu-btn-hidden' : ''}`}
+        className={`toolbar-cluster-item-btn menu-btn ${
+          props.states['running'] ? 'menu-btn-hidden' : ''
+        }`}
         ref={btnRunRef}
       >
-        <p className="menu-btn-label">
+        <p className="toolbar-btn-label">
           <span>{_labels.run}</span>
         </p>
       </button>
       <button
-        className={`menu-btn ${!props.states['running'] ? 'menu-btn-hidden' : ''}`}
+        className={`toolbar-cluster-item-btn menu-btn ${
+          !props.states['running'] ? 'menu-btn-hidden' : ''
+        }`}
         ref={btnStopRef}
       >
-        <p className="menu-btn-label">
+        <p className="toolbar-btn-label">
           <span>{_labels.stop}</span>
         </p>
       </button>
-      <button className="menu-btn" ref={btnResetRef}>
-        <p className="menu-btn-label">
+      <button className="toolbar-cluster-item-btn menu-btn" ref={btnResetRef}>
+        <p className="toolbar-btn-label">
           <span>{_labels.reset}</span>
         </p>
       </button>

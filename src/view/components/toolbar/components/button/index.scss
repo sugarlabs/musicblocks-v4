@@ -1,0 +1,83 @@
+@import '@/scss/colors';
+
+#toolbar-wrapper #toolbar .toolbar-cluster {
+  .toolbar-cluster-item-btn,
+  .toolbar-cluster-item.toolbar-cluster-item-btn {
+    position: relative;
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    height: 2.5rem;
+    padding: 0.25rem;
+    border: none;
+    border-radius: 0.25rem;
+    background-color: $background-light;
+    cursor: pointer;
+    transition: all 0.25s ease;
+
+    .toolbar-btn-label {
+      position: absolute;
+      z-index: 100;
+      left: calc(100% + 0.25rem);
+      display: none;
+      margin: 0;
+      padding: 0 0.375rem 0.125rem 0.25rem;
+      border-radius: 0 0.25rem 0.25rem 0;
+      background-color: $mb-accent-light;
+
+      &::before {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        display: block;
+        content: '';
+        width: 0.25rem;
+        transform: translateX(-100%);
+        clip-path: polygon(0 50%, 100% 0%, 100% 100%);
+        background-color: $mb-accent-light;
+      }
+
+      &.toolbar-btn-label-hidden {
+        display: none;
+      }
+
+      span {
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        font-weight: bold;
+        color: $text-light;
+      }
+    }
+
+    .toolbar-btn-img {
+      width: 100%;
+      height: 100%;
+
+      &.toolbar-btn-img-hidden {
+        display: none;
+      }
+
+      .path-fill {
+        fill: $mb-accent;
+        transition: all 0.25s ease;
+      }
+    }
+
+    &:hover {
+      .toolbar-btn-label {
+        display: block;
+
+        &.toolbar-btn-label-hidden {
+          display: none;
+        }
+      }
+
+      .toolbar-btn-img {
+        .path-fill {
+          fill: $mb-accent-light;
+        }
+      }
+    }
+  }
+}

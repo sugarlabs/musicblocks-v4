@@ -1,13 +1,18 @@
 import { createItem } from '@/view';
+import { updateButtonState, updateButtonView } from '@/view/components/toolbar';
+
 import { buildProgram } from '../core';
 
 import { setup as setupComponent } from './components';
-import { setButtonImg, setup as setupButton } from './components/button';
+
+// -- resources ------------------------------------------------------------------------------------
+
+import svgCode from './resources/code.svg';
 
 // -- private variables ----------------------------------------------------------------------------
 
 let _editor: HTMLDivElement;
-let _editorToolbarBtn: HTMLElement;
+let _editorToolbarBtn: HTMLButtonElement;
 
 let _editorStatus: HTMLParagraphElement;
 
@@ -70,9 +75,20 @@ function _createToolbarButton(): Promise<void> {
             location: 'toolbar',
             type: 'button',
             position: 'cluster-a',
-        });
-        setupButton(_editorToolbarBtn);
-        requestAnimationFrame(() => resolve());
+        }) as HTMLButtonElement;
+        _editorToolbarBtn.id = 'editor-toolbar-btn';
+
+        fetch(svgCode)
+            .then((res) => res.text())
+            .then((svg) => {
+                requestAnimationFrame(() => {
+                    updateButtonView(svg, 'Editor', _editorToolbarBtn);
+                    requestAnimationFrame(() => {
+                        updateButtonState('unclicked', _editorToolbarBtn);
+                        requestAnimationFrame(() => resolve());
+                    });
+                });
+            });
     });
 }
 
@@ -105,7 +121,7 @@ export function getElement(element: 'button' | 'editor'): HTMLElement {
  * @param state `clicked` or `unclicked`
  */
 export function setButtonState(state: 'clicked' | 'unclicked'): void {
-    setButtonImg(state === 'clicked' ? 'cross' : 'code');
+    updateButtonState(state, _editorToolbarBtn);
 }
 
 /**

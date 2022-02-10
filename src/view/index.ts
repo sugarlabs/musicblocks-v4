@@ -1,21 +1,8 @@
 import './components';
 
+import { createToolbarItem } from './components/toolbar';
+
 // -- private functions ----------------------------------------------------------------------------
-
-function _createToolbarItem(
-    type: 'container' | 'button',
-    position: 'cluster-a' | 'cluster-b',
-): HTMLElement {
-    const item = document.createElement(type === 'container' ? 'div' : 'button');
-    document.getElementById(`toolbar-${position}`)!.appendChild(item);
-
-    item.classList.add('toolbar-cluster-item');
-    if (type === 'button') {
-        item.classList.add('toolbar-cluster-item-btn');
-    }
-
-    return item;
-}
 
 function _createWorkspaceItem(): HTMLElement {
     const wrapper = document.createElement('div');
@@ -47,7 +34,7 @@ export function createItem(
           },
 ): HTMLElement {
     if (params.location === 'toolbar') {
-        return _createToolbarItem(params.type, params.position);
+        return createToolbarItem(params.type, params.position);
     } /* if (params.location === 'workspace') */ else {
         return _createWorkspaceItem();
     }

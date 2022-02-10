@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
 
+import { createToolbarButton } from './components/button';
+
 // -- resources ------------------------------------------------------------------------------------
 
 import pinSVG from './resources/pin.svg';
@@ -68,6 +70,24 @@ export default function (): JSX.Element {
       </section>
     </div>
   );
+}
+
+/**
+ * Creates a Toolbar item.
+ * @param type `container` or `button`
+ * @param position Toolbar cluster
+ * @returns DOM element of the created item
+ */
+export function createToolbarItem(
+  type: 'container' | 'button',
+  position: 'cluster-a' | 'cluster-b',
+): HTMLElement {
+  const item = type === 'container' ? document.createElement('div') : createToolbarButton();
+  document.getElementById(`toolbar-${position}`)!.appendChild(item);
+
+  item.classList.add('toolbar-cluster-item');
+
+  return item;
 }
 
 /**
@@ -143,3 +163,5 @@ export function unsetToolbarExtended(): void {
   float.classList.add('toolbar-extended-hidden');
   pinned.classList.add('toolbar-extended-hidden');
 }
+
+export { updateButtonView, updateButtonState } from './components/button';

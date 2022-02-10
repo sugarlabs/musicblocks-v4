@@ -13,6 +13,10 @@ import './index.scss';
 
 // -- private variables ----------------------------------------------------------------------------
 
+let _container: HTMLElement;
+let _labels: { run: string; stop: string; reset: string };
+let _states: { running: boolean } = { running: false };
+
 let _btnRun: HTMLButtonElement;
 let _btnStop: HTMLButtonElement;
 let _btnReset: HTMLButtonElement;
@@ -26,7 +30,7 @@ let _mountedCallback: CallableFunction;
  * @params props React props (SVG sources)
  * @returns root JSX element of the Menu component
  */
-function Menu(props: { labels: { run: string; stop: string; reset: string } }): JSX.Element {
+function Menu(props: { states: { running: boolean } }): JSX.Element {
   const btnRunRef = useRef(null);
   const btnStopRef = useRef(null);
   const btnResetRef = useRef(null);
@@ -52,25 +56,48 @@ function Menu(props: { labels: { run: string; stop: string; reset: string } }): 
 
   return (
     <>
-      <button className="menu-btn" ref={btnRunRef}>
+      <button
+        className={`menu-btn ${props.states['running'] ? 'menu-btn-hidden' : ''}`}
+        ref={btnRunRef}
+      >
         <p className="menu-btn-label">
-          <span>{props.labels.run}</span>
+          <span>{_labels.run}</span>
         </p>
       </button>
-      <button className="menu-btn" ref={btnStopRef}>
+      <button
+        className={`menu-btn ${!props.states['running'] ? 'menu-btn-hidden' : ''}`}
+        ref={btnStopRef}
+      >
         <p className="menu-btn-label">
-          <span>{props.labels.stop}</span>
+          <span>{_labels.stop}</span>
         </p>
       </button>
       <button className="menu-btn" ref={btnResetRef}>
         <p className="menu-btn-label">
-          <span>{props.labels.reset}</span>
+          <span>{_labels.reset}</span>
         </p>
       </button>
     </>
   );
 }
 
+// -- private functions ----------------------------------------------------------------------------
+
+/**
+ * Calls the renderer for the Menu component.
+ */
+function _renderComponent(): void {
+  ReactDOM.render(<Menu states={{ ..._states }} />, _container);
+}
+
+// -- public functions -----------------------------------------------------------------------------
+
+/**
+ * Setup the Menu component.
+ * @param container DOM container for the Menu component.
+ * @param props Menu component props
+ * @returns a `Promise` that the component has been mounted
+ */
 export function setup(
   container: HTMLElement,
   props: {
@@ -81,8 +108,11 @@ export function setup(
   btnStop: HTMLButtonElement;
   btnReset: HTMLButtonElement;
 }> {
+  _container = container;
+  _labels = props.labels;
+
   return new Promise((resolve) => {
-    ReactDOM.render(<Menu labels={props.labels} />, container);
+    _renderComponent();
 
     _mountedCallback = () =>
       requestAnimationFrame(() => {
@@ -93,4 +123,17 @@ export function setup(
         });
       });
   });
+}
+
+/**
+ * Updates the component state.
+ * @param state state name
+ * @param value value of the state
+ */
+export function updateState(state: 'running', value: boolean): void {
+  const newStates = { ..._states };
+  newStates[state] = value;
+  _states = newStates;
+
+  _renderComponent();
 }

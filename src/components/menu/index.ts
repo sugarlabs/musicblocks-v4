@@ -1,6 +1,6 @@
 import { getCrumbs, run } from '@sugarlabs/musicblocks-v4-lib';
 
-import { getButtons, setup as setupView } from './view';
+import { getButtons, setup as setupView, updateState } from './view';
 
 // -- public functions -----------------------------------------------------------------------------
 
@@ -21,6 +21,14 @@ export function setup(): Promise<void> {
             buttons.run.addEventListener('click', () => {
                 const crumbs = getCrumbs();
                 if (crumbs.length !== 0) run(getCrumbs()[0].nodeID);
+                updateState('running', true);
+                setTimeout(() => updateState('running', false));
+            });
+            buttons.stop.addEventListener('click', () => {
+                updateState('running', false);
+            });
+            buttons.reset.addEventListener('click', () => {
+                updateState('running', false);
             });
 
             resolve();

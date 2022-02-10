@@ -51,3 +51,5 @@ export function getButtons(): {
         reset: _btnReset,
     };
 }
+
+export { updateState } from './components';

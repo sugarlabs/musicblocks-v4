@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 
 // -- resources ------------------------------------------------------------------------------------
@@ -27,6 +27,7 @@ function Editor(): JSX.Element {
   const codeBoxRef = useRef(null);
   const statusRef = useRef(null);
   const btnBuildRef = useRef(null);
+  const [linesCount, setlinesCount] = useState('');
 
   useEffect(() => {
     _codeBox = codeBoxRef.current!;
@@ -40,9 +41,31 @@ function Editor(): JSX.Element {
       .then((svg) => (_btnBuild.innerHTML = svg));
   }, []);
 
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
+    const codeText = e.target.value;
+    const newLines = codeText.split(/\r\n|\r|\n/).length;
+
+    let lineNumber = '';
+    for (let i = 0; i < newLines; i++) {
+      const num = (i + 1).toString();
+      lineNumber += num;
+      lineNumber += '\n';
+    }
+    setlinesCount(lineNumber);
+  };
+
   return (
     <div id="editor">
-      <textarea id="editor-codebox" ref={codeBoxRef}></textarea>
+      <div id="editor-codebox-wrapper">
+        <p id="editor-codebox-line-numbers">{linesCount}</p>
+        <textarea
+          id="editor-codebox"
+          ref={codeBoxRef}
+          onChange={(e) => {
+            handleChange(e);
+          }}
+        ></textarea>
+      </div>
       <div id="editor-console">
         <div id="editor-status-wrapper">
           <p id="editor-status" ref={statusRef}></p>

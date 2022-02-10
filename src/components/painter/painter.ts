@@ -264,9 +264,11 @@ export class ElementDrawArc extends ElementStatement {
             _state.position.y + radius * Math.sin(degToRad(_state.heading + direction * 90)),
         ];
 
-        const [startAngle, stopAngle] =
-            direction === 1 ? [theta - angle, theta] : [theta, theta - angle];
-        sketch.drawArc(xCentre, yCentre, radius * 2, radius * 2, startAngle, stopAngle);
+        if (_state.drawing) {
+            const [startAngle, stopAngle] =
+                direction === 1 ? [theta - angle, theta] : [theta, theta - angle];
+            sketch.drawArc(xCentre, yCentre, radius * 2, radius * 2, startAngle, stopAngle);
+        }
 
         _state.heading += angle;
         _state.position = {

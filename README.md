@@ -115,7 +115,7 @@ top of the repository to follow and/or discuss about the planning progress.
 A prototype has been built currently. Parallel development of the programming framework will be done
 in the [**musicblocks-v4-lib**](https://github.com/sugarlabs/musicblocks-v4-lib) repository as mentioned
 above. For updates, follow the `develop` branch and the feature branches that branch out of it.
-Please look out for *Issues* tab of both repositories.
+Please look out for _Issues_ tab of both repositories.
 
 ### New Contributors
 

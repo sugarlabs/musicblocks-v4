@@ -6,12 +6,48 @@ import {
     generateSnapshot,
     registerElementSpecificationEntries,
     resetSyntaxTree,
+    getSpecificationSnapshot,
 } from '@sugarlabs/musicblocks-v4-lib';
+
+import {
+    addInstance,
+    getInstance,
+    removeInstance,
+} from '@sugarlabs/musicblocks-v4-lib/syntax/warehouse/warehouse';
 
 import { librarySpecification } from '@sugarlabs/musicblocks-v4-lib';
 registerElementSpecificationEntries(librarySpecification);
 
 // -- public functions -----------------------------------------------------------------------------
+
+/**
+ * Generates the API for the loaded specification.
+ * @returns list of valid instruction signatures
+ */
+export function generateAPI(): string {
+    const snapshot = getSpecificationSnapshot();
+    const api: string[] = [];
+
+    Object.entries(snapshot)
+        .filter(
+            ([_, specification]) =>
+                specification.type === 'Statement' &&
+                ['Graphics', 'Pen'].includes(specification.category),
+        )
+        .forEach(([elementName, _]) => {
+            const instanceID = addInstance(elementName);
+            const instance = getInstance(instanceID)!.instance;
+            const args: [string, string][] = instance.argLabels.map((arg) => [
+                arg,
+                instance.getArgType(arg).join('|'),
+            ]);
+            removeInstance(instanceID);
+
+            api.push(`${elementName} ${args.map(([name, types]) => `${name}:${types}`).join(' ')}`);
+        });
+
+    return api.join('\n');
+}
 
 /**
  * Validates code, transpiles it, and generates the Syntax Tree in the Programming Engine.

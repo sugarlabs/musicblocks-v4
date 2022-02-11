@@ -336,6 +336,16 @@ Windows) this repository using
     docker compose down
     ```
 
+### Disclaimer
+
+Hot reloading currently does not work, so every time you make a change, you need to refresh the
+browser manually. This issue does not occur in productions builds. The production build works
+totally fine on the Chromium-based webkit browsers, Firefox, and Safari.
+
+This project is setup using `create-react-app` which uses `react-scripts@v4.0.3`.The webpack
+version it uses has some issues with hot-reloading which is causing the problem. This problem is
+temporary and will be fixed in the future.
+
 ## Commands
 
 **Note: This repository uses `sugarlabs/musicblocks-v4-lib` as an _npm_ package which is published to

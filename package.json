@@ -7,6 +7,7 @@
     "type": "git",
     "url": "git+https://github.com/sugarlabs/musicblocks-v4.git"
   },
+  "homepage": "https://sugarlabs.github.io/musicblocks-v4",
   "keywords": [
     "musicblocks"
   ],
@@ -32,6 +33,7 @@
     "eslint": "^7.11.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-json": "^3.1.0",
+    "gh-pages": "^3.2.3",
     "jqueryui": "^1.11.1",
     "prettier": "2.3.1",
     "react-scripts": "4.0.3",
@@ -57,7 +59,9 @@
     "test": "craco test",
     "eject": "craco eject",
     "lint": "eslint src && textlint --rule terminology --rule no-dead-link README.md",
-    "serve": "http-server . -p 80"
+    "serve": "http-server . -p 80",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [

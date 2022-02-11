@@ -1,0 +1,44 @@
+---
+# Documentation:https://help.github.com/en/articles/workflow-syntax-for-github-actions
+
+name: Continuous Deployment
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  deploy:
+    name: Build and Deploy app to GitHub Pages
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the code base
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 16.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
+          npm ci
+          rm -rf .npmrc
+
+      - name: Build for Production
+        run: npm run build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
+          force_orphan: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          full_commit_message: 'deploy: publish app to GitHub Pages'

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
+import $ from 'jquery';
 
 // -- resources ------------------------------------------------------------------------------------
 
@@ -40,6 +41,14 @@ function Editor(): JSX.Element {
       .then((res) => res.text())
       .then((svg) => (_btnBuild.innerHTML = svg));
   }, []);
+
+  // handles editor line numbers overflow scrolling
+  (function () {
+    const target = $('#editor-codebox-line-numbers');
+    $('#editor-codebox').on('scroll', function () {
+      target.prop('scrollTop', this.scrollTop).prop('scrollLeft', this.scrollLeft);
+    });
+  })();
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
     const codeText = e.target.value;

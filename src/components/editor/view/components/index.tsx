@@ -27,7 +27,7 @@ function Editor(): JSX.Element {
   const codeBoxRef = useRef(null);
   const statusRef = useRef(null);
   const btnBuildRef = useRef(null);
-  const [linesCount, setlinesCount] = useState('');
+  const [linesCount, setlinesCount] = useState('1\n2\n3\n4\n5\n6\n7\n8\n9\n10');
 
   useEffect(() => {
     _codeBox = codeBoxRef.current!;

@@ -1,15 +1,13 @@
 import { createItem } from '@/view';
 import { buildProgram } from '../core';
 
-import { setup as setupComponent } from './components';
+import { setStatus, setup as setupComponent } from './components';
 import { setButtonImg, setup as setupButton } from './components/button';
 
 // -- private variables ----------------------------------------------------------------------------
 
 let _editor: HTMLDivElement;
 let _editorToolbarBtn: HTMLElement;
-
-let _editorStatus: HTMLParagraphElement;
 
 // -- private functions ----------------------------------------------------------------------------
 
@@ -19,41 +17,14 @@ let _editorStatus: HTMLParagraphElement;
 function _createEditor(): Promise<void> {
     return new Promise((resolve) => {
         _editor = document.createElement('div');
-        _editor.id = 'editor';
 
-        setupComponent(_editor).then(({ codeBox, status, btnBuild }) => {
-            _editorStatus = status;
-
-            codeBox.addEventListener('input', () => {
-                _editorStatus.innerHTML = '';
-            });
-
-            codeBox.innerHTML = `set-thickness value:4
-set-color value:5
-repeat times:6
-  move-forward steps:100
-  turn-right angle:60
-set-color value:9
-repeat times:6
-  move-forward steps:100
-  turn-left angle:60`;
-
-            codeBox.innerHTML = `set-thickness value:4
-set-color value:5
-move-forward steps:100
-turn-right angle:60
-move-forward steps:100
-turn-right angle:60
-move-forward steps:100
-turn-right angle:60
-move-forward steps:100
-turn-right angle:60`;
-
-            btnBuild.addEventListener('click', () => {
-                (async () => {
-                    const response = await buildProgram(codeBox.value);
-                    _editorStatus.innerHTML = response ? 'Successfully Built' : 'Invalid Code';
-                })();
+        setupComponent(_editor).then(() => {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            _editor.addEventListener('buildprogram', function (e: CustomEvent<string>) {
+                buildProgram(e.detail).then((response) =>
+                    setStatus(response ? 'Successfully Built' : 'Invalid Code'),
+                );
             });
 
             resolve();
@@ -108,9 +79,4 @@ export function setButtonState(state: 'clicked' | 'unclicked'): void {
     setButtonImg(state === 'clicked' ? 'cross' : 'code');
 }
 
-/**
- * Resets the editor status.
- */
-export function resetStatus(): void {
-    _editorStatus.innerHTML = '';
-}
+export { setCode, setHelp, setStatus, resetStates } from './components';

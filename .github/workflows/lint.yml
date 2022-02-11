@@ -1,68 +1,35 @@
 ---
-###########################
-###########################
-## Linter GitHub Actions ##
-###########################
-###########################
+# Documentation: https://help.github.com/en/articles/workflow-syntax-for-github-actions
+
 name: Super-Linter
 
-#
-# Documentation:
-# https://help.github.com/en/articles/workflow-syntax-for-github-actions
-#
-
-#############################
-# Start the job on all push #
-#############################
 on:
-  push:
-    branches: [main, develop]
   pull_request:
-    branches: [main, develop]
+    branches: [develop]
 
-###############
-# Set the Job #
-###############
 jobs:
-  build:
-    # Name the Job
+  lint:
     name: Lint Code Base
-    # Set the agent to run on
+
     runs-on: ubuntu-latest
 
-    ##################
-    # Load all steps #
-    ##################
     steps:
-      ##########################
-      # Checkout the code base #
-      ##########################
       - name: Checkout the code base
         uses: actions/checkout@v2
         with:
-          # Full git history is needed to get a proper list of changed files within `super-linter`
           fetch-depth: 0
 
-      #################
-      # Setup Node.js #
-      #################
-      - name: Setup Node.js
+      - name: Setup Node.js 16.x
         uses: actions/setup-node@v2
         with:
           node-version: '16'
 
-      ########################
-      # Install dependencies #
-      ########################
       - name: Install dependencies
         run: |
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
           npm ci
           rm -rf .npmrc
 
-      ####################
-      # Run Super Linter #
-      ####################
       - name: Lint new and edited files
         uses: github/super-linter/slim@v4
         env:

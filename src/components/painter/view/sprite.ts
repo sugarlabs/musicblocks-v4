@@ -17,24 +17,26 @@ let _spriteSVG: SVGElement;
  * @param interactor - DOM container for the interactor (wrapper for the sprite)
  */
 export function setup(interactor: HTMLElement): void {
-    (async () => {
-        const spriteWrapper = document.createElement('div');
-        spriteWrapper.classList.add('artboard-sprite-wrapper');
-        spriteWrapper.style.left = '50%';
-        spriteWrapper.style.bottom = '50%';
-        spriteWrapper.style.transform = 'translate(-50%, 50%)';
-        spriteWrapper.innerHTML =
-            // fetches the SVG source string from the .svg source file's URL
-            await fetch(_spriteSrc).then((res) => res.text());
+    const spriteWrapper = document.createElement('div');
+    spriteWrapper.classList.add('artboard-sprite-wrapper');
+    spriteWrapper.style.left = '50%';
+    spriteWrapper.style.bottom = '50%';
+    spriteWrapper.style.transform = 'translate(-50%, 50%)';
+    interactor.appendChild(spriteWrapper);
 
-        const spriteElem = spriteWrapper.children[0] as SVGElement;
-        spriteElem.classList.add('artboard-sprite');
+    _sprite = spriteWrapper;
 
-        interactor.appendChild(spriteWrapper);
+    // fetches the SVG source string from the .svg source file's URL
+    fetch(_spriteSrc)
+        .then((res) => res.text())
+        .then((svg) => {
+            spriteWrapper.innerHTML = svg;
 
-        _sprite = spriteWrapper;
-        _spriteSVG = spriteElem;
-    })();
+            const spriteElem = spriteWrapper.children[0] as SVGElement;
+            spriteElem.classList.add('artboard-sprite');
+
+            _spriteSVG = spriteElem;
+        });
 }
 
 /**

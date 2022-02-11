@@ -115,7 +115,7 @@ top of the repository to follow and/or discuss about the planning progress.
 A prototype has been built currently. Parallel development of the programming framework will be done
 in the [**musicblocks-v4-lib**](https://github.com/sugarlabs/musicblocks-v4-lib) repository as mentioned
 above. For updates, follow the `develop` branch and the feature branches that branch out of it.
-Please look out for *Issues* tab of both repositories.
+Please look out for _Issues_ tab of both repositories.
 
 ### New Contributors
 
@@ -335,6 +335,16 @@ Windows) this repository using
     ```bash
     docker compose down
     ```
+
+### Disclaimer
+
+Hot reloading currently does not work, so every time you make a change, you need to refresh the
+browser manually. This issue does not occur in productions builds. The production build works
+totally fine on the Chromium-based webkit browsers, Firefox, and Safari.
+
+This project is setup using `create-react-app` which uses `react-scripts@v4.0.3`.The webpack
+version it uses has some issues with hot-reloading which is causing the problem. This problem is
+temporary and will be fixed in the future.
 
 ## Commands
 

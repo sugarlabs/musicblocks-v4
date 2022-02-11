@@ -246,5 +246,15 @@
   "MD048": {
     // Code fence syle
     "style": "consistent"
+  },
+
+  // MD049/emphasis-style - Emphasis style should be consistent
+  "MD049": {
+    "style": "consistent"
+  },
+
+  // MD050/strong-style - Strong style should be consistent
+  "MD050": {
+    "style": "consistent"
   }
 }

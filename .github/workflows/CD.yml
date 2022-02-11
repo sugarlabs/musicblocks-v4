@@ -1,0 +1,37 @@
+---
+# Documentation:https://help.github.com/en/articles/workflow-syntax-for-github-actions
+
+name: Continuous Deployment
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  deploy:
+    name: Build and Deploy app to GitHub Pages
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [16.x]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout the code base
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Deploy to GitHub Pages
+        run: |
+          npm run deploy

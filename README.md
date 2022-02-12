@@ -7,10 +7,10 @@ A complete overhaul of [Music Blocks](https://github.com/sugarlabs/musicblocks).
 The aim of the new architecture is modularity and extensibility. The idea is to create a core visual
 programming platform, and extend it with other features.
 
-- The source code for the components specific to the application wil reside in this
+- The source code for the components specific to the application resides in this
 [**musicblocks-v4**](https://github.com/sugarlabs/musicblocks-v4/) repository.
 
-- The source code for the programming framework will reside in the
+- The source code for the programming framework resides in the
 [**musicblocks-v4-lib**](https://github.com/sugarlabs/musicblocks-v4-lib/) repository.
 
 - **musicblocks-v4-lib** is bundled as an _npm_ package and imported as a dependency in
@@ -18,90 +18,61 @@ programming platform, and extend it with other features.
 
 ### Components
 
-![Component Architecture](docs/images/architecture/components.jpg)
+![Component Architecture](docs/images/architecture/components.png)
 
-#### Core
+**Note:** The greyed out components haven't been built yet.
 
-3 core components: **Interface**, **Syntax**, **Integration**
+This is a highly pluggable architecture — except for application level functionality, anything related
+to project building and execution are features which shall be dynamically pluggable (they may or may
+not be configured to load).
 
-- **Interface** component shall contain the UI components. These are the ones which use _React_ and
-follow _Model-View-ViewModel_ (_MVVM_) architecture.
+Components can be strictly or partially dependent on other components. In case of strict dependency,
+a depending component needs to be loaded for a dependent component to be loaded. In case of partial
+dependency, a dependent component adds extra functionality to the depending component if it is loaded.
 
-  - **Menu** shall handle top level operations like running projects, managing projects, undo/redo,
-  application settings.
+#### Programming Framework
 
-  - **Config** shall be used to configure the feature configurations.
+This is reponsible for defining the _syntax constructs_ (_syntax elements_, _syntax tree_) and
+utilities (_syntax specification_, _syntax warehouse_), and contains the _execution engine_
+(_scheduler_, _interpreter_, _parser_, _symbol table_) for running the program represented by the
+_syntax tree_. See
+[`musicblocks-v4-lib/README.md`](https://github.com/sugarlabs/musicblocks-v4-lib/blob/develop/README.md)
+for details.
 
-  - **Status** shall display the application status.
+The components in `musicblocks-v4` shall use the constructs exposed by `musicblocks-v4-lib`.
 
-  - **Info** shall display logs.
+#### View Framework
 
-  - **Console** shall provide an interactive tool to run application level commands and
-  display messages (like a terminal).
+This is responsible for creating the skeleton of the UI — components that have a view shall request
+component wrappers from the _view framework_ and encapsule their DOM inside the wrappers.
 
-  - **Debugger** shall be used to debug Music Blocks programs by monitoring states.
+#### Integration
 
-  - **Editor** shall be responsible to building Music Blocks programs in text form.
+This is responsible for adding general application-wide functionalities like _internationalisation_,
+_project management_, and _activity history_.
 
-  - **Planet** shall be a repository for openly shared projects.
+#### Plugin - UI
 
-- **Syntax** component shall contain the programming framework. These are responsible for internal
-representation and execution of Music Blocks programs. This shall come with a factory set of program
-building syntax elements.
+This contains UI components for application-wide interactive/informative functionality.
 
-  - **Elements** shall describe the rudimentary syntax element constructs — **data**, **expressions**,
-  **statements**, and **blocks**.
+#### Plugin - Art
 
-  - **Specification** shall describe the ambient configurations (label, selective connectivity, etc.)
-  for syntax elements.
+This is responsible for artwork generation. It shall contain a set of _syntax elements_ of
+instructions and arguments related to artwork generation and artboard (artwork canvas) states.
 
-  - **Warehouse** shall instantiate and maintain a table of syntax element instances.
+#### Plugin - Music
 
-  - **Tree** shall respresent the syntax tree by maintaining the interconnections between syntax
-  elements.
+This is responsible for music generation. It shall contain a set of _syntax elements_ of
+instructions and arguments related to music generation, composition, and music states.
 
-  - **Symbol Table** shall maintain the set of program variables.
+#### Plugin - Bricks
 
-  - **Parser** shall handle the sequential traversal of syntax elements.
+This is responsible for building Music Blocks programs using graphical bricks (blocks).
 
-  - **Interpreter** shall orchestrate running Music Blocks programs — exeution of syntax elements.
+#### Config
 
-- **Integrations** component shall contain the components responsible for handling application
-configurations and other bookkeeping.
-
-  - **Config** shall handle application specific configurations and loading of configured plugins.
-
-  - **i18n** shall handle internationalisation — managing language strings.
-
-  - **Projects** shall handle for creating, loading, merging, and exporting projects.
-
-  - **History** shall handle maintaining a log of application-level operations for rollback.
-
-In addition, a **Broker** component shall be responsible for inter-component communication.
-
-#### Plugins
-
-2 kinds of plugins: **Features** and **Syntax Builders**
-
-- **Features** add new functionality to the application. These may add interface components and new
-set of syntax elements.
-
-- **Syntax Builders** add interfaces to build Music Blocks programs.
-
-Plugins may be extended themselves to add more optional functionalities.
-
-##### Plugin (Feature) - Painter
-
-This shall add artwork generating functionality, and a set of syntax elements to interact with them.
-
-##### Plugin (Feature) - Singer
-
-This shall add music generating functionality, and a set of syntax elements to interact with them.
-This shall be extended to add widgets for generating syntax element stacks.
-
-##### Plugin (Syntax Builder) - Bricks
-
-This shall add the functionality to build Music Blocks programs using visual bricks.
+This is responsible for conditionally loading the pluggable components dynamically and sharing instance
+references between them.
 
 ### Wireframe
 

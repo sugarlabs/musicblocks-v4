@@ -1,0 +1,16 @@
+{
+  "components": [
+    {
+      "name": "menu"
+    },
+    {
+      "name": "editor",
+      "parents": ["menu"]
+    },
+    {
+      "name": "painter",
+      "parents": ["menu"],
+      "elements": true
+    }
+  ]
+}

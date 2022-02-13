@@ -68,6 +68,7 @@
 
         .artboard-sprite {
           opacity: 0.75;
+          cursor: pointer;
 
           .path-fill.path-fill-default {
             fill: $mb-accent-light;

@@ -10,6 +10,16 @@ let _sprite: HTMLElement;
 /** SVG element of the sprite. */
 let _spriteSVG: SVGElement;
 
+// -- private functions ----------------------------------------------------------------------------
+
+/**
+ * Updates the scaling of the sprite.
+ * @param scale scale value
+ */
+function _updateScale(scale: number): void {
+    _sprite.style.transform = _sprite.style.transform.replace(/scale\(.+\)/, `scale(${scale})`);
+}
+
 // -- public functions -----------------------------------------------------------------------------
 
 /**
@@ -37,6 +47,9 @@ export function setup(interactor: HTMLElement): void {
 
             _spriteSVG = spriteElem;
         });
+
+    _sprite.addEventListener('mouseenter', () => _updateScale(1.1));
+    _sprite.addEventListener('mouseleave', () => _updateScale(1));
 }
 
 /**
@@ -51,10 +64,10 @@ export function updatePosition(x: number, y: number): void {
 
 /**
  * Updates the heading of the sprite.
- * @param heading - heading anglestate
+ * @param heading - heading angle
  */
 export function updateHeading(heading: number): void {
-    _sprite.style.transform = `translate(-50%, 50%) rotate(${-heading}deg)`;
+    _sprite.style.transform = `translate(-50%, 50%) rotate(${-heading}deg) scale(1)`;
 }
 
 /**

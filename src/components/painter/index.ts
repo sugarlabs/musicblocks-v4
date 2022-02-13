@@ -3,7 +3,8 @@ import { IComponentMenu } from '../../@types/components/menu';
 import { getComponent } from '../../config';
 
 import { mount as mountView, mountSketch } from './view';
-import { sketch, run, reset } from './painter';
+import { mountState } from './view/sprite';
+import { sketch, state, run, reset } from './painter';
 
 // -- public functions -----------------------------------------------------------------------------
 
@@ -32,6 +33,7 @@ export function setup(): Promise<void> {
         }
 
         reset();
+        mountState(state);
 
         resolve();
     });

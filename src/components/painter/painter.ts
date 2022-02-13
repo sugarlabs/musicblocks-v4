@@ -55,6 +55,8 @@ const _colorMap: [number, number, number][] = [
 /** Artboard canvas object. */
 export const sketch: ISketch = sketchP5;
 
+export const state = _state;
+
 // -- private functions ----------------------------------------------------------------------------
 
 /**

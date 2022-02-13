@@ -10,6 +10,14 @@ let _sprite: HTMLElement;
 /** SVG element of the sprite. */
 let _spriteSVG: SVGElement;
 
+let _spriteClicked = false;
+let [_spriteClickOffsetX, _spriteClickOffsetY] = [0, 0];
+let [_spriteWidth, _spriteHeight] = [0, 0];
+
+let _state: {
+    position: { x: number; y: number };
+};
+
 // -- private functions ----------------------------------------------------------------------------
 
 /**
@@ -48,8 +56,46 @@ export function setup(interactor: HTMLElement): void {
             _spriteSVG = spriteElem;
         });
 
+    requestAnimationFrame(() => {
+        const { width, height } = _sprite.getBoundingClientRect();
+        [_spriteWidth, _spriteHeight] = [width, height];
+    });
+
     _sprite.addEventListener('mouseenter', () => _updateScale(1.1));
     _sprite.addEventListener('mouseleave', () => _updateScale(1));
+
+    _sprite.addEventListener('mousedown', (e) => {
+        _spriteClicked = true;
+        const { width, height, top, left } = _sprite.getBoundingClientRect();
+        [_spriteClickOffsetX, _spriteClickOffsetY] = [
+            e.clientX - (left + width / 2),
+            e.clientY - (top + height / 2),
+        ];
+    });
+    _sprite.addEventListener('mouseup', () => {
+        _spriteClicked = false;
+        [_spriteClickOffsetX, _spriteClickOffsetY] = [0, 0];
+    });
+    const delta = 8;
+    _sprite.addEventListener('mousemove', (e) => {
+        const { width, height } = interactor.getBoundingClientRect();
+        const { clientX, clientY } = e;
+
+        if (
+            _spriteClicked &&
+            Math.abs(clientX - _spriteClickOffsetX) > delta &&
+            Math.abs(clientY - _spriteClickOffsetY) > delta
+        ) {
+            _state['position'] = {
+                x: clientX - width / 2 - _spriteWidth - 10 - _spriteClickOffsetX + 1,
+                y: height / 2 - clientY + 10 + _spriteClickOffsetY - 1,
+            };
+        }
+    });
+}
+
+export function mountState(state: { position: { x: number; y: number } }): void {
+    _state = state;
 }
 
 /**

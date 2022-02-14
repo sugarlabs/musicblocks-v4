@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.0.1 [2022-02-15]
+
+- Updates core dependency `musicblocks-v4-lib` version from `1.0.1` to prerelease `0.2.0`.
+
 ## 4.0.0 [2022-02-13]
 
 - Sets up a _Node.js_ project for _React_ using `create-react-app`.

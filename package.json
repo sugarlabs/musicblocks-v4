@@ -1,6 +1,6 @@
 {
   "name": "musicblocks",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "A complete overhaul of Music Blocks",
   "private": true,
   "repository": {
@@ -45,7 +45,7 @@
     "typescript": "^4.2.4"
   },
   "dependencies": {
-    "@sugarlabs/musicblocks-v4-lib": "^1.0.1",
+    "@sugarlabs/musicblocks-v4-lib": "^0.2.0",
     "jquery": "^3.6.0",
     "p5": "^1.4.0",
     "react": "^17.0.2",

@@ -357,8 +357,6 @@ After you are set-up, the steps you take depend on what you want to do:
             on host. Visit `localhost:5000` in a browser to view the web page served. If you are not
             using the container, visit `localhost:3000`.
 
-            Currently this will open a page with a "Hello world!" message.
-
         - For testing, run
 
             ```bash

@@ -11,6 +11,11 @@
       "name": "painter",
       "parents": ["menu"],
       "elements": true
+    },
+    {
+      "name": "singer",
+      "parents": ["menu"],
+      "elements": true
     }
   ]
 }

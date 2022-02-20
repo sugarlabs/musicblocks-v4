@@ -23,3 +23,27 @@ export function setup(): Promise<void> {
         })();
     });
 }
+
+// == specification ================================================================================
+
+import { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
+
+import {
+    ElementTestSynth,
+} from './singer';
+
+// -------------------------------------------------------------------------------------------------
+
+/**
+ * Syntax element specification object for the Singeer component.
+ */
+export const specification: {
+    [identifier: string]: IElementSpecification;
+} = {
+    'test-synth': {
+        label: 'test synth',
+        type: 'Statement',
+        category: 'Musuc',
+        prototype: ElementTestSynth,
+    }
+};

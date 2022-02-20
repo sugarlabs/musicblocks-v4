@@ -22,6 +22,11 @@
         "menu"
       ],
       "elements": true
+    },
+    {
+      "name": "singer",
+      "parents": ["menu"],
+      "elements": true
     }
   ]
 }

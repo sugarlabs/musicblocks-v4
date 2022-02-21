@@ -44,13 +44,13 @@ export const specification: {
     'test-synth': {
         label: 'test synth',
         type: 'Statement',
-        category: 'Musuc',
+        category: 'Music',
         prototype: ElementTestSynth,
     },
     'reset-notes-played': {
         label: 'reset',
         type: 'Statement',
-        category: 'Musuc',
+        category: 'Music',
         prototype: ElementResetNotesPlayed,
     }
 };

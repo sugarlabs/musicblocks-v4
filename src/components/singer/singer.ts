@@ -56,7 +56,7 @@ export function setup(): Promise<void> {
 
 // -- public classes -------------------------------------------------------------------------------
 
-import { ElementStatement } from '@sugarlabs/musicblocks-v4-lib';
+import { ElementStatement, TData } from '@sugarlabs/musicblocks-v4-lib';
 
 /**
  * @class
@@ -64,17 +64,22 @@ import { ElementStatement } from '@sugarlabs/musicblocks-v4-lib';
  */
 export class ElementTestSynth extends ElementStatement {
     constructor() {
-        super('test-synth', 'test synth', {});
+        super('test-synth', 'test synth', { pitch: ['number', 'string'], noteValue: ['number'] });
     }
 
     /**
      * Plays a predefined note.
      */
-    onVisit(): void {
+    onVisit(params: { [key: string]: TData }): void {
         const now = Tone.now();
+	const noteValue = params['noteValue'] as number;
 	const offset = noteValueToSeconds(_state.notesPlayed);
-        _defaultSynth.triggerAttackRelease("C4", "8n", now + offset);
-	_state.notesPlayed += 1/8;
+	if (typeof params['pitch'] === 'number') {
+            _defaultSynth.triggerAttackRelease(params['pitch'], noteValue + "n", now + offset);
+        } else {
+            _defaultSynth.triggerAttackRelease(params['pitch'] as string, noteValue + "n", now + offset);
+        }
+	_state.notesPlayed += 1/noteValue;
     }
 }
 

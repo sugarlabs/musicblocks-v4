@@ -180,8 +180,7 @@ deployment on a web browser.
 
 ### Without Docker
 
-This is a _**TypeScript**_ project that uses _**React**_. You'll just need
-_[**Node.js**](https://nodejs.org/en/)_ and _**npm**_ installed on your development machine_.
+This is a _**TypeScript**_ project that uses _**React**_. You'll just need _[**Node.js**](https://nodejs.org/en/) v16_  and _**npm**_ installed on your development machine.
 Although, this is sufficient to run, build, and test the project as a whole, you might need some
 extra tools for other development tasks.
 

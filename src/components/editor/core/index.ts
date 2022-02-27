@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+import { load as yamlToJson } from 'js-yaml';
 
 import {
     ITreeSnapshotInput,
@@ -9,14 +9,40 @@ import {
     getSpecificationSnapshot,
 } from '@sugarlabs/musicblocks-v4-lib';
 
+/** @todo these should be exposed */
+import { IElementSpecificationSnapshot } from '@sugarlabs/musicblocks-v4-lib/@types/specification';
+/** @todo these should be exposed */
+import {
+    ITreeSnapshotDataInput,
+    ITreeSnapshotExpressionInput,
+    ITreeSnapshotStatementInput,
+    ITreeSnapshotBlockInput,
+} from '@sugarlabs/musicblocks-v4-lib/@types/syntaxTree';
+/** @todo these should not be required */
 import {
     addInstance,
     getInstance,
     removeInstance,
 } from '@sugarlabs/musicblocks-v4-lib/syntax/warehouse/warehouse';
 
+import { ICodeInstructionSnapshot, ICodeInstructionSnapshotObj } from '../@types';
+
 import { librarySpecification } from '@sugarlabs/musicblocks-v4-lib';
 registerElementSpecificationEntries(librarySpecification);
+
+// -- private variables ----------------------------------------------------------------------------
+
+interface IElementSpecificationSnapshotWithArgs extends IElementSpecificationSnapshot {
+    args: [string, string | string[]][] | null;
+}
+
+/**
+ * Snapshot entry table object with key-value pairs of element name and corresponding element
+ * specification snapshot.
+ */
+let _specificationSnapshot: {
+    [name: string]: IElementSpecificationSnapshotWithArgs;
+};
 
 // -- public functions -----------------------------------------------------------------------------
 
@@ -25,26 +51,35 @@ registerElementSpecificationEntries(librarySpecification);
  * @returns list of valid instruction signatures
  */
 export function generateAPI(): string {
-    const snapshot = getSpecificationSnapshot();
+    _specificationSnapshot = Object.fromEntries(
+        Object.entries(getSpecificationSnapshot())
+            .filter(([_, specification]) => ['Statement', 'Block'].includes(specification.type))
+            .map(([elementName, specification]) => [elementName, { ...specification, args: null }]),
+    );
     const api: string[] = [];
 
-    Object.entries(snapshot)
-        .filter(
-            ([_, specification]) =>
-                specification.type === 'Statement' &&
-                ['Graphics', 'Pen'].includes(specification.category),
-        )
-        .forEach(([elementName, _]) => {
-            const instanceID = addInstance(elementName);
-            const instance = getInstance(instanceID)!.instance;
-            const args: [string, string][] = instance.argLabels.map((arg) => [
-                arg,
-                instance.getArgType(arg).join('|'),
-            ]);
-            removeInstance(instanceID);
+    Object.entries(_specificationSnapshot).forEach(([elementName, _]) => {
+        /** @todo args should be part of the specification */
 
-            api.push(`${elementName} ${args.map(([name, types]) => `${name}:${types}`).join(' ')}`);
-        });
+        const instanceID = addInstance(elementName);
+        const instance = getInstance(instanceID)!.instance;
+
+        const args: [string, string][] = instance.argLabels.map((arg) => [
+            arg,
+            instance.getArgType(arg).join('|'),
+        ]);
+        _specificationSnapshot[elementName]['args'] =
+            instance.argLabels.length === 0
+                ? null
+                : (instance.argLabels.map((arg) => [arg, instance.getArgType(arg)]) as [
+                      string,
+                      string | string[],
+                  ][]);
+
+        removeInstance(instanceID);
+
+        api.push(`${elementName} ${args.map(([name, types]) => `${name}:${types}`).join(' ')}`);
+    });
 
     return api.join('\n');
 }
@@ -55,71 +90,141 @@ export function generateAPI(): string {
  * @returns a `Promise` that returns whether the process was successful
  */
 export function buildProgram(code: string): Promise<boolean> {
-    function checkValidity(): boolean {
-        /*
-         * dummy logic
-         */
-        const lines = code.split('\n');
-        for (const line of lines) {
-            const units = line.split(' ');
-            if (
-                !(
-                    units.length === 1 ||
-                    units.length === 2 ||
-                    units.length === 3 ||
-                    (units.length === 4 && units[0] === '' && units[1] === '')
-                )
-            ) {
-                return false;
+    let instructions: ICodeInstructionSnapshot[];
+
+    function __checkValidity(): boolean {
+        try {
+            instructions = yamlToJson(code) as ICodeInstructionSnapshot[];
+            return instructions instanceof Array;
+        } catch (e) {
+            const _err = e as {
+                mark: {
+                    buffer: string;
+                    column: number;
+                    line: number;
+                    name: string | null;
+                    position: number;
+                };
+                message: string;
+                name: string;
+                reason: string;
+            };
+            console.log({
+                mark: _err.mark,
+                message: _err.message,
+                name: _err.name,
+                reason: _err.reason,
+            });
+            return false;
+        }
+    }
+
+    function __transpile(): void {
+        function __createInstructionSnapshot(
+            instruction: ICodeInstructionSnapshot,
+        ): ITreeSnapshotStatementInput | ITreeSnapshotBlockInput {
+            if (typeof instruction === 'string') {
+                return {
+                    elementName: instruction,
+                    argMap: null,
+                };
+            } else {
+                const treeSnapshotInput: ITreeSnapshotStatementInput | ITreeSnapshotBlockInput = {
+                    elementName: '',
+                    argMap: null,
+                };
+                const [key, value] = [
+                    // there's only one instruction
+                    Object.keys(instruction)[0],
+                    instruction[Object.keys(instruction)[0]],
+                ];
+
+                treeSnapshotInput.elementName = key;
+
+                if (value instanceof Object) {
+                    let scope: (ITreeSnapshotStatementInput | ITreeSnapshotBlockInput)[] | null =
+                        null;
+                    if ('scope' in value) {
+                        scope = (value.scope as ICodeInstructionSnapshotObj[]).map((instruction) =>
+                            __createInstructionSnapshot(instruction),
+                        );
+                    }
+
+                    const argMap: {
+                        [argName: string]:
+                            | ITreeSnapshotDataInput
+                            | ITreeSnapshotExpressionInput
+                            | null;
+                    } = {};
+                    Object.entries(value).forEach(([param, arg]) => {
+                        if (param !== 'scope') {
+                            if (!['boolean', 'number', 'string'].includes(typeof arg)) {
+                                throw Error(
+                                    `InvalidArgumentError: ${arg} of type "${typeof arg}" is invalid`,
+                                );
+                            }
+
+                            const type =
+                                typeof arg === 'boolean'
+                                    ? 'value-boolean'
+                                    : typeof arg === 'number'
+                                    ? 'value-number'
+                                    : 'value-string';
+                            argMap[param] = {
+                                elementName: type,
+                                value: arg.toString(),
+                            };
+                        }
+                    });
+                    treeSnapshotInput.argMap = argMap;
+
+                    if (scope) {
+                        (treeSnapshotInput as ITreeSnapshotBlockInput).scope = scope;
+                    }
+                } else {
+                    if (
+                        _specificationSnapshot[key].args &&
+                        _specificationSnapshot[key].args!.length === 1
+                    ) {
+                        const type =
+                            typeof value === 'boolean'
+                                ? 'value-boolean'
+                                : typeof value === 'number'
+                                ? 'value-number'
+                                : 'value-string';
+
+                        treeSnapshotInput.argMap = Object.fromEntries([
+                            [
+                                _specificationSnapshot[key].args![0][0],
+                                {
+                                    elementName: type,
+                                    value: value.toString(),
+                                },
+                            ],
+                        ]);
+                    }
+                }
+
+                return treeSnapshotInput;
             }
         }
 
-        return true;
-    }
-
-    function transpile(): void {
-        // dummy program build (for debugging)
-        // import('./dummy');
-
-        const snapshot: ITreeSnapshotInput = { process: [], routine: [], crumbs: [[]] };
-        const crumb = snapshot.crumbs[0];
-
-        const addInstruction = (units: string[]) => {
-            const elementName = units[0];
-            const argMap = {};
-
-            let args: [string, string][] = units
-                .slice(1)
-                .map((unit) => unit.split(':') as [string, string]);
-            args.forEach(([param, value]) => {
-                // @ts-ignore
-                argMap[param] = {
-                    elementName: 'value-number',
-                    value,
-                };
-            });
-
-            crumb.push({
-                elementName,
-                argMap,
-            });
+        const snapshot: ITreeSnapshotInput = {
+            process: [],
+            routine: [],
+            crumbs: [instructions.map((instruction) => __createInstructionSnapshot(instruction))],
         };
-
-        for (const line of code.split('\n')) {
-            const units = line.split(' ');
-            addInstruction(units);
-        }
 
         generateFromSnapshot(snapshot);
     }
 
     return new Promise((resolve) => {
-        if (checkValidity() === false) {
+        if (__checkValidity() === false) {
             resolve(false);
         } else {
             const snapshot = generateSnapshot();
             try {
-                transpile();
+                __transpile();
                 resolve(true);
             } catch (e) {
                 console.log(e);

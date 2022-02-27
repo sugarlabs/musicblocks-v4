@@ -41,26 +41,42 @@ export function setup(): Promise<void> {
             });
         }
 
-        setCode(`set-thickness value:4
-set-color value:5
-repeat times:6
-  move-forward steps:100
-  turn-right angle:60
-set-color value:9
-repeat times:6
-  move-forward steps:100
-  turn-left angle:60`);
+        setCode(`- clear
+- set-thickness:
+    value: 4
+- set-color:
+    value: 5
+- repeat:
+    times: 6
+    scope:
+      - move-forward:
+          steps: 100
+      - turn-right:
+          angle: 60
+- set-color:
+    value: 9
+- repeat:
+    times: 6
+    scope:
+      - move-forward:
+          steps: 100
+      - turn-left:
+          angle: 60`);
 
-        setCode(`set-thickness value:4
-set-color value:5
-move-forward steps:100
-turn-right angle:60
-move-forward steps:100
-turn-right angle:60
-move-forward steps:100
-turn-right angle:60
-move-forward steps:100
-turn-right angle:60`);
+        setCode(`- clear
+- set-thickness: 4
+- set-color: 5
+- repeat:
+    times: 6
+    scope:
+      - move-forward: 100
+      - turn-right: 60
+- set-color: 9
+- repeat:
+    times: 6
+    scope:
+      - move-forward: 100
+      - turn-left: 60`);
 
         setHelp(generateAPI());
 

@@ -42,28 +42,11 @@ export function setup(): Promise<void> {
         }
 
         setCode(`- clear
-- set-thickness:
-    value: 4
-- set-color:
-    value: 5
-- repeat:
-    times: 6
-    scope:
-      - move-forward:
-          steps: 100
-      - turn-right:
-          angle: 60
-- set-color:
-    value: 9
-- repeat:
-    times: 6
-    scope:
-      - move-forward:
-          steps: 100
-      - turn-left:
-          angle: 60`);
 
-        setCode(`- clear
+# -------------
+# first hexagon
+# -------------
+
 - set-thickness: 4
 - set-color: 5
 - repeat:
@@ -71,6 +54,11 @@ export function setup(): Promise<void> {
     scope:
       - move-forward: 100
       - turn-right: 60
+
+# --------------
+# second hexagon
+# --------------
+
 - set-color: 9
 - repeat:
     times: 6

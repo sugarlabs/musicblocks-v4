@@ -4,7 +4,6 @@ import {
     ITreeSnapshotInput,
     generateFromSnapshot,
     generateSnapshot,
-    registerElementSpecificationEntries,
     resetSyntaxTree,
     getSpecificationSnapshot,
 } from '@sugarlabs/musicblocks-v4-lib';
@@ -27,13 +26,10 @@ import {
 
 import { ICodeInstructionSnapshot, ICodeInstructionSnapshotObj } from '../@types';
 
-import { librarySpecification } from '@sugarlabs/musicblocks-v4-lib';
-registerElementSpecificationEntries(librarySpecification);
-
 // -- private variables ----------------------------------------------------------------------------
 
 interface IElementSpecificationSnapshotWithArgs extends IElementSpecificationSnapshot {
-    args: [string, string | string[]][] | null;
+    args: [string, string[]][] | null;
 }
 
 /**
@@ -51,34 +47,92 @@ let _specificationSnapshot: {
  * @returns list of valid instruction signatures
  */
 export function generateAPI(): string {
+    /*
+     * Filter out only instruction (statement, block) elements in specification snapshot.
+     */
+
     _specificationSnapshot = Object.fromEntries(
         Object.entries(getSpecificationSnapshot())
             .filter(([_, specification]) => ['Statement', 'Block'].includes(specification.type))
             .map(([elementName, specification]) => [elementName, { ...specification, args: null }]),
     );
-    const api: string[] = [];
+
+    /**
+     * @todo args should be part of the supplied specification snapshot
+     * Add args to the specification.
+     */
 
     Object.entries(_specificationSnapshot).forEach(([elementName, _]) => {
-        /** @todo args should be part of the specification */
-
         const instanceID = addInstance(elementName);
         const instance = getInstance(instanceID)!.instance;
 
-        const args: [string, string][] = instance.argLabels.map((arg) => [
-            arg,
-            instance.getArgType(arg).join('|'),
-        ]);
         _specificationSnapshot[elementName]['args'] =
             instance.argLabels.length === 0
                 ? null
                 : (instance.argLabels.map((arg) => [arg, instance.getArgType(arg)]) as [
                       string,
-                      string | string[],
+                      string[],
                   ][]);
 
         removeInstance(instanceID);
+    });
 
-        api.push(`${elementName} ${args.map(([name, types]) => `${name}:${types}`).join(' ')}`);
+    /**
+     * Group syntax elements by categories.
+     */
+
+    const items: {
+        [key: string]: [string, 'Statement' | 'Block', [string, string[]][] | null][];
+    } = {};
+
+    Object.entries(_specificationSnapshot).forEach(([elementName, specification]) => {
+        const category = specification.category;
+
+        if (!(category in items)) {
+            items[category] = [];
+        }
+
+        items[category].push([
+            elementName,
+            specification.type as 'Statement' | 'Block',
+            specification.args,
+        ]);
+    });
+
+    /**
+     * Generate API.
+     */
+
+    const api: string[] = [];
+
+    Object.entries(items).forEach(([category, elements]) => {
+        api.push(`# "${category}" elements\n# ------------------------`);
+        elements.forEach(([name, type, args]) => {
+            if (type === 'Statement') {
+                if (args === null) {
+                    api.push(`- ${name}`);
+                } else if (args.length === 1) {
+                    api.push(`- ${name}: ${args[0][1].join('|')}`);
+                } else {
+                    api.push(
+                        `- ${name}:\n${args
+                            .map(([name, types]) => `    ${name}: ${types.join('|')}`)
+                            .join('\n')}`,
+                    );
+                }
+            } else {
+                if (args === null) {
+                    api.push(`- ${name}:\n    scope:\n      - [instruction]\n      - ...`);
+                } else {
+                    api.push(
+                        `- ${name}:\n${args
+                            .map(([name, types]) => `    ${name}: ${types.join('|')}`)
+                            .join('\n')}\n    scope:\n      - [instruction]\n      - ...`,
+                    );
+                }
+            }
+        });
+        api.push('\n');
     });
 
     return api.join('\n');

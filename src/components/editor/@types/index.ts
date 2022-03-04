@@ -1,13 +1,18 @@
-/** Represents the interface for a code instruction snapshot object. */
-export interface ICodeInstructionSnapshotObj {
-    [key: string]:
-        | {
-              [key: string]: boolean | number | string | ICodeInstructionSnapshotObj[];
-          }
-        | boolean
-        | number
-        | string;
+/** Reresents a literal code argument. */
+export type ICodeArgumentLiteral = boolean | number | string;
+
+/** Represents the interface for a code argument snapshot object. */
+export interface ICodeArgumentObj {
+    [key: string]: ICodeArgumentLiteral | ICodeArgumentObj;
 }
 
-/** Represents the interface for a code instruction snapshot. */
-export type ICodeInstructionSnapshot = string | ICodeInstructionSnapshotObj;
+/** Represents the interface for a code argument element. */
+export type ICodeArgument = ICodeArgumentLiteral | ICodeArgumentObj;
+
+/** Represents the interface for a code instruction element object. */
+export interface ICodeInstructionObj {
+    [instruction: string]: ICodeArgument;
+}
+
+/** Represents the interface for a code instruction element. */
+export type ICodeInstruction = string | ICodeInstructionObj;

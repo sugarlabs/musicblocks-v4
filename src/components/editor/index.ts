@@ -50,7 +50,10 @@ export function setup(): Promise<void> {
 - set-thickness: 4
 - set-color: 5
 - repeat:
-    times: 6
+    times:
+      operator-math-plus:
+        operand1: 4
+        operand2: 2
     scope:
       - move-forward: 100
       - turn-right: 60
@@ -65,6 +68,51 @@ export function setup(): Promise<void> {
     scope:
       - move-forward: 100
       - turn-left: 60`);
+
+        setCode(`- box-number:
+    name: "a"
+    value: 0
+- box-number:
+    name: "b"
+    value: 1
+- box-number:
+    name: "c"
+    value: 0
+- set-thickness:
+    value:
+      4
+- repeat:
+    times: 10
+    scope:
+      - print:
+          boxidentifier-number: "a"
+      - set-color:
+          boxidentifier-number: "b"
+      - repeat:
+          times: 6
+          scope:
+            - move-forward:
+                operator-math-times:
+                  operand1:
+                    boxidentifier-number: "a"
+                  operand2: 8
+            - turn-left: 90
+      - box-number:
+          name: "c"
+          value:
+            operator-math-plus:
+              operand1:
+                boxidentifier-number: "a"
+              operand2:
+                boxidentifier-number: "b"
+      - box-number:
+          name: "a"
+          value:
+            boxidentifier-number: "b"
+      - box-number:
+          name: "b"
+          value:
+            boxidentifier-number: "c"`);
 
         setHelp(generateAPI());
 

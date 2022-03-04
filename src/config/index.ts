@@ -1,6 +1,9 @@
 import { IConfig, IComponent } from '../@types';
 
-import { registerElementSpecificationEntries } from '@sugarlabs/musicblocks-v4-lib';
+import {
+    registerElementSpecificationEntries,
+    librarySpecification,
+} from '@sugarlabs/musicblocks-v4-lib';
 
 // -- private variables ----------------------------------------------------------------------------
 
@@ -239,6 +242,8 @@ export function getComponent(name: string): IComponent | null {
     });
 
     Promise.all(importPromises).then((components) => {
+        registerElementSpecificationEntries(librarySpecification);
+
         const iterator = components.entries();
 
         const setupComponent = (

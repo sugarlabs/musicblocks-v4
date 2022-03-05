@@ -209,11 +209,11 @@ node -v && npm -v && tsc -v && ts-node -v && http-server -v
 Output should look like
 
 ```bash
-v14.17.0
-6.14.13
-Version 4.3.2
-v10.0.0
-v0.12.3
+v16.14.0
+8.3.1
+Version 4.6.2
+v10.6.0
+v14.1.0
 ```
 
 ### With Docker
@@ -287,11 +287,11 @@ Windows) this repository using
     Output should look like
 
     ```bash
-    v14.17.0
-    6.14.13
-    Version 4.3.2
-    v10.0.0
-    v0.12.3
+    v16.14.0
+    8.3.1
+    Version 4.6.2
+    v10.6.0
+    v14.1.0
     ```
 
 7. To shut down the _docker network_, run (in the terminal where you ran `docker-compose up -d` or

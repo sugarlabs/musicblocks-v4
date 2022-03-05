@@ -172,7 +172,7 @@ of ideas (Sugar Labs is a meritocracy)._
 
 ## Tech Stack
 
-Music Blocks v4 shall be built using `TypeScript 4`and `React 17 (with hooks)`. In addition, `SCSS`
+Music Blocks v4 shall be built using `TypeScript 4` and `React 17 (with hooks)`. In addition, `SCSS`
 shall be used for styling; `Webpack` will be configured to transpile and bundle the source code, for
 deployment on a web browser.
 
@@ -181,7 +181,7 @@ deployment on a web browser.
 ### Without Docker
 
 This is a _**TypeScript**_ project that uses _**React**_. You'll just need
-_[**Node.js**](https://nodejs.org/en/) v16_ and _**npm**_ installed on your development machine_.
+_[**Node.js**](https://nodejs.org/en/) v16_ and _**npm**_ installed on your development machine.
 Although, this is sufficient to run, build, and test the project as a whole, you might need some
 extra tools for other development tasks.
 
@@ -241,13 +241,13 @@ Windows) this repository using
 4. Build _docker image_ and launch _docker network_.
 
     _**Note:**_ A
-    [built initial development image](https://github.com/sugarlabs/musicblocks-v4/pkgs/container/musicblocks/2948273?tag=4.0.0-dev)
+    [built initial development image](https://github.com/sugarlabs/musicblocks-v4/pkgs/container/musicblocks/16217005?tag=4-dev)
     has been published to
     [_Sugar Labs GitHub Container Registry_ (_GHCR_)](https://github.com/orgs/sugarlabs/packages?ecosystem=container),
     which can be pulled directly, so you don't have to build it again. Pull using
 
     ```bash
-    docker pull ghcr.io/sugarlabs/musicblocks:4.0.0-dev
+    docker pull ghcr.io/sugarlabs/musicblocks:4-dev
     ```
 
     Nagivate inside the project directory and launch the _docker network_ using
@@ -270,11 +270,11 @@ Windows) this repository using
 5. In a second terminal, run
 
     ```bash
-    docker attach musicblocks-4.0.0-dev
+    docker attach musicblocks-4-dev
     ```
 
-    The _Alpine shell_ in the _docker container_ named _musicblocks-4.0.0-dev_ is spawned and
-    standard input/output is connected to the terminal.
+    The _Alpine shell_ in the _docker container_ named _musicblocks-4-dev_ is spawned and standard
+    input/output is connected to the terminal.
 
 6. _**Node.js**_ (_Node.js Runtime_), _**npm**_ (_Node.js Package Manager_), _**tsc**_ (_TypeScript
     Compiler_), _**ts-node**_ (_Node.js executable for TypeScript_), and _**http-server**_ (_a HTTP

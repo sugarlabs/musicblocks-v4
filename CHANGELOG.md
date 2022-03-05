@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.1.0 [2022-03-05]
+
+- Updates README text.
+- Adds the feature to author programs in the _Editor_ using _YAML_.
+- Updates vulnerable dependent package `url-parse` version.
+
 ## 4.0.1 [2022-02-15]
 
 - Updates core dependency `musicblocks-v4-lib` version from `1.0.1` to prerelease `0.2.0`.

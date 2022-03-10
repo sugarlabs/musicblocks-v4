@@ -29,7 +29,7 @@ export function setup(): Promise<void> {
 import { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
 
 import {
-    ElementTestSynth,
+    ElementTestSynthChromatic,
     ElementResetNotesPlayed,
 } from './singer';
 
@@ -41,11 +41,11 @@ import {
 export const specification: {
     [identifier: string]: IElementSpecification;
 } = {
-    'test-synth': {
-        label: 'test synth',
+    'test-synth-chromatic': {
+        label: 'test synth chromatic',
         type: 'Statement',
         category: 'Music',
-        prototype: ElementTestSynth,
+        prototype: ElementTestSynthChromatic,
     },
     'reset-notes-played': {
         label: 'reset',

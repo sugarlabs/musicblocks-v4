@@ -10,6 +10,8 @@ const _defaultSynthStateValues = {
     beatsPerMinute: 90,
 };
 
+const numToNoteChromatic = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
 /** Synth state parameters. */
 const _stateObj = { ..._defaultSynthStateValues };
 
@@ -56,34 +58,36 @@ export function setup(): Promise<void> {
 
 // -- public classes -------------------------------------------------------------------------------
 
-import { ElementStatement/*, TData*/ } from '@sugarlabs/musicblocks-v4-lib';
+import { ElementStatement, TData } from '@sugarlabs/musicblocks-v4-lib';
 
 /**
  * @class
  * Defines a `music` statement element that tests the synth.
  */
-export class ElementTestSynth extends ElementStatement {
+export class ElementTestSynthChromatic extends ElementStatement {
     constructor() {
-        // super('test-synth', 'test synth', { pitch: ['number', 'string'], noteValue: ['number'] });
-        super('test-synth', 'test synth', {});
+        super('test-synth-chromatic', 'test synth chromatic', { octave: ['number'/*, 'string'*/], note: ['number']/*, duration: ['number']*/});
+        // super('test-synth', 'test synth', {});
     }
 
     /**
      * Plays a predefined note.
      */
-    // onVisit(params: { [key: string]: TData }): void {
-    onVisit(): void {
+    onVisit(params: { [key: string]: TData }): void {
+    // onVisit(): void {
         const now = Tone.now();
-	// const noteValue = params['noteValue'] as number;
-	   const offset = noteValueToSeconds(_state.notesPlayed);
+    	const noteValue = "4n"; //params['duration'] as number + "n";
+        const offset = noteValueToSeconds(_state.notesPlayed);
 	/*if (typeof params['pitch'] === 'number') {
             _defaultSynth.triggerAttackRelease(params['pitch'], noteValue + "n", now + offset);
         } else {
             _defaultSynth.triggerAttackRelease(params['pitch'] as string, noteValue + "n", now + offset);
         }
 	_state.notesPlayed += 1/noteValue;*/
-        _defaultSynth.triggerAttackRelease("C4", "8n", now + offset);
-        _state.notesPlayed += 1/8;
+        // _defaultSynth.triggerAttackRelease("C4", "8n", now + offset);
+        const fullNote = numToNoteChromatic[params['note'] as number - 1] + params['octave'] as string;
+        _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset);
+        _state.notesPlayed += 1/4;
     }
 }
 

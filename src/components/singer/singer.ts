@@ -10,7 +10,7 @@ const _defaultSynthStateValues = {
     beatsPerMinute: 90,
 };
 
-const numToNoteChromatic = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const chromaticNotes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
 /** Synth state parameters. */
 const _stateObj = { ..._defaultSynthStateValues };
@@ -42,7 +42,6 @@ const _defaultSynth = new Tone.Synth().toDestination();
 export function noteValueToSeconds(noteValue: number): number {
     return (60 / _state.beatsPerMinute) * (noteValue / _state.beat);
 }
-
 
 
 // -- public functions -----------------------------------------------------------------------------
@@ -85,7 +84,23 @@ export class ElementTestSynthChromatic extends ElementStatement {
         }
 	_state.notesPlayed += 1/noteValue;*/
         // _defaultSynth.triggerAttackRelease("C4", "8n", now + offset);
-        const fullNote = numToNoteChromatic[params['note'] as number - 1] + params['octave'] as string;
+        const fullNote = chromaticNotes[params['note'] as number - 1] + params['octave'] as string;
+        _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset);
+        _state.notesPlayed += 1/4;
+    }
+}
+
+export class ElementTestSynth extends ElementStatement {
+    constructor() {
+        super('test-synth', 'test synth', {});
+    }
+    onVisit(params: { [key: string]: TData }): void {
+    // onVisit(): void {
+        const now = Tone.now();
+    	const noteValue = "4n"; //params['duration'] as number + "n";
+        const offset = noteValueToSeconds(_state.notesPlayed);
+
+        const fullNote = "Cmaj4";
         _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset);
         _state.notesPlayed += 1/4;
     }

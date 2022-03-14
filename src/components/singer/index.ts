@@ -31,6 +31,7 @@ import { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
 import {
     ElementTestSynthChromatic,
     ElementResetNotesPlayed,
+    ElementTestSynth
 } from './singer';
 
 // -------------------------------------------------------------------------------------------------
@@ -46,6 +47,12 @@ export const specification: {
         type: 'Statement',
         category: 'Music',
         prototype: ElementTestSynthChromatic,
+    },
+    'test-synth': {
+        label: 'test synth',
+        type: 'Statement',
+        category: 'Music',
+        prototype: ElementTestSynth,
     },
     'reset-notes-played': {
         label: 'reset',

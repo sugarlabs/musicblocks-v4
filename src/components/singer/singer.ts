@@ -12,6 +12,17 @@ const _defaultSynthStateValues = {
 
 const chromaticNotes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
+import KeySignature from "./core/keySignature";
+
+const testKeySignature = new KeySignature('chromatic', 'c');
+console.log(
+    "key:", testKeySignature.key,
+    "keySignature:", testKeySignature.keySignature,
+    "mode:", testKeySignature.mode,
+    "scale:", testKeySignature.scale,
+    "solfegeNotes:", testKeySignature.solfegeNotes
+);
+
 /** Synth state parameters. */
 const _stateObj = { ..._defaultSynthStateValues };
 
@@ -84,8 +95,10 @@ export class ElementTestSynthChromatic extends ElementStatement {
         }
 	_state.notesPlayed += 1/noteValue;*/
         // _defaultSynth.triggerAttackRelease("C4", "8n", now + offset);
-        const fullNote = chromaticNotes[params['note'] as number - 1] + params['octave'] as string;
+        const noteTup = testKeySignature.modalPitchToLetter(params['note'] as number - 1);
+        const fullNote = noteTup[0] + (params['octave'] as number + noteTup[1]);
         _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset);
+        console.log("noteTup", noteTup, "fullNote", fullNote);
         _state.notesPlayed += 1/4;
     }
 }
@@ -96,13 +109,17 @@ export class ElementTestSynth extends ElementStatement {
     }
     onVisit(params: { [key: string]: TData }): void {
     // onVisit(): void {
-        const now = Tone.now();
-    	const noteValue = "4n"; //params['duration'] as number + "n";
-        const offset = noteValueToSeconds(_state.notesPlayed);
+    	const noteValue = "8n"; //params['duration'] as number + "n";
 
-        const fullNote = "Cmaj4";
-        _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset);
-        _state.notesPlayed += 1/4;
+        for (let modalPitch = 1; modalPitch <= testKeySignature.modeLength; modalPitch++) {
+            const now = Tone.now();
+            const offset = noteValueToSeconds(_state.notesPlayed);
+            const noteTup = testKeySignature.modalPitchToLetter(modalPitch - 1);
+            const fullNote = noteTup[0] + (4 + noteTup[1]);
+            _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset);
+            console.log("noteTup", noteTup, "fullNote", fullNote);
+            _state.notesPlayed += 1/8;
+        }
     }
 }
 

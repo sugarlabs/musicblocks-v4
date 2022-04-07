@@ -10,11 +10,12 @@ const _defaultSynthStateValues = {
     beatsPerMinute: 90,
 };
 
-const chromaticNotes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+// const chromaticNotes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
 import KeySignature from "./core/keySignature";
+import {LETTER_NAME} from "./core/musicUtils";
 
-const testKeySignature = new KeySignature('chromatic', 'c');
+const testKeySignature = new KeySignature('major', 'c');
 console.log(
     "key:", testKeySignature.key,
     "keySignature:", testKeySignature.keySignature,
@@ -105,20 +106,31 @@ export class ElementTestSynthChromatic extends ElementStatement {
 
 export class ElementTestSynth extends ElementStatement {
     constructor() {
-        super('test-synth', 'test synth', {});
+        super('test-synth', 'test synth', {mode: ['number']});
     }
     onVisit(params: { [key: string]: TData }): void {
     // onVisit(): void {
     	const noteValue = "8n"; //params['duration'] as number + "n";
-
-        for (let modalPitch = 1; modalPitch <= testKeySignature.modeLength; modalPitch++) {
-            const now = Tone.now();
-            const offset = noteValueToSeconds(_state.notesPlayed);
-            const noteTup = testKeySignature.modalPitchToLetter(modalPitch - 1);
-            const fullNote = noteTup[0] + (4 + noteTup[1]);
-            _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset);
-            console.log("noteTup", noteTup, "fullNote", fullNote);
-            _state.notesPlayed += 1/8;
+        if (params['mode'] as number === 1) {
+            for (let modalPitch = 1; modalPitch <= testKeySignature.modeLength; modalPitch++) {
+                const now = Tone.now();
+                const offset = noteValueToSeconds(_state.notesPlayed);
+                const noteTup = testKeySignature.modalPitchToLetter(modalPitch - 1);
+                const fullNote = noteTup[0] + (4 + noteTup[1]);
+                _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset);
+                console.log("noteTup", noteTup, "fullNote", fullNote);
+                _state.notesPlayed += 1/8;
+            }
+        } else {
+            testKeySignature.solfegeNotes.forEach(name => {
+                const now = Tone.now();
+                const offset = noteValueToSeconds(_state.notesPlayed);
+                const note = testKeySignature.genericNoteNameConvertToType(testKeySignature.convertToGenericNoteName(name), LETTER_NAME);
+                const fullNote = note + (4);
+                _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset);
+                console.log("note", note, "fullNote", fullNote);
+                _state.notesPlayed += 1/8;
+            });
         }
     }
 }

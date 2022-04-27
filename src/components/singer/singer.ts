@@ -13,7 +13,7 @@ const _defaultSynthStateValues = {
 // const chromaticNotes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
 import KeySignature from './core/keySignature';
-import { LETTER_NAME } from './core/musicUtils';
+import { LETTER_NAME, SCALAR_MODE_NUMBER } from './core/musicUtils';
 
 const testKeySignature = new KeySignature('major', 'c');
 console.log(
@@ -111,7 +111,7 @@ export class ElementTestSynth extends ElementStatement {
         // onVisit(): void {
         const noteValue = '8n'; //params['duration'] as number + "n";
         if ((params['mode'] as number) === 1) {
-            for (let modalPitch = 1; modalPitch <= testKeySignature.modeLength; modalPitch++) {
+            for (let modalPitch = 1; modalPitch <= testKeySignature.modeLength + 1; modalPitch++) {
                 const now = Tone.now();
                 const offset = noteValueToSeconds(_state.notesPlayed);
                 const noteTup = testKeySignature.modalPitchToLetter(modalPitch - 1);
@@ -124,11 +124,16 @@ export class ElementTestSynth extends ElementStatement {
             testKeySignature.solfegeNotes.forEach((name) => {
                 const now = Tone.now();
                 const offset = noteValueToSeconds(_state.notesPlayed);
-                const note = testKeySignature.genericNoteNameConvertToType(
-                    testKeySignature.convertToGenericNoteName(name),
-                    LETTER_NAME,
+                const note = testKeySignature.modalPitchToLetter(
+                    parseInt(
+                        testKeySignature.genericNoteNameConvertToType(
+                            testKeySignature.convertToGenericNoteName(name),
+                            SCALAR_MODE_NUMBER,
+                        ),
+                    ) - 1,
                 );
-                const fullNote = note + 4;
+                //console.log('note', note, 'name', name);
+                const fullNote = note[0] + (note[1] + 4);
                 _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset);
                 console.log('note', note, 'fullNote', fullNote);
                 _state.notesPlayed += 1 / 8;

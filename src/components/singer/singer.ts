@@ -6,9 +6,13 @@ import * as Tone from 'tone';
 const _defaultSynthStateValues = {
     // startTime: new Date().getTime(),
     notesPlayed: 0,
-    beat: 1/4,
+    beat: 1 / 4,
     beatsPerMinute: 90,
 };
+
+import KeySignature from './core/keySignature';
+
+const testKeySignature = new KeySignature('major', 'c');
 
 /** Synth state parameters. */
 const _stateObj = { ..._defaultSynthStateValues };
@@ -30,7 +34,6 @@ const _state = new Proxy(_stateObj, {
 /** Default synth **/
 const _defaultSynth = new Tone.Synth().toDestination();
 
-
 // -- private functions ----------------------------------------------------------------------------
 
 /**
@@ -40,8 +43,6 @@ const _defaultSynth = new Tone.Synth().toDestination();
 export function noteValueToSeconds(noteValue: number): number {
     return (60 / _state.beatsPerMinute) * (noteValue / _state.beat);
 }
-
-
 
 // -- public functions -----------------------------------------------------------------------------
 
@@ -72,17 +73,51 @@ export class ElementTestSynth extends ElementStatement {
      */
     onVisit(params: { [key: string]: TData }): void {
         const now = Tone.now();
-	const noteValue = params['noteValue'] as number;
-	const offset = noteValueToSeconds(_state.notesPlayed);
-	if (typeof params['pitch'] === 'number') {
-            _defaultSynth.triggerAttackRelease(params['pitch'], noteValue + "n", now + offset);
+        const noteValue = params['noteValue'] as number;
+        const offset = noteValueToSeconds(_state.notesPlayed);
+        if (typeof params['pitch'] === 'number') {
+            let note = testKeySignature.modalPitchToLetter((params['pitch'] as number) - 1);
+            _defaultSynth.triggerAttackRelease(
+                note[0] + (4 + note[1]),
+                noteValue + 'n',
+                now + offset,
+            );
         } else {
-            _defaultSynth.triggerAttackRelease(params['pitch'] as string, noteValue + "n", now + offset);
+            _defaultSynth.triggerAttackRelease(
+                params['pitch'] as string,
+                noteValue + 'n',
+                now + offset,
+            );
         }
-	_state.notesPlayed += 1/noteValue;
+        _state.notesPlayed += 1 / noteValue;
     }
 }
 
+export class ElementPlayNote extends ElementStatement {
+    constructor() {
+        super('play-note', 'play note', {
+            /*octave: ['number', 'string']*/ pitch: ['number'],
+            duration: ['number'],
+        });
+        // super('test-synth', 'test synth', {});
+    }
+
+    /**
+     * Plays a user inputted note.
+     */
+    onVisit(params: { [key: string]: TData }): void {
+        // onVisit(): void {
+        const duration = params['duration'] as number;
+        const now = Tone.now();
+        const noteValue = duration + 'n'; //making the duration a string
+        const offset = noteValueToSeconds(_state.notesPlayed);
+        const noteTup = testKeySignature.modalPitchToLetter((params['pitch'] as number) - 1); //getting the note from a list in keySignature.ts
+        const fullNote = noteTup[0] + /*params['octave'] as number*/ (4 + noteTup[1]); //adding the octave (in this case 4) to the note
+        _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset); //playing the note
+        console.log('noteTup', noteTup, 'fullNote', fullNote); //printing out the note
+        _state.notesPlayed += 1 / duration;
+    }
+}
 /**
  * @class
  * Defines a `music` statement element that tests the synth.
@@ -96,6 +131,6 @@ export class ElementResetNotesPlayed extends ElementStatement {
      * Resets notesPlayed counter to 0
      */
     onVisit(): void {
-	_state.notesPlayed = 0;
+        _state.notesPlayed = 0;
     }
 }

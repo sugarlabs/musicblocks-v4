@@ -28,10 +28,7 @@ export function setup(): Promise<void> {
 
 import { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
 
-import {
-    ElementTestSynth,
-    ElementResetNotesPlayed,
-} from './singer';
+import { ElementTestSynth, ElementResetNotesPlayed, ElementPlayNote } from './singer';
 
 // -------------------------------------------------------------------------------------------------
 
@@ -47,10 +44,16 @@ export const specification: {
         category: 'Music',
         prototype: ElementTestSynth,
     },
+    'play-note': {
+        label: 'play note',
+        type: 'Statement',
+        category: 'Music',
+        prototype: ElementPlayNote,
+    },
     'reset-notes-played': {
         label: 'reset',
         type: 'Statement',
         category: 'Music',
         prototype: ElementResetNotesPlayed,
-    }
+    },
 };

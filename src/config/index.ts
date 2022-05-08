@@ -4,6 +4,7 @@ import {
     registerElementSpecificationEntries,
     librarySpecification,
 } from '@sugarlabs/musicblocks-v4-lib';
+import { addEventListenerOnWindow } from '@/view/interactions';
 
 // -- private variables ----------------------------------------------------------------------------
 
@@ -249,7 +250,10 @@ export function getComponent(name: string): IComponent | null {
         const setupComponent = (
             iteratorResult: IteratorResult<[number, [string, IComponent]], unknown>,
         ) => {
-            if (iteratorResult.done) return;
+            if (iteratorResult.done) {
+                addEventListenerOnWindow();
+                return;
+            };
 
             const [_, [name, component]] = iteratorResult.value;
             _components[name] = component;

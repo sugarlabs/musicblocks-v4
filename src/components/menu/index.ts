@@ -1,3 +1,4 @@
+import { addShortcutsTriggerToList } from '@/view/interactions';
 import { getCrumbs, run } from '@sugarlabs/musicblocks-v4-lib';
 
 import { getButtons, setup as setupView, updateState } from './view';
@@ -28,6 +29,16 @@ export function setup(): Promise<void> {
                 updateState('running', false);
             });
             buttons.reset.addEventListener('click', () => {
+                updateState('running', false);
+            });
+
+            addShortcutsTriggerToList('alt+r',()=>{
+                const crumbs = getCrumbs();
+                if (crumbs.length !== 0) run(getCrumbs()[0].nodeID);
+                updateState('running', true);
+                setTimeout(() => updateState('running', false));
+            });
+            addShortcutsTriggerToList('alt+x',()=>{
                 updateState('running', false);
             });
 

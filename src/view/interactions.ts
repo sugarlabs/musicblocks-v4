@@ -2,25 +2,25 @@
  * hashmap structure
  * shortcutsList={
  *    "alt":{
- *            //indicating alt+r
- *            "r":[fun1,fun2],
- *            "s":[fun1,fun2]
- *    },
+*            //indicating alt+r
+*            "r":[fun1,fun2],
+*            "s":[fun1,fun2]
+        *    },
  * "alt+shift":{
- * *            //indicating shift+alt+r
- *            "r":[fun1,fun2],
- *            "s":[fun1,fun2]
- *    }
+* *            //indicating shift+alt+r
+*            "r":[fun1,fun2],
+*            "s":[fun1,fun2]
+        *    }
  * }
  */
 
 interface shortcutsList {
     alt: {
-            [alphabetKey: string]: CallableFunction[]
-        },
-        altShift: {
-            [alphabetKey: string]: CallableFunction[]
-        }
+        [alphabetKey: string]: CallableFunction[]
+    },
+    altShift: {
+        [alphabetKey: string]: CallableFunction[]
+    }
 }
 
 export let shortcutsList: shortcutsList = {
@@ -46,13 +46,13 @@ export function addShortcutsTriggerToList(
     let alphabetKey = key.replaceAll("alt", "").replaceAll("shift", "").replaceAll("+", "");
     if (incAlt && !incShift) {
         shortcutsList.alt[alphabetKey] && shortcutsList.alt[alphabetKey].length ?
-            shortcutsList.alt[alphabetKey].push(callbackFun) :
-            shortcutsList.alt[alphabetKey] = [callbackFun];
+        shortcutsList.alt[alphabetKey].push(callbackFun) :
+        shortcutsList.alt[alphabetKey] = [callbackFun];
 
     } else if (incAlt && incShift) {
         shortcutsList.altShift[alphabetKey] && shortcutsList.altShift[alphabetKey].length ?
-            shortcutsList.altShift[alphabetKey].push(callbackFun) :
-            shortcutsList.altShift[alphabetKey] = [callbackFun];
+        shortcutsList.altShift[alphabetKey].push(callbackFun) :
+        shortcutsList.altShift[alphabetKey] = [callbackFun];
     }
 }
 

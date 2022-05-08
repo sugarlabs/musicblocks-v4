@@ -28,6 +28,8 @@ export let shortcutsList: shortcutsList = {
     altShift: {}
 };
 
+let deletingKeys = false;
+
 /**
  * 
  * @param {string} key a shortcut key following the pattern `alt+key` or `alt+shift+key`.
@@ -61,47 +63,49 @@ export function addEventListenerOnWindow(): void {
 
     window.addEventListener('keydown', (e) => {
         e.preventDefault();
+        
         if (!keyList.includes(e.key.toLowerCase())) {
             keyList.push(e.key.toLowerCase());
 
             if ((keyList.includes('alt') || keyList.includes('option')) && keyList.includes('shift')) {
 
-                // remove alt and shift from list and execute all the functions that are linked to remaining
-                // keys inside list
+                // remove alt and shift from list and execute all the functions that are linked to 
+                // the key in hashmap
                 let keyListTemp = keyList.filter((key) => {
                     if (key == 'alt' || key == 'option' || key == 'shift') {
                         return false;
                     }
                     return true;
                 });
-                keyListTemp.map((key) => {
-                    shortcutsList.altShift[key] && shortcutsList.altShift[key].map((func) => {
-                        func();
-                    });
+                shortcutsList.altShift[keyListTemp[keyListTemp.length-1]]
+                 && shortcutsList.altShift[keyListTemp[keyListTemp.length-1]].map((func) => {
+                    func();
                 });
+                
             } else if ((keyList.includes('alt') || keyList.includes('option')) && !keyList.includes('shift')) {
-                // remove alt from list and execute all the functions that are linked to remaining
-                // keys inside list
+                // remove alt from list and execute all the functions that are linked to 
+                // the key in hashmap
                 let keyListTemp = keyList.filter((key) => {
                     if (key == 'alt' || key == 'option') {
                         return false;
                     }
                     return true;
                 });
-                keyListTemp.map((key) => {
-                    shortcutsList.alt[key] && shortcutsList.alt[key].map((func) => {
-                        func();
-                    });
+                shortcutsList.alt[keyListTemp[keyListTemp.length-1]] 
+                 && shortcutsList.alt[keyListTemp[keyListTemp.length-1]].map((func) => {
+                    func();
                 });
             }
         }
     });
     window.addEventListener('keyup', (e) => {
+        deletingKeys = true;
         keyList = keyList.filter((key) => {
             if (key == e.key.toLowerCase()) {
                 return false;
             }
             return true;
         });
+        deletingKeys = false;
     });
 }

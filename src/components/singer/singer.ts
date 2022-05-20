@@ -11,8 +11,13 @@ const _defaultSynthStateValues = {
 };
 
 import KeySignature from './core/keySignature';
+import CurrentPitch from './core/currentPitch';
+import Temperament from './core/temperament';
 
-const testKeySignature = new KeySignature('major', 'c');
+import { SCALAR_MODE_NUMBER } from './core/musicUtils';
+const key = 'c';
+const testKeySignature = new KeySignature('major', key);
+const currentpitch = new CurrentPitch(testKeySignature, new Temperament(), 0, 4);
 
 /** Synth state parameters. */
 const _stateObj = { ..._defaultSynthStateValues };
@@ -65,31 +70,42 @@ import { ElementStatement, TData } from '@sugarlabs/musicblocks-v4-lib';
  */
 export class ElementTestSynth extends ElementStatement {
     constructor() {
-        super('test-synth', 'test synth', { pitch: ['number', 'string'], noteValue: ['number'] });
+        super('test-synth', 'test synth', { mode: ['number'] });
     }
-
-    /**
-     * Plays a predefined note.
-     */
     onVisit(params: { [key: string]: TData }): void {
-        const now = Tone.now();
-        const noteValue = params['noteValue'] as number;
-        const offset = noteValueToSeconds(_state.notesPlayed);
-        if (typeof params['pitch'] === 'number') {
-            let note = testKeySignature.modalPitchToLetter((params['pitch'] as number) - 1);
-            _defaultSynth.triggerAttackRelease(
-                note[0] + (4 + note[1]),
-                noteValue + 'n',
-                now + offset,
-            );
-        } else {
-            _defaultSynth.triggerAttackRelease(
-                params['pitch'] as string,
-                noteValue + 'n',
-                now + offset,
-            );
+        // onVisit(): void {
+        const noteValue = '8n'; //params['duration'] as number + "n";
+        if ((params['mode'] as number) === 1) {
+            for (let modalPitch = 1; modalPitch <= testKeySignature.modeLength + 1; modalPitch++) {
+                const now = Tone.now();
+                const offset = noteValueToSeconds(_state.notesPlayed);
+                const noteTup = testKeySignature.modalPitchToLetter(modalPitch - 1);
+                const fullNote = noteTup[0] + (4 + noteTup[1]);
+                _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset);
+                console.log('noteTup', noteTup, 'fullNote', fullNote);
+                _state.notesPlayed += 1 / 8;
+            }
+        } else if ((params['mode'] as number) === 2) {
+
+            for (let i = 0; i < 8; i++) {
+                const now = Tone.now();
+                const offset = noteValueToSeconds(_state.notesPlayed);
+                
+                let note = testKeySignature.modalPitchToLetter(
+                    parseInt(
+                        testKeySignature.genericNoteNameConvertToType(
+                            currentpitch._genericName,
+                            SCALAR_MODE_NUMBER,
+                        ),
+                    ) - 1,
+                );
+                const fullNote = note[0] + currentpitch.octave;
+                _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset);
+                console.log(note, currentpitch.octave);
+                _state.notesPlayed += 1 / 8;
+                currentpitch.applyScalarTransposition(1);
+            }
         }
-        _state.notesPlayed += 1 / noteValue;
     }
 }
 

@@ -1,10 +1,10 @@
 import { merge } from 'webpack-merge';
-import * as webpack from 'webpack';
-import commonConfig from './webpack.common';
-import devConfig from './webpack.dev';
-import prodConfig from './webpack.prod';
+import { Configuration } from 'webpack';
+import { commonConfig } from './webpack.common';
+import { devConfig } from './webpack.dev';
+import { prodConfig } from './webpack.prod';
 
-const config = (envVars: { env: string }): webpack.Configuration => {
+const config = (envVars: { env: string }): Configuration => {
     const { env } = envVars;
     switch (env) {
         case 'dev':

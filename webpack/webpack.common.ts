@@ -1,9 +1,9 @@
 import * as path from 'path';
-import * as webpack from 'webpack';
+import { Configuration } from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
-const commonConfig: webpack.Configuration = {
+const commonConfig: Configuration = {
     entry: path.resolve(__dirname, '..', './src/index.ts'),
     resolve: {
         alias: {
@@ -55,4 +55,4 @@ const commonConfig: webpack.Configuration = {
     stats: 'errors-only',
 };
 
-export default commonConfig;
+export { commonConfig };

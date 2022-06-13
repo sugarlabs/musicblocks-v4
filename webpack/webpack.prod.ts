@@ -1,7 +1,7 @@
 import path from 'path';
-import * as webpack from 'webpack';
+import { Configuration } from 'webpack';
 
-const prodConfig: webpack.Configuration = {
+const prodConfig: Configuration = {
     mode: 'production',
     devtool: 'source-map',
     plugins: [],
@@ -11,4 +11,4 @@ const prodConfig: webpack.Configuration = {
     },
 };
 
-export default prodConfig;
+export { prodConfig };

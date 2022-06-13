@@ -1,7 +1,7 @@
-import * as webpack from 'webpack';
-import 'webpack-dev-server';
+import { Configuration } from 'webpack';
+import 'webpack-dev-server'; // for devServer key to not error out
 
-const devConfig: webpack.Configuration = {
+const devConfig: Configuration = {
     mode: 'development',
     devtool: 'cheap-module-source-map',
     devServer: {
@@ -11,4 +11,4 @@ const devConfig: webpack.Configuration = {
     plugins: [],
 };
 
-export default devConfig;
+export { devConfig };

@@ -4,6 +4,11 @@ import { commonConfig } from './webpack.common';
 import { devConfig } from './webpack.dev';
 import { prodConfig } from './webpack.prod';
 
+/**
+ * webpack config
+ * @param envVars - the environment passed with --env flag in npm script
+ * @returns final merged webpack config
+ */
 const config = (envVars: { env: string }): Configuration => {
     const { env } = envVars;
     switch (env) {

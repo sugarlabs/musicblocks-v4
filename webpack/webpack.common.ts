@@ -42,14 +42,12 @@ const commonConfig: Configuration = {
             },
         ],
     },
-    output: {
-        path: path.resolve(__dirname, '..', './build'),
-        filename: 'bundle.js',
-    },
     plugins: [
+        // generate html with script tags pointing to bundles
         new HtmlWebpackPlugin({
             template: path.resolve(__dirname, '..', 'public', 'index.html'),
         }),
+        // code split css
         new MiniCssExtractPlugin(),
     ],
     stats: 'errors-only',

@@ -23,6 +23,7 @@ const prodConfig: Configuration = {
             ],
         }),
     ],
+    // output bundle naming convention
     output: {
         path: path.resolve(__dirname, '../build'),
         filename: '[name].[contenthash].js',

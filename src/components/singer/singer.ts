@@ -15,9 +15,9 @@ import CurrentPitch from './core/currentPitch';
 import Temperament from './core/temperament';
 
 import { SCALAR_MODE_NUMBER } from './core/musicUtils';
-const key = 'c';
-const testKeySignature = new KeySignature('major', key);
-const currentpitch = new CurrentPitch(testKeySignature, new Temperament(), 0, 4);
+
+const testKeySignature = new KeySignature('major', 'd');
+const currentpitch = new CurrentPitch(testKeySignature, new Temperament(), 1, 4);
 
 /** Synth state parameters. */
 const _stateObj = { ..._defaultSynthStateValues };
@@ -80,17 +80,19 @@ export class ElementTestSynth extends ElementStatement {
                 const now = Tone.now();
                 const offset = noteValueToSeconds(_state.notesPlayed);
                 const noteTup = testKeySignature.modalPitchToLetter(modalPitch - 1);
-                const fullNote = noteTup[0] + (4 + noteTup[1]);
+                let octave = currentpitch.octave;
+                const fullNote = noteTup[0] + (octave + noteTup[1]);
                 _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset);
                 console.log('noteTup', noteTup, 'fullNote', fullNote);
+                octave += noteTup[1];
+                console.log('octave', octave);
                 _state.notesPlayed += 1 / 8;
             }
         } else if ((params['mode'] as number) === 2) {
-
             for (let i = 0; i < 8; i++) {
                 const now = Tone.now();
                 const offset = noteValueToSeconds(_state.notesPlayed);
-                
+
                 let note = testKeySignature.modalPitchToLetter(
                     parseInt(
                         testKeySignature.genericNoteNameConvertToType(
@@ -101,7 +103,7 @@ export class ElementTestSynth extends ElementStatement {
                 );
                 const fullNote = note[0] + currentpitch.octave;
                 _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset);
-                console.log(note, currentpitch.octave);
+                console.log('fullNote:', fullNote, 'genericName:', currentpitch._genericName);
                 _state.notesPlayed += 1 / 8;
                 currentpitch.applyScalarTransposition(1);
             }
@@ -134,6 +136,34 @@ export class ElementPlayNote extends ElementStatement {
         _state.notesPlayed += 1 / duration;
     }
 }
+
+export class PlayGenericNoteName extends ElementStatement {
+    constructor() {
+        super('play-generic', 'play generic', { name: ['string'] });
+    }
+
+    onVisit(params: { [key: string]: TData }): void {
+        const now = Tone.now();
+        const offset = noteValueToSeconds(_state.notesPlayed);
+
+        const note = params['name'] as string;
+        const octave = currentpitch.octave;
+        let noteIndex = new Map<string, string>([
+            ['do', '0'],
+            ['re', '1'],
+            ['mi', '2'],
+            ['fa', '3'],
+            ['sol', '4'],
+            ['la', '5'],
+            ['ti', '6'],
+        ]);
+        let fullNote = testKeySignature.scale[Number(noteIndex.get(note))] + octave;
+        _defaultSynth.triggerAttackRelease(fullNote, '4n', now + offset); //playing the note
+        console.log('fullNote', fullNote); //printing out the note
+        _state.notesPlayed += 1 / 4;
+    }
+}
+
 /**
  * @class
  * Defines a `music` statement element that tests the synth.

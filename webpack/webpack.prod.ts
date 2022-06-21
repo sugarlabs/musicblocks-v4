@@ -2,6 +2,7 @@ import path from 'path';
 import { Configuration } from 'webpack';
 import CopyPlugin from 'copy-webpack-plugin';
 
+const BASE_PATH = process.env?.BASE_PATH ?? '/';
 const prodConfig: Configuration = {
     mode: 'production',
     devtool: 'source-map',
@@ -27,6 +28,7 @@ const prodConfig: Configuration = {
     output: {
         path: path.resolve(__dirname, '../build'),
         filename: '[name].[contenthash].js',
+        publicPath: BASE_PATH,
     },
 };
 

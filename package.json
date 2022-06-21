@@ -37,6 +37,7 @@
     "babel-loader": "^8.2.5",
     "buffer": "^6.0.3",
     "copy-webpack-plugin": "^11.0.0",
+    "cross-env": "^7.0.3",
     "css-loader": "^6.7.1",
     "eslint": "^7.11.0",
     "eslint-config-prettier": "^8.1.0",
@@ -71,7 +72,8 @@
   },
   "scripts": {
     "start": "webpack serve --config webpack/webpack.config.ts --env env=dev",
-    "build": "npx rimraf build && webpack --config webpack/webpack.config.ts --env env=prod",
+    "build:root": "npx rimraf build && webpack --config webpack/webpack.config.ts --env env=prod",
+    "build": "npx rimraf build && cross-env BASE_PATH='/musicblocks-v4/' webpack --config webpack/webpack.config.ts --env env=prod",
     "lint": "eslint src && textlint --rule terminology --rule no-dead-link README.md",
     "serve": "http-server . -p 80",
     "predeploy": "npm run build",

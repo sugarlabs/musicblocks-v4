@@ -78,10 +78,9 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "webpack serve -c webpack/webpack.config.ts --env env=dev",
-    "prebuild": "npx rimraf build",
-    "build:root": "webpack -c webpack/webpack.config.ts --env env=prod --json=./build/stats.json",
-    "build": "cross-env BASE_PATH='/musicblocks-v4/' webpack -c webpack/webpack.config.ts --env env=prod --json=./build/stats.json",
+    "start": "webpack serve --config webpack/webpack.config.ts --env env=dev",
+    "build:root": "npx rimraf build && webpack --config webpack/webpack.config.ts --env env=prod",
+    "build": "npx rimraf build && cross-env BASE_PATH='/musicblocks-v4/' webpack --config webpack/webpack.config.ts --env env=prod",
     "lint": "eslint src && textlint --rule terminology --rule no-dead-link README.md",
     "serve": "http-server . -p 80",
     "predeploy": "npm run build",

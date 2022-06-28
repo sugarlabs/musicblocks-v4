@@ -171,3 +171,12 @@ export function setBackground(v1: number, v2?: number, v3?: number): void {
 export function clear(): void {
     sketch.clear();
 }
+/**
+ * Export the canvas drawing in png format
+ */
+export function exportDrawing(): void {
+    let fileName = prompt('Filename:', 'My Project');
+    if (fileName) {
+        sketch.saveCanvas(fileName, 'png');
+    }
+}

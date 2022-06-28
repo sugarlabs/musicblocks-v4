@@ -6,6 +6,7 @@ import { setup as setupComponent } from './components';
 
 // -- private variables ----------------------------------------------------------------------------
 
+let _btnExportDrawing: HTMLButtonElement;
 let _btnLoadProject: HTMLInputElement;
 let _btnSaveProject: HTMLButtonElement;
 let _btnRun: HTMLButtonElement;
@@ -28,29 +29,34 @@ export function setup(): Promise<void> {
 
         setupComponent(menu, {
             labels: {
+                exportDrawing: 'Save mouse artwork as PNG',
                 loadProject: 'Load Project',
                 saveProject: 'Save project as HTML',
                 run: 'run',
                 stop: 'stop',
                 reset: 'reset',
             },
-        }).then(({ btnLoadProject, btnSaveProject, btnRun, btnReset, btnStop }) => {
-            [_btnLoadProject, _btnSaveProject, _btnRun, _btnStop, _btnReset] = [
-                btnLoadProject,
-                btnSaveProject,
-                btnRun,
-                btnStop,
-                btnReset,
-            ];
-            resolve();
-        });
+        }).then(
+            ({ btnExportDrawing, btnLoadProject, btnSaveProject, btnRun, btnReset, btnStop }) => {
+                [
+                    _btnExportDrawing,
+                    _btnLoadProject,
+                    _btnSaveProject,
+                    _btnRun,
+                    _btnStop,
+                    _btnReset,
+                ] = [btnExportDrawing, btnLoadProject, btnSaveProject, btnRun, btnStop, btnReset];
+                resolve();
+            },
+        );
     });
 }
 
 /**
- * @returns DOM `loadProject`,`saveProject`,`run`, `stop`, and `reset` buttons
+ * @returns DOM `exportDrawing`,`loadProject`,`saveProject`,`run`, `stop`, and `reset` buttons
  */
 export function getButtons(): {
+    exportDrawing: HTMLButtonElement;
     loadProject: HTMLInputElement;
     saveProject: HTMLButtonElement;
     run: HTMLButtonElement;
@@ -58,6 +64,7 @@ export function getButtons(): {
     reset: HTMLButtonElement;
 } {
     return {
+        exportDrawing: _btnExportDrawing,
         loadProject: _btnLoadProject,
         saveProject: _btnSaveProject,
         run: _btnRun,

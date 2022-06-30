@@ -2,6 +2,7 @@ import * as path from 'path';
 import { Configuration } from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 
 const BASE_PATH = process.env?.BASE_PATH ?? '/';
 const commonConfig: Configuration = {
@@ -53,6 +54,15 @@ const commonConfig: Configuration = {
         }),
         // code split css
         new MiniCssExtractPlugin(),
+        new ForkTsCheckerWebpackPlugin({
+            typescript: {
+                diagnosticOptions: {
+                    semantic: true,
+                    syntactic: true,
+                },
+                mode: 'write-references',
+            },
+        }),
     ],
     stats: 'errors-only',
 };

@@ -92,7 +92,6 @@ export class ElementTestSynth extends ElementStatement {
             for (let i = 0; i < 8; i++) {
                 const now = Tone.now();
                 const offset = noteValueToSeconds(_state.notesPlayed);
-
                 let note = testKeySignature.modalPitchToLetter(
                     parseInt(
                         testKeySignature.genericNoteNameConvertToType(
@@ -103,7 +102,7 @@ export class ElementTestSynth extends ElementStatement {
                 );
                 const fullNote = note[0] + currentpitch.octave;
                 _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset);
-                console.log('fullNote:', fullNote, 'genericName:', currentpitch._genericName);
+                console.log('fullNote:', fullNote, 'noteTup:', note);
                 _state.notesPlayed += 1 / 8;
                 currentpitch.applyScalarTransposition(1);
             }
@@ -148,18 +147,18 @@ export class PlayGenericNoteName extends ElementStatement {
 
         const note = params['name'] as string;
         const octave = currentpitch.octave;
-        let noteIndex = new Map<string, string>([
-            ['do', '0'],
-            ['re', '1'],
-            ['mi', '2'],
-            ['fa', '3'],
-            ['sol', '4'],
-            ['la', '5'],
-            ['ti', '6'],
-        ]);
-        let fullNote = testKeySignature.scale[Number(noteIndex.get(note))] + octave;
+        const generic = testKeySignature.convertToGenericNoteName(note); //converts solfege to generic note, ie. do ---> n0
+        let full = testKeySignature.modalPitchToLetter(
+            parseInt(
+                testKeySignature.genericNoteNameConvertToType(
+                    generic,
+                    SCALAR_MODE_NUMBER,
+                ),
+            ) - 1,
+        ); //converts generic note to letter note, ie. n0 -----> d
+        let fullNote = full[0] + (octave + full[1]);
+        console.log(fullNote);
         _defaultSynth.triggerAttackRelease(fullNote, '4n', now + offset); //playing the note
-        console.log('fullNote', fullNote); //printing out the note
         _state.notesPlayed += 1 / 4;
     }
 }

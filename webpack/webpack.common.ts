@@ -67,7 +67,7 @@ const commonConfig: Configuration = {
             },
         }),
     ],
-    stats: 'errors-only',
+    stats: 'normal',
 };
 
 export { commonConfig };

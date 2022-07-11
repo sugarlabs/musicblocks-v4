@@ -5,7 +5,6 @@ import CopyPlugin from 'copy-webpack-plugin';
 const BASE_PATH = process.env?.BASE_PATH ?? '/';
 const prodConfig: Configuration = {
     mode: 'production',
-    devtool: 'source-map',
     plugins: [
         new CopyPlugin({
             patterns: [
@@ -29,6 +28,11 @@ const prodConfig: Configuration = {
         path: path.resolve(__dirname, '../build'),
         filename: '[name].[contenthash].js',
         publicPath: BASE_PATH,
+    },
+    optimization: {
+        splitChunks: {
+            chunks: 'all',
+        },
     },
 };
 

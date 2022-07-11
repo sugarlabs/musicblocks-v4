@@ -28,6 +28,7 @@ const prodConfig: Configuration = {
         path: path.resolve(__dirname, '../build'),
         filename: '[name].[contenthash].js',
         publicPath: BASE_PATH,
+        clean: true,
     },
     optimization: {
         splitChunks: {

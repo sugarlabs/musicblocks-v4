@@ -65,7 +65,8 @@
     "webpack-bundle-analyzer": "^4.5.0",
     "webpack-cli": "^4.10.0",
     "webpack-dev-server": "^4.9.2",
-    "webpack-merge": "^5.8.0"
+    "webpack-merge": "^5.8.0",
+    "workbox-webpack-plugin": "^6.5.4"
   },
   "dependencies": {
     "@sugarlabs/musicblocks-v4-lib": "^0.2.0",
@@ -83,7 +84,7 @@
     "build:root": "webpack -c webpack/webpack.config.ts --env env=prod --json=./build/stats.json",
     "build": "cross-env BASE_PATH='/musicblocks-v4/' webpack -c webpack/webpack.config.ts --env env=prod --json=./build/stats.json",
     "lint": "eslint src && textlint --rule terminology --rule no-dead-link README.md",
-    "serve": "http-server . -p 80",
+    "serve": "http-server build/ -p 5000 -g",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "preanalyze": "npm run build",

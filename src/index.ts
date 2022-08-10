@@ -1,4 +1,4 @@
-import { loadServiceWorker } from './loadServiceWorker';
+import { loadServiceWorker } from './utils';
 import reportWebVitals from './reportWebVitals';
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

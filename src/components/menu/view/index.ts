@@ -6,6 +6,8 @@ import { setup as setupComponent } from './components';
 
 // -- private variables ----------------------------------------------------------------------------
 
+let _btnStartRecording: HTMLButtonElement;
+let _btnStopRecording: HTMLButtonElement;
 let _btnExportDrawing: HTMLButtonElement;
 let _btnLoadProject: HTMLInputElement;
 let _btnSaveProject: HTMLButtonElement;
@@ -29,6 +31,8 @@ export function setup(): Promise<void> {
 
         setupComponent(menu, {
             labels: {
+                startRecording: 'Start animation Recording',
+                stopRecording: 'Stop animation Recording',
                 exportDrawing: 'Save mouse artwork as PNG',
                 loadProject: 'Load Project',
                 saveProject: 'Save project as HTML',
@@ -37,15 +41,35 @@ export function setup(): Promise<void> {
                 reset: 'reset',
             },
         }).then(
-            ({ btnExportDrawing, btnLoadProject, btnSaveProject, btnRun, btnReset, btnStop }) => {
+            ({
+                btnStartRecording,
+                btnStopRecording,
+                btnExportDrawing,
+                btnLoadProject,
+                btnSaveProject,
+                btnRun,
+                btnReset,
+                btnStop,
+            }) => {
                 [
+                    _btnStartRecording,
+                    _btnStopRecording,
                     _btnExportDrawing,
                     _btnLoadProject,
                     _btnSaveProject,
                     _btnRun,
                     _btnStop,
                     _btnReset,
-                ] = [btnExportDrawing, btnLoadProject, btnSaveProject, btnRun, btnStop, btnReset];
+                ] = [
+                    btnStartRecording,
+                    btnStopRecording,
+                    btnExportDrawing,
+                    btnLoadProject,
+                    btnSaveProject,
+                    btnRun,
+                    btnStop,
+                    btnReset,
+                ];
                 resolve();
             },
         );
@@ -56,6 +80,8 @@ export function setup(): Promise<void> {
  * @returns DOM `exportDrawing`,`loadProject`,`saveProject`,`run`, `stop`, and `reset` buttons
  */
 export function getButtons(): {
+    startRecording: HTMLButtonElement;
+    stopRecording: HTMLButtonElement;
     exportDrawing: HTMLButtonElement;
     loadProject: HTMLInputElement;
     saveProject: HTMLButtonElement;
@@ -64,6 +90,8 @@ export function getButtons(): {
     reset: HTMLButtonElement;
 } {
     return {
+        startRecording: _btnStartRecording,
+        stopRecording: _btnStopRecording,
         exportDrawing: _btnExportDrawing,
         loadProject: _btnLoadProject,
         saveProject: _btnSaveProject,

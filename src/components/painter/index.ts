@@ -6,7 +6,7 @@ import { mount as mountView, mountSketch } from './view';
 import { sketch, run, reset } from './painter';
 import { loadProject, saveProjectHTML } from '../imp-exp/imp-exp';
 
-import { exportDrawing } from './core/sketchP5';
+import { exportDrawing, startRecording, stopRecording } from './core/sketchP5';
 
 // -- public functions -----------------------------------------------------------------------------
 
@@ -30,6 +30,8 @@ export function setup(): Promise<void> {
     return new Promise((resolve) => {
         const menu = getComponent('menu') as IComponentMenu;
         if (menu) {
+            menu.mountHook('startRecording', startRecording);
+            menu.mountHook('stopRecording', stopRecording);
             menu.mountHook('exportDrawing', exportDrawing);
             menu.mountHook('loadProject', loadProject);
             menu.mountHook('saveProject', saveProjectHTML);

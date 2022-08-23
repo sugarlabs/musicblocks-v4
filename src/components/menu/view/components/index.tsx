@@ -7,6 +7,7 @@ import svgSaveProject from '../resources/saveProjectHTML.svg';
 import svgRun from '../resources/run.svg';
 import svgStop from '../resources/stop.svg';
 import svgReset from '../resources/reset.svg';
+import svgExportDrawing from '../resources/exportDrawing.svg';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
@@ -66,7 +67,7 @@ function Menu(props: { states: { running: boolean } }): JSX.Element {
         .then(() => (element.children[1] as SVGElement).classList.add('menu-btn-img'));
     };
 
-    loadSVG(btnExportDrawingRef.current! as HTMLElement, svgRun);
+    loadSVG(btnExportDrawingRef.current! as HTMLElement, svgExportDrawing);
     // loadSVG(btnLoadProjectRef.current! as HTMLElement, svgSaveProject);
     loadSVG(btnSaveProjectRef.current! as HTMLElement, svgSaveProject);
     loadSVG(btnRunRef.current! as HTMLElement, svgRun);

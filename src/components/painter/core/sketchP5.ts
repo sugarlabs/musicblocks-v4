@@ -171,6 +171,7 @@ export function setBackground(v1: number, v2?: number, v3?: number): void {
 export function clear(): void {
     sketch.clear(0, 0, 0, 0);
 }
+
 /**
  * Export the canvas drawing in png format
  */

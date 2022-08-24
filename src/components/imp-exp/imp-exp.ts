@@ -78,3 +78,33 @@ function readFileContent(file: Blob): Promise<null | string | ArrayBuffer> {
         reader.readAsText(file);
     });
 }
+
+/**
+ * Saves file in localStorage of browser with key as file name and value as file content encoded in
+ * base64 encoding scheme
+ * @params DOM event (file upload)
+ */
+export function uploadFileInLocalStorage(event: Event): void {
+    const files = (event.target as HTMLInputElement).files; // FileList object
+
+    if (files != null) {
+        for (let i = 0; i < files?.length; i++) {
+            let reader = new FileReader();
+            let file = files[i];
+
+            // Closure to capture the file information.
+            reader.onload = (function (theFile) {
+                return function (e) {
+                    let fileContentInBase64 = e.target?.result;
+                    if (fileContentInBase64 != undefined) {
+                        fileContentInBase64 = fileContentInBase64.toString();
+                        localStorage.setItem(theFile.name, fileContentInBase64);
+                    }
+                };
+            })(file);
+
+            // Read in the image file as a data URL.
+            reader.readAsDataURL(file);
+        }
+    }
+}

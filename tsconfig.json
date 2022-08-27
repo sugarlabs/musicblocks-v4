@@ -22,7 +22,8 @@
     "downlevelIteration": true
   },
   "include": [
-    "src"
+    "src",
+    "tests"
   ],
   "extends": "./tsconfig.paths.json",
   /**

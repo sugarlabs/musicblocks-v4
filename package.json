@@ -87,7 +87,7 @@
     "build:root": "webpack -c webpack/webpack.config.ts --env env=prod --json=./build/stats.json",
     "build": "cross-env BASE_PATH='/musicblocks-v4/' webpack -c webpack/webpack.config.ts --env env=prod --json=./build/stats.json",
     "lint": "eslint src && textlint --rule terminology --rule no-dead-link README.md",
-    "serve": "http-server build/ -p 5000 -g",
+    "serve": "npx http-server build/ -p 5000 -g",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "preanalyze": "npm run build",

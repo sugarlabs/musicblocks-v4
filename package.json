@@ -40,6 +40,7 @@
     "copy-webpack-plugin": "^11.0.0",
     "cross-env": "^7.0.3",
     "css-loader": "^6.7.1",
+    "cypress": "^10.6.0",
     "eslint": "^8.18.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-json": "^3.1.0",
@@ -91,7 +92,8 @@
     "deploy": "gh-pages -d build",
     "preanalyze": "npm run build",
     "analyze": "webpack-bundle-analyzer --port 8000 build/stats.json",
-    "test": "jest"
+    "test:unit": "jest",
+    "test:e2e": "cypress run"
   },
   "eslintConfig": {
     "extends": [

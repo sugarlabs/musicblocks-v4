@@ -50,6 +50,7 @@
     "fork-ts-checker-webpack-plugin": "^7.2.11",
     "gh-pages": "^3.2.3",
     "html-webpack-plugin": "^5.5.0",
+    "jest": "^28.1.3",
     "jqueryui": "^1.11.1",
     "mini-css-extract-plugin": "^2.6.1",
     "prettier": "2.3.1",
@@ -59,6 +60,7 @@
     "textlint-rule-no-dead-link": "^4.8.0",
     "textlint-rule-no-empty-section": "^1.1.0",
     "textlint-rule-terminology": "^2.1.6",
+    "ts-jest": "^28.0.8",
     "ts-node": "^10.8.1",
     "typescript": "^4.7.4",
     "webpack": "^5.73.0",
@@ -88,7 +90,8 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "preanalyze": "npm run build",
-    "analyze": "webpack-bundle-analyzer --port 8000 build/stats.json"
+    "analyze": "webpack-bundle-analyzer --port 8000 build/stats.json",
+    "test": "jest"
   },
   "eslintConfig": {
     "extends": [

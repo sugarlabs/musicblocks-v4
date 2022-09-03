@@ -353,22 +353,37 @@ After you are set-up, the steps you take depend on what you want to do:
             npm start
             ```
 
-            This is spawned on `127.0.0.1:3000` inside the container, but mapped to `localhost:5000`
+            This is spawned on `127.0.0.1:8080` inside the container, but mapped to `localhost:5000`
             on host. Visit `localhost:5000` in a browser to view the web page served. If you are not
-            using the container, visit `localhost:3000`.
+            using the container, visit `localhost:8080`.
 
-        - For testing, run
+
+        - For generating a generic production build, run
 
             ```bash
-            npm run test
+            npm run build:root
             ```
 
-        - For generating a production build, run
+        - For generating a production build under the subdirectory `/musicblocks-v4/`, run
 
             ```bash
             npm run build
             ```
 
+        - For running unit tests, run
+
+            ```bash
+            npm run test:unit
+            ```
+        - For running E2E tests, run
+
+            ```bash
+            ## In 1 terminal
+            npm run build
+            npm run serve # to start production build on localhost:5000
+            ## In another terminal
+            npm run test:e2e
+            ```
         _**Note:**_ If you're running using _Docker Desktop_ on _Windows_ or _Mac_, you might experience
         longer execution times for these scripts. This happens due to cross-file-system communication.
         Duration varies across machines; duration primarily depends on hard drive read/write speed.
@@ -381,9 +396,9 @@ After you are set-up, the steps you take depend on what you want to do:
     npm run serve
     ```
 
-    This is spawned on `0.0.0.0:80` inside the container, but mapped to `localhost:5001` on host.
+    This is spawned on `0.0.0.0:5000` inside the container, but mapped to `localhost:5001` on host.
     Visit `localhost:5001` in a browser to view the web page served. If you are not using the
-    container, visit `localhost:80`.
+    container, visit `localhost:5000`.
 
 - **Miscellaneous commands**
 

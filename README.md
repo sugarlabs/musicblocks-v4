@@ -227,7 +227,7 @@ machine.
     - For _Linux_, [install _Docker Engine_](https://docs.docker.com/engine/install/). You'll also
     need to [install _Docker Compose_](https://docs.docker.com/compose/install/).
 
-    - For _Windows_ or _Mac_, [install _Docker Desktop_](https://www.docker.com/products/docker-desktop).
+    - For _Windows_ or _Mac_, [install _Docker Desktop_](https://www.docker.com/products/docker-desktop/).
 
 2. Open a terminal and navigate to working directory (where the source code will reside).
 
@@ -357,7 +357,6 @@ After you are set-up, the steps you take depend on what you want to do:
             on host. Visit `localhost:5000` in a browser to view the web page served. If you are not
             using the container, visit `localhost:8080`.
 
-
         - For generating a generic production build, run
 
             ```bash
@@ -375,6 +374,7 @@ After you are set-up, the steps you take depend on what you want to do:
             ```bash
             npm run test:unit
             ```
+
         - For running E2E tests, run
 
             ```bash
@@ -384,6 +384,7 @@ After you are set-up, the steps you take depend on what you want to do:
             ## In another terminal
             npm run test:e2e
             ```
+
         _**Note:**_ If you're running using _Docker Desktop_ on _Windows_ or _Mac_, you might experience
         longer execution times for these scripts. This happens due to cross-file-system communication.
         Duration varies across machines; duration primarily depends on hard drive read/write speed.

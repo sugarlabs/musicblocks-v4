@@ -1,4 +1,5 @@
-import { Configuration } from 'webpack';
+import webpack, { Configuration } from 'webpack';
+import ESLintPlugin from 'eslint-webpack-plugin';
 import 'webpack-dev-server'; // for devServer key to not error out
 
 const devConfig: Configuration = {
@@ -8,7 +9,13 @@ const devConfig: Configuration = {
         hot: true,
         open: true,
     },
-    plugins: [],
+    plugins: [
+        new ESLintPlugin({
+            extensions: ['tsx', 'ts', 'jsx', 'js'],
+            failOnWarning: true,
+        }),
+        new webpack.HotModuleReplacementPlugin(),
+    ],
 };
 
 export { devConfig };

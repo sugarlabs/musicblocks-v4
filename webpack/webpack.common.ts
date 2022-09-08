@@ -2,7 +2,9 @@ import * as path from 'path';
 import { Configuration } from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 
+const BASE_PATH = process.env?.BASE_PATH ?? '/';
 const commonConfig: Configuration = {
     entry: path.resolve(__dirname, '..', './src/index.ts'),
     resolve: {
@@ -46,9 +48,21 @@ const commonConfig: Configuration = {
         // generate html with script tags pointing to bundles
         new HtmlWebpackPlugin({
             template: path.resolve(__dirname, '..', 'public', 'index.html'),
+            // in development BASE_PATH is '/' which makes sure no icons break
+            // since requests will be properly made
+            publicPath: BASE_PATH,
         }),
         // code split css
         new MiniCssExtractPlugin(),
+        new ForkTsCheckerWebpackPlugin({
+            typescript: {
+                diagnosticOptions: {
+                    semantic: true,
+                    syntactic: true,
+                },
+                mode: 'write-references',
+            },
+        }),
     ],
     stats: 'errors-only',
 };

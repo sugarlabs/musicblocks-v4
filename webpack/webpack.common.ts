@@ -53,7 +53,10 @@ const commonConfig: Configuration = {
             publicPath: BASE_PATH,
         }),
         // code split css
-        new MiniCssExtractPlugin(),
+        new MiniCssExtractPlugin({
+            filename: '[name].[contenthash].css',
+            chunkFilename: '[id].[contenthash].css',
+        }),
         new ForkTsCheckerWebpackPlugin({
             typescript: {
                 diagnosticOptions: {
@@ -64,7 +67,7 @@ const commonConfig: Configuration = {
             },
         }),
     ],
-    stats: 'errors-only',
+    stats: 'normal',
 };
 
 export { commonConfig };

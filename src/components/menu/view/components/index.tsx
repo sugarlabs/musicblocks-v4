@@ -1,6 +1,10 @@
 import { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 
+// -- types ----------------------------------------------------------------------------------------
+
+import { IFeatureFlags } from '@/@types';
+
 // -- resources ------------------------------------------------------------------------------------
 
 import svgStartRecording from '../resources/startRecording.svg';
@@ -29,6 +33,7 @@ let _labels: {
   stop: string;
   reset: string;
 };
+let _flags: IFeatureFlags | undefined;
 let _states: { running: boolean } = { running: false };
 
 let _btnUploadFileInLocalStorage: HTMLInputElement;
@@ -74,6 +79,34 @@ function Menu(props: { states: { running: boolean } }): JSX.Element {
 
     _mountedCallback();
 
+    if (_flags) {
+      Object.entries(_flags).forEach(([flag, value]) => {
+        flag;
+        value;
+
+        if (value === true) return;
+
+        switch (flag) {
+          case 'uploadFile':
+            _btnUploadFileInLocalStorage.style.display = 'none';
+            break;
+          case 'recording':
+            _btnStartRecording.style.display = 'none';
+            _btnStopRecording.style.display = 'none';
+            break;
+          case 'exportDrawing':
+            _btnExportDrawing.style.display = 'none';
+            break;
+          case 'loadProject':
+            _btnLoadProject.style.display = 'none';
+            break;
+          case 'saveProject':
+            _btnSaveProject.style.display = 'none';
+            break;
+        }
+      });
+    }
+
     const loadSVG = (element: HTMLElement, svgSrc: string) => {
       fetch(svgSrc)
         .then((res) => res.text())
@@ -99,39 +132,37 @@ function Menu(props: { states: { running: boolean } }): JSX.Element {
           className="menu-btn"
           ref={btnUploadFileInLocalStorageRef}
           multiple={true}
-        >
-          {/* <p className="menu-btn-label">
-            <span>{_labels.uploadFileInLocalStorage}</span>
-          </p> */}
-        </input>
+        ></input>
       </label>
+
       <button className="menu-btn" ref={btnStartRecordingRef}>
         <p className="menu-btn-label">
           <span>{_labels.startRecording}</span>
         </p>
       </button>
+
       <button className="menu-btn" ref={btnStopRecordingRef}>
         <p className="menu-btn-label">
           <span>{_labels.stopRecording}</span>
         </p>
       </button>
+
       <button className="menu-btn" ref={btnExportDrawingRef}>
         <p className="menu-btn-label">
           <span>{_labels.exportDrawing}</span>
         </p>
       </button>
+
       <label className="menu-input-btn-label">
-        <input type="file" className="menu-btn" ref={btnLoadProjectRef} accept="text/html">
-          {/* <p className="menu-btn-label">
-          <span>{_labels.loadProject}</span>
-        </p> */}
-        </input>
+        <input type="file" className="menu-btn" ref={btnLoadProjectRef} accept="text/html"></input>
       </label>
+
       <button className="menu-btn" ref={btnSaveProjectRef}>
         <p className="menu-btn-label">
           <span>{_labels.saveProject}</span>
         </p>
       </button>
+
       <button
         className={`menu-btn ${props.states['running'] ? 'menu-btn-hidden' : ''}`}
         ref={btnRunRef}
@@ -189,6 +220,7 @@ export function setup(
       reset: string;
     };
   },
+  flags?: IFeatureFlags,
 ): Promise<{
   btnUploadFileInLocalStorage: HTMLInputElement;
   btnStartRecording: HTMLButtonElement;
@@ -202,6 +234,7 @@ export function setup(
 }> {
   _container = container;
   _labels = props.labels;
+  _flags = flags;
 
   return new Promise((resolve) => {
     _renderComponent();

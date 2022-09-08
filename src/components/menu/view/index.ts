@@ -1,3 +1,5 @@
+import { IFeatureFlags } from '@/@types';
+
 import { createItem } from '@/view';
 
 import { setup as setupComponent } from './components';
@@ -21,7 +23,7 @@ let _btnReset: HTMLButtonElement;
 /**
  * Sets up the DOM.
  */
-export function setup(): Promise<void> {
+export function setup(flags?: IFeatureFlags): Promise<void> {
     return new Promise((resolve) => {
         const menu = createItem({
             location: 'toolbar',
@@ -30,19 +32,23 @@ export function setup(): Promise<void> {
         });
         menu.id = 'menu';
 
-        setupComponent(menu, {
-            labels: {
-                uploadFileInLocalStorage: 'Upload a file',
-                startRecording: 'Start animation Recording',
-                stopRecording: 'Stop animation Recording',
-                exportDrawing: 'Save mouse artwork as PNG',
-                loadProject: 'Load Project',
-                saveProject: 'Save project as HTML',
-                run: 'run',
-                stop: 'stop',
-                reset: 'reset',
+        setupComponent(
+            menu,
+            {
+                labels: {
+                    uploadFileInLocalStorage: 'Upload a file',
+                    startRecording: 'Start animation Recording',
+                    stopRecording: 'Stop animation Recording',
+                    exportDrawing: 'Save mouse artwork as PNG',
+                    loadProject: 'Load Project',
+                    saveProject: 'Save project as HTML',
+                    run: 'run',
+                    stop: 'stop',
+                    reset: 'reset',
+                },
             },
-        }).then(
+            flags,
+        ).then(
             ({
                 btnUploadFileInLocalStorage,
                 btnStartRecording,

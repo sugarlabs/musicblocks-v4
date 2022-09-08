@@ -36,6 +36,7 @@ export function setup(): Promise<void> {
     });
 }
 
+export function mountHook(name: 'loadProject', callback: CallableFunction): void;
 export function mountHook(name: 'saveProject', callback: CallableFunction): void;
 export function mountHook(name: 'run', callback: CallableFunction): void;
 export function mountHook(name: 'reset', callback: CallableFunction): void;
@@ -46,7 +47,9 @@ export function mountHook(name: 'reset', callback: CallableFunction): void;
  */
 export function mountHook(name: string, callback: CallableFunction): void {
     const buttons = getButtons();
-    if (name == 'saveProject') {
+    if (name == 'loadProject') {
+        buttons.loadProject.addEventListener('change', (event) => callback(event));
+    } else if (name == 'saveProject') {
         buttons.saveProject.addEventListener('click', () => callback());
     } else if (name === 'run') {
         buttons.run.addEventListener('click', () => callback());

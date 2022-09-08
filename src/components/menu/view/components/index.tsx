@@ -15,9 +15,10 @@ import './index.scss';
 // -- private variables ----------------------------------------------------------------------------
 
 let _container: HTMLElement;
-let _labels: { saveProject: string; run: string; stop: string; reset: string };
+let _labels: { loadProject: string; saveProject: string; run: string; stop: string; reset: string };
 let _states: { running: boolean } = { running: false };
 
+let _btnLoadProject: HTMLInputElement;
 let _btnSaveProject: HTMLButtonElement;
 let _btnRun: HTMLButtonElement;
 let _btnStop: HTMLButtonElement;
@@ -33,12 +34,14 @@ let _mountedCallback: CallableFunction;
  * @returns root JSX element of the Menu component
  */
 function Menu(props: { states: { running: boolean } }): JSX.Element {
+  const btnLoadProjectRef = useRef(null);
   const btnSaveProjectRef = useRef(null);
   const btnRunRef = useRef(null);
   const btnStopRef = useRef(null);
   const btnResetRef = useRef(null);
 
   useEffect(() => {
+    _btnLoadProject = btnLoadProjectRef.current!;
     _btnSaveProject = btnSaveProjectRef.current!;
     _btnRun = btnRunRef.current!;
     _btnStop = btnStopRef.current!;
@@ -53,6 +56,7 @@ function Menu(props: { states: { running: boolean } }): JSX.Element {
         .then(() => (element.children[1] as SVGElement).classList.add('menu-btn-img'));
     };
 
+    // loadSVG(btnLoadProjectRef.current! as HTMLElement, svgSaveProject);
     loadSVG(btnSaveProjectRef.current! as HTMLElement, svgSaveProject);
     loadSVG(btnRunRef.current! as HTMLElement, svgRun);
     loadSVG(btnStopRef.current! as HTMLElement, svgStop);
@@ -61,6 +65,13 @@ function Menu(props: { states: { running: boolean } }): JSX.Element {
 
   return (
     <>
+      <label className="menu-input-btn-label">
+        <input type="file" className="menu-btn" ref={btnLoadProjectRef} accept="text/html">
+          {/* <p className="menu-btn-label">
+          <span>{_labels.loadProject}</span>
+        </p> */}
+        </input>
+      </label>
       <button className="menu-btn" ref={btnSaveProjectRef}>
         <p className="menu-btn-label">
           <span>{_labels.saveProject}</span>
@@ -111,9 +122,10 @@ function _renderComponent(): void {
 export function setup(
   container: HTMLElement,
   props: {
-    labels: { saveProject: string; run: string; stop: string; reset: string };
+    labels: { loadProject: string; saveProject: string; run: string; stop: string; reset: string };
   },
 ): Promise<{
+  btnLoadProject: HTMLInputElement;
   btnSaveProject: HTMLButtonElement;
   btnRun: HTMLButtonElement;
   btnStop: HTMLButtonElement;
@@ -128,6 +140,7 @@ export function setup(
     _mountedCallback = () =>
       requestAnimationFrame(() => {
         resolve({
+          btnLoadProject: _btnLoadProject,
           btnSaveProject: _btnSaveProject,
           btnRun: _btnRun,
           btnStop: _btnStop,

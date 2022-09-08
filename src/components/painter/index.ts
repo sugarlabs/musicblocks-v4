@@ -4,7 +4,7 @@ import { getComponent } from '../../config';
 
 import { mount as mountView, mountSketch } from './view';
 import { sketch, run, reset } from './painter';
-import { saveProjectHTML } from '../imp-exp/imp-exp';
+import { loadProject, saveProjectHTML } from '../imp-exp/imp-exp';
 
 // -- public functions -----------------------------------------------------------------------------
 
@@ -28,6 +28,7 @@ export function setup(): Promise<void> {
     return new Promise((resolve) => {
         const menu = getComponent('menu') as IComponentMenu;
         if (menu) {
+            menu.mountHook('loadProject', loadProject);
             menu.mountHook('saveProject', saveProjectHTML);
             menu.mountHook('run', run);
             menu.mountHook('reset', reset);

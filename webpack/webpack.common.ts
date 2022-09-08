@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { Configuration } from 'webpack';
+import { Configuration, DefinePlugin } from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
@@ -12,6 +12,11 @@ const commonConfig: Configuration = {
             '@': path.resolve(__dirname, '..', 'src'),
         },
         extensions: ['.tsx', '.ts', '.js', '.scss', '.sass'],
+        fallback: {
+            fs: false,
+            path: false,
+            crypto: false,
+        },
     },
     module: {
         rules: [
@@ -42,6 +47,10 @@ const commonConfig: Configuration = {
                 test: /\.(woff(2)?|eot|ttf|otf|svg|)$/,
                 type: 'asset/inline',
             },
+            {
+                test: /\.wasm$/,
+                type: 'asset/resource',
+            },
         ],
     },
     plugins: [
@@ -66,7 +75,23 @@ const commonConfig: Configuration = {
                 mode: 'write-references',
             },
         }),
+        /* whenever 'process.env.X' is encountered in code
+         * it is replaced as-is with it's value defined here
+         * eg, if 'process.env.NODE_ENV' encountered in code
+         * it gets replaced by 'development' defined here
+         * when webpack dev server is started
+         */
+        new DefinePlugin({
+            'process.env': JSON.stringify({
+                NODE_ENV: process.env.NODE_ENV,
+                BASE_PATH,
+            }),
+        }),
     ],
+    experiments: {
+        asyncWebAssembly: true,
+        syncWebAssembly: true,
+    },
     stats: 'normal',
 };
 

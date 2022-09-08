@@ -1,0 +1,42 @@
+---
+# Documentation:https://help.github.com/en/articles/workflow-syntax-for-github-actions
+
+name: Continuous Integration
+
+on:
+  pull_request:
+
+jobs:
+  test:
+    name: Run Unit and E2E Tests
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the code base
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 16.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install Cypress dependencies
+        run: sudo apt update && sudo apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+
+      - name: Install dependencies
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
+          npm ci
+          rm -rf .npmrc
+
+      - name: Run Unit Tests
+        run: npm run test:unit
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v4
+        with:
+          build: npm run build:root
+          start: npm run serve

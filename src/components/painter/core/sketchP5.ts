@@ -169,5 +169,74 @@ export function setBackground(v1: number, v2?: number, v3?: number): void {
  * Clears the canvas.
  */
 export function clear(): void {
-    sketch.clear();
+    sketch.clear(0, 0, 0, 0);
+}
+
+/**
+ * Export the canvas drawing in png format
+ */
+export function exportDrawing(): void {
+    let fileName = prompt('Filename:', 'My Project');
+    if (fileName) {
+        sketch.saveCanvas(fileName, 'png');
+    }
+}
+
+let recorder: MediaRecorder;
+let chunks: BlobPart[] = [];
+
+/**
+ * Start recording the canvas
+ */
+export function startRecording() {
+    record();
+    recorder.start();
+}
+
+/**
+ * Stops recording the canvas
+ */
+export function stopRecording() {
+    if (recorder != null) {
+        recorder.stop();
+    }
+    console.log(chunks);
+}
+
+async function exportVideo() {
+    let blob = new Blob(chunks, { type: 'video/wemb' });
+
+    // Draw video to screen
+    let videoElement = document.createElement('video');
+    let temp = Date.now();
+    videoElement.setAttribute('id', temp.toString());
+    videoElement.controls = true;
+    videoElement.src = window.URL.createObjectURL(blob);
+
+    // Download the video
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = 'newVid.webm';
+    a.click();
+}
+
+// FrameRate for recording
+const fr = 30;
+
+function record() {
+    chunks.length = 0;
+
+    let stream = document.querySelectorAll('canvas')[1]?.captureStream(fr);
+
+    if (stream != undefined) {
+        recorder = new MediaRecorder(stream);
+
+        recorder.ondataavailable = (e) => {
+            if (e.data.size) {
+                chunks.push(e.data);
+            }
+        };
+    }
+    recorder.onstop = exportVideo;
 }

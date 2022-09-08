@@ -22,7 +22,19 @@
     "downlevelIteration": true
   },
   "include": [
-    "src"
+    "src",
+    "tests"
   ],
-  "extends": "./tsconfig.paths.json"
+  "extends": "./tsconfig.paths.json",
+  /**
+  * compilerOptions should be cjs for reading webpack config files
+  * ts-node is used to read webpack config
+  * hence overriding ts-node compilerOptions with module: "CommonJS"
+  * https://webpack.js.org/configuration/configuration-languages/#typescript
+  */
+  "ts-node": {
+    "compilerOptions": {
+      "module": "CommonJS"
+    }
+  }
 }

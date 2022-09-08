@@ -235,7 +235,9 @@ export function getComponent(name: string): IComponent | null {
 
                 return new Promise((resolve) => {
                     // mount the component
-                    component.mount().then(() => resolve([componentEntry.name, component]));
+                    component
+                        .mount('flags' in componentEntry ? componentEntry.flags : undefined)
+                        .then(() => resolve([componentEntry.name, component]));
                 });
             }),
         );

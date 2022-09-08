@@ -36,8 +36,15 @@ export function setup(): Promise<void> {
     });
 }
 
+export function mountHook(name: 'uploadFileInLocalStorage', callback: CallableFunction): void;
+export function mountHook(name: 'startRecording', callback: CallableFunction): void;
+export function mountHook(name: 'stopRecording', callback: CallableFunction): void;
+export function mountHook(name: 'exportDrawing', callback: CallableFunction): void;
+export function mountHook(name: 'loadProject', callback: CallableFunction): void;
+export function mountHook(name: 'saveProject', callback: CallableFunction): void;
 export function mountHook(name: 'run', callback: CallableFunction): void;
 export function mountHook(name: 'reset', callback: CallableFunction): void;
+
 /**
  * Mounts a callback associated with a special hook name.
  * @param name name of the hook
@@ -45,8 +52,19 @@ export function mountHook(name: 'reset', callback: CallableFunction): void;
  */
 export function mountHook(name: string, callback: CallableFunction): void {
     const buttons = getButtons();
-
-    if (name === 'run') {
+    if (name == 'uploadFileInLocalStorage') {
+        buttons.uploadFileInLocalStorage.addEventListener('change', (event) => callback(event));
+    } else if (name == 'startRecording') {
+        buttons.startRecording.addEventListener('click', () => callback());
+    } else if (name == 'stopRecording') {
+        buttons.stopRecording.addEventListener('click', () => callback());
+    } else if (name == 'exportDrawing') {
+        buttons.exportDrawing.addEventListener('click', () => callback());
+    } else if (name == 'loadProject') {
+        buttons.loadProject.addEventListener('change', (event) => callback(event));
+    } else if (name == 'saveProject') {
+        buttons.saveProject.addEventListener('click', () => callback());
+    } else if (name === 'run') {
         buttons.run.addEventListener('click', () => callback());
     } else if (name === 'reset') {
         buttons.reset.addEventListener('click', () => callback());

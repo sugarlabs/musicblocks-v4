@@ -6,6 +6,12 @@ import { setup as setupComponent } from './components';
 
 // -- private variables ----------------------------------------------------------------------------
 
+let _btnUploadFileInLocalStorage: HTMLInputElement;
+let _btnStartRecording: HTMLButtonElement;
+let _btnStopRecording: HTMLButtonElement;
+let _btnExportDrawing: HTMLButtonElement;
+let _btnLoadProject: HTMLInputElement;
+let _btnSaveProject: HTMLButtonElement;
 let _btnRun: HTMLButtonElement;
 let _btnStop: HTMLButtonElement;
 let _btnReset: HTMLButtonElement;
@@ -26,26 +32,76 @@ export function setup(): Promise<void> {
 
         setupComponent(menu, {
             labels: {
+                uploadFileInLocalStorage: 'Upload a file',
+                startRecording: 'Start animation Recording',
+                stopRecording: 'Stop animation Recording',
+                exportDrawing: 'Save mouse artwork as PNG',
+                loadProject: 'Load Project',
+                saveProject: 'Save project as HTML',
                 run: 'run',
                 stop: 'stop',
                 reset: 'reset',
             },
-        }).then(({ btnRun, btnReset, btnStop }) => {
-            [_btnRun, _btnStop, _btnReset] = [btnRun, btnStop, btnReset];
-            resolve();
-        });
+        }).then(
+            ({
+                btnUploadFileInLocalStorage,
+                btnStartRecording,
+                btnStopRecording,
+                btnExportDrawing,
+                btnLoadProject,
+                btnSaveProject,
+                btnRun,
+                btnReset,
+                btnStop,
+            }) => {
+                [
+                    _btnUploadFileInLocalStorage,
+                    _btnStartRecording,
+                    _btnStopRecording,
+                    _btnExportDrawing,
+                    _btnLoadProject,
+                    _btnSaveProject,
+                    _btnRun,
+                    _btnStop,
+                    _btnReset,
+                ] = [
+                    btnUploadFileInLocalStorage,
+                    btnStartRecording,
+                    btnStopRecording,
+                    btnExportDrawing,
+                    btnLoadProject,
+                    btnSaveProject,
+                    btnRun,
+                    btnStop,
+                    btnReset,
+                ];
+                resolve();
+            },
+        );
     });
 }
 
 /**
- * @returns DOM `run`, `stop`, and `reset` buttons
+ * @returns DOM `uploadFileInLocalStorage` `startRecording` `stopRecording` `exportDrawing`,`loadProject`,`saveProject`,`run`, `stop`, and `reset` buttons
  */
 export function getButtons(): {
+    uploadFileInLocalStorage: HTMLInputElement;
+    startRecording: HTMLButtonElement;
+    stopRecording: HTMLButtonElement;
+    exportDrawing: HTMLButtonElement;
+    loadProject: HTMLInputElement;
+    saveProject: HTMLButtonElement;
     run: HTMLButtonElement;
     stop: HTMLButtonElement;
     reset: HTMLButtonElement;
 } {
     return {
+        uploadFileInLocalStorage: _btnUploadFileInLocalStorage,
+        startRecording: _btnStartRecording,
+        stopRecording: _btnStopRecording,
+        exportDrawing: _btnExportDrawing,
+        loadProject: _btnLoadProject,
+        saveProject: _btnSaveProject,
         run: _btnRun,
         stop: _btnStop,
         reset: _btnReset,

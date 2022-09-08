@@ -1,15 +1,26 @@
 {
   "components": [
     {
-      "name": "menu"
+      "name": "menu",
+      "flags": {
+        "uploadFile": false,
+        "recording": false,
+        "exportDrawing": false,
+        "loadProject": false,
+        "saveProject": false
+      }
     },
     {
       "name": "editor",
-      "parents": ["menu"]
+      "parents": [
+        "menu"
+      ]
     },
     {
       "name": "painter",
-      "parents": ["menu"],
+      "parents": [
+        "menu"
+      ],
       "elements": true
     }
   ]

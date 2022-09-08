@@ -1,3 +1,5 @@
+import { IFeatureFlags } from '@/@types';
+
 import { getCrumbs, run } from '@sugarlabs/musicblocks-v4-lib';
 
 import { getButtons, setup as setupView, updateState } from './view';
@@ -7,8 +9,8 @@ import { getButtons, setup as setupView, updateState } from './view';
 /**
  * Mounts the Menu component.
  */
-export function mount(): Promise<void> {
-    return setupView();
+export function mount(flags: IFeatureFlags): Promise<void> {
+    return setupView(flags);
 }
 
 /**

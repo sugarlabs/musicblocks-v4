@@ -23,8 +23,8 @@ jobs:
         with:
           node-version: '16'
 
-      - name: Install Cypress dependencies
-        run: sudo apt update && sudo apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+      # - name: Install Cypress dependencies
+      #   run: sudo apt update && sudo apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
 
       - name: Install dependencies
         run: |
@@ -35,8 +35,8 @@ jobs:
       - name: Run Unit Tests
         run: npm run test:unit
 
-      - name: Cypress run
-        uses: cypress-io/github-action@v4
-        with:
-          build: npm run build:root
-          start: npm run serve
+      # - name: Cypress run
+      #   uses: cypress-io/github-action@v4
+      #   with:
+      #     build: npm run build:root
+      #     start: npm run serve

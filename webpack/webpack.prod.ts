@@ -1,11 +1,11 @@
 import path from 'path';
 import { Configuration } from 'webpack';
 import CopyPlugin from 'copy-webpack-plugin';
+import CompressionPlugin from 'compression-webpack-plugin';
 
 const BASE_PATH = process.env?.BASE_PATH ?? '/';
 const prodConfig: Configuration = {
     mode: 'production',
-    devtool: 'source-map',
     plugins: [
         new CopyPlugin({
             patterns: [
@@ -23,12 +23,27 @@ const prodConfig: Configuration = {
                 },
             ],
         }),
+        // gzip compression
+        new CompressionPlugin({
+            algorithm: 'gzip',
+            compressionOptions: {
+                level: 9,
+            },
+            test: /\.js$|\.css$|\.html$/,
+            threshold: 50 * 1024,
+        }),
     ],
     // output bundle naming convention
     output: {
         path: path.resolve(__dirname, '../build'),
         filename: '[name].[contenthash].js',
         publicPath: BASE_PATH,
+        clean: true,
+    },
+    optimization: {
+        splitChunks: {
+            chunks: 'all',
+        },
     },
 };
 

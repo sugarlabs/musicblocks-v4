@@ -17,7 +17,7 @@ WORKDIR /app
 CMD sh
 
 # Listen on ports
-EXPOSE 80 3000
+EXPOSE 5000 8080
 
 # Add label for GitHub container registry
 LABEL org.opencontainers.image.description='An initial development image based on the official \

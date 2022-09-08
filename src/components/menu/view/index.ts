@@ -6,6 +6,7 @@ import { setup as setupComponent } from './components';
 
 // -- private variables ----------------------------------------------------------------------------
 
+let _btnSaveProject: HTMLButtonElement;
 let _btnRun: HTMLButtonElement;
 let _btnStop: HTMLButtonElement;
 let _btnReset: HTMLButtonElement;
@@ -26,12 +27,18 @@ export function setup(): Promise<void> {
 
         setupComponent(menu, {
             labels: {
+                saveProject: 'Save project as HTML',
                 run: 'run',
                 stop: 'stop',
                 reset: 'reset',
             },
-        }).then(({ btnRun, btnReset, btnStop }) => {
-            [_btnRun, _btnStop, _btnReset] = [btnRun, btnStop, btnReset];
+        }).then(({ btnSaveProject, btnRun, btnReset, btnStop }) => {
+            [_btnSaveProject, _btnRun, _btnStop, _btnReset] = [
+                btnSaveProject,
+                btnRun,
+                btnStop,
+                btnReset,
+            ];
             resolve();
         });
     });
@@ -41,11 +48,13 @@ export function setup(): Promise<void> {
  * @returns DOM `run`, `stop`, and `reset` buttons
  */
 export function getButtons(): {
+    saveProject: HTMLButtonElement;
     run: HTMLButtonElement;
     stop: HTMLButtonElement;
     reset: HTMLButtonElement;
 } {
     return {
+        saveProject: _btnSaveProject,
         run: _btnRun,
         stop: _btnStop,
         reset: _btnReset,

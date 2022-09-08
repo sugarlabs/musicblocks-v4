@@ -7,6 +7,7 @@ import svgSaveProject from '../resources/saveProjectHTML.svg';
 import svgRun from '../resources/run.svg';
 import svgStop from '../resources/stop.svg';
 import svgReset from '../resources/reset.svg';
+import svgExportDrawing from '../resources/exportDrawing.svg';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
@@ -15,9 +16,17 @@ import './index.scss';
 // -- private variables ----------------------------------------------------------------------------
 
 let _container: HTMLElement;
-let _labels: { loadProject: string; saveProject: string; run: string; stop: string; reset: string };
+let _labels: {
+  exportDrawing: string;
+  loadProject: string;
+  saveProject: string;
+  run: string;
+  stop: string;
+  reset: string;
+};
 let _states: { running: boolean } = { running: false };
 
+let _btnExportDrawing: HTMLButtonElement;
 let _btnLoadProject: HTMLInputElement;
 let _btnSaveProject: HTMLButtonElement;
 let _btnRun: HTMLButtonElement;
@@ -34,6 +43,7 @@ let _mountedCallback: CallableFunction;
  * @returns root JSX element of the Menu component
  */
 function Menu(props: { states: { running: boolean } }): JSX.Element {
+  const btnExportDrawingRef = useRef(null);
   const btnLoadProjectRef = useRef(null);
   const btnSaveProjectRef = useRef(null);
   const btnRunRef = useRef(null);
@@ -41,6 +51,7 @@ function Menu(props: { states: { running: boolean } }): JSX.Element {
   const btnResetRef = useRef(null);
 
   useEffect(() => {
+    _btnExportDrawing = btnExportDrawingRef.current!;
     _btnLoadProject = btnLoadProjectRef.current!;
     _btnSaveProject = btnSaveProjectRef.current!;
     _btnRun = btnRunRef.current!;
@@ -56,6 +67,7 @@ function Menu(props: { states: { running: boolean } }): JSX.Element {
         .then(() => (element.children[1] as SVGElement).classList.add('menu-btn-img'));
     };
 
+    loadSVG(btnExportDrawingRef.current! as HTMLElement, svgExportDrawing);
     // loadSVG(btnLoadProjectRef.current! as HTMLElement, svgSaveProject);
     loadSVG(btnSaveProjectRef.current! as HTMLElement, svgSaveProject);
     loadSVG(btnRunRef.current! as HTMLElement, svgRun);
@@ -65,6 +77,11 @@ function Menu(props: { states: { running: boolean } }): JSX.Element {
 
   return (
     <>
+      <button className="menu-btn" ref={btnExportDrawingRef}>
+        <p className="menu-btn-label">
+          <span>{_labels.exportDrawing}</span>
+        </p>
+      </button>
       <label className="menu-input-btn-label">
         <input type="file" className="menu-btn" ref={btnLoadProjectRef} accept="text/html">
           {/* <p className="menu-btn-label">
@@ -122,9 +139,17 @@ function _renderComponent(): void {
 export function setup(
   container: HTMLElement,
   props: {
-    labels: { loadProject: string; saveProject: string; run: string; stop: string; reset: string };
+    labels: {
+      exportDrawing: string;
+      loadProject: string;
+      saveProject: string;
+      run: string;
+      stop: string;
+      reset: string;
+    };
   },
 ): Promise<{
+  btnExportDrawing: HTMLButtonElement;
   btnLoadProject: HTMLInputElement;
   btnSaveProject: HTMLButtonElement;
   btnRun: HTMLButtonElement;
@@ -140,6 +165,7 @@ export function setup(
     _mountedCallback = () =>
       requestAnimationFrame(() => {
         resolve({
+          btnExportDrawing: _btnExportDrawing,
           btnLoadProject: _btnLoadProject,
           btnSaveProject: _btnSaveProject,
           btnRun: _btnRun,

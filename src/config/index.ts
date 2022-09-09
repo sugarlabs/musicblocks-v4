@@ -211,7 +211,11 @@ export function getComponent(name: string): IComponent | null {
     configEntriesSerialized.components.forEach((componentEntry) => {
         // import the component module using the component name in the component entry
         importPromises.push(
-            import(`../components/${componentEntry.name}`).then((component: IComponent) => {
+            // ignore Markdown files
+            import(
+                /* webpackExclude: /\.md$/ */
+                `../components/${componentEntry.name}`
+            ).then((component: IComponent) => {
                 if ('elements' in componentEntry) {
                     // register the syntax elements specified in the component entry from the
                     // component module's specification

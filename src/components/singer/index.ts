@@ -23,3 +23,34 @@ export function setup(): Promise<void> {
         })();
     });
 }
+
+// == specification ================================================================================
+
+import { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
+
+import {
+    ElementTestSynth,
+    ElementResetNotesPlayed,
+} from './singer';
+
+// -------------------------------------------------------------------------------------------------
+
+/**
+ * Syntax element specification object for the Singer component.
+ */
+export const specification: {
+    [identifier: string]: IElementSpecification;
+} = {
+    'test-synth': {
+        label: 'test synth',
+        type: 'Statement',
+        category: 'Music',
+        prototype: ElementTestSynth,
+    },
+    'reset-notes-played': {
+        label: 'reset',
+        type: 'Statement',
+        category: 'Music',
+        prototype: ElementResetNotesPlayed,
+    }
+};

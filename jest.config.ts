@@ -8,7 +8,7 @@ export default async (): Promise<Config.InitialOptions> => {
         preset: 'ts-jest',
         testEnvironment: 'node',
         verbose: true,
-        rootDir: './tests',
+        rootDir: './src',
         testPathIgnorePatterns: [`node_modules`],
         moduleNameMapper: {
             ...pathsToModuleNameMapper(compilerOptions.paths),

@@ -92,7 +92,7 @@ const commonConfig: Configuration = {
         asyncWebAssembly: true,
         syncWebAssembly: true,
     },
-    stats: 'normal',
+    stats: 'errors-warnings',
 };
 
 export { commonConfig };

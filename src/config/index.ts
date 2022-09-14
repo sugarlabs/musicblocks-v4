@@ -213,7 +213,7 @@ export function getComponent(name: string): IComponent | null {
         importPromises.push(
             // ignore Markdown files
             import(
-                /* webpackExclude: /\.md$/ */
+                /* webpackExclude: /\.md$|editor-next/ */
                 `../components/${componentEntry.name}`
             ).then((component: IComponent) => {
                 if ('elements' in componentEntry) {

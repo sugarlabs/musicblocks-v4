@@ -12,7 +12,7 @@ const devConfig: Configuration = {
     plugins: [
         new ESLintPlugin({
             extensions: ['tsx', 'ts', 'jsx', 'js'],
-            failOnWarning: true,
+            failOnWarning: false,
         }),
         new webpack.HotModuleReplacementPlugin(),
     ],

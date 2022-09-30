@@ -1137,32 +1137,7 @@ class Scale:
 
         # We need to keep track of whether or not we crossed C, which
         # is the octave boundary.
-        if distance == 0:
-            d = self.octave_deltas[normalized_index] - self.octave_deltas[closest_index]
-            if number_of_scalar_steps > 0:
-                if d == 1:
-                    delta_octave += 1
-                elif d == 0 and normalized_index < closest_index:
-                    # We wrapped around C.
-                    delta_octave += 1
-            elif number_of_scalar_steps < 0:
-                if d == -1:
-                    delta_octave -= 1
-                elif d == 0 and normalized_index > closest_index:
-                    # We wrapped around C.
-                    delta_octave -= 1
-            return new_note, delta_octave, 0
-
-        i = self.note_names.index(new_note) - distance
-        if i - distance > len(self.note_names):
-            delta_octave += 1
-            i -= len(self.note_names)
-        elif i - distance < 0:
-            delta_octave += 1
-            i += len(self.note_names)
-        # Make sure we are still in range.
-        i = self._map_to_scalar_range(i, 0)[0]
-        d = self.octave_deltas[i] - self.octave_deltas[closest_index]
+        d = self.octave_deltas[normalized_index] - self.octave_deltas[closest_index]
         if number_of_scalar_steps > 0:
             if d == 1:
                 delta_octave += 1
@@ -1175,6 +1150,19 @@ class Scale:
             elif d == 0 and normalized_index > closest_index:
                 # We wrapped around C.
                 delta_octave -= 1
+
+        if distance == 0:
+            return new_note, delta_octave, 0
+
+        # Since the startingPitch was not in the scale, we need to
+        # account for its distance from the closestNote.
+        i = self.note_names.index(new_note) - distance
+        if i > len(self.note_names) - 1:
+            delta_octave += 1
+            i -= len(self.note_names)
+        elif i < 0:
+            delta_octave += 1
+            i += len(self.note_names)
         return (
             self._restore_format(self.note_names[i], original_notation, prefer_sharps),
             delta_octave,

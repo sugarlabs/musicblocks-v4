@@ -453,7 +453,7 @@ class Scale:
             for i in range(len(self.scale)):
                 scale.append(pitch_format[self.note_names.index(self.scale[i])])
             return scale
-        print("format does not match number of semitones")
+        print("Format does not match number of semitones.")
         return self.scale
 
     def get_scale_and_octave_deltas(self, pitch_format=None):
@@ -1108,25 +1108,28 @@ class Scale:
         prefer_sharps = "#" in starting_pitch
         # The calculation is done in the generic note namespace
         generic_pitch = self.convert_to_generic_note_name(starting_pitch)[0]
+
         # First, we need to find the closest note to our starting
         # pitch.
         closest_index, distance, error = self.closest_note(generic_pitch)[1:]
         if error < 0:
             return starting_pitch, 0, error
+
         # Next, we add the scalar interval -- the steps are in the
         # scale.
         new_index = closest_index + number_of_scalar_steps
+
         # We also need to determine if we will be travelling more than
         # one octave.
         mode_length = len(self.notes_in_scale) - 1
-        delta_octave = int(new_index / mode_length)
-
+        delta_octave = int(number_of_scalar_steps / mode_length)
         # We need an index value between 0 and mode length - 1.
         normalized_index = new_index
         while normalized_index < 0:
             normalized_index += mode_length
         while normalized_index > mode_length - 1:
             normalized_index -= mode_length
+
         generic_new_note = self.generic_note_names[normalized_index]
         new_note = self._restore_format(
             generic_new_note, original_notation, prefer_sharps
@@ -1134,15 +1137,44 @@ class Scale:
 
         # We need to keep track of whether or not we crossed C, which
         # is the octave boundary.
-        if new_index < 0:
-            delta_octave -= 1
-
-        # Do we need to take into account the distance from the
-        # closest scalar note?
         if distance == 0:
+            d = self.octave_deltas[normalized_index] - self.octave_deltas[closest_index]
+            if number_of_scalar_steps > 0:
+                if d == 1:
+                    delta_octave += 1
+                elif d == 0 and normalized_index < closest_index:
+                    # We wrapped around C.
+                    delta_octave += 1
+            elif number_of_scalar_steps < 0:
+                if d == -1:
+                    delta_octave -= 1
+                elif d == 0 and normalized_index > closest_index:
+                    # We wrapped around C.
+                    delta_octave -= 1
             return new_note, delta_octave, 0
-        i = self.note_names.index(generic_new_note)
-        i, delta_octave = self._map_to_scalar_range(i - distance, delta_octave)
+
+        i = self.note_names.index(new_note) - distance
+        if i - distance > len(self.note_names):
+            delta_octave += 1
+            i -= len(self.note_names)
+        elif i - distance < 0:
+            delta_octave += 1
+            i += len(self.note_names)
+        # Make sure we are still in range.
+        i = self._map_to_scalar_range(i, 0)[0]
+        d = self.octave_deltas[i] - self.octave_deltas[closest_index]
+        if number_of_scalar_steps > 0:
+            if d == 1:
+                delta_octave += 1
+            elif d == 0 and normalized_index < closest_index:
+                # We wrapped around C.
+                delta_octave += 1
+        elif number_of_scalar_steps < 0:
+            if d == -1:
+                delta_octave -= 1
+            elif d == 0 and normalized_index > closest_index:
+                # We wrapped around C.
+                delta_octave -= 1
         return (
             self._restore_format(self.note_names[i], original_notation, prefer_sharps),
             delta_octave,

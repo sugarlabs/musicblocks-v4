@@ -1434,7 +1434,8 @@ export default class KeySignature implements IKeySignature {
         const newNote = this._restoreFormat(genericNewNote, originalNotation, preferSharps);
 
         // We need to keep track of whether or not we crossed C, which is the octave boundary.
-        let d == this._scaleObj.getOctaveDelta(normalizedIndex) - this._scaleObj.getOctaveDelta(closestIndex);
+        let d = this._scaleObj.getOctaveDelta(normalizedIndex);
+	d -= this._scaleObj.getOctaveDelta(closestIndex);
         if (numberOfScalarSteps > 0) {
             if (d === 1 || (d === 0 && normalizedIndex < closestIndex)) {
                 deltaOctave += 1;

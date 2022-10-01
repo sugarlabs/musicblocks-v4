@@ -67,6 +67,11 @@ describe('Key Signature', () => {
         const ks: KeySignature = new KeySignature('major', 'c');
         expect(ks.scalarTransform('c', 2)[0]).toBe('e');
         expect(ks.scalarTransform('c#', 2)[0]).toBe('f');
+        const ks2: KeySignature = new KeySignature('major', 'g');
+        expect(ks2.scalarTransform('g', 1)[1]).toBe(0);
+        expect(ks2.scalarTransform('g', 2)[1]).toBe(0);
+        expect(ks2.scalarTransform('g', 3)[1]).toBe(1);
+        expect(ks2.scalarTransform('g', 4)[1]).toBe(1);
     });
 
     test('semitone transforms', () => {

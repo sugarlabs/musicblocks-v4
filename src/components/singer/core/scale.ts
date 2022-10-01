@@ -180,4 +180,27 @@ export class Scale implements IScale {
     public getScaleAndOctaveDeltas(pitchFormat?: string[]): [string[], number[]] {
         return [this.getScale(pitchFormat), this._octaveDeltas];
     }
+
+    /**
+     * Returns the octave delta for a note in the scale.
+     *
+     * @remarks
+     * The notes in the scale are a subset of the notes defined by the temperament.
+     * The octave deltas (either 0 or 1) are used to mark notes above B#, which would be in the next
+     * octave, e.g., G3, A3, B3, C4...
+     *
+     * @param noteIndex - index of note in the scale
+     * @returns the octave delta of the indexed note.
+     *
+     * @throws {InvalidArgumentError}
+     * Thrown if `noteIndex` is not in the range of modeLength.
+     */
+    public getOctaveDelta(noteIndex: number): number {
+        if (noteIndex < 0 || noteIndex > this._noteNames.length - 1) {
+            throw new InvalidArgumentError(
+                'noteIndex must be in range of scale length.',
+            );
+        }
+        return this._octaveDeltas[noteIndex];
+    }
 }

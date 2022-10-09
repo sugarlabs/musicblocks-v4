@@ -50,6 +50,10 @@ describe('class Scale', () => {
             expect(sGMaj.getScaleAndOctaveDeltas()[1][3]).toBe(1);
         });
 
+        test('Expect octave delta of 4th note in the G Major scale to be 1 using getOctaveDelta', () => {
+            expect(sGMaj.getOctaveDelta(3)).toEqual(1);
+        });
+
         const scale = new Scale();
         test('Generate scale when halfstep pattern is not defined and verify it', () => {
             expect(scale.getScale()).toEqual([

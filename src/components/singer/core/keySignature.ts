@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Walter Bender. All rights reserved.
+ * Copyright (c) 2021,2 Walter Bender. All rights reserved.
  * Copyright (c) 2021, Kumar Saurabh Raj. All rights reserved.
  * Copyright (c) 2021, Anindya Kundu. All rights reserved.
  *
@@ -284,6 +284,7 @@ export default class KeySignature implements IKeySignature {
         if (typeof this._key === 'string') {
             key = normalizePitch(key);
             preferSharps = this._preferSharps(this._key, this._mode) || this._key.includes('#');
+            console.debug(key, preferSharps);
             if (preferSharps) {
                 if (!CHROMATIC_NOTES_SHARP.includes(this._key)) {
                     this._key = EQUIVALENT_SHARPS[this._key];
@@ -1419,7 +1420,13 @@ export default class KeySignature implements IKeySignature {
 
         // We also need to determine if we will be travelling more than one octave.
         const modeLength = this.modeLength;
-        let deltaOctave: number = Math.floor(newIndex / modeLength);
+        // let deltaOctave: number = Math.floor(newIndex / modeLength);
+        let deltaOctave: number = 0;
+        if (numberOfScalarSteps > 0) {
+            deltaOctave = Math.floor(numberOfScalarSteps / modeLength);
+        } else {
+            deltaOctave = -Math.floor(-numberOfScalarSteps / modeLength);
+        }
 
         // We need an index value between 0 and mode length - 1.
         let normalizedIndex = newIndex;
@@ -1435,7 +1442,7 @@ export default class KeySignature implements IKeySignature {
 
         // We need to keep track of whether or not we crossed C, which is the octave boundary.
         let d = this._scaleObj.getOctaveDelta(normalizedIndex);
-	d -= this._scaleObj.getOctaveDelta(closestIndex);
+        d -= this._scaleObj.getOctaveDelta(closestIndex);
         if (numberOfScalarSteps > 0) {
             if (d === 1 || (d === 0 && normalizedIndex < closestIndex)) {
                 deltaOctave += 1;

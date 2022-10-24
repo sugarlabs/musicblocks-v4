@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2021, Walter Bender. All rights reserved.
+ * Copyright (c) 2021,2 Walter Bender. All rights reserved.
  * Copyright (c) 2021, Anindya Kundu. All rights reserved.
  *
  * Licensed under the AGPL-3.0 License.
  */
 
+import KeySignature from '../keySignature';
 import CurrentPitch from '../currentPitch';
 
 describe('class CurrentPitch', () => {
@@ -85,6 +86,18 @@ describe('class CurrentPitch', () => {
         test('Set pitch to pitch number 55 and expect frequency to be 392 Hz', () => {
             cp.setPitch(55);
             expect(Math.round(cp.freq)).toBe(392);
+        });
+    });
+
+    describe('Test scalar step', () => {
+        const ks = new KeySignature('major', 'g');
+        test('Walk through a scale and expect ocatve to switch at C', () => {
+            const cp = new CurrentPitch(ks);
+            console.debug(cp.genericName, cp.octave);
+            for (let i = 0; i < ks.modeLength; i++) {
+                cp.applyScalarTransposition(1);
+                console.debug(cp.genericName, cp.octave);
+            }
         });
     });
 });

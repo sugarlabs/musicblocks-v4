@@ -1421,7 +1421,7 @@ export default class KeySignature implements IKeySignature {
         // We also need to determine if we will be travelling more than one octave.
         const modeLength = this.modeLength;
         // let deltaOctave: number = Math.floor(newIndex / modeLength);
-        let deltaOctave: number = 0;
+        let deltaOctave = 0;
         if (numberOfScalarSteps > 0) {
             deltaOctave = Math.floor(numberOfScalarSteps / modeLength);
         } else {

@@ -31,5 +31,8 @@
     "editor.wordWrap": "on",
     "editor.quickSuggestions": false,
     "editor.formatOnSave": false
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
   }
 }

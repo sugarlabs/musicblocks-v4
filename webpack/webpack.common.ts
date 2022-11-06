@@ -30,6 +30,14 @@ const commonConfig: Configuration = {
                 ],
             },
             {
+                test: /.jsonc$/,
+                use: [
+                    {
+                        loader: `jsonc-loader`,
+                    },
+                ],
+            },
+            {
                 test: /\.s[ac]ss$/i,
                 use: [
                     MiniCssExtractPlugin.loader,

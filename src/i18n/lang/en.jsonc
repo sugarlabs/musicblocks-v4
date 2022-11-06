@@ -1,0 +1,11 @@
+{
+  "editor": {
+    "build": "build",
+    "help": "help"
+  },
+  "menu": {
+    "reset": "reset",
+    "run": "run",
+    "stop": "stop"
+  }
+}

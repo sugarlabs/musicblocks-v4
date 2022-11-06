@@ -6,7 +6,7 @@ import {
     librarySpecification,
 } from '@sugarlabs/musicblocks-v4-lib';
 
-import { loadStrings } from '@/i18n';
+import { enableStrings, loadStrings } from '@/i18n';
 import componentMap from '@/components';
 
 // -- private variables ----------------------------------------------------------------------------
@@ -265,6 +265,9 @@ export function getComponent(id: string): IComponent | null {
                 }
 
                 return new Promise((resolve) => {
+                    // enable specified strings for i18n
+                    enableStrings(componentEntry.id, Object.keys(component.strings));
+
                     // mount the component
                     component
                         .mount('flags' in componentEntry ? componentEntry.flags : undefined)

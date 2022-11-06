@@ -77,3 +77,11 @@ export function mountHook(name: string, callback: CallableFunction): void {
         buttons.reset.addEventListener('click', () => callback());
     }
 }
+
+// == strings ======================================================================================
+
+export const strings: { [key: string]: string } = {
+    run: 'run button - to start the program execution',
+    stop: 'stop button - to stop the program execution',
+    reset: 'reset button - clear program states',
+};

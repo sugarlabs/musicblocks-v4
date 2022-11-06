@@ -24,6 +24,10 @@ export function setup(): Promise<void> {
     });
 }
 
+// == strings ======================================================================================
+
+export const strings: { [key: string]: string } = {};
+
 // == specification ================================================================================
 
 import { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
@@ -32,7 +36,7 @@ import {
     ElementTestSynth,
     ElementResetNotesPlayed,
     ElementPlayNote,
-    PlayGenericNoteName
+    PlayGenericNoteName,
 } from './singer';
 
 // -------------------------------------------------------------------------------------------------

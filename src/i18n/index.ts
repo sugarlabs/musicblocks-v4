@@ -20,6 +20,25 @@ export async function loadStrings(lang: TI18nLang = 'en') {
 }
 
 /**
+ * Enables for i18n only specific string identifiers for a component.
+ * @param component - identifier of the component
+ * @param strings - list of string identifiers to enable
+ */
+export function enableStrings(component: string, strings: string[]) {
+    if (component in _strings) {
+        _strings[component] = Object.fromEntries(
+            Object.entries(_strings[component]).filter(([key]) => strings.includes(key)),
+        );
+    }
+
+    if (component in _stringsEN) {
+        _stringsEN[component] = Object.fromEntries(
+            Object.entries(_stringsEN[component]).filter(([key]) => strings.includes(key)),
+        );
+    }
+}
+
+/**
  * Factory function for i18n search function scoped to a component.
  *
  * @desc

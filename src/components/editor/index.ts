@@ -148,3 +148,10 @@ export function setup(): Promise<void> {
         resolve();
     });
 }
+
+// == strings ======================================================================================
+
+export const strings: { [key: string]: string } = {
+    build: 'build button - build the program',
+    help: 'help button - show syntax information',
+};

@@ -3,7 +3,8 @@ import ReactDOM from 'react-dom';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { TI18nFunc, IFeatureFlags } from '@/@types';
+import type { IFeatureFlags } from '@/@types';
+import type { TI18nFuncMenu } from '@/@types/components/menu';
 
 // -- resources ------------------------------------------------------------------------------------
 
@@ -32,7 +33,7 @@ let _labels: {
 };
 let _flags: IFeatureFlags | undefined;
 let _states: { running: boolean } = { running: false };
-let _i18n: TI18nFunc;
+let _i18n: TI18nFuncMenu;
 
 let _btnUploadFileInLocalStorage: HTMLInputElement;
 let _btnStartRecording: HTMLButtonElement;
@@ -217,7 +218,7 @@ export function setup(
   },
   utils: {
     flags?: IFeatureFlags;
-    i18n: TI18nFunc;
+    i18n: TI18nFuncMenu;
   },
 ): Promise<{
   btnUploadFileInLocalStorage: HTMLInputElement;

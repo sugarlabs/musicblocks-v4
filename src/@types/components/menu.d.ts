@@ -23,3 +23,9 @@ export interface IComponentMenu extends IComponent {
      */
     mountHook(name: string, callback: CallableFunction): void;
 }
+
+/** Type representing the allowed i18n string identifiers for the Menu component. */
+type TI18nMenu = 'reset' | 'run' | 'stop';
+
+/** Type representing the type overloaded i18n function for the Menu component. */
+export type TI18nFuncMenu = (key: TI18nMenu) => string;

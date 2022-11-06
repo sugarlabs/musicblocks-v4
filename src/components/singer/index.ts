@@ -31,6 +31,8 @@ import { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
 import {
     ElementTestSynth,
     ElementResetNotesPlayed,
+    ElementPlayNote,
+    PlayGenericNoteName
 } from './singer';
 
 // -------------------------------------------------------------------------------------------------
@@ -47,10 +49,22 @@ export const specification: {
         category: 'Music',
         prototype: ElementTestSynth,
     },
+    'play-note': {
+        label: 'play note',
+        type: 'Statement',
+        category: 'Music',
+        prototype: ElementPlayNote,
+    },
     'reset-notes-played': {
         label: 'reset',
         type: 'Statement',
         category: 'Music',
         prototype: ElementResetNotesPlayed,
-    }
+    },
+    'play-generic': {
+        label: 'play generic',
+        type: 'Statement',
+        category: 'Music',
+        prototype: PlayGenericNoteName,
+    },
 };

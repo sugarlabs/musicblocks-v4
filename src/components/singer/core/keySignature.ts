@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Walter Bender. All rights reserved.
+ * Copyright (c) 2021,2 Walter Bender. All rights reserved.
  * Copyright (c) 2021, Kumar Saurabh Raj. All rights reserved.
  * Copyright (c) 2021, Anindya Kundu. All rights reserved.
  *
@@ -284,6 +284,7 @@ export default class KeySignature implements IKeySignature {
         if (typeof this._key === 'string') {
             key = normalizePitch(key);
             preferSharps = this._preferSharps(this._key, this._mode) || this._key.includes('#');
+            console.debug(key, preferSharps);
             if (preferSharps) {
                 if (!CHROMATIC_NOTES_SHARP.includes(this._key)) {
                     this._key = EQUIVALENT_SHARPS[this._key];
@@ -1109,7 +1110,8 @@ export default class KeySignature implements IKeySignature {
      * Given a modal number, returns the corresponding pitch in the scale (and any change in octave).
      *
      * @param modalIndex - The modal index specifies an index into the scale.
-     * If the index is >= mode length or < 0, a relative change in octaveis also calculated.
+     *
+     * If the index is >= mode length or < 0, a relative change in octave is also calculated.
      * @returns
      * An array (2-tuple) of
      *  - The pitch that is the result of indexing the scale by the modal index.
@@ -1415,9 +1417,16 @@ export default class KeySignature implements IKeySignature {
 
         // Next, we add the scalar interval -- the steps are in the scale.
         const newIndex: number = closestIndex + numberOfScalarSteps;
+
         // We also need to determine if we will be travelling more than one octave.
         const modeLength = this.modeLength;
-        let deltaOctave: number = Math.floor(newIndex / modeLength);
+        // let deltaOctave: number = Math.floor(newIndex / modeLength);
+        let deltaOctave = 0;
+        if (numberOfScalarSteps > 0) {
+            deltaOctave = Math.floor(numberOfScalarSteps / modeLength);
+        } else {
+            deltaOctave = -Math.floor(-numberOfScalarSteps / modeLength);
+        }
 
         // We need an index value between 0 and mode length - 1.
         let normalizedIndex = newIndex;
@@ -1427,21 +1436,36 @@ export default class KeySignature implements IKeySignature {
         while (normalizedIndex > modeLength - 1) {
             normalizedIndex -= modeLength;
         }
+
         const genericNewNote: string = this._genericScale[normalizedIndex];
         const newNote = this._restoreFormat(genericNewNote, originalNotation, preferSharps);
 
         // We need to keep track of whether or not we crossed C, which is the octave boundary.
-        if (newIndex < 0) {
-            deltaOctave--;
+        let d = this._scaleObj.getOctaveDelta(normalizedIndex);
+        d -= this._scaleObj.getOctaveDelta(closestIndex);
+        if (numberOfScalarSteps > 0) {
+            if (d === 1 || (d === 0 && normalizedIndex < closestIndex)) {
+                deltaOctave += 1;
+            }
+        } else if (numberOfScalarSteps < 0) {
+            if (d === -1 || (d === 0 && normalizedIndex > closestIndex)) {
+                deltaOctave -= 1;
+            }
         }
-
-        // Do we need to take into account the distance from the closest scalar note?
         if (distance === 0) {
             return [newNote, deltaOctave];
         }
 
-        let i = this._noteNames.indexOf(genericNewNote);
-        [i, deltaOctave] = this._mapToScalarRange(i - distance, deltaOctave);
+        // Since the startingPitch was not in the scale, we need to
+        // account for its distance from the closestNote.
+        let i = this._noteNames.indexOf(genericNewNote) - distance;
+        if (i > this._noteNames.length - 1) {
+            deltaOctave += 1;
+            i -= this._noteNames.length;
+        } else if (i < 0) {
+            deltaOctave += 1;
+            i += this._noteNames.length;
+        }
         return [
             this._restoreFormat(this._noteNames[i], originalNotation, preferSharps),
             deltaOctave,

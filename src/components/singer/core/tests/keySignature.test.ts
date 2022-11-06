@@ -67,12 +67,31 @@ describe('Key Signature', () => {
         const ks: KeySignature = new KeySignature('major', 'c');
         expect(ks.scalarTransform('c', 2)[0]).toBe('e');
         expect(ks.scalarTransform('c#', 2)[0]).toBe('f');
+        const ks1: KeySignature = new KeySignature('major', 'g');
+        expect(ks1.scalarTransform('g', 1)[1]).toBe(0);
+        expect(ks1.scalarTransform('g', 2)[1]).toBe(0);
+        expect(ks1.scalarTransform('g', 3)[1]).toBe(1);
+        expect(ks1.scalarTransform('g', 4)[1]).toBe(1);
+        expect(ks1.scalarTransform('n7', 1)[1]).toBe(0);
+        expect(ks1.scalarTransform('n7', 2)[1]).toBe(0);
+        expect(ks1.scalarTransform('n7', 3)[1]).toBe(1);
+        expect(ks1.scalarTransform('n7', 4)[1]).toBe(1);
+        expect(ks1.scalarTransform('c', 1)[1]).toBe(0);
+        expect(ks1.scalarTransform('c', 2)[1]).toBe(0);
+        expect(ks1.scalarTransform('c', -1)[1]).toBe(-1);
+        expect(ks1.scalarTransform('c', 8)[1]).toBe(1);
+        expect(ks1.scalarTransform('n0', 1)[1]).toBe(0);
+        expect(ks1.scalarTransform('n0', 2)[1]).toBe(0);
+        expect(ks1.scalarTransform('n0', -1)[1]).toBe(-1);
+        expect(ks1.scalarTransform('n0', 8)[1]).toBe(1);
     });
 
     test('semitone transforms', () => {
         const ks: KeySignature = new KeySignature('major', 'c');
         expect(ks.semitoneTransform('c', 2)[0]).toBe('d');
+        expect(ks.semitoneTransform('c', 2)[1]).toBe(0);
         expect(ks.semitoneTransform('c#', 2)[0]).toBe('d#');
+        expect(ks.semitoneTransform('c#', 2)[1]).toBe(0);
         expect(ks.semitoneTransform('b', 1)[0]).toBe('c');
         expect(ks.semitoneTransform('b', 1)[1]).toBe(1); // increment octave
         expect(ks.semitoneTransform('n3', 1)[0]).toBe('n4');
@@ -85,6 +104,23 @@ describe('Key Signature', () => {
         expect(ks.semitoneTransform('n1b', -1)[1]).toBe(-1); // decrement octave
         expect(ks.semitoneTransform('n11x', 1)[0]).toBe('n2');
         expect(ks.semitoneTransform('n11x', 1)[1]).toBe(1); // increment octave
+        const ks1: KeySignature = new KeySignature('major', 'G');
+        expect(ks1.semitoneTransform('c', 2)[0]).toBe('d');
+        expect(ks1.semitoneTransform('c', 2)[1]).toBe(0);
+        expect(ks1.semitoneTransform('c#', 2)[0]).toBe('d#');
+        expect(ks1.semitoneTransform('c#', 2)[1]).toBe(0);
+        expect(ks1.semitoneTransform('b', 1)[0]).toBe('c');
+        expect(ks1.semitoneTransform('b', 1)[1]).toBe(1); // increment octave
+        expect(ks1.semitoneTransform('n3', 1)[0]).toBe('n4');
+        expect(ks1.semitoneTransform('n3#', 1)[0]).toBe('n5');
+        expect(ks1.semitoneTransform('g', -1)[0]).toBe('f#');
+        expect(ks1.semitoneTransform('g', -1)[1]).toBe(0);
+        expect(ks1.semitoneTransform('gb', -1)[0]).toBe('f');
+        expect(ks1.semitoneTransform('gb', -1)[1]).toBe(0);
+        expect(ks1.semitoneTransform('a#', -1)[0]).toBe('a');
+        expect(ks1.semitoneTransform('a#', -1)[1]).toBe(0);
+        expect(ks1.semitoneTransform('c', -1)[0]).toBe('b');
+        expect(ks1.semitoneTransform('c', -1)[1]).toBe(-1); // decrement octave
     });
 
     test('invert transforms', () => {

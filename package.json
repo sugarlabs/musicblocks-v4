@@ -14,6 +14,20 @@
   "author": "Anindya Kundu <anindya.k22@outlook.com> (https://github.com/meganindya/)",
   "license": "AGPL-3.0",
   "module": "true",
+  "scripts": {
+    "start": "webpack serve -c webpack/webpack.config.ts --env env=dev",
+    "prebuild": "npx rimraf build",
+    "build:root": "webpack -c webpack/webpack.config.ts --env env=prod --json=./build/stats.json",
+    "build": "cross-env BASE_PATH='/musicblocks-v4/' webpack -c webpack/webpack.config.ts --env env=prod --json=./build/stats.json",
+    "lint": "eslint src && textlint --rule terminology --rule no-dead-link README.md",
+    "serve": "npx http-server build/ -p 5000 -g",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
+    "preanalyze": "npm run build",
+    "analyze": "webpack-bundle-analyzer --port 8000 build/stats.json",
+    "test:unit": "jest",
+    "test:e2e": "cypress run"
+  },
   "devDependencies": {
     "@babel/core": "^7.18.6",
     "@babel/plugin-transform-runtime": "^7.18.6",
@@ -81,20 +95,6 @@
     "tone": "^14.7.77",
     "uuid": "^8.3.2",
     "web-vitals": "^2.1.4"
-  },
-  "scripts": {
-    "start": "webpack serve -c webpack/webpack.config.ts --env env=dev",
-    "prebuild": "npx rimraf build",
-    "build:root": "webpack -c webpack/webpack.config.ts --env env=prod --json=./build/stats.json",
-    "build": "cross-env BASE_PATH='/musicblocks-v4/' webpack -c webpack/webpack.config.ts --env env=prod --json=./build/stats.json",
-    "lint": "eslint src && textlint --rule terminology --rule no-dead-link README.md",
-    "serve": "npx http-server build/ -p 5000 -g",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
-    "preanalyze": "npm run build",
-    "analyze": "webpack-bundle-analyzer --port 8000 build/stats.json",
-    "test:unit": "jest",
-    "test:e2e": "cypress run"
   },
   "eslintConfig": {
     "extends": [

@@ -1,4 +1,5 @@
-import { IConfig, IComponent } from '../@types';
+import type { IConfig, IComponent } from '@/@types';
+import type { TComponentMap } from '@/@types/components';
 
 import {
     registerElementSpecificationEntries,
@@ -6,13 +7,15 @@ import {
 } from '@sugarlabs/musicblocks-v4-lib';
 
 import { loadStrings } from '@/i18n';
+import componentMap from '@/components';
+
 // -- private variables ----------------------------------------------------------------------------
 
 /** File name of the selected config file. */
 const _configFile = 'base';
 
 /** Object mapping mounted component names to the  */
-const _components: { [name: string]: IComponent } = {};
+const _components: { [id: string]: IComponent } = {};
 
 // -- private functions ----------------------------------------------------------------------------
 
@@ -62,7 +65,7 @@ export function _serializeComponentDependencies(config: IConfig): IConfig {
             for (let j = 0; j < length; j++) {
                 const colComponent = components[j];
 
-                if (rowComponent.parents!.includes(colComponent.name)) {
+                if (rowComponent.parents!.includes(colComponent.id)) {
                     DAG[i][j] = true;
                 }
             }
@@ -142,12 +145,12 @@ export function _serializeComponentDependencies(config: IConfig): IConfig {
 // -- public functions -----------------------------------------------------------------------------
 
 /**
- * Returns a component module by it's name.
- * @param name name of the component
- * @returns component module if valid name else `null`
+ * Returns a component module by it's identifier.
+ * @param id identifier of the component
+ * @returns component module if valid identifier else `null`
  */
-export function getComponent(name: string): IComponent | null {
-    return name in _components ? _components[name] : null;
+export function getComponent(id: string): IComponent | null {
+    return id in _components ? _components[id] : null;
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -197,13 +200,13 @@ export function getComponent(name: string): IComponent | null {
 
     // _serializeComponentDependencies({
     //     components: [
-    //         { name: 'a' },
-    //         { name: 'b', parents: ['a'] },
-    //         { name: 'c', parents: ['b'] },
-    //         { name: 'd' },
-    //         { name: 'e', parents: ['b', 'd'] },
+    //         { id: 'a' },
+    //         { id: 'b', parents: ['a'] },
+    //         { id: 'c', parents: ['b'] },
+    //         { id: 'd' },
+    //         { id: 'e', parents: ['b', 'd'] },
     //     ],
-    // }).components.forEach((component) => console.log(component.name));
+    // }).components.forEach((component) => console.log(component.id));
 
     /*
      * dummy config to debug invalid (cycle in `b`, `c`, `e`) topological sorting
@@ -215,24 +218,30 @@ export function getComponent(name: string): IComponent | null {
 
     // _serializeComponentDependencies({
     //     components: [
-    //         { name: 'a' },
-    //         { name: 'b', parents: ['e'] },
-    //         { name: 'c', parents: ['b'] },
-    //         { name: 'd' },
-    //         { name: 'e', parents: ['d', 'c'] },
+    //         { id: 'a' },
+    //         { id: 'b', parents: ['e'] },
+    //         { id: 'c', parents: ['b'] },
+    //         { id: 'd' },
+    //         { id: 'e', parents: ['d', 'c'] },
     //     ],
-    // }).components.forEach((component) => console.log(component.name));
+    // }).components.forEach((component) => console.log(component.id));
 
     const configEntriesSerialized = _serializeComponentDependencies(config);
 
     // for each component entry in the config file
     configEntriesSerialized.components.forEach((componentEntry) => {
-        // import the component module using the component name in the component entry
+        const path =
+            // fallback to id as path
+            componentEntry.id in (componentMap as TComponentMap)
+                ? (componentMap as TComponentMap)[componentEntry.id].path
+                : componentEntry.id;
+
+        // import the component module using the component id in the component entry
         importPromises.push(
             // ignore Markdown files
             import(
                 /* webpackExclude: /\.md$|editor-next/ */
-                `../components/${componentEntry.name}`
+                `../components/${path}`
             ).then((component: IComponent) => {
                 if ('elements' in componentEntry) {
                     // register the syntax elements specified in the component entry from the
@@ -259,7 +268,7 @@ export function getComponent(name: string): IComponent | null {
                     // mount the component
                     component
                         .mount('flags' in componentEntry ? componentEntry.flags : undefined)
-                        .then(() => resolve([componentEntry.name, component]));
+                        .then(() => resolve([componentEntry.id, component]));
                 });
             }),
         );
@@ -275,8 +284,8 @@ export function getComponent(name: string): IComponent | null {
         ) => {
             if (iteratorResult.done) return;
 
-            const [_, [name, component]] = iteratorResult.value;
-            _components[name] = component;
+            const [_, [id, component]] = iteratorResult.value;
+            _components[id] = component;
             // initialize the components after they are mounted
             component.setup().then(() => setupComponent(iterator.next()));
         };

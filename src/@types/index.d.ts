@@ -12,8 +12,12 @@ export interface IConfig {
     };
     /** Component entries. */
     components: {
-        /** Name of the component. */
+        /** Internal identifier of the component. */
+        id: string;
+        /** Display name of the component. */
         name: string;
+        /** Display description of the component. */
+        description: string;
         /** Names of the components that precede it in dependency graph. */
         parents?: string[];
         /** Feature flag toggles for the component (handled by the component). */

@@ -3,7 +3,8 @@ import ReactDOM from 'react-dom';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import { IFeatureFlags } from '@/@types';
+import type { IFeatureFlags } from '@/@types';
+import type { TI18nFuncMenu } from '@/@types/components/menu';
 
 // -- resources ------------------------------------------------------------------------------------
 
@@ -29,12 +30,10 @@ let _labels: {
   exportDrawing: string;
   loadProject: string;
   saveProject: string;
-  run: string;
-  stop: string;
-  reset: string;
 };
 let _flags: IFeatureFlags | undefined;
 let _states: { running: boolean } = { running: false };
+let _i18n: TI18nFuncMenu;
 
 let _btnUploadFileInLocalStorage: HTMLInputElement;
 let _btnStartRecording: HTMLButtonElement;
@@ -168,7 +167,7 @@ function Menu(props: { states: { running: boolean } }): JSX.Element {
         ref={btnRunRef}
       >
         <p className="menu-btn-label">
-          <span>{_labels.run}</span>
+          <span>{_i18n('run')}</span>
         </p>
       </button>
       <button
@@ -176,12 +175,12 @@ function Menu(props: { states: { running: boolean } }): JSX.Element {
         ref={btnStopRef}
       >
         <p className="menu-btn-label">
-          <span>{_labels.stop}</span>
+          <span>{_i18n('stop')}</span>
         </p>
       </button>
       <button className="menu-btn" ref={btnResetRef}>
         <p className="menu-btn-label">
-          <span>{_labels.reset}</span>
+          <span>{_i18n('reset')}</span>
         </p>
       </button>
     </>
@@ -215,12 +214,12 @@ export function setup(
       exportDrawing: string;
       loadProject: string;
       saveProject: string;
-      run: string;
-      stop: string;
-      reset: string;
     };
   },
-  flags?: IFeatureFlags,
+  utils: {
+    flags?: IFeatureFlags;
+    i18n: TI18nFuncMenu;
+  },
 ): Promise<{
   btnUploadFileInLocalStorage: HTMLInputElement;
   btnStartRecording: HTMLButtonElement;
@@ -234,7 +233,8 @@ export function setup(
 }> {
   _container = container;
   _labels = props.labels;
-  _flags = flags;
+  _flags = utils.flags;
+  _i18n = utils.i18n;
 
   return new Promise((resolve) => {
     _renderComponent();

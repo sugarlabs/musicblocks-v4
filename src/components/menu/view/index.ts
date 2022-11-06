@@ -1,4 +1,4 @@
-import { IFeatureFlags } from '@/@types';
+import { TI18nFunc, IFeatureFlags } from '@/@types';
 
 import { createItem } from '@/view';
 
@@ -23,7 +23,7 @@ let _btnReset: HTMLButtonElement;
 /**
  * Sets up the DOM.
  */
-export function setup(flags?: IFeatureFlags): Promise<void> {
+export function setup(utils: { flags?: IFeatureFlags; i18n: TI18nFunc }): Promise<void> {
     return new Promise((resolve) => {
         const menu = createItem({
             location: 'toolbar',
@@ -42,12 +42,9 @@ export function setup(flags?: IFeatureFlags): Promise<void> {
                     exportDrawing: 'Save mouse artwork as PNG',
                     loadProject: 'Load Project',
                     saveProject: 'Save project as HTML',
-                    run: 'run',
-                    stop: 'stop',
-                    reset: 'reset',
                 },
             },
-            flags,
+            utils,
         ).then(
             ({
                 btnUploadFileInLocalStorage,

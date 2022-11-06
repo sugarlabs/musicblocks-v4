@@ -38,10 +38,16 @@
         "no-duplicate-case": "error",
         "no-irregular-whitespace": "warn"
     },
+    "overrides": [
+        {
+            "files": ["*.json", "*.json5", "*.jsonc"],
+            "parser": "jsonc-eslint-parser"
+        }
+    ],
     "extends": [
         "eslint:recommended",
         "plugin:@typescript-eslint/recommended",
         "prettier",
-        "plugin:json/recommended-with-comments"
+        "plugin:jsonc/recommended-with-jsonc"
     ]
 }

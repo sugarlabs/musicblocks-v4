@@ -2,6 +2,8 @@ import { IFeatureFlags } from '@/@types';
 
 import { getCrumbs, run } from '@sugarlabs/musicblocks-v4-lib';
 
+import { i18nFactory } from '@/i18n';
+
 import { getButtons, setup as setupView, updateState } from './view';
 
 // -- public functions -----------------------------------------------------------------------------
@@ -10,7 +12,10 @@ import { getButtons, setup as setupView, updateState } from './view';
  * Mounts the Menu component.
  */
 export function mount(flags: IFeatureFlags): Promise<void> {
-    return setupView(flags);
+    return setupView({
+        flags,
+        i18n: i18nFactory('menu'),
+    });
 }
 
 /**
@@ -72,3 +77,11 @@ export function mountHook(name: string, callback: CallableFunction): void {
         buttons.reset.addEventListener('click', () => callback());
     }
 }
+
+// == strings ======================================================================================
+
+export const strings: { [key: string]: string } = {
+    run: 'run button - to start the program execution',
+    stop: 'stop button - to stop the program execution',
+    reset: 'reset button - clear program states',
+};

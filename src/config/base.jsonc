@@ -1,7 +1,12 @@
 {
+  "env": {
+    "lang": "en"
+  },
   "components": [
     {
-      "name": "menu",
+      "id": "menu",
+      "name": "Menu",
+      "description": "Menubar of the Primary Toolbar",
       "flags": {
         "uploadFile": false,
         "recording": false,
@@ -11,21 +16,20 @@
       }
     },
     {
-      "name": "editor",
+      "id": "editor",
+      "name": "Editor",
+      "description": "Code editor for programs",
       "parents": [
         "menu"
       ]
     },
     {
-      "name": "painter",
+      "id": "painter",
+      "name": "Painter",
+      "description": "Allows creation of artwork in the workspace",
       "parents": [
         "menu"
       ],
-      "elements": true
-    },
-    {
-      "name": "singer",
-      "parents": ["menu"],
       "elements": true
     }
   ]

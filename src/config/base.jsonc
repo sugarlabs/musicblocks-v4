@@ -1,4 +1,7 @@
 {
+  "env": {
+    "lang": "en"
+  },
   "components": [
     {
       "name": "menu",
@@ -21,11 +24,6 @@
       "parents": [
         "menu"
       ],
-      "elements": true
-    },
-    {
-      "name": "singer",
-      "parents": ["menu"],
       "elements": true
     }
   ]

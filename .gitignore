@@ -11,7 +11,7 @@
 /build
 
 # app config (dev)
-/src/config/*-dev.json
+/src/config/*-dev.jsonc
 
 # linter
 .eslintcache

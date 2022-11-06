@@ -5,6 +5,7 @@ import {
     librarySpecification,
 } from '@sugarlabs/musicblocks-v4-lib';
 
+import { loadStrings } from '@/i18n';
 // -- private variables ----------------------------------------------------------------------------
 
 /** File name of the selected config file. */
@@ -135,7 +136,7 @@ export function _serializeComponentDependencies(config: IConfig): IConfig {
 
     const serializedIndices = serializeDAG();
 
-    return { components: serializedIndices.map((i) => components[i]) };
+    return { ...config, components: serializedIndices.map((i) => components[i]) };
 }
 
 // -- public functions -----------------------------------------------------------------------------
@@ -151,21 +152,38 @@ export function getComponent(name: string): IComponent | null {
 
 // -------------------------------------------------------------------------------------------------
 
-// load the config file
+// load the config file and setup
 (async () => {
     let config: IConfig;
 
+    /*
+     * load the config file
+     * ====================================================
+     */
+
     try {
         if (process.env['NODE_ENV'] === 'development') {
-            const configModule = await import(`./${_configFile}-dev.json`);
+            const configModule = await import(`./${_configFile}-dev.jsonc`);
             config = configModule.default;
         } else {
             throw Error();
         }
     } catch (e) {
-        const configModule = await import(`./${_configFile}.json`);
+        const configModule = await import(`./${_configFile}.jsonc`);
         config = configModule.default;
     }
+
+    /*
+     * setup i18n language
+     * ====================================================
+     */
+
+    await loadStrings('lang' in config.env ? config.env.lang : undefined);
+
+    /*
+     * load and mount components
+     * ====================================================
+     */
 
     let importPromises: Promise<[string, IComponent]>[] = [];
 

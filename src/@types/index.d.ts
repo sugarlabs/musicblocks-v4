@@ -5,6 +5,11 @@ export interface IFeatureFlags {
 
 /** Interface representing a config file. */
 export interface IConfig {
+    /** Global environment variables/flags. */
+    env: {
+        /** i18n language. */
+        lang: TI18nLang;
+    };
     /** Component entries. */
     components: {
         /** Name of the component. */

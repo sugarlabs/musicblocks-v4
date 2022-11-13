@@ -153,8 +153,8 @@ please do an _interactive rebase_ with _squash_ and _reword_ to improve.
 
 4. Follow [conventional commit messages specification](https://www.conventionalcommits.org/en/v1.0.0-beta.2/)
 to help issue tracking. More often than not, take time to add meaningful commit descriptions. However,
-add specificity by mentioning the component; prefer `mycomponent: [feat] Add button` over
-`feat: Add button`, `mycomponent: [fix] Use try-catch` over `fix: Use try-catch`.
+add specificity by mentioning the component; prefer `feat(mycomponent): [UI] Add button` over
+`feat: Add button`, `fix(mycomponent): Use try-catch` over `fix: Use try-catch`, etc.
 
 5. At any point, when new components are created or existing components are modified, unit tests (passing)
 reflecting the changes need to be part of the PR before being reviewed.

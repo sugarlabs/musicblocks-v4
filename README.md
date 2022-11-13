@@ -80,8 +80,12 @@ references between them.
 
 ## Contributing
 
-Please visit the [discussions](https://github.com/sugarlabs/musicblocks-v4/discussions) tab at the
-top of the repository to follow and/or discuss about the planning progress.
+There is a [Music Blocks (v4)](https://github.com/orgs/sugarlabs/projects/9) _GitHub project_ which
+is used for task management. You can visit it from the
+[projects](https://github.com/sugarlabs/musicblocks-v4/projects?query=is%3Aopen) tab at the top of
+the repository. In addition, please visit the
+[discussions](https://github.com/sugarlabs/musicblocks-v4/discussions) tab at the top of the repository
+to follow and/or discuss about the planning progress.
 
 A prototype has been built currently. Parallel development of the programming framework will be done
 in the [**musicblocks-v4-lib**](https://github.com/sugarlabs/musicblocks-v4-lib) repository as mentioned

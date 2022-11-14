@@ -80,8 +80,12 @@ references between them.
 
 ## Contributing
 
-Please visit the [discussions](https://github.com/sugarlabs/musicblocks-v4/discussions) tab at the
-top of the repository to follow and/or discuss about the planning progress.
+There is a [Music Blocks (v4)](https://github.com/orgs/sugarlabs/projects/9) _GitHub project_ which
+is used for task management. You can visit it from the
+[projects](https://github.com/sugarlabs/musicblocks-v4/projects?query=is%3Aopen) tab at the top of
+the repository. In addition, please visit the
+[discussions](https://github.com/sugarlabs/musicblocks-v4/discussions) tab at the top of the repository
+to follow and/or discuss about the planning progress.
 
 A prototype has been built currently. Parallel development of the programming framework will be done
 in the [**musicblocks-v4-lib**](https://github.com/sugarlabs/musicblocks-v4-lib) repository as mentioned
@@ -149,8 +153,8 @@ please do an _interactive rebase_ with _squash_ and _reword_ to improve.
 
 4. Follow [conventional commit messages specification](https://www.conventionalcommits.org/en/v1.0.0-beta.2/)
 to help issue tracking. More often than not, take time to add meaningful commit descriptions. However,
-add specificity by mentioning the component; prefer `mycomponent: [feat] Add button` over
-`feat: Add button`, `mycomponent: [fix] Use try-catch` over `fix: Use try-catch`.
+add specificity by mentioning the component; prefer `feat(mycomponent): [UI] Add button` over
+`feat: Add button`, `fix(mycomponent): Use try-catch` over `fix: Use try-catch`, etc.
 
 5. At any point, when new components are created or existing components are modified, unit tests (passing)
 reflecting the changes need to be part of the PR before being reviewed.

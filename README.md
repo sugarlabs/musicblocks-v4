@@ -2,6 +2,31 @@
 
 A complete overhaul of [Music Blocks](https://github.com/sugarlabs/musicblocks).
 
+## Tech Stack
+
+Music Blocks (v4) is a client-side web application written in _TypeScript_. _React_ is used to render
+UI components, however, the project is set up to independently use any _JavaScript_ UI library/framework
+or the _JS DOM API_ directly. It is bundled using _Webpack_.
+
+- Application
+  - TypeScript 4
+  - React 17
+  - SCSS
+
+- Tooling
+  - Node.js
+  - Webpack 5
+  - ESLint
+  - Docker
+
+- Testing
+  - Jest
+  - Cypress
+
+## Development
+
+See [**full development guide**](./docs/DEV.md).
+
 ## Contributing
 
 There is a [Music Blocks (v4)](https://github.com/orgs/sugarlabs/projects/9) _GitHub project_ which
@@ -23,28 +48,3 @@ issue number in the pull request, but not the commit message. These practices al
 of ideas (Sugar Labs is a meritocracy).
 
 See [**full contributing guide**](./docs/CONTRIBUTING.md).
-
-## Development
-
-See [**full development guide**](./docs/DEV.md).
-
-### Tech Stack
-
-Music Blocks (v4) is a client-side web application written in _TypeScript_. _React_ is used to render
-UI components, however, the project is set up to independently use any _JavaScript_ UI library/framework
-or the _JS DOM API_ directly. It is bundled using _Webpack_.
-
-- Application
-  - TypeScript 4
-  - React 17
-  - SCSS
-
-- Tooling
-  - Node.js
-  - Webpack
-  - ESLint
-  - Docker
-
-- Testing
-  - Jest
-  - Cypress

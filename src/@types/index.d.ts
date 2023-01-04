@@ -45,6 +45,9 @@ export interface IComponent {
     specification?: {
         [identifier: string]: IElementSpecification;
     };
+    /* Current loading progress of the component (a number between 0 and 100). */
+    progress: number;
+    
 }
 
 // == i18n =========================================================================================

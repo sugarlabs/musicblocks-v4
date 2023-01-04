@@ -13,6 +13,7 @@ const commonConfig: Configuration = {
         },
         extensions: ['.tsx', '.ts', '.js', '.scss', '.sass'],
         fallback: {
+            "process": false,
             fs: false,
             path: false,
             crypto: false,

@@ -1,6 +1,7 @@
 import type { IConfig, IComponent } from '@/@types';
 import type { TComponentMap } from '@/@types/components';
 
+import { mountSplash, updateSplash } from '@/view/components';
 import {
     registerElementSpecificationEntries,
     librarySpecification,
@@ -8,6 +9,7 @@ import {
 
 import { enableStrings, loadStrings } from '@/i18n';
 import componentMap from '@/components';
+import { env } from 'process';
 
 // -- private variables ----------------------------------------------------------------------------
 
@@ -18,6 +20,13 @@ const _configFile = 'base';
 const _components: { [id: string]: IComponent } = {};
 
 // -- private functions ----------------------------------------------------------------------------
+/**
+ * Loads a single component.
+ * @param component - component to load
+ * @param progress - current progress of component loading
+ */
+let componentLoadedCount = 0;
+let componentCount = Object.keys(componentMap).length;
 
 /**
  * Serializes components by dependency ordering using Topological Sorting.
@@ -69,6 +78,7 @@ export function _serializeComponentDependencies(config: IConfig): IConfig {
                     DAG[i][j] = true;
                 }
             }
+            
         }
 
         return DAG;
@@ -138,6 +148,8 @@ export function _serializeComponentDependencies(config: IConfig): IConfig {
     };
 
     const serializedIndices = serializeDAG();
+
+
 
     return { ...config, components: serializedIndices.map((i) => components[i]) };
 }
@@ -281,16 +293,29 @@ export function getComponent(id: string): IComponent | null {
         registerElementSpecificationEntries(librarySpecification);
 
         const iterator = components.entries();
-
+      
         const setupComponent = (
             iteratorResult: IteratorResult<[number, [string, IComponent]], unknown>,
         ) => {
-            if (iteratorResult.done) return;
+            if (iteratorResult.done){
+                
+                return;
+            }
 
             const [_, [id, component]] = iteratorResult.value;
             _components[id] = component;
             // initialize the components after they are mounted
             component.setup().then(() => setupComponent(iterator.next()));
+            //update the p Splash function using componentLoadedCount and componentCount
+            componentLoadedCount++;
+            if(env.splash){
+                mountSplash();
+                updateSplash(componentLoadedCount, componentCount);
+                
+            }
+            
+        
+           
         };
 
         setupComponent(iterator.next());

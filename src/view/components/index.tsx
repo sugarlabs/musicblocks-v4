@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import Toolbar from './toolbar';
 import Splash from './Splash';
 import './index.scss';
-
+import { unmountSplashAndRenderApp } from './Splash';
 
 export function mountSplash() {
   ReactDOM.render(
@@ -21,13 +21,10 @@ export function updateSplash(componentCount : number, componentLoadedCount : num
 }
 
 export function unmountSplash() {
-  const rootElement = document.getElementById('root');
-  if (rootElement) {
-    ReactDOM.unmountComponentAtNode(rootElement);
-  }
+  unmountSplashAndRenderApp();
 }
 
-function App(): JSX.Element {
+export function App(): JSX.Element {
   return (
     <>
       <Toolbar />

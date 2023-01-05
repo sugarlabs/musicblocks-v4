@@ -1,7 +1,7 @@
 import type { IConfig, IComponent } from '@/@types';
 import type { TComponentMap } from '@/@types/components';
 
-import { mountSplash, updateSplash } from '@/view/components';
+import { mountSplash, updateSplash, unmountSplash } from '@/view/components';
 import {
     registerElementSpecificationEntries,
     librarySpecification,
@@ -9,7 +9,7 @@ import {
 
 import { enableStrings, loadStrings } from '@/i18n';
 import componentMap from '@/components';
-import { env } from 'process';
+
 
 // -- private variables ----------------------------------------------------------------------------
 
@@ -26,7 +26,7 @@ const _components: { [id: string]: IComponent } = {};
  * @param progress - current progress of component loading
  */
 let componentLoadedCount = 0;
-let componentCount = Object.keys(componentMap).length;
+
 
 /**
  * Serializes components by dependency ordering using Topological Sorting.
@@ -34,6 +34,7 @@ let componentCount = Object.keys(componentMap).length;
  * @returns config with serialized components
  */
 export function _serializeComponentDependencies(config: IConfig): IConfig {
+    
     const components = config.components;
 
     const length = components.length;
@@ -63,8 +64,13 @@ export function _serializeComponentDependencies(config: IConfig): IConfig {
      */
     const createDAG = () => {
         const DAG = new Array<boolean[]>(length);
-
+        mountSplash();
         for (let i = 0; i < length; i++) {
+            //update the p Splash function using componentLoadedCount and componentCount set tineout to 2 seconds from the start of the app
+        componentLoadedCount++;
+        updateSplash(componentLoadedCount, length);
+       
+
             const rowComponent = components[i];
             DAG[i] = new Array<boolean>(length);
             DAG[i].fill(false);
@@ -80,6 +86,10 @@ export function _serializeComponentDependencies(config: IConfig): IConfig {
             }
             
         }
+        //unmount after 2 seconds
+        setTimeout(() => {
+            unmountSplash();
+        }, 2000);
 
         return DAG;
     };
@@ -242,6 +252,7 @@ export function getComponent(id: string): IComponent | null {
 
     // for each component entry in the config file
     configEntriesSerialized.components.forEach((componentEntry) => {
+         
         const path =
             // fallback to id as path
             componentEntry.id in (componentMap as TComponentMap)
@@ -306,13 +317,7 @@ export function getComponent(id: string): IComponent | null {
             _components[id] = component;
             // initialize the components after they are mounted
             component.setup().then(() => setupComponent(iterator.next()));
-            //update the p Splash function using componentLoadedCount and componentCount
-            componentLoadedCount++;
-            if(env.splash){
-                mountSplash();
-                updateSplash(componentLoadedCount, componentCount);
-                
-            }
+           
             
         
            

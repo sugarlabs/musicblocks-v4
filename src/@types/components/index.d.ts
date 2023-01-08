@@ -3,7 +3,9 @@ export type TComponentMap = {
     [id: string]: {
         /** Relative path to folder containing the component's modules. */
         path: string;
-        /** Explanation of the component (for documentation). */
-        expl?: string;
+        /** Display name of the component. */
+        name: string;
+        /** Description of the component. */
+        desc: string;
     };
 };

@@ -163,6 +163,42 @@ export class PlayGenericNoteName extends ElementStatement {
     }
 }
 
+export class PlayInterval extends ElementStatement {
+    constructor() {
+        super('play-interval', 'play interval', { interval: ['number'] });
+    }
+
+    onVisit(params: { [key: string]: TData }): void {
+        
+        
+
+        const max = params['interval'] as number;
+
+        for (let i = 0;i < 2; i ++) {
+
+            const now = Tone.now();
+            let offset = noteValueToSeconds(_state.notesPlayed);
+
+            let note = testKeySignature.modalPitchToLetter(
+                parseInt(
+                    testKeySignature.genericNoteNameConvertToType(
+                        currentpitch._genericName,
+                        SCALAR_MODE_NUMBER,
+                    ),
+                ) - 1,
+            );
+            
+            console.log(note[0] + currentpitch.octave);
+            _defaultSynth.triggerAttackRelease(note[0] + currentpitch.octave, '8n', now + offset);
+    
+            _state.notesPlayed += 1 / 8;
+            currentpitch.applyScalarTransposition(max);
+        }
+        currentpitch._genericName = 'n1'; //resets
+        
+    }
+}
+
 /**
  * @class
  * Defines a `music` statement element that tests the synth.

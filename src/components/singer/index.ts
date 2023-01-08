@@ -37,6 +37,7 @@ import {
     ElementResetNotesPlayed,
     ElementPlayNote,
     PlayGenericNoteName,
+    PlayInterval,
 } from './singer';
 
 // -------------------------------------------------------------------------------------------------
@@ -71,4 +72,10 @@ export const specification: {
         category: 'Music',
         prototype: PlayGenericNoteName,
     },
+    'play-interval': {
+        label: 'play interval',
+        type: 'Statement',
+        category: 'Music',
+        prototype: PlayInterval,
+    }
 };

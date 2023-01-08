@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2021-2023, Walter Bender. All rights reserved.
+ * Copyright (c) 2021-2023, Anindya Kundu. All rights reserved.
+ *
+ * Licensed under the AGPL-3.0 License.
+ */
+
 import * as Tone from 'tone';
 
 // -- private variables ----------------------------------------------------------------------------

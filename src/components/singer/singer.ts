@@ -149,17 +149,44 @@ export class PlayGenericNoteName extends ElementStatement {
         const octave = currentpitch.octave;
         const generic = testKeySignature.convertToGenericNoteName(note); //converts solfege to generic note, ie. do ---> n0
         let full = testKeySignature.modalPitchToLetter(
-            parseInt(
-                testKeySignature.genericNoteNameConvertToType(
-                    generic,
-                    SCALAR_MODE_NUMBER,
-                ),
-            ) - 1,
+            parseInt(testKeySignature.genericNoteNameConvertToType(generic, SCALAR_MODE_NUMBER)) -
+                1,
         ); //converts generic note to letter note, ie. n0 -----> d
         let fullNote = full[0] + (octave + full[1]);
         console.log(fullNote);
         _defaultSynth.triggerAttackRelease(fullNote, '4n', now + offset); //playing the note
         _state.notesPlayed += 1 / 4;
+    }
+}
+
+export class PlayInterval extends ElementStatement {
+    constructor() {
+        super('play-interval', 'play interval', { interval: ['number'] });
+    }
+
+    onVisit(params: { [key: string]: TData }): void {
+        const max = params['interval'] as number;
+
+        for (let i = 0; i < 2; i++) {
+            const now = Tone.now();
+            let offset = noteValueToSeconds(_state.notesPlayed);
+
+            let note = testKeySignature.modalPitchToLetter(
+                parseInt(
+                    testKeySignature.genericNoteNameConvertToType(
+                        currentpitch._genericName,
+                        SCALAR_MODE_NUMBER,
+                    ),
+                ) - 1,
+            );
+
+            console.log(note[0] + currentpitch.octave);
+            _defaultSynth.triggerAttackRelease(note[0] + currentpitch.octave, '8n', now + offset);
+
+            _state.notesPlayed += 1 / 8;
+            currentpitch.applyScalarTransposition(max);
+        }
+        currentpitch._genericName = 'n1'; //resets
     }
 }
 

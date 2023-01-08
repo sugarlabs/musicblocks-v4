@@ -6,6 +6,7 @@ import {
     ElementResetNotesPlayed,
     ElementPlayNote,
     PlayGenericNoteName,
+    PlayInterval,
 } from './singer';
 
 // == definition ===================================================================================
@@ -41,6 +42,12 @@ export const definition: IComponentDefinitionSinger = {
             type: 'Statement',
             category: 'Music',
             prototype: PlayGenericNoteName,
+        },
+        'play-interval': {
+            label: 'play interval',
+            type: 'Statement',
+            category: 'Music',
+            prototype: PlayInterval,
         },
     },
 };

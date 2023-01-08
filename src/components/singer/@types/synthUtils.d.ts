@@ -34,5 +34,5 @@ export interface ISynthUtils {
      * Plays a note.
      * @throws {InvalidArgumentError}
      */
-    trigger: (pitches: string[], noteValue: number, instrumentName: string, instance: number) => void;
+    trigger: (pitches: (string|number)[], noteValue: number, instrumentName: string, instance: number) => void;
 }

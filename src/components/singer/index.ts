@@ -2,6 +2,13 @@ import { setup as setupComponent } from './singer';
 
 // -- public functions -----------------------------------------------------------------------------
 
+// adding define components -----
+interface IComponentConfig {
+    id: string;
+    dependencies: {
+        [id: string]: 'optional' | 'required';
+    };
+}
 /**
  * Mounts the Singer component.
  */

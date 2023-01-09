@@ -10,6 +10,13 @@ import { exportDrawing, startRecording, stopRecording } from './core/sketchP5';
 
 // -- public functions -----------------------------------------------------------------------------
 
+// adding define components -----
+interface IComponentConfig {
+    id: string;
+    dependencies: {
+        [id: string]: 'optional' | 'required';
+    };
+}
 /**
  * Mounts the Painter component.
  */

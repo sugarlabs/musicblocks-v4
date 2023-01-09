@@ -8,6 +8,13 @@ import { getButtons, setup as setupView, updateState } from './view';
 
 // -- public functions -----------------------------------------------------------------------------
 
+// adding define components -----
+interface IComponentConfig {
+    id: string;
+    dependencies: {
+        [id: string]: 'optional' | 'required';
+    };
+}
 /**
  * Mounts the Menu component.
  */

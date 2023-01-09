@@ -7,7 +7,6 @@
 
 import { ISynthUtils } from '../@types/synthUtils';
 import { InvalidArgumentError } from './errors';
-import { validatePitch } from './musicUtils';
 import * as Tone from 'tone';
 import { piano } from '../samples/piano';
 import { guitar } from '../samples/guitar';
@@ -42,8 +41,6 @@ type SampleDict = {
     data: string;
 };
 
-
-
 /**
  * A synth is a built-in or sample used to create a sound.
  */
@@ -52,222 +49,181 @@ export default class SynthUtils implements ISynthUtils {
      * @remarks
      * The class variables maintain state.
      */
+    builtinSynths: Map<string, Tone.PolySynth | undefined>;
+    samplerSynths: Map<string, Tone.Sampler | undefined>;
+    playerSynths: Map<string, Tone.Player | undefined>;
     samples: Record<string, SampleDict>;
-    builtinSynths: Record<string, Map<string, Tone.PolySynth | undefined>>;
-    samplers: Record<string, Map<string, Tone.Sampler | undefined>>;
-    players: Record<string, Map<string, Tone.Player | undefined>>;
-    notesPlayed: Record<string, number> = {};
-    beat: Record<string, number> = {};
-    beatsPerMinute: Record<string, number> = {};
 
     /**
-     * Init the synths for voice 0
+     * Init the standard synths
      */
     constructor() {
         /**
          * @remarks
-         * The constructor sets up Voice 0
+         * The constructor sets up the default set of synth.
          */
-        this.builtinSynths = {};
-        this.samplers = {};
-        this.players = {};
+        this.builtinSynths = new Map();
+        this.samplerSynths = new Map();
+        this.playerSynths = new Map();
 
-        /**
-         * We need an instance of each synth per "voice" so that we can
-         * maintain different volume settings.
-         */
-        this.samples = {};
+        this.builtinSynths.set("electronic synth", new Tone.PolySynth(Tone.Synth).toDestination());
+        /** TODO: Add other builtin synths, e.g. noise, sin, etc. */
 
         /**
          * ADD NEW SAMPLE NAMES HERE.
          */
+        this.samples = {};
         this.samples['piano'] = piano;
         this.samples['guitar'] = guitar;
         this.samples['snare'] = snare;
-
-        /**
-         * Create the synth instances for the default (0) voice.
-         */
-        this.addVoice(0);
-    }
-
-    private _addSynths(instance: number) {
-        const instanceName = instance.toString();
-        const builtinSynthMap = new Map<string, Tone.PolySynth | undefined>();
-        const samplerMap = new Map<string, Tone.Sampler | undefined>();
-        const playerMap = new Map<string, Tone.Player | undefined>();
-
-        let _synth;
-        /** TODO: add other builtin synths **/
-        _synth = new Tone.PolySynth(Tone.Synth).toDestination();
-        builtinSynthMap.set("electronic synth", _synth);
-
         for (const sample in this.samples) {
             const _pitch = this.samples[sample]['centerNote'];
-            _synth = new Tone.Sampler({ _pitch: this.samples[sample]['data'] });
-            samplerMap.set(sample, _synth);
-            // } else {
-            //    _synth = new Tone.Player(this.samples[sample]['data']);
-            //     playerMap.set(sample, _synth);
-            // }
+            this.samplerSynths.set(sample, new Tone.Sampler({ _pitch: this.samples[sample]['data'] }));
         }
-
-        this.builtinSynths[instanceName] = builtinSynthMap;
-        this.samplers[instanceName] = samplerMap;
-        this.players[instanceName] = playerMap;
     }
 
     /**
-      * @remarks
-      * Get the synth for a given instrument name and instance.
-      *
-      * @param instrumentName is the name of a builtin synth (e.g., polySynth)
-      * @param instance is the voice number associated with the synth
-      *
-      * @throws {InvalidArgumentError}
-      */
-    public getBuiltinSynth(instrumentName: string, instance: number): Tone.PolySynth | undefined {
-        const instanceName = instance.toString();
-        if (instrumentName in this.builtinSynths[instanceName]) {
-            return this.builtinSynths[instanceName].get(instrumentName);
+     * @remarks
+     * Get the synth for a given instrument name
+     *
+     * @param instrumentName is the name of a builtin synth (e.g., polySynth)
+     *
+     * @throws {InvalidArgumentError}
+     */
+    public getBuiltinSynth(instrumentName: string): Tone.PolySynth | undefined {
+        if (instrumentName in this.builtinSynths) {
+            return this.builtinSynths.get(instrumentName);
         }
         throw new InvalidArgumentError('cannot find builtin synth');
     }
     /**
-      * @remarks
-      * Get the synth for a given instrument name and instance.
-      *
-      * @param instrumentName is the name of an instrument synth
-      * @param instance is the voice number associated with the synth
-      *
-      * @throws {InvalidArgumentError}
-      */
-    public getSampler(instrumentName: string, instance: number): Tone.Sampler | undefined {
-        const instanceName = instance.toString();
-        if (instrumentName in this.samplers[instanceName]) {
-            return this.samplers[instanceName].get(instrumentName);
+     * @remarks
+     * Get the synth for a given instrument name
+     *
+     * @param instrumentName is the name of an instrument synth
+     *
+     * @throws {InvalidArgumentError}
+     */
+    public getSamplerSynth(instrumentName: string): Tone.Sampler | undefined {
+        if (instrumentName in this.samplerSynths) {
+            return this.samplerSynths.get(instrumentName);
         }
         throw new InvalidArgumentError('cannot find sampler');
     }
     /**
-      * @remarks
-      * Get the synth for a given instrument name and instance.
-      *
-      * @param instrumentName is the name of a sample.
-      * @param instance is the voice number associated with the synth
-      *
-      * @throws {InvalidArgumentError}
-      */
-    public getPlayer(instrumentName: string, instance: number): Tone.Player | undefined {
-        const instanceName = instance.toString();
-        if (instrumentName in this.players[instanceName]) {
-            return this.players[instanceName].get(instrumentName);
+     * @remarks
+     * Get the synth for a given instrument name and instance.
+     *
+     * @param instrumentName is the name of a sample.
+     *
+     * @throws {InvalidArgumentError}
+     */
+    public getPlayerSynth(instrumentName: string): Tone.Player | undefined {
+        if (instrumentName in this.playerSynths) {
+            return this.playerSynths.get(instrumentName);
         }
         throw new InvalidArgumentError('cannot find player');
     }
 
     /**
-      * @remarks
-      * Creates synths for a new voice (if it doesn't already exist)
-      * and sets the default values for the voice parameters.
-      */
-    public addVoice(instance: number) {
-        const instanceName = instance.toString();
-
-        /**
-         * We need to keep track of time: when did the first
-         * note start to play, the beat unit, e.g., 1/4 note, and the
-         * beats per minute.
-        */
-        this.notesPlayed[instanceName] = 0;
-        this.beat[instanceName] = 1 / 4;
-        this.beatsPerMinute[instanceName] = 90;
-
-        /**
-         * If the instance already exists, don't reload the synths.
-         */
-        if (instanceName in this.builtinSynths) {
-            return;
-        };
-        this._addSynths(instance);
-    }
-
-    /**
-     * Convert from note value to seconds
+     * @remarks
+     * Set the volume for a specific synth.
      *
-     * @param noteValue - 1/4, 1/8 etc.
-     * @param instance is needed for accessing the beat information
+     * @param volume from 0 to 100
      **/
-    public noteValueToSeconds(noteValue: number, instance: number): number {
-        const instanceName = instance.toString();
-        return (60 / this.beatsPerMinute[instanceName]) * (noteValue / this.beat[instanceName]);
-    }
-
-    /** TODO: ADD GETTERS/SETTERS for beat, et al. */
-    /** TODO: Volume */
-    /** TODO: Add effects */
-    /** TODO: Add other builtin synths, e.g. noise, sin, etc.
-
-    /**
-      * @remarks
-      * trigger pitch(es) on a synth for a specified note value.
-      *
-      * @param pitches is an array of pitches, e.g., ["c4", "g5"]
-      * @param noteValue is a note duration, e.g., 1/4
-      * @param instrumentName is the name of an instrument synth (either a sample or builtin)
-      * @param instance is the voice number associated with the instrument synth
-      *
-      * @throws {InvalidArgumentError}
-      */
-    public trigger(
-        pitches: (string|number)[],
-        noteValue: number,
-        instrumentName: string,
-        instance: number
-    ) {
-        const instanceName = instance.toString();
-        const now = Tone.now();
-        /**
-         * We calculate an offset based on how many notes we have already played.
-         */
-        const offset = this.noteValueToSeconds(this.notesPlayed[instance], instance);
-        const noteValueInSeconds = this.noteValueToSeconds(noteValue, instance);
-
-        /** Validate the pitches. (maybe move to musicUtils?) */
-        for (let i = 0; i < pitches.length; i++) {
-            validatePitch(pitches[i]);
+    public setVolume(instrumentName: string, volume: number) {
+        // We may adjust the relative volume of some Sampler synths.
+        let nv;
+        if (instrumentName in this.samples) {
+            const sv = this.samples[instrumentName].defaultVolume;
+            if (volume > 50) {
+                const d = 100 - sv;
+                nv = ((volume - 50) / 50) * d + sv;
+            } else {
+                nv = (volume / 50) * sv;
+            }
+        } else {
+            nv = volume;
         }
 
-        if (instrumentName in this.builtinSynths[instanceName]) {
-            const _synth = this.builtinSynths[instanceName].get(instrumentName);
-            if (_synth !== undefined) {
-                console.log(typeof(_synth));
-                _synth.triggerAttackRelease(pitches, noteValueInSeconds, now + offset);
+        // Convert volume to decibals
+        const db = Tone.gainToDb(nv / 100);
+        // Find the synth and set the volume.
+        if (instrumentName in this.builtinSynths) {
+            const synth = this.builtinSynths.get(instrumentName);
+            if (synth !== undefined) {
+                synth.volume.value = db;
             }
-        } else if (instrumentName in this.samplers[instanceName]) {
-            const _synth = this.samplers[instanceName].get(instrumentName);
-            if (_synth !== undefined) {
-                console.log(typeof(_synth));
+        } else if (instrumentName in this.samplerSynths) {
+            const synth = this.samplerSynths.get(instrumentName);
+            if (synth !== undefined) {
+                synth.volume.value = db;
+            }
+        } else if (instrumentName in this.playerSynths) {
+            const synth = this.playerSynths.get(instrumentName);
+            if (synth !== undefined) {
+                synth.volume.value = db;
+            }
+        }
+    }
+
+    /**
+     * @remarks
+     * Set the master volume
+     *
+     * @param volume from 0 to 100
+     **/
+    public setMasterVolume(volume: number) {
+        const db = Tone.gainToDb(volume / 100);
+        Tone.Destination.volume.rampTo(db, 0.01);
+    }
+
+    /** TODO: Add effects */
+
+    /**
+     * @remarks
+     * trigger pitch(es) on a synth for a specified note value.
+     *
+     * @param pitches is an array of pitches, e.g., ["c4", "g5"] or [440]
+     * @param noteValueInSeconds is a note duration in seconds
+     * @param instrumentName is the name of an instrument synth (either a sample or builtin)
+     * @param offset is the time in seconds since the synth was started.
+     *
+     * @throws {InvalidArgumentError}
+     */
+    public trigger(
+        pitches: (string|number)[],
+        noteValueInSeconds: number,
+        instrumentName: string,
+        offset: number
+    ) {
+        const now = Tone.now();
+
+        if (instrumentName in this.builtinSynths) {
+            const synth = this.getBuiltinSynth(instrumentName);
+            if (synth !== undefined) {
+                synth.triggerAttackRelease(pitches, noteValueInSeconds, now + offset);
+            }
+        } else if (instrumentName in this.samplerSynths) {
+            const synth = this.samplerSynths.get(instrumentName);
+            if (synth !== undefined) {
                 Tone.loaded().then(() => {
                     if (this.samples[instrumentName]['tonal']) {
-                        _synth.triggerAttackRelease(pitches, noteValueInSeconds, now + offset);
+                        synth.triggerAttackRelease(pitches, noteValueInSeconds, now + offset);
                     } else {
-                        _synth.triggerAttackRelease(this.samples[instrumentName]['centerNote'], noteValueInSeconds, now + offset);
+                        synth.triggerAttackRelease(this.samples[instrumentName]['centerNote'], noteValueInSeconds, now + offset);
                     }
                 });
             }
-        } else if (instrumentName in this.players[instanceName]) {
-            const _synth = this.players[instanceName].get(instrumentName);
-            if (_synth !== undefined) {
-                console.log(typeof(_synth));
+        } else if (instrumentName in this.playerSynths) {
+            const synth = this.playerSynths.get(instrumentName);
+            if (synth !== undefined) {
                 Tone.loaded().then(() => {
-                    _synth.start();
+                    synth.start();
                 });
             }
         } else {
             throw new InvalidArgumentError('cannot find instrument');
         }
-
-        this.notesPlayed[instanceName] += noteValueInSeconds;
     }
 };

@@ -6,6 +6,7 @@
  */
 
 import { ItemNotFoundError } from './errors';
+import { InvalidArgumentError } from './errors';
 
 /*
  * Utilities and constants retated to musical state as required by other related modules.
@@ -472,6 +473,45 @@ export function findFlatIndex(pitchName: string): number {
     }
 
     throw new ItemNotFoundError(`Could not find flat index for ${pitchName}`);
+}
+
+/**
+ * @remarks
+ * Pitches sent to the synth can be specified as a letter name or a number.
+ *
+ * @param pitchName - The pitch name to test.
+ *
+ * @throws {InvalidArgumentError}
+ * Thrown if pitchName isn't valid.
+ */
+export function validatePitch(pitchName: string|number) {
+    if (typeof(pitchName) === 'number') {
+       if (pitchName > 0) {
+           return;
+       }
+    } else if (!isNaN(Number(pitchName))) {
+        pitchName = Number(pitchName);  // pitch in Hertz
+        if (pitchName >= 0) {
+            return;
+        }
+    } else {
+        // Must be of the form letter[accidental]ocatve, e.g., f#4.
+        if (['cdefgab'].indexOf(pitchName.charAt(0)) !== -1) {
+            const octave = pitchName.charAt(pitchName.length - 1);
+            if (!isNaN(Number(octave)) && Number(octave) > 0) {  // Octave must be a positive int.
+                if (pitchName.length === 2) {
+                    return;
+                }
+                if (pitchName.length === 3) {  // There could be an accidental.
+                    const accidental = pitchName.charAt(1);
+                    if (['#b'].indexOf(accidental) !== -1) {
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    throw new InvalidArgumentError('bad pitch value');
 }
 
 /**

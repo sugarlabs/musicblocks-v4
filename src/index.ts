@@ -9,7 +9,9 @@ loadServiceWorker();
 
 // =================================================================================================
 
-import './view';
+import { setView } from './view';
+
+setView('main');
 
 requestAnimationFrame(() => import('./config'));
 

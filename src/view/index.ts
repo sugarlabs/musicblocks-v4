@@ -1,5 +1,3 @@
-import './components';
-
 // -- private functions ----------------------------------------------------------------------------
 
 function _createToolbarItem(
@@ -53,4 +51,5 @@ export function createItem(
     }
 }
 
+export { setView } from './components';
 export { setToolbarExtended, unsetToolbarExtended } from './components/toolbar';

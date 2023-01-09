@@ -1182,6 +1182,17 @@ function findFlatIndex: (pitchName: string) => number;
 
 /**
  * @remarks
+ * Pitches sent to the synth can be specified as a letter name or a number.
+ *
+ * @param pitchName - The pitch name to test.
+ *
+ * @throws {InvalidArgumentError}
+ * Thrown if pitchName isn't valid.
+ */
+export function validatePitch(pitchName: string|number) ==> void;
+
+/**
+ * @remarks
  * Pitches can be specified as a letter name, a solfege name, etc.
  *
  * @param pitchName - The pitch name to test.
@@ -1189,6 +1200,89 @@ function findFlatIndex: (pitchName: string) => number;
  * solfege name).
  */
 function getPitchType: (pitchName: string) => string;
+```
+
+## Synth Utils
+
+Synth Utils class in [`synthUtils.ts`](synthUtils.ts) is used to manage the synthesizers used
+by MusicBlocks.
+
+### Constructor
+
+```typescript
+export default class SynthUtils implements ISynthUtils {}
+```
+
+The constructor preps the synths for Voice 0.
+
+### Functions
+
+```typescript
+/**
+  * @remarks
+  * Get the synth for a given instrument name and instance.
+  *
+  * @param instrumentName is the name of a builtin synth (e.g., polySynth)
+  * @param instance is the voice number associated with the synth
+  *
+  * @throws {InvalidArgumentError}
+  */
+public getBuiltinSynth(instrumentName: string, instance: number): Tone.PolySynth | undefined {}
+
+/**
+  * @remarks
+  * Get the synth for a given instrument name and instance.
+  *
+  * @param instrumentName is the name of an instrument synth
+  * @param instance is the voice number associated with the synth
+  *
+  * @throws {InvalidArgumentError}
+  */
+public getSampler(instrumentName: string, instance: number): Tone.Sampler | undefined {}
+
+/**
+  * @remarks
+  * Get the synth for a given instrument name and instance.
+  *
+  * @param instrumentName is the name of a sample.
+  * @param instance is the voice number associated with the synth
+  *
+  * @throws {InvalidArgumentError}
+  */
+public getPlayer(instrumentName: string, instance: number): Tone.Player | undefined {}
+
+/**
+  * @remarks
+  * Creates synths for a new voice (if it doesn't already exist)
+  * and sets the default values for the voice parameters.
+  */
+public addVoice(instance: number) {}
+
+/**
+ * Convert from note value to seconds
+ *
+ * @param noteValue - 1/4, 1/8 etc.
+ * @param instance is needed for accessing the beat information
+ **/
+public noteValueToSeconds(noteValue: number, instance: number): number {}
+
+/**
+  * @remarks
+  * trigger pitch(es) on a synth for a specified note value.
+  *
+  * @param pitches is an array of pitches, e.g., ["c4", "g5"]
+  * @param noteValue is a note duration, e.g., 1/4
+  * @param instrumentName is the name of an instrument synth (either a sample or builtin)
+  * @param instance is the voice number associated with the instrument synth
+  *
+  * @throws {InvalidArgumentError}
+  */
+public trigger(
+    pitches: (string|number)[],
+    noteValue: number,
+    instrumentName: string,
+    instance: number
+) {}
 ```
 
 ## Example

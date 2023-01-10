@@ -15,14 +15,6 @@ import {
 import { generateAPI, resetProgram } from './core';
 
 // -- public functions -----------------------------------------------------------------------------
-
-// adding define components -----
-interface IComponentConfig {
-    id: string;
-    dependencies: {
-        [id: string]: 'optional' | 'required';
-    };
-}
 /**
  * Mounts the UI components.
  */
@@ -34,7 +26,6 @@ export function mount(): Promise<void> {
         })();
     });
 }
-
 /**
  * Initializes the component.
  */

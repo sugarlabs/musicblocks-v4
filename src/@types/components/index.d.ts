@@ -7,3 +7,12 @@ export type TComponentMap = {
         expl?: string;
     };
 };
+
+interface IComponentConfig {
+    id: string;
+    dependencies: {
+        [id: string]: 'optional' | 'required';
+    };
+}
+
+export function defineComponent(): IComponentConfig;

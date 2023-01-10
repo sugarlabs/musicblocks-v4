@@ -1,6 +1,7 @@
 {
   "env": {
-    "lang": "en"
+    "lang": "en",
+    "splash" : true
   },
   "components": [
     {

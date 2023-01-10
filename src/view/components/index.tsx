@@ -1,8 +1,25 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
 import Toolbar from './toolbar';
-
+import Splash from './splash';
 import './index.scss';
+export function mountSplash() {
+  ReactDOM.render(
+    <Splash progress={0} />,
+    document.getElementById('root'),
+  );
+}
 
-export default function App(): JSX.Element {
+export function updateSplash(componentCount : number, componentLoadedCount : number) {
+  const progress = (componentLoadedCount / componentCount) * 100;
+  ReactDOM.render(
+    <Splash progress={progress} />,
+    document.getElementById('root'),
+  );
+}
+
+
+export function App(): JSX.Element {
   return (
     <>
       <Toolbar />
@@ -10,11 +27,6 @@ export default function App(): JSX.Element {
     </>
   );
 }
-
-// -------------------------------------------------------------------------------------------------
-
-import React from 'react';
-import ReactDOM from 'react-dom';
 
 /**
  * Sets the main application view.

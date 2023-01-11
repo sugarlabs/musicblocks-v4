@@ -48,11 +48,11 @@ const commonConfig: Configuration = {
                 ],
             },
             {
-                test: /\.(?:ico|gif|png|jpg|jpeg)$/i,
+                test: /\.(?:ico)$/i,
                 type: 'asset/resource',
             },
             {
-                test: /\.(woff(2)?|eot|ttf|otf|svg|)$/,
+                test: /\.(gif|jpg|jpeg|png|svg|mp3|ogg|wav|woff(2)?|eot|ttf|otf)$/,
                 type: 'asset/inline',
             },
             {

@@ -53,12 +53,24 @@ export async function importAsset(identifier: string, manifest: TAssetManifest):
     let { path, meta } = manifest;
     path = path.replaceAll(/^(.?\/)/g, '');
 
-    const data = (await import(`../../assets/${path}`)).default as string;
+    const data = await fetch(path)
+        .then((response) => response.blob())
+        .then((blob) => {
+            return new Promise<string>((resolve, reject) => {
+                try {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.readAsDataURL(blob);
+                } catch (e) {
+                    reject(e);
+                }
+            });
+        });
 
     await _loadAsset(identifier, {
         type: data.match(/data:(.+);base64/)![1] as TAssetType,
         data,
-        meta,
+        meta: meta === undefined ? {} : {},
     });
 }
 

@@ -165,14 +165,14 @@ export function getComponent(id: string): IComponent | null {
      */
 
     try {
-        if (process.env['NODE_ENV'] === 'development') {
-            const configModule = await import(`./${_configFile}-dev.jsonc`);
+        if (import.meta.env.DEV) {
+            const configModule = await import(`./config-${_configFile}-dev.jsonc`);
             config = configModule.default;
         } else {
             throw Error();
         }
     } catch (e) {
-        const configModule = await import(`./${_configFile}.jsonc`);
+        const configModule = await import(`./config-${_configFile}.jsonc`);
         config = configModule.default;
     }
 
@@ -238,11 +238,7 @@ export function getComponent(id: string): IComponent | null {
 
         // import the component module using the component id in the component entry
         importPromises.push(
-            // ignore Markdown files
-            import(
-                /* webpackExclude: /\.md$|editor-next/ */
-                `../components/${path}`
-            ).then((component: IComponent) => {
+            import(`../components/${path}/index.ts`).then((component: IComponent) => {
                 if ('elements' in componentEntry) {
                     // register the syntax elements specified in the component entry from the
                     // component module's specification

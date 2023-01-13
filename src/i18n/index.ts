@@ -12,7 +12,7 @@ let _stringsEN: TI18nFile = {};
  * @param lang - requested language
  */
 export async function loadStrings(lang: TI18nLang = 'en') {
-    _stringsEN = (await import(`./lang/${'en'}.jsonc`)).default as TI18nFile;
+    _stringsEN = (await import(`./lang/en.jsonc`)).default as TI18nFile;
     _strings =
         lang === 'en'
             ? { ..._stringsEN }

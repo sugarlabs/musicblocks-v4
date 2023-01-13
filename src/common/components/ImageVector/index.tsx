@@ -1,5 +1,12 @@
 import { useEffect, useRef } from 'react';
+
 import { getAsset } from '@/core/assets';
+
+// -- stylesheet -----------------------------------------------------------------------------------
+
+import './index.scss';
+
+// -- component definition -------------------------------------------------------------------------
 
 export default function (props: { identifier: string }): JSX.Element {
   const wrapper = useRef(null);
@@ -12,7 +19,7 @@ export default function (props: { identifier: string }): JSX.Element {
 
   return (
     <>
-      <div ref={wrapper}></div>
+      <div className="l-image l-image-vector" ref={wrapper}></div>
     </>
   );
 }

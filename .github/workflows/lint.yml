@@ -36,8 +36,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BRANCH: develop
           LINTER_RULES_PATH: /
-          JAVASCRIPT_ES_CONFIG_FILE: .eslintrc
-          TYPESCRIPT_ES_CONFIG_FILE: .eslintrc
+          JAVASCRIPT_ES_CONFIG_FILE: .eslintrc.cjs
+          TYPESCRIPT_ES_CONFIG_FILE: .eslintrc.cjs
           MARKDOWN_CONFIG_FILE: .markdownlint.jsonc
           VALIDATE_ALL_CODEBASE: false
           VALIDATE_CSS: false

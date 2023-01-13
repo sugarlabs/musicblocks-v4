@@ -11,7 +11,16 @@
     "endOfLine": "lf",
     "overrides": [
         {
-            "files": ["*.json", "*.jsonc", "*.yml", "*.html", "*.css", "*.scss", "*.tsx"],
+            "files": [
+                "*.json",
+                "*.jsonc",
+                "*.yml",
+                "*.html",
+                "*.css",
+                "*.scss",
+                "*.tsx",
+                "*.vue"
+            ],
             "options": {
                 "tabWidth": 2
             }

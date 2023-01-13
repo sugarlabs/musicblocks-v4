@@ -7,5 +7,6 @@ declare module '*.svg' {
 }
 
 declare module '*.jsonc';
+declare module '*.vue';
 
 declare module '*.wasm';

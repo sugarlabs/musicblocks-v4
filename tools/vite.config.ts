@@ -8,7 +8,7 @@ import vue from '@vitejs/plugin-vue';
 import { ViteEjsPlugin as ejs } from 'vite-plugin-ejs';
 import { VitePWA as pwa } from 'vite-plugin-pwa';
 import compression from 'vite-plugin-compression';
-import eslint from 'vite-plugin-eslint';
+import eslint from '@nabla/vite-plugin-eslint';
 import { visualizer } from 'rollup-plugin-visualizer';
 
 import { parse as parseJsonc } from 'jsonc-parser';

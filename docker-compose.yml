@@ -9,8 +9,8 @@ services:
     env_file:
       - ./env/development.env
     ports:
-      - '5000:8080' # development server mapped to 5000
-      - '5001:5000' # production http-server mapped to 5001
+      - '5173:5173' # development server
+      - '4173:4173' # production preview server
     volumes:
       - ./:/app/
     container_name: musicblocks-4-dev

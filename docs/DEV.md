@@ -164,24 +164,30 @@ After you are set-up, the steps you take depend on what you want to do:
         - For unoptimized development serving, run
 
             ```bash
-            npm start
+            npm run serve
             ```
 
-            This is spawned on `127.0.0.1:8080` inside the container, but mapped to `localhost:5000`
-            on host. Visit `localhost:5000` in a browser to view the web page served. If you are not
-            using the container, visit `localhost:8080`.
+            Visit `localhost:5173` in a browser to view the web page served.
 
         - For generating a generic production build, run
 
             ```bash
-            npm run build:root
+            npm run build
             ```
 
         - For generating a production build under the subdirectory `/musicblocks-v4/`, run
 
             ```bash
-            npm run build
+            npm run build:gh
             ```
+
+        - For serving the last production build (`dist` folder), run
+
+            ```bash
+            npm run preview
+            ```
+
+            Visit `localhost:4173` in a browser to view the web page served.
 
         - For running unit tests, run
 
@@ -194,7 +200,7 @@ After you are set-up, the steps you take depend on what you want to do:
             ```bash
             ## In 1 terminal
             npm run build
-            npm run serve # to start production build on localhost:5000
+            npm run preview
             ## In another terminal
             npm run test:e2e
             ```
@@ -202,18 +208,6 @@ After you are set-up, the steps you take depend on what you want to do:
         _**Note:**_ If you're running using _Docker Desktop_ on _Windows_ or _Mac_, you might experience
         longer execution times for these scripts. This happens due to cross-file-system communication.
         Duration varies across machines; duration primarily depends on hard drive read/write speed.
-
-- **HTTP server**
-
-  To spawn an _HTTP Server_ (uses _Python 3_'s `http.server`), run
-
-    ```bash
-    npm run serve
-    ```
-
-    This is spawned on `0.0.0.0:5000` inside the container, but mapped to `localhost:5001` on host.
-    Visit `localhost:5001` in a browser to view the web page served. If you are not using the
-    container, visit `localhost:5000`.
 
 - **Miscellaneous commands**
 

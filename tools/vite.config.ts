@@ -4,6 +4,7 @@ import path from 'path';
 
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import vue from '@vitejs/plugin-vue';
 import { ViteEjsPlugin as ejs } from 'vite-plugin-ejs';
 import { VitePWA as pwa } from 'vite-plugin-pwa';
 import compression from 'vite-plugin-compression';
@@ -37,6 +38,7 @@ export default defineConfig({
             description: 'A Musical Microworld',
         }),
         react(),
+        vue(),
 
         pwa({
             // eslint-disable-next-line @typescript-eslint/no-var-requires

@@ -45,7 +45,7 @@ export function saveProjectHTML(): void {
 export function loadProject(event: Event): void {
     const input = event.target;
     if ('files' in input!) {
-        readFileContent(input['files'][0])
+        readFileContent((input['files'] as Blob[])[0])
             .then((content) => {
                 let fileContent = content as string;
                 let projectSnapshotStartingIndex = fileContent.indexOf('<div class="code">') + 18;
@@ -93,15 +93,13 @@ export function uploadFileInLocalStorage(event: Event): void {
             let file = files[i];
 
             // Closure to capture the file information.
-            reader.onload = (function (theFile) {
-                return function (e) {
-                    let fileContentInBase64 = e.target?.result;
-                    if (fileContentInBase64 != undefined) {
-                        fileContentInBase64 = fileContentInBase64.toString();
-                        localStorage.setItem(theFile.name, fileContentInBase64);
-                    }
-                };
-            })(file);
+            reader.onload = () => {
+                let fileContentInBase64 = reader.result;
+                if (fileContentInBase64 !== null) {
+                    fileContentInBase64 = fileContentInBase64.toString();
+                    localStorage.setItem(file.name, fileContentInBase64);
+                }
+            };
 
             // Read in the image file as a data URL.
             reader.readAsDataURL(file);

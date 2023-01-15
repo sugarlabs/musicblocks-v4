@@ -5,7 +5,7 @@ import path from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { ViteEjsPlugin as ejs } from 'vite-plugin-ejs';
-import { VitePWA as pwa } from 'vite-plugin-pwa';
+// import { VitePWA as pwa } from 'vite-plugin-pwa';
 import compression from 'vite-plugin-compression';
 import eslint from 'vite-plugin-eslint';
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -38,16 +38,16 @@ export default defineConfig({
         }),
         react(),
 
-        pwa({
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            manifest: require(resolve('public/manifest.json')),
-            manifestFilename: 'manifest.json',
-            registerType: 'autoUpdate',
-            workbox: {
-                clientsClaim: true,
-                skipWaiting: true,
-            },
-        }),
+        // pwa({
+        //     // eslint-disable-next-line @typescript-eslint/no-var-requires
+        //     manifest: require(resolve('public/manifest.json')),
+        //     manifestFilename: 'manifest.json',
+        //     registerType: 'autoUpdate',
+        //     workbox: {
+        //         clientsClaim: true,
+        //         skipWaiting: true,
+        //     },
+        // }),
         compression({
             algorithm: 'gzip',
         }),

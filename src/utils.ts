@@ -1,6 +1,6 @@
-const BASE_URL = process.env.BASE_PATH ?? window?.location?.pathname ?? '/';
+const BASE_URL = import.meta.env.BASE_URL ?? window?.location?.pathname ?? '/';
 
-const enableSW = process.env.NODE_ENV === 'development' ? false : true;
+const enableSW = import.meta.env.DEV ? false : true;
 
 /**
  * Used to load service worker in production only
@@ -10,7 +10,7 @@ export const loadServiceWorker = () => {
     if ('serviceWorker' in navigator && enableSW) {
         window.addEventListener('load', () => {
             navigator.serviceWorker
-                .register(`${BASE_URL}service-worker.js`)
+                .register(`${BASE_URL}sw.js`)
                 .then((registration) => {
                     console.log('SW registered: ', registration);
                 })
@@ -33,7 +33,7 @@ export const loadServiceWorker = () => {
  * @returns URL to WASM module included as asset
  */
 export const constructWasmUrl = (importPath: string): string => {
-    if (process.env.NODE_ENV === 'production') {
+    if (import.meta.env.PROD) {
         return window.location.origin + window.location.pathname + importPath;
     } else {
         return importPath;

@@ -1,56 +1,88 @@
 import { TAssetManifest } from '@/@types/core/assets';
 
+// -------------------------------------------------------------------------------------------------
+
+/*
+ * please keep related items grouped together for better readability
+ */
+
+import imageLogo from './image/logo.png';
+
+import imageIconBuild from './image/icon/build.svg';
+import imageIconHelp from './image/icon/help.svg';
+import imageIconPin from './image/icon/pin.svg';
+import imageIconUnpin from './image/icon/unpin.svg';
+
+import imageIconRun from './image/icon/run.svg';
+import imageIconStop from './image/icon/stop.svg';
+import imageIconReset from './image/icon/reset.svg';
+import imageIconSaveProjectHTML from './image/icon/saveProjectHTML.svg';
+import imageIconExportDrawing from './image/icon/exportDrawing.svg';
+import imageIconStartRecording from './image/icon/startRecording.svg';
+import imageIconStopRecording from './image/icon/stopRecording.svg';
+
+import imageIconClose from './image/icon/close.svg';
+import imageIconCode from './image/icon/code.svg';
+
+import imageIconMouse from './image/icon/mouse.svg';
+
+// -------------------------------------------------------------------------------------------------
+
 const manifest: {
     [identifier: string]: TAssetManifest;
 } = {
     /*
-     * please maintain alphabetical order for readability
+     * please follow same import grouping as above
      */
 
+    'image.logo': {
+        path: imageLogo,
+    },
+
     'image.icon.build': {
-        path: './image/icon/build.svg',
-    },
-    'image.icon.close': {
-        path: './image/icon/close.svg',
-    },
-    'image.icon.code': {
-        path: './image/icon/code.svg',
-    },
-    'image.icon.exportDrawing': {
-        path: './image/icon/exportDrawing.svg',
+        path: imageIconBuild,
     },
     'image.icon.help': {
-        path: './image/icon/help.svg',
-    },
-    'image.icon.mouse': {
-        path: './image/icon/mouse.svg',
+        path: imageIconHelp,
     },
     'image.icon.pin': {
-        path: './image/icon/pin.svg',
-    },
-    'image.icon.reset': {
-        path: './image/icon/reset.svg',
-    },
-    'image.icon.run': {
-        path: './image/icon/run.svg',
-    },
-    'image.icon.saveProjectHTML': {
-        path: './image/icon/saveProjectHTML.svg',
-    },
-    'image.icon.startRecording': {
-        path: './image/icon/startRecording.svg',
-    },
-    'image.icon.stop': {
-        path: './image/icon/stop.svg',
-    },
-    'image.icon.stopRecording': {
-        path: './image/icon/stopRecording.svg',
+        path: imageIconPin,
     },
     'image.icon.unpin': {
-        path: './image/icon/unpin.svg',
+        path: imageIconUnpin,
     },
-    'image.logo': {
-        path: './image/logo.png',
+
+    'image.icon.run': {
+        path: imageIconRun,
+    },
+    'image.icon.stop': {
+        path: imageIconStop,
+    },
+    'image.icon.reset': {
+        path: imageIconReset,
+    },
+    'image.icon.saveProjectHTML': {
+        path: imageIconSaveProjectHTML,
+    },
+    'image.icon.exportDrawing': {
+        path: imageIconExportDrawing,
+    },
+    'image.icon.startRecording': {
+        path: imageIconStartRecording,
+    },
+    'image.icon.stopRecording': {
+        path: imageIconStopRecording,
+    },
+
+    'image.icon.close': {
+        path: imageIconClose,
+    },
+    'image.icon.code': {
+        path: imageIconCode,
+    },
+
+    'image.icon.mouse': {
+        path: imageIconMouse,
     },
 };
 

@@ -27,14 +27,11 @@
   ],
   "extends": "./tsconfig.paths.json",
   /**
-  * compilerOptions should be cjs for reading webpack config files
-  * ts-node is used to read webpack config
-  * hence overriding ts-node compilerOptions with module: "CommonJS"
-  * https://webpack.js.org/configuration/configuration-languages/#typescript
-  */
+   * `compilerOptions` should be `UMD` to execute vite scripts using `ts-node`
+   */
   "ts-node": {
     "compilerOptions": {
-      "module": "CommonJS"
+      "module": "UMD"
     }
   }
 }

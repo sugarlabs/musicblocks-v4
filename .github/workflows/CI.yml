@@ -7,8 +7,33 @@ on:
   pull_request:
 
 jobs:
-  test:
-    name: Run Unit and E2E Tests
+  smoke-test:
+    name: Run Smoke Test (build)
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the code base
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
+          npm ci
+          rm -rf .npmrc
+
+      - name: Build for Production
+        run: npm run build
+
+  source-test:
+    name: Run Unit and E2E Tests on Source Code
 
     runs-on: ubuntu-latest
 

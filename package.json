@@ -22,6 +22,7 @@
     "visualize": "ts-node tools visualize",
     "predeploy": "npm run dist",
     "deploy": "gh-pages -d dist",
+    "check": "tsc",
     "lint": "eslint src && textlint --rule terminology --rule no-dead-link README.md",
     "test:unit": "jest",
     "test:e2e": "cypress run"

@@ -1,4 +1,4 @@
-import { IComponent } from '..';
+import { IComponent } from '.';
 
 /**
  * Interface that represents the Menu component's API.

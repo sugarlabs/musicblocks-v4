@@ -1,5 +1,5 @@
-import type { IConfig, IComponent } from '@/@types';
-import type { TComponentMap } from '@/@types/components';
+import type { IConfig } from '@/@types';
+import type { IComponent, TComponentMap } from '@/@types/components';
 
 import {
     registerElementSpecificationEntries,

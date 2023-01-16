@@ -27,26 +27,6 @@ export interface IConfig {
     }[];
 }
 
-import { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
-
-/** Interface representing a component's API. */
-export interface IComponent {
-    /**
-     * Mounts the component (loads subcomponents, mounts DOM elements, etc.).
-     *
-     * @param flags - feature flag toggles
-     */
-    mount(flags?: IFeatureFlags): Promise<void>;
-    /** Sets up the component — initializes component after it is mounted. */
-    setup(): Promise<void>;
-    /** Map of the string identifiers the component requires i18n for. */
-    strings: { [key: string]: string };
-    /** Syntax element specification object for the component. */
-    specification?: {
-        [identifier: string]: IElementSpecification;
-    };
-}
-
 // == i18n =========================================================================================
 
 /** Type representing the allowed i18n language name strings. */

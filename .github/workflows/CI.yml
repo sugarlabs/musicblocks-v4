@@ -7,6 +7,31 @@ on:
   pull_request:
 
 jobs:
+  type-check:
+    name: Verify TypeScript types
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the code base
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
+          npm ci
+          rm -rf .npmrc
+
+      - name: Run Typescript
+        run: npm run check
+
   smoke-test:
     name: Run Smoke Test (build)
 

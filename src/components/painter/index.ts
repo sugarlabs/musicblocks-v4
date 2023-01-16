@@ -40,6 +40,7 @@ export const definition: IComponentDefinition = {
         saveProject: false,
     },
     strings: {},
+    assets: ['image.icon.mouse'],
     elements: {
         'move-forward': {
             label: 'forward',

@@ -29,6 +29,7 @@ export const definition: IComponentDefinition = {
     },
     flags: {},
     strings,
+    assets: ['image.icon.build', 'image.icon.help', 'image.icon.pin', 'image.icon.unpin'],
 };
 
 // == public functions =============================================================================

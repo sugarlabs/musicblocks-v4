@@ -27,6 +27,8 @@ export interface IComponentDefinition {
     strings: {
         [string: string]: string;
     };
+    /** Assets used. */
+    assets?: string[];
     /** Syntax elements exposed. */
     elements?: {
         [identifier: string]: IElementSpecification;

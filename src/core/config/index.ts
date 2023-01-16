@@ -238,7 +238,7 @@ export function getComponent(id: string): IComponent | null {
 
         // import the component module using the component id in the component entry
         importPromises.push(
-            import(`../components/${path}/index.ts`).then((component: IComponent) => {
+            import(`../../components/${path}/index.ts`).then((component: IComponent) => {
                 if ('elements' in componentEntry) {
                     // register the syntax elements specified in the component entry from the
                     // component module's specification

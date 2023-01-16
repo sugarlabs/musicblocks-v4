@@ -7,4 +7,4 @@ import { setView } from '@/view';
 
 setView('main');
 
-requestAnimationFrame(() => import('@/config'));
+requestAnimationFrame(() => import('@/core/config'));

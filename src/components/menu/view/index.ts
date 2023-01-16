@@ -1,6 +1,6 @@
 import { TI18nFunc, IFeatureFlags } from '@/@types';
 
-import { createItem } from '@/view';
+import { createItem } from '@/core/view';
 
 import { setup as setupComponent } from './components';
 

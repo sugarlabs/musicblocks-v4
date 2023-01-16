@@ -1,4 +1,4 @@
-import { createItem } from '@/view';
+import { createItem } from '@/core/view';
 import { buildProgram } from '../core';
 
 import { setStatus, setup as setupComponent } from './components';

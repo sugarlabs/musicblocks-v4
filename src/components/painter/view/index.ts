@@ -1,6 +1,6 @@
 import { ISketch } from '../@types';
 
-import { createItem } from '@/view';
+import { createItem } from '@/core/view';
 import { setup as setupComponent } from './components';
 import { setup as setupSprite } from './sprite';
 

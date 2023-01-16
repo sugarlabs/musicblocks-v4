@@ -3,7 +3,7 @@ loadServiceWorker();
 
 // =================================================================================================
 
-import { setView } from '@/view';
+import { setView } from '@/core/view';
 
 setView('main');
 

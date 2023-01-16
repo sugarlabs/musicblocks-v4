@@ -28,6 +28,15 @@ export const definition: IComponentDefinition = {
         saveProject: false,
     },
     strings,
+    assets: [
+        'image.icon.run',
+        'image.icon.stop',
+        'image.icon.reset',
+        'image.icon.saveProjectHTML',
+        'image.icon.exportDrawing',
+        'image.icon.startRecording',
+        'image.icon.stopRecording',
+    ],
 };
 
 // == public functions =============================================================================

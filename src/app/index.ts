@@ -1,4 +1,4 @@
-import { loadServiceWorker } from './utils';
+import { loadServiceWorker } from './utils/misc';
 loadServiceWorker();
 
 // =================================================================================================

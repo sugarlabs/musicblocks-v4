@@ -1,4 +1,53 @@
+import { IComponentDefinition } from '@/@types/components';
+
 import { setup as setupComponent } from './singer';
+import {
+    ElementTestSynth,
+    ElementResetNotesPlayed,
+    ElementPlayNote,
+    PlayGenericNoteName,
+} from './singer';
+
+// == definition ===================================================================================
+
+export const definition: IComponentDefinition = {
+    dependencies: {
+        optional: ['menu'],
+        required: [],
+    },
+    flags: {},
+    strings: {},
+    elements: {
+        'test-synth': {
+            label: 'test synth',
+            type: 'Statement',
+            category: 'Music',
+            prototype: ElementTestSynth,
+        },
+        'play-note': {
+            label: 'play note',
+            type: 'Statement',
+            category: 'Music',
+            prototype: ElementPlayNote,
+        },
+        'reset-notes-played': {
+            label: 'reset',
+            type: 'Statement',
+            category: 'Music',
+            prototype: ElementResetNotesPlayed,
+        },
+        'play-generic': {
+            label: 'play generic',
+            type: 'Statement',
+            category: 'Music',
+            prototype: PlayGenericNoteName,
+        },
+    },
+};
+
+export const strings = definition.strings;
+
+export const specification = definition.elements;
 
 // -- public functions -----------------------------------------------------------------------------
 
@@ -23,52 +72,3 @@ export function setup(): Promise<void> {
         })();
     });
 }
-
-// == strings ======================================================================================
-
-export const strings: { [key: string]: string } = {};
-
-// == specification ================================================================================
-
-import { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
-
-import {
-    ElementTestSynth,
-    ElementResetNotesPlayed,
-    ElementPlayNote,
-    PlayGenericNoteName,
-} from './singer';
-
-// -------------------------------------------------------------------------------------------------
-
-/**
- * Syntax element specification object for the Singer component.
- */
-export const specification: {
-    [identifier: string]: IElementSpecification;
-} = {
-    'test-synth': {
-        label: 'test synth',
-        type: 'Statement',
-        category: 'Music',
-        prototype: ElementTestSynth,
-    },
-    'play-note': {
-        label: 'play note',
-        type: 'Statement',
-        category: 'Music',
-        prototype: ElementPlayNote,
-    },
-    'reset-notes-played': {
-        label: 'reset',
-        type: 'Statement',
-        category: 'Music',
-        prototype: ElementResetNotesPlayed,
-    },
-    'play-generic': {
-        label: 'play generic',
-        type: 'Statement',
-        category: 'Music',
-        prototype: PlayGenericNoteName,
-    },
-};

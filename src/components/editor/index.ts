@@ -1,7 +1,7 @@
 import { IComponentDefinition } from '@/@types/components';
 import { IComponentMenu } from '@/@types/components/menu';
 
-import { getComponent } from '@/config';
+import { getComponent } from '@/core/config';
 import { setToolbarExtended, unsetToolbarExtended } from '@/view';
 
 import {

@@ -1,3 +1,4 @@
+import { IComponentDefinition } from '@/@types/components';
 import { IComponentMenu } from '@/@types/components/menu';
 
 import { getComponent } from '@/config';
@@ -14,7 +15,23 @@ import {
 } from './view';
 import { generateAPI, resetProgram } from './core';
 
-// -- public functions -----------------------------------------------------------------------------
+// == definition ===================================================================================
+
+export const strings: { [key: string]: string } = {
+    build: 'build button - build the program',
+    help: 'help button - show syntax information',
+};
+
+export const definition: IComponentDefinition = {
+    dependencies: {
+        optional: ['menu'],
+        required: [],
+    },
+    flags: {},
+    strings,
+};
+
+// == public functions =============================================================================
 
 /**
  * Mounts the UI components.
@@ -148,10 +165,3 @@ export function setup(): Promise<void> {
         resolve();
     });
 }
-
-// == strings ======================================================================================
-
-export const strings: { [key: string]: string } = {
-    build: 'build button - build the program',
-    help: 'help button - show syntax information',
-};

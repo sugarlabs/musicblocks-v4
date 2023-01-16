@@ -9,3 +9,26 @@ export type TComponentMap = {
         desc: string;
     };
 };
+
+/** Type definition for each component's definition object. */
+export interface IComponentDefinition {
+    /** Dependent components. */
+    dependencies: {
+        /** List of identifiers of required dependent components. */
+        required: string[];
+        /** List of identifiers of optional dependent components. */
+        optional: string[];
+    };
+    /** Feature flag map. */
+    flags: {
+        [flag: string]: boolean;
+    };
+    /** i18n string identifier - description map. */
+    strings: {
+        [string: string]: string;
+    };
+    /** Syntax elements exposed. */
+    elements?: {
+        [identifier: string]: IElementSpecification;
+    };
+}

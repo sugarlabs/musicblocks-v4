@@ -1,4 +1,5 @@
 import { IFeatureFlags } from '@/@types';
+import { IComponentDefinition } from '@/@types/components';
 
 import { getCrumbs, run } from '@sugarlabs/musicblocks-v4-lib';
 
@@ -6,7 +7,30 @@ import { i18nFactory } from '@/i18n';
 
 import { getButtons, setup as setupView, updateState } from './view';
 
-// -- public functions -----------------------------------------------------------------------------
+// == definition ===================================================================================
+
+export const strings: { [key: string]: string } = {
+    run: 'run button - to start the program execution',
+    stop: 'stop button - to stop the program execution',
+    reset: 'reset button - clear program states',
+};
+
+export const definition: IComponentDefinition = {
+    dependencies: {
+        optional: [],
+        required: [],
+    },
+    flags: {
+        uploadFile: false,
+        recording: false,
+        exportDrawing: false,
+        loadProject: false,
+        saveProject: false,
+    },
+    strings,
+};
+
+// == public functions =============================================================================
 
 /**
  * Mounts the Menu component.
@@ -77,11 +101,3 @@ export function mountHook(name: string, callback: CallableFunction): void {
         buttons.reset.addEventListener('click', () => callback());
     }
 }
-
-// == strings ======================================================================================
-
-export const strings: { [key: string]: string } = {
-    run: 'run button - to start the program execution',
-    stop: 'stop button - to stop the program execution',
-    reset: 'reset button - clear program states',
-};

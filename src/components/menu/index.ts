@@ -3,7 +3,7 @@ import { IComponentDefinition } from '@/@types/components';
 
 import { getCrumbs, run } from '@sugarlabs/musicblocks-v4-lib';
 
-import { i18nFactory } from '@/i18n';
+import { i18nFactory } from '@/core/i18n';
 
 import { getButtons, setup as setupView, updateState } from './view';
 

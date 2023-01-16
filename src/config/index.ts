@@ -6,7 +6,7 @@ import {
     librarySpecification,
 } from '@sugarlabs/musicblocks-v4-lib';
 
-import { enableStrings, loadStrings } from '@/i18n';
+import { enableStrings, loadStrings } from '@/core/i18n';
 import componentMap from '@/components';
 
 // -- private variables ----------------------------------------------------------------------------

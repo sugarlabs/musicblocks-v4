@@ -1,10 +1,24 @@
-import { loadServiceWorker } from './utils/misc';
-loadServiceWorker();
+async function initProd() {
+    const { setView } = await import('@/core/view');
+    setView('main');
+
+    await import('@/core/config');
+}
+
+async function initDev() {
+    const { setView } = await import('@/core/view');
+    setView('main');
+
+    await import('@/core/config');
+}
 
 // =================================================================================================
 
-import { setView } from '@/core/view';
+(async () => {
+    await (import.meta.env.PROD ? initProd : initDev).call(null);
 
-setView('main');
+    const { loadServiceWorker } = await import('./utils/misc');
+    loadServiceWorker();
+})();
 
-requestAnimationFrame(() => import('@/core/config'));
+export {};

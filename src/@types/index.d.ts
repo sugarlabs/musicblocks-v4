@@ -3,30 +3,6 @@ export interface IFeatureFlags {
     [name: string]: boolean;
 }
 
-/** Interface representing a config file. */
-export interface IConfig {
-    /** Global environment variables/flags. */
-    env: {
-        /** i18n language. */
-        lang: TI18nLang;
-    };
-    /** Component entries. */
-    components: {
-        /** Internal identifier of the component. */
-        id: string;
-        /** Display name of the component. */
-        name: string;
-        /** Display description of the component. */
-        description: string;
-        /** Names of the components that precede it in dependency graph. */
-        parents?: string[];
-        /** Feature flag toggles for the component (handled by the component). */
-        flags?: IFeatureFlags;
-        /** Names of the syntax elements to register. */
-        elements?: string[] | boolean;
-    }[];
-}
-
 // == i18n =========================================================================================
 
 /** Type representing the allowed i18n language name strings. */

@@ -20,11 +20,11 @@ export const definition: IComponentDefinition = {
         required: [],
     },
     flags: {
-        uploadFile: false,
-        recording: false,
-        exportDrawing: false,
-        loadProject: false,
-        saveProject: false,
+        uploadFile: 'boolean',
+        recording: 'boolean',
+        exportDrawing: 'boolean',
+        loadProject: 'boolean',
+        saveProject: 'boolean',
     },
     strings,
     assets: [

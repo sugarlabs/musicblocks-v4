@@ -25,7 +25,7 @@ export interface IComponentDefinition {
     };
     /** Feature flag map. */
     flags: {
-        [flag: string]: boolean;
+        [flag: string]: 'boolean';
     };
     /** i18n string identifier - description map. */
     strings: {

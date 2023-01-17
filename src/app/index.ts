@@ -171,7 +171,11 @@ function updateImportMap(
                 componentId,
                 import.meta.env.PROD
                     ? components.find(({ id }) => id === componentId)?.flags
-                    : componentDefinitionEntries.find(([id]) => id === 'menu')![1].flags,
+                    : Object.fromEntries(
+                          Object.keys(
+                              componentDefinitionEntries.find(([id]) => id === 'menu')![1].flags,
+                          ).map((flag) => [flag, false]),
+                      ),
             ]),
             (componentId) => updateImportMap('mount', 'components', componentId),
         );

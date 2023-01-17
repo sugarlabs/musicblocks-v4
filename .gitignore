@@ -10,9 +10,6 @@
 /dist
 /build
 
-# app config (dev)
-/src/config/*-dev.jsonc
-
 # linter
 .eslintcache
 

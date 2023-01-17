@@ -1,23 +1,27 @@
+/** Component identifier string. */
+export type TComponentId = 'menu' | 'editor' | 'painter' | 'singer';
+
 /** Type that represents the map of each component identifier with related fields. */
-export type TComponentMap = {
-    [id: string]: {
+export type TComponentMap = Record<
+    TComponentId,
+    {
         /** Relative path to folder containing the component's modules. */
         path: string;
         /** Display name of the component. */
         name: string;
         /** Description of the component. */
         desc: string;
-    };
-};
+    }
+>;
 
 /** Type definition for each component's definition object. */
 export interface IComponentDefinition {
     /** Dependent components. */
     dependencies: {
         /** List of identifiers of required dependent components. */
-        required: string[];
+        required: TComponentId[];
         /** List of identifiers of optional dependent components. */
-        optional: string[];
+        optional: TComponentId[];
     };
     /** Feature flag map. */
     flags: {

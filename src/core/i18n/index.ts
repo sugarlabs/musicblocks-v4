@@ -11,7 +11,7 @@ let _stringsEN: TI18nFile = {};
  * Loads dynamically the string file of requested language.
  * @param lang - requested language
  */
-export async function loadStrings(lang: TI18nLang = 'en') {
+export async function importStrings(lang: TI18nLang = 'en') {
     _stringsEN = (await import(`./lang/en.jsonc`)).default as TI18nFile;
     _strings =
         lang === 'en'

@@ -1,9 +1,7 @@
+import type { TFeatureFlagMenu, TI18nFuncMenu } from '@/@types/components/menu';
+
 import { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
-
-// -- types ----------------------------------------------------------------------------------------
-
-import type { TI18nFuncMenu } from '@/@types/components/menu';
 
 // -- resources ------------------------------------------------------------------------------------
 
@@ -30,7 +28,7 @@ let _labels: {
   loadProject: string;
   saveProject: string;
 };
-let _flags: { [flag: string]: boolean } | undefined;
+let _flags: TFeatureFlagMenu;
 let _states: { running: boolean } = { running: false };
 let _i18n: TI18nFuncMenu;
 
@@ -216,7 +214,7 @@ export function setup(
     };
   },
   utils: {
-    flags?: { [flag: string]: boolean };
+    flags: TFeatureFlagMenu;
     i18n: TI18nFuncMenu;
   },
 ): Promise<{

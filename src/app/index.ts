@@ -1,4 +1,4 @@
-import type { IAppConfig, IAppComponentConfig } from '@/@types/app';
+import type { IAppConfig } from '@/@types/app';
 import type { IComponent, IComponentDefinition, TComponentId } from '@/@types/components';
 
 import { loadServiceWorker } from './utils/misc';
@@ -65,10 +65,6 @@ function updateImportMap(
     // load configuration preset file
     const config = await loadConfig(import.meta.env.VITE_CONFIG_PRESET);
 
-    const components = config.components.map((component) =>
-        typeof component === 'string' ? { id: component } : component,
-    ) as IAppComponentConfig[];
-
     /*
      * Import and load i18n strings for the configured language asynchronously.
      */
@@ -89,7 +85,9 @@ function updateImportMap(
         const _components = await importComponents(
             (import.meta.env.PROD
                 ? Object.entries(componentMap)
-                      .filter(([id]) => components.map(({ id }) => id).includes(id as TComponentId))
+                      .filter(([id]) =>
+                          config.components.map(({ id }) => id).includes(id as TComponentId),
+                      )
                       .map(([id]) => id)
                 : Object.keys(componentMap)) as TComponentId[],
             (componentId: TComponentId) => updateImportMap('import', 'components', componentId),
@@ -159,7 +157,8 @@ function updateImportMap(
                 return {
                     id: componentId,
                     filter: import.meta.env.PROD
-                        ? components.find(({ id }) => id === componentId)?.elements
+                        ? // @ts-ignore
+                          config.components.find(({ id }) => id === componentId)?.elements
                         : true,
                 };
             }),
@@ -170,7 +169,8 @@ function updateImportMap(
             componentsOrdered.map((componentId) => [
                 componentId,
                 import.meta.env.PROD
-                    ? components.find(({ id }) => id === componentId)?.flags
+                    ? // @ts-ignore
+                      config.components.find(({ id }) => id === componentId)?.flags
                     : Object.fromEntries(
                           Object.keys(
                               componentDefinitionEntries.find(([id]) => id === 'menu')![1].flags,

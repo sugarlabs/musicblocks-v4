@@ -32,13 +32,7 @@ export const definition: IComponentDefinition = {
         optional: ['menu'],
         required: [],
     },
-    flags: {
-        uploadFile: false,
-        recording: false,
-        exportDrawing: false,
-        loadProject: false,
-        saveProject: false,
-    },
+    flags: {},
     strings: {},
     assets: ['image.icon.mouse'],
     elements: {

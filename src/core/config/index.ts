@@ -29,10 +29,14 @@ async function _importComponent(componentId: TComponentId, path: string): Promis
 /**
  * Mounts a component module.
  * @param componentId component identifier
+ * @param flags feature flags
  */
-async function _mountComponent(componentId: TComponentId): Promise<void> {
+async function _mountComponent(
+    componentId: TComponentId,
+    flags?: { [flag: string]: boolean },
+): Promise<void> {
     const component = _components[componentId]!;
-    await component.mount(component.definition.flags);
+    await component.mount(flags);
 }
 
 /**
@@ -83,23 +87,26 @@ export async function importComponents(
 
 /**
  * Mounts a list of component modules synchronously.
- * @param componentIds list of component identifiers
+ * @param entries list of tuples of component identifiers and feature flags
  * @param callback callback function to call after succesful mounting of each component
  */
 export async function mountComponents(
-    componentIds: TComponentId[],
+    entries: [TComponentId, { [flag: string]: boolean } | undefined][],
     callback: (componentId: TComponentId) => unknown,
 ): Promise<void> {
     return new Promise((resolve) => {
-        const iterator = componentIds.entries();
+        const iterator = entries.entries();
 
         async function _mountHelper(
-            iteratorResult: IteratorResult<[number, TComponentId], unknown>,
+            iteratorResult: IteratorResult<
+                [number, [TComponentId, { [flag: string]: boolean } | undefined]],
+                unknown
+            >,
         ): Promise<void> {
             if (iteratorResult.done) return;
 
-            const [_, componentId] = iteratorResult.value;
-            await _mountComponent(componentId);
+            const [_, [componentId, flags]] = iteratorResult.value;
+            await _mountComponent(componentId, flags);
             callback(componentId);
 
             return _mountHelper(iterator.next());

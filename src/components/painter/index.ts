@@ -1,5 +1,6 @@
-import { IComponentDefinition } from '@/@types/components';
-import { IComponentMenu } from '../../@types/components/menu';
+import type { IComponentDefinition } from '@/@types/components';
+import type { TInjectedPainter } from '@/@types/components/painter';
+import type { IComponentMenu } from '@/@types/components/menu';
 
 import { getComponent } from '@/core/config';
 
@@ -115,6 +116,13 @@ export const definition: IComponentDefinition = {
             prototype: ElementClear,
         },
     },
+};
+
+export const injected: TInjectedPainter = {
+    flags: undefined,
+    i18n: undefined,
+    // @ts-ignore
+    assets: undefined,
 };
 
 export const strings = definition.strings;

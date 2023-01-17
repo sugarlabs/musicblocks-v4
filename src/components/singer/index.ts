@@ -1,4 +1,5 @@
-import { IComponentDefinition } from '@/@types/components';
+import type { IComponentDefinition } from '@/@types/components';
+import type { TInjectedSinger } from '@/@types/components/singer';
 
 import { setup as setupComponent } from './singer';
 import {
@@ -43,6 +44,12 @@ export const definition: IComponentDefinition = {
             prototype: PlayGenericNoteName,
         },
     },
+};
+
+export const injected: TInjectedSinger = {
+    flags: undefined,
+    i18n: undefined,
+    assets: undefined,
 };
 
 export const strings = definition.strings;

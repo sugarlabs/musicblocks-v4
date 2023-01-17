@@ -1,3 +1,5 @@
+import type { TAsset } from '../core/assets';
+
 /** Component identifier string. */
 export type TComponentId = 'menu' | 'editor' | 'painter' | 'singer';
 
@@ -60,6 +62,15 @@ export interface IComponent {
     specification?: {
         [identifier: string]: IElementSpecification;
     };
-
+    /** Component definition. */
     definition: IComponentDefinition;
+    /** Items injected into the component after load. */
+    injected: {
+        /** Feature flags. */
+        flags?: { [flag: string]: boolean };
+        /** i18n strings. */
+        i18n?: { [key: string]: string };
+        /** Asset entries. */
+        assets?: { [assetId: string]: TAsset };
+    };
 }

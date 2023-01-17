@@ -1,5 +1,5 @@
-import type { TI18nLang } from '.';
-import { TFeatureFlagMenu } from './components/menu';
+import type { TI18nLang } from './core/i18n';
+import type { TFeatureFlagMenu } from './components/menu';
 
 /** Type definition of an app configuration preset's component configuration. */
 export type TAppComponentConfig =
@@ -11,7 +11,6 @@ export type TAppComponentConfig =
           flags: TFeatureFlagMenu;
       }
     | {
-          /** Component identifier. */
           id: 'painter';
           elements?: string[] | true;
       }

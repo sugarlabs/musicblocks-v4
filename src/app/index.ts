@@ -1,13 +1,14 @@
 import type { IAppConfig } from '@/@types/app';
 import type { IComponent, IComponentDefinition, TComponentId } from '@/@types/components';
+import type { TAsset } from '@/@types/core/assets';
 
 import { loadServiceWorker } from './utils/misc';
 
 import { default as assetManifest } from '@/assets';
 import { default as componentMap } from '@/components';
 
-import { importStrings } from '@/core/i18n';
-import { importAssets } from '@/core/assets';
+import { getStrings, importStrings } from '@/core/i18n';
+import { getAssets, importAssets } from '@/core/assets';
 import {
     importComponents,
     mountComponents,
@@ -74,6 +75,8 @@ function updateImportMap(
         updateImportMap('import', 'lang');
     }
 
+    /** Map of component identifier and corresponding component module. */
+    let components: Partial<Record<TComponentId, IComponent>>;
     /** List of 2-tuples of component identifier and component definition. */
     let componentDefinitionEntries: [TComponentId, IComponentDefinition][];
 
@@ -82,7 +85,7 @@ function updateImportMap(
      */
 
     {
-        const _components = await importComponents(
+        components = await importComponents(
             (import.meta.env.PROD
                 ? Object.entries(componentMap)
                       .filter(([id]) =>
@@ -94,7 +97,7 @@ function updateImportMap(
         );
 
         componentDefinitionEntries = (
-            Object.entries(_components) as [TComponentId, IComponent][]
+            Object.entries(components) as [TComponentId, IComponent][]
         ).map(([id, component]) => [id, component.definition]) as [
             TComponentId,
             IComponentDefinition,
@@ -120,6 +123,46 @@ function updateImportMap(
         } catch (e) {
             // do nothing
         }
+    }
+
+    /**
+     * Inject items into component modules.
+     */
+
+    {
+        // Inject i18n strings.
+        componentDefinitionEntries.forEach(
+            ([id, { strings }]) =>
+                (components[id]!.injected.i18n =
+                    Object.keys(strings).length !== 0
+                        ? getStrings(Object.keys(strings))
+                        : undefined),
+        );
+
+        // Inject asset entries.
+        componentDefinitionEntries.forEach(
+            ([id, { assets }]) =>
+                (components[id]!.injected.assets =
+                    assets !== undefined
+                        ? (getAssets(assets) as { [identifier: string]: TAsset })
+                        : undefined),
+        );
+
+        // Inject feature flags.
+        componentDefinitionEntries.forEach(
+            ([componentId, { flags }]) =>
+                (components[componentId]!.injected.flags = import.meta.env.PROD
+                    ? // @ts-ignore
+                      config.components.find(({ id }) => id === componentId)?.flags
+                    : Object.keys(flags).length !== 0
+                    ? Object.fromEntries(
+                          Object.keys(
+                              componentDefinitionEntries.find(([id]) => id === componentId)![1]
+                                  .flags,
+                          ).map((flag) => [flag, false]),
+                      )
+                    : undefined),
+        );
     }
 
     /**
@@ -173,7 +216,8 @@ function updateImportMap(
                       config.components.find(({ id }) => id === componentId)?.flags
                     : Object.fromEntries(
                           Object.keys(
-                              componentDefinitionEntries.find(([id]) => id === 'menu')![1].flags,
+                              componentDefinitionEntries.find(([id]) => id === componentId)![1]
+                                  .flags,
                           ).map((flag) => [flag, false]),
                       ),
             ]),

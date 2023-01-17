@@ -1,7 +1,4 @@
-// -- resources ------------------------------------------------------------------------------------
-
-import svgCode from '../../resources/code.svg';
-import svgClose from '../../resources/close.svg';
+import { getAsset } from '@/core/assets';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
@@ -23,18 +20,10 @@ export function setup(container: HTMLElement): void {
   container.id = 'editor-toolbar-btn';
   _container = container;
 
-  const loadSrc = async (svgSrc: string): Promise<string> => {
-    const svg = await fetch(svgSrc).then((res) => res.text());
-    return new Promise((resolve) => {
-      resolve(svg);
-    });
-  };
+  _svgCode = getAsset('image', 'image.icon.code')!.data;
+  _svgClose = getAsset('image', 'image.icon.close')!.data;
 
-  Promise.all([loadSrc(svgCode), loadSrc(svgClose)]).then(([svgCode, svgClose]) => {
-    [_svgCode, _svgClose] = [svgCode, svgClose];
-
-    setButtonImg('code');
-  });
+  setButtonImg('code');
 }
 
 /**

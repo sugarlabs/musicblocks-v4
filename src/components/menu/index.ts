@@ -3,8 +3,6 @@ import type { TFeatureFlagMenu } from '@/@types/components/menu';
 
 import { getCrumbs, run } from '@sugarlabs/musicblocks-v4-lib';
 
-import { i18nFactory } from '@/core/i18n';
-
 import { getButtons, setup as setupView, updateState } from './view';
 
 // == definition ===================================================================================
@@ -47,7 +45,6 @@ export const strings: { [key: string]: string } = definition.strings;
 export function mount(flags: TFeatureFlagMenu): Promise<void> {
     return setupView({
         flags,
-        i18n: i18nFactory('menu'),
     });
 }
 

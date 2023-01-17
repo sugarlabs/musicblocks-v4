@@ -1,4 +1,3 @@
-import { TI18nFunc } from '@/@types/core/i18n';
 import { TFeatureFlagMenu } from '@/@types/components/menu';
 
 import { createItem } from '@/core/view';
@@ -24,7 +23,7 @@ let _btnReset: HTMLButtonElement;
 /**
  * Sets up the DOM.
  */
-export function setup(utils: { flags: TFeatureFlagMenu; i18n: TI18nFunc }): Promise<void> {
+export function setup(utils: { flags: TFeatureFlagMenu }): Promise<void> {
     return new Promise((resolve) => {
         const menu = createItem({
             location: 'toolbar',

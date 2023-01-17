@@ -1,4 +1,4 @@
-import type { TFeatureFlagMenu, TI18nFuncMenu } from '@/@types/components/menu';
+import type { TFeatureFlagMenu } from '@/@types/components/menu';
 
 import { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
@@ -22,7 +22,6 @@ let _labels: {
 };
 let _flags: TFeatureFlagMenu;
 let _states: { running: boolean } = { running: false };
-let _i18n: TI18nFuncMenu;
 
 let _btnUploadFileInLocalStorage: HTMLInputElement;
 let _btnStartRecording: HTMLButtonElement;
@@ -157,7 +156,7 @@ function Menu(props: { states: { running: boolean } }): JSX.Element {
         ref={btnRunRef}
       >
         <p className="menu-btn-label">
-          <span>{_i18n('run')}</span>
+          <span>{'run'}</span>
         </p>
       </button>
       <button
@@ -165,12 +164,12 @@ function Menu(props: { states: { running: boolean } }): JSX.Element {
         ref={btnStopRef}
       >
         <p className="menu-btn-label">
-          <span>{_i18n('stop')}</span>
+          <span>{'stop'}</span>
         </p>
       </button>
       <button className="menu-btn" ref={btnResetRef}>
         <p className="menu-btn-label">
-          <span>{_i18n('reset')}</span>
+          <span>{'reset'}</span>
         </p>
       </button>
     </>
@@ -208,7 +207,6 @@ export function setup(
   },
   utils: {
     flags: TFeatureFlagMenu;
-    i18n: TI18nFuncMenu;
   },
 ): Promise<{
   btnUploadFileInLocalStorage: HTMLInputElement;
@@ -224,7 +222,6 @@ export function setup(
   _container = container;
   _labels = props.labels;
   _flags = utils.flags;
-  _i18n = utils.i18n;
 
   return new Promise((resolve) => {
     _renderComponent();

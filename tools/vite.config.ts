@@ -75,8 +75,8 @@ export default defineConfig({
         rollupOptions: {
             input: {
                 'index': resolve('index.html'),
-                'lang.en': resolve('src/core/i18n/lang/en.jsonc'),
-                'lang.es': resolve('src/core/i18n/lang/es.jsonc'),
+                'lang.en': resolve('src/core/i18n/lang/en.ts'),
+                'lang.es': resolve('src/core/i18n/lang/es.ts'),
                 'module.menu': resolve('src/components/menu/index.ts'),
                 'module.editor': resolve('src/components/editor/index.ts'),
                 'module.painter': resolve('src/components/painter/index.ts'),

@@ -24,12 +24,6 @@ export interface IComponentMenu extends IComponent {
     mountHook(name: string, callback: CallableFunction): void;
 }
 
-/** Type representing the allowed i18n string identifiers for the Menu component. */
-type TI18nMenu = 'reset' | 'run' | 'stop';
-
-/** Type representing the type overloaded i18n function for the Menu component. */
-export type TI18nFuncMenu = (key: TI18nMenu) => string;
-
 /** Type definition for feature flag toggles for the Menu component. */
 export type TFeatureFlagMenu = {
     uploadFile: boolean;
@@ -37,4 +31,19 @@ export type TFeatureFlagMenu = {
     exportDrawing: boolean;
     loadProject: boolean;
     saveProject: boolean;
+};
+
+export type TInjectedMenu = {
+    flags: Record<keyof TFeatureFlagMenu, boolean>;
+    i18n: Record<'menu.run' | 'menu.stop' | 'menu.reset', string>;
+    assets: Record<
+        | 'image.icon.run'
+        | 'image.icon.stop'
+        | 'image.icon.reset'
+        | 'image.icon.saveProjectHTML'
+        | 'image.icon.exportDrawing'
+        | 'image.icon.startRecording'
+        | 'image.icon.stopRecording',
+        string
+    >;
 };

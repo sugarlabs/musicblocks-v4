@@ -1,5 +1,5 @@
 import type { IComponentDefinition } from '@/@types/components';
-import type { TFeatureFlagMenu } from '@/@types/components/menu';
+import type { TFeatureFlagMenu, TInjectedMenu } from '@/@types/components/menu';
 
 import { getCrumbs, run } from '@sugarlabs/musicblocks-v4-lib';
 
@@ -33,6 +33,15 @@ export const definition: IComponentDefinition = {
         'image.icon.startRecording',
         'image.icon.stopRecording',
     ],
+};
+
+export const injected: TInjectedMenu = {
+    // @ts-ignore
+    flags: undefined,
+    // @ts-ignore
+    i18n: undefined,
+    // @ts-ignore
+    assets: undefined,
 };
 
 export const strings: { [key: string]: string } = definition.strings;

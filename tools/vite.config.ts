@@ -67,6 +67,8 @@ export default defineConfig({
         extensions: ['.tsx', '.ts', '.js', '.scss', '.sass', '.json'],
     },
 
+    envDir: resolve('env'),
+
     build: {
         chunkSizeWarningLimit: 1024,
         sourcemap: true,

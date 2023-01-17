@@ -1,4 +1,6 @@
-export default {
+import type { TComponentMap } from '@/@types/components';
+
+const componentMap: TComponentMap = {
     editor: {
         path: 'editor',
         name: 'Editor',
@@ -20,3 +22,5 @@ export default {
         desc: 'Allows creation of music in the workspace',
     },
 };
+
+export default componentMap;

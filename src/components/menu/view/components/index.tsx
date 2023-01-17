@@ -96,7 +96,7 @@ function Menu(props: { states: { running: boolean } }): JSX.Element {
     }
 
     const loadAsset = (element: HTMLElement, assetIdentifier: string) => {
-      element.innerHTML += getAsset('image', assetIdentifier)?.data;
+      element.innerHTML += getAsset(assetIdentifier)?.data;
       requestAnimationFrame(() =>
         (element.children[1] as SVGElement).classList.add('menu-btn-img'),
       );

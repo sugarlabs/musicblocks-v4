@@ -10,7 +10,7 @@ import './index.scss';
 
 export default function (props: { identifier: string }): JSX.Element {
   const wrapper = useRef(null);
-  const image = getAsset('image', props.identifier)?.data;
+  const image = getAsset(props.identifier)?.data;
 
   useEffect(() => {
     const _wrapper = wrapper.current! as HTMLDivElement;

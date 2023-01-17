@@ -1,18 +1,11 @@
-import {
-    TAsset,
-    TAssetAudio,
-    TAssetImage,
-    TAssetKind,
-    TAssetManifest,
-    TAssetType,
-} from '@/@types/core/assets';
+import { TAsset, TAssetManifest, TAssetType } from '@/@types/core/assets';
 
 import loaders from './loaders';
 
 // -- private variables ----------------------------------------------------------------------------
 
 /** Stores the asset map. */
-const _assets: Partial<Record<TAssetKind, { [identifier: string]: TAsset }>> = {};
+const _assets: { [identifier: string]: TAsset } = {};
 
 // -- private functions ----------------------------------------------------------------------------
 
@@ -22,26 +15,26 @@ const _assets: Partial<Record<TAssetKind, { [identifier: string]: TAsset }>> = {
  * @param asset asset item
  */
 async function _loadAsset(identifier: string, asset: TAsset): Promise<void> {
-    const kind = asset.type.split('/')[0] as TAssetKind;
-
-    if (!(kind in _assets)) _assets[kind] = {};
-
-    _assets[kind]![identifier] =
+    _assets[identifier] =
         asset.type in loaders ? await loaders[asset.type]!.call(null, asset) : asset;
 }
 
 // -- public functions -----------------------------------------------------------------------------
 
 /**
- * Returns an audio asset item, if present.
+ * Returns an asset entry.
+ * @param identifier asset identifier
  */
-export function getAsset(kind: 'audio', identifier: string): TAssetAudio | undefined;
+export function getAsset(identifier: string): TAsset | undefined {
+    return _assets[identifier];
+}
+
 /**
- * Returns an image asset item, if present.
+ * Returns map of asset entries corresponding to asset identifiers.
+ * @param identifiers list of asset identifiers
  */
-export function getAsset(kind: 'image', identifier: string): TAssetImage | undefined;
-export function getAsset(kind: TAssetKind, identifier: string): TAsset | undefined {
-    return !(kind in _assets) ? undefined : _assets[kind]![identifier];
+export function getAssets(identifiers: string[]): { [identifier: string]: TAsset | undefined } {
+    return Object.fromEntries(identifiers.map((identifier) => [identifier, getAsset(identifier)]));
 }
 
 /**

@@ -56,7 +56,7 @@ function Editor(): JSX.Element {
         ['image.icon.close', _btnClose],
       ] as [string, HTMLButtonElement][]
     ).forEach(([assetId, button]) => {
-      button.innerHTML = getAsset('image', assetId)!.data;
+      button.innerHTML = getAsset(assetId)!.data;
     });
   }, []);
 

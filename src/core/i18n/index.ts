@@ -1,4 +1,4 @@
-import type { TI18nFile, TI18nFunc, TI18nLang } from '@/@types';
+import type { TI18nFile, TI18nFunc, TI18nLang } from '@/@types/core/i18n';
 
 // -- private variables ----------------------------------------------------------------------------
 

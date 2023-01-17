@@ -1,4 +1,4 @@
-import { TI18nFunc } from '@/@types';
+import { TI18nFunc } from '@/@types/core/i18n';
 
 import { createItem } from '@/core/view';
 

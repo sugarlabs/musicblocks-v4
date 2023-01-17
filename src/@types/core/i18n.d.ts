@@ -1,5 +1,3 @@
-// == i18n =========================================================================================
-
 /** Type representing the allowed i18n language name strings. */
 export type TI18nLang = 'en' | 'es';
 

@@ -1,5 +1,3 @@
-import { TFeatureFlagMenu } from '@/@types/components/menu';
-
 import { createItem } from '@/core/view';
 
 import { setup as setupComponent } from './components';
@@ -23,7 +21,7 @@ let _btnReset: HTMLButtonElement;
 /**
  * Sets up the DOM.
  */
-export function setup(utils: { flags: TFeatureFlagMenu }): Promise<void> {
+export function setup(): Promise<void> {
     return new Promise((resolve) => {
         const menu = createItem({
             location: 'toolbar',
@@ -32,20 +30,16 @@ export function setup(utils: { flags: TFeatureFlagMenu }): Promise<void> {
         });
         menu.id = 'menu';
 
-        setupComponent(
-            menu,
-            {
-                labels: {
-                    uploadFileInLocalStorage: 'Upload a file',
-                    startRecording: 'Start animation Recording',
-                    stopRecording: 'Stop animation Recording',
-                    exportDrawing: 'Save mouse artwork as PNG',
-                    loadProject: 'Load Project',
-                    saveProject: 'Save project as HTML',
-                },
+        setupComponent(menu, {
+            labels: {
+                uploadFileInLocalStorage: 'Upload a file',
+                startRecording: 'Start animation Recording',
+                stopRecording: 'Stop animation Recording',
+                exportDrawing: 'Save mouse artwork as PNG',
+                loadProject: 'Load Project',
+                saveProject: 'Save project as HTML',
             },
-            utils,
-        ).then(
+        }).then(
             ({
                 btnUploadFileInLocalStorage,
                 btnStartRecording,

@@ -1,4 +1,5 @@
-import { IComponent } from '.';
+import type { IComponent } from '.';
+import type { TAsset } from '../core/assets';
 
 /**
  * Interface that represents the Menu component's API.
@@ -44,6 +45,6 @@ export type TInjectedMenu = {
         | 'image.icon.exportDrawing'
         | 'image.icon.startRecording'
         | 'image.icon.stopRecording',
-        string
+        TAsset
     >;
 };

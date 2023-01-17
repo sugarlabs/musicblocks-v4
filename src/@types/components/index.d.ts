@@ -16,11 +16,6 @@ export type TComponentMap = Record<
     }
 >;
 
-/** Type definition for feature flag toggles for a component. */
-export type TFeatureFlag = {
-    [flag: string]: 'boolean';
-};
-
 /** Type definition for each component's definition object. */
 export interface IComponentDefinition {
     /** Dependent components. */
@@ -31,7 +26,9 @@ export interface IComponentDefinition {
         optional: TComponentId[];
     };
     /** Feature flag map. */
-    flags: TFeatureFlag;
+    flags: {
+        [flag: string]: 'boolean';
+    };
     /** i18n string identifier - description map. */
     strings: {
         [string: string]: string;
@@ -48,12 +45,8 @@ import { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
 
 /** Interface representing a component's API. */
 export interface IComponent {
-    /**
-     * Mounts the component (loads subcomponents, mounts DOM elements, etc.).
-     *
-     * @param flags - feature flag toggles
-     */
-    mount(flags?: TFeatureFlag): Promise<void>;
+    /** Mounts the component (loads subcomponents, mounts DOM elements, etc.). */
+    mount(): Promise<void>;
     /** Sets up the component — initializes component after it is mounted. */
     setup(): Promise<void>;
     /** Map of the string identifiers the component requires i18n for. */

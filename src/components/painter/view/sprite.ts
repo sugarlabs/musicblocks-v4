@@ -1,4 +1,4 @@
-import { getAsset } from '@/core/assets';
+import { injected } from '..';
 
 // -- private variables ----------------------------------------------------------------------------
 
@@ -23,7 +23,7 @@ export function setup(interactor: HTMLElement): void {
 
     _sprite = spriteWrapper;
 
-    spriteWrapper.innerHTML = getAsset('image.icon.mouse')!.data as string;
+    spriteWrapper.innerHTML = injected.assets['image.icon.mouse'].data;
 
     const spriteElem = spriteWrapper.children[0] as SVGElement;
     spriteElem.classList.add('artboard-sprite');

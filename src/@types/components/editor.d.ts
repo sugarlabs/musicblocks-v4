@@ -1,3 +1,5 @@
+import type { TAsset } from '../core/assets';
+
 export type TInjectedEditor = {
     flags: undefined;
     i18n: Record<'editor.build' | 'editor.help', string>;
@@ -8,6 +10,6 @@ export type TInjectedEditor = {
         | 'image.icon.unpin'
         | 'image.icon.code'
         | 'image.icon.close',
-        string
+        TAsset
     >;
 };

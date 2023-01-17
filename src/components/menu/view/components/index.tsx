@@ -1,9 +1,7 @@
-import type { TFeatureFlagMenu } from '@/@types/components/menu';
-
 import { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 
-import { getAsset } from '@/core/assets';
+import { injected } from '../..';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
@@ -20,7 +18,6 @@ let _labels: {
   loadProject: string;
   saveProject: string;
 };
-let _flags: TFeatureFlagMenu;
 let _states: { running: boolean } = { running: false };
 
 let _btnUploadFileInLocalStorage: HTMLInputElement;
@@ -66,36 +63,32 @@ function Menu(props: { states: { running: boolean } }): JSX.Element {
 
     _mountedCallback();
 
-    if (_flags) {
-      Object.entries(_flags).forEach(([flag, value]) => {
-        flag;
-        value;
+    Object.entries(injected.flags).forEach(([flag, value]) => {
+      if (value === true) return;
 
-        if (value === true) return;
-
-        switch (flag) {
-          case 'uploadFile':
-            _btnUploadFileInLocalStorage.style.display = 'none';
-            break;
-          case 'recording':
-            _btnStartRecording.style.display = 'none';
-            _btnStopRecording.style.display = 'none';
-            break;
-          case 'exportDrawing':
-            _btnExportDrawing.style.display = 'none';
-            break;
-          case 'loadProject':
-            _btnLoadProject.style.display = 'none';
-            break;
-          case 'saveProject':
-            _btnSaveProject.style.display = 'none';
-            break;
-        }
-      });
-    }
+      switch (flag) {
+        case 'uploadFile':
+          _btnUploadFileInLocalStorage.style.display = 'none';
+          break;
+        case 'recording':
+          _btnStartRecording.style.display = 'none';
+          _btnStopRecording.style.display = 'none';
+          break;
+        case 'exportDrawing':
+          _btnExportDrawing.style.display = 'none';
+          break;
+        case 'loadProject':
+          _btnLoadProject.style.display = 'none';
+          break;
+        case 'saveProject':
+          _btnSaveProject.style.display = 'none';
+          break;
+      }
+    });
 
     const loadAsset = (element: HTMLElement, assetIdentifier: string) => {
-      element.innerHTML += getAsset(assetIdentifier)?.data;
+      // @ts-ignore
+      element.innerHTML += injected.assets[assetIdentifier].data;
       requestAnimationFrame(() =>
         (element.children[1] as SVGElement).classList.add('menu-btn-img'),
       );
@@ -156,7 +149,7 @@ function Menu(props: { states: { running: boolean } }): JSX.Element {
         ref={btnRunRef}
       >
         <p className="menu-btn-label">
-          <span>{'run'}</span>
+          <span>{injected.i18n['menu.run']}</span>
         </p>
       </button>
       <button
@@ -164,12 +157,12 @@ function Menu(props: { states: { running: boolean } }): JSX.Element {
         ref={btnStopRef}
       >
         <p className="menu-btn-label">
-          <span>{'stop'}</span>
+          <span>{injected.i18n['menu.stop']}</span>
         </p>
       </button>
       <button className="menu-btn" ref={btnResetRef}>
         <p className="menu-btn-label">
-          <span>{'reset'}</span>
+          <span>{injected.i18n['menu.reset']}</span>
         </p>
       </button>
     </>
@@ -205,9 +198,6 @@ export function setup(
       saveProject: string;
     };
   },
-  utils: {
-    flags: TFeatureFlagMenu;
-  },
 ): Promise<{
   btnUploadFileInLocalStorage: HTMLInputElement;
   btnStartRecording: HTMLButtonElement;
@@ -221,7 +211,6 @@ export function setup(
 }> {
   _container = container;
   _labels = props.labels;
-  _flags = utils.flags;
 
   return new Promise((resolve) => {
     _renderComponent();

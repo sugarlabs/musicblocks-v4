@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 
-import { getAsset } from '@/core/assets';
+import { injected } from '../..';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
@@ -56,7 +56,8 @@ function Editor(): JSX.Element {
         ['image.icon.close', _btnClose],
       ] as [string, HTMLButtonElement][]
     ).forEach(([assetId, button]) => {
-      button.innerHTML = getAsset(assetId)!.data;
+      // @ts-ignore
+      button.innerHTML = injected.assets[assetId].data;
     });
   }, []);
 

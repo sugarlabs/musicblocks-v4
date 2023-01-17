@@ -208,20 +208,8 @@ function updateImportMap(
         );
 
         // Mount components in serialized order
-        await mountComponents(
-            componentsOrdered.map((componentId) => [
-                componentId,
-                import.meta.env.PROD
-                    ? // @ts-ignore
-                      config.components.find(({ id }) => id === componentId)?.flags
-                    : Object.fromEntries(
-                          Object.keys(
-                              componentDefinitionEntries.find(([id]) => id === componentId)![1]
-                                  .flags,
-                          ).map((flag) => [flag, false]),
-                      ),
-            ]),
-            (componentId) => updateImportMap('mount', 'components', componentId),
+        await mountComponents(componentsOrdered, (componentId) =>
+            updateImportMap('mount', 'components', componentId),
         );
 
         // Initialize components in serialized order

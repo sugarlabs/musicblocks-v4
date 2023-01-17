@@ -1,4 +1,4 @@
-import { getAsset } from '@/core/assets';
+import { injected } from '../../..';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
@@ -20,8 +20,8 @@ export function setup(container: HTMLElement): void {
   container.id = 'editor-toolbar-btn';
   _container = container;
 
-  _svgCode = getAsset('image.icon.code')!.data;
-  _svgClose = getAsset('image.icon.close')!.data;
+  _svgCode = injected.assets['image.icon.code'].data;
+  _svgClose = injected.assets['image.icon.close'].data;
 
   setButtonImg('code');
 }

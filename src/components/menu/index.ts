@@ -1,5 +1,5 @@
 import type { IComponentDefinition } from '@/@types/components';
-import type { TFeatureFlagMenu, TInjectedMenu } from '@/@types/components/menu';
+import type { TInjectedMenu } from '@/@types/components/menu';
 
 import { getCrumbs, run } from '@sugarlabs/musicblocks-v4-lib';
 
@@ -51,10 +51,8 @@ export const strings: { [key: string]: string } = definition.strings;
 /**
  * Mounts the Menu component.
  */
-export function mount(flags: TFeatureFlagMenu): Promise<void> {
-    return setupView({
-        flags,
-    });
+export function mount(): Promise<void> {
+    return setupView();
 }
 
 /**

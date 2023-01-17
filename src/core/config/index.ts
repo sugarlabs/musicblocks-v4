@@ -1,4 +1,4 @@
-import type { IComponent, TComponentId, TFeatureFlag } from '@/@types/components';
+import type { IComponent, TComponentId } from '@/@types/components';
 import type { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
 
 import { default as componentMap } from '@/components';
@@ -29,11 +29,10 @@ async function _importComponent(componentId: TComponentId, path: string): Promis
 /**
  * Mounts a component module.
  * @param componentId component identifier
- * @param flags feature flags
  */
-async function _mountComponent(componentId: TComponentId, flags?: TFeatureFlag): Promise<void> {
+async function _mountComponent(componentId: TComponentId): Promise<void> {
     const component = _components[componentId]!;
-    await component.mount(flags);
+    await component.mount();
 }
 
 /**
@@ -88,22 +87,19 @@ export async function importComponents(
  * @param callback callback function to call after succesful mounting of each component
  */
 export async function mountComponents(
-    entries: [TComponentId, TFeatureFlag | undefined][],
+    componentIds: TComponentId[],
     callback: (componentId: TComponentId) => unknown,
 ): Promise<void> {
     return new Promise((resolve) => {
-        const iterator = entries.entries();
+        const iterator = componentIds.entries();
 
         async function _mountHelper(
-            iteratorResult: IteratorResult<
-                [number, [TComponentId, TFeatureFlag | undefined]],
-                unknown
-            >,
+            iteratorResult: IteratorResult<[number, TComponentId], unknown>,
         ): Promise<void> {
             if (iteratorResult.done) return;
 
-            const [_, [componentId, flags]] = iteratorResult.value;
-            await _mountComponent(componentId, flags);
+            const [_, componentId] = iteratorResult.value;
+            await _mountComponent(componentId);
             callback(componentId);
 
             return _mountHelper(iterator.next());

@@ -77,6 +77,7 @@ export async function importAsset(identifier: string, manifest: TAssetManifest):
 /**
  * Fetches a list of asset files and loads them into the repository.
  * @param items asset items
+ * @param callback callback function to call after each asset item is imported
  */
 export async function importAssets(
     items: {
@@ -85,6 +86,13 @@ export async function importAssets(
         /** Asset details. */
         manifest: TAssetManifest;
     }[],
+    callback: (assetId: string) => unknown,
 ): Promise<void> {
-    await Promise.all(items.map(({ identifier, manifest }) => importAsset(identifier, manifest)));
+    await Promise.all(
+        items.map(({ identifier, manifest }) =>
+            importAsset(identifier, manifest).then(() => {
+                callback(identifier);
+            }),
+        ),
+    );
 }

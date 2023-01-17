@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 
 // -- types ----------------------------------------------------------------------------------------
 
-import type { IFeatureFlags } from '@/@types';
 import type { TI18nFuncMenu } from '@/@types/components/menu';
 
 // -- resources ------------------------------------------------------------------------------------
@@ -31,7 +30,7 @@ let _labels: {
   loadProject: string;
   saveProject: string;
 };
-let _flags: IFeatureFlags | undefined;
+let _flags: { [flag: string]: boolean } | undefined;
 let _states: { running: boolean } = { running: false };
 let _i18n: TI18nFuncMenu;
 
@@ -217,7 +216,7 @@ export function setup(
     };
   },
   utils: {
-    flags?: IFeatureFlags;
+    flags?: { [flag: string]: boolean };
     i18n: TI18nFuncMenu;
   },
 ): Promise<{

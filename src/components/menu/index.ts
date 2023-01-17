@@ -1,4 +1,3 @@
-import { IFeatureFlags } from '@/@types';
 import { IComponentDefinition } from '@/@types/components';
 
 import { getCrumbs, run } from '@sugarlabs/musicblocks-v4-lib';
@@ -44,7 +43,7 @@ export const definition: IComponentDefinition = {
 /**
  * Mounts the Menu component.
  */
-export function mount(flags: IFeatureFlags): Promise<void> {
+export function mount(flags: { [flag: string]: boolean }): Promise<void> {
     return setupView({
         flags,
         i18n: i18nFactory('menu'),

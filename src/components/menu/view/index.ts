@@ -1,4 +1,4 @@
-import { TI18nFunc, IFeatureFlags } from '@/@types';
+import { TI18nFunc } from '@/@types';
 
 import { createItem } from '@/core/view';
 
@@ -23,7 +23,10 @@ let _btnReset: HTMLButtonElement;
 /**
  * Sets up the DOM.
  */
-export function setup(utils: { flags?: IFeatureFlags; i18n: TI18nFunc }): Promise<void> {
+export function setup(utils: {
+    flags?: { [flag: string]: boolean };
+    i18n: TI18nFunc;
+}): Promise<void> {
     return new Promise((resolve) => {
         const menu = createItem({
             location: 'toolbar',

@@ -48,7 +48,7 @@ export interface IComponent {
      *
      * @param flags - feature flag toggles
      */
-    mount(flags?: IFeatureFlags): Promise<void>;
+    mount(flags?: { [flag: string]: boolean }): Promise<void>;
     /** Sets up the component — initializes component after it is mounted. */
     setup(): Promise<void>;
     /** Map of the string identifiers the component requires i18n for. */

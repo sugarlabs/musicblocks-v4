@@ -1,11 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 
-// -- resources ------------------------------------------------------------------------------------
-
-import svgHelp from '../resources/help.svg';
-import svgBuild from '../resources/build.svg';
-import svgClose from '../resources/close.svg';
+import { getAsset } from '@/core/assets';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
@@ -55,14 +51,12 @@ function Editor(): JSX.Element {
 
     (
       [
-        [svgHelp, _btnHelp],
-        [svgBuild, _btnBuild],
-        [svgClose, _btnClose],
+        ['image.icon.help', _btnHelp],
+        ['image.icon.build', _btnBuild],
+        ['image.icon.close', _btnClose],
       ] as [string, HTMLButtonElement][]
-    ).forEach(([svgSrc, button]) => {
-      fetch(svgSrc)
-        .then((res) => res.text())
-        .then((svg) => (button.innerHTML = svg));
+    ).forEach(([assetId, button]) => {
+      button.innerHTML = getAsset('image', assetId)!.data;
     });
   }, []);
 

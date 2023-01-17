@@ -1,9 +1,6 @@
-import mouseSVG from './resources/mouse.svg';
+import { getAsset } from '@/core/assets';
 
 // -- private variables ----------------------------------------------------------------------------
-
-/** Source URL of the sprite's SVG. */
-const _spriteSrc = mouseSVG;
 
 /** DOM element representing the sprite wrapper. */
 let _sprite: HTMLElement;
@@ -26,17 +23,12 @@ export function setup(interactor: HTMLElement): void {
 
     _sprite = spriteWrapper;
 
-    // fetches the SVG source string from the .svg source file's URL
-    fetch(_spriteSrc)
-        .then((res) => res.text())
-        .then((svg) => {
-            spriteWrapper.innerHTML = svg;
+    spriteWrapper.innerHTML = getAsset('image', 'image.icon.mouse')!.data as string;
 
-            const spriteElem = spriteWrapper.children[0] as SVGElement;
-            spriteElem.classList.add('artboard-sprite');
+    const spriteElem = spriteWrapper.children[0] as SVGElement;
+    spriteElem.classList.add('artboard-sprite');
 
-            _spriteSVG = spriteElem;
-        });
+    _spriteSVG = spriteElem;
 }
 
 /**

@@ -3,15 +3,7 @@ import type { TFeatureFlagMenu, TI18nFuncMenu } from '@/@types/components/menu';
 import { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 
-// -- resources ------------------------------------------------------------------------------------
-
-import svgStartRecording from '../resources/startRecording.svg';
-import svgStopRecording from '../resources/stopRecording.svg';
-import svgSaveProject from '../resources/saveProjectHTML.svg';
-import svgRun from '../resources/run.svg';
-import svgStop from '../resources/stop.svg';
-import svgReset from '../resources/reset.svg';
-import svgExportDrawing from '../resources/exportDrawing.svg';
+import { getAsset } from '@/core/assets';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
@@ -103,21 +95,22 @@ function Menu(props: { states: { running: boolean } }): JSX.Element {
       });
     }
 
-    const loadSVG = (element: HTMLElement, svgSrc: string) => {
-      fetch(svgSrc)
-        .then((res) => res.text())
-        .then((svg) => (element.innerHTML += svg))
-        .then(() => (element.children[1] as SVGElement).classList.add('menu-btn-img'));
+    const loadAsset = (element: HTMLElement, assetIdentifier: string) => {
+      element.innerHTML += getAsset('image', assetIdentifier)?.data;
+      requestAnimationFrame(() =>
+        (element.children[1] as SVGElement).classList.add('menu-btn-img'),
+      );
     };
 
-    loadSVG(btnStartRecordingRef.current! as HTMLElement, svgStartRecording);
-    loadSVG(btnStopRecordingRef.current! as HTMLElement, svgStopRecording);
-    loadSVG(btnExportDrawingRef.current! as HTMLElement, svgExportDrawing);
-    // loadSVG(btnLoadProjectRef.current! as HTMLElement, svgSaveProject);
-    loadSVG(btnSaveProjectRef.current! as HTMLElement, svgSaveProject);
-    loadSVG(btnRunRef.current! as HTMLElement, svgRun);
-    loadSVG(btnStopRef.current! as HTMLElement, svgStop);
-    loadSVG(btnResetRef.current! as HTMLElement, svgReset);
+    loadAsset(btnRunRef.current! as HTMLElement, 'image.icon.run');
+    loadAsset(btnStopRef.current! as HTMLElement, 'image.icon.stop');
+    loadAsset(btnResetRef.current! as HTMLElement, 'image.icon.reset');
+
+    loadAsset(btnStartRecordingRef.current! as HTMLElement, 'image.icon.startRecording');
+    loadAsset(btnStopRecordingRef.current! as HTMLElement, 'image.icon.stopRecording');
+    loadAsset(btnExportDrawingRef.current! as HTMLElement, 'image.icon.exportDrawing');
+    // loadAsset(btnLoadProjectRef.current! as HTMLElement, 'image.icon.loadProject');
+    loadAsset(btnSaveProjectRef.current! as HTMLElement, 'image.icon.saveProjectHTML');
   }, []);
 
   return (

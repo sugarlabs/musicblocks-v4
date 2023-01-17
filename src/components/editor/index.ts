@@ -29,7 +29,14 @@ export const definition: IComponentDefinition = {
     },
     flags: {},
     strings,
-    assets: ['image.icon.build', 'image.icon.help', 'image.icon.pin', 'image.icon.unpin'],
+    assets: [
+        'image.icon.build',
+        'image.icon.help',
+        'image.icon.pin',
+        'image.icon.unpin',
+        'image.icon.code',
+        'image.icon.close',
+    ],
 };
 
 // == public functions =============================================================================

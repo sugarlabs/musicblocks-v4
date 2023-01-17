@@ -29,3 +29,12 @@ type TI18nMenu = 'reset' | 'run' | 'stop';
 
 /** Type representing the type overloaded i18n function for the Menu component. */
 export type TI18nFuncMenu = (key: TI18nMenu) => string;
+
+/** Type definition for feature flag toggles for the Menu component. */
+export type TFeatureFlagMenu = {
+    uploadFile: boolean;
+    recording: boolean;
+    exportDrawing: boolean;
+    loadProject: boolean;
+    saveProject: boolean;
+};

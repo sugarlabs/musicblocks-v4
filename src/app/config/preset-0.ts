@@ -17,7 +17,9 @@ export const appConfig: IAppConfig = {
                 saveProject: false,
             },
         },
-        'editor',
+        {
+            id: 'editor',
+        },
         {
             id: 'painter',
             elements: true,

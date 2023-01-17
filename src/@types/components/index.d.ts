@@ -14,6 +14,11 @@ export type TComponentMap = Record<
     }
 >;
 
+/** Type definition for feature flag toggles for a component. */
+export type TFeatureFlag = {
+    [flag: string]: 'boolean';
+};
+
 /** Type definition for each component's definition object. */
 export interface IComponentDefinition {
     /** Dependent components. */
@@ -24,9 +29,7 @@ export interface IComponentDefinition {
         optional: TComponentId[];
     };
     /** Feature flag map. */
-    flags: {
-        [flag: string]: 'boolean';
-    };
+    flags: TFeatureFlag;
     /** i18n string identifier - description map. */
     strings: {
         [string: string]: string;
@@ -48,7 +51,7 @@ export interface IComponent {
      *
      * @param flags - feature flag toggles
      */
-    mount(flags?: { [flag: string]: boolean }): Promise<void>;
+    mount(flags?: TFeatureFlag): Promise<void>;
     /** Sets up the component — initializes component after it is mounted. */
     setup(): Promise<void>;
     /** Map of the string identifiers the component requires i18n for. */

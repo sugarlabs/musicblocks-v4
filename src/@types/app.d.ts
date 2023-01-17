@@ -1,17 +1,24 @@
 import type { TI18nLang } from '.';
-import type { TComponentId } from './components';
+import { TFeatureFlagMenu } from './components/menu';
 
 /** Type definition of an app configuration preset's component configuration. */
-export interface IAppComponentConfig {
-    /** Component identifier. */
-    id: TComponentId;
-    /** Feature flags. */
-    flags?: {
-        [flag: string]: boolean;
-    };
-    /** Syntax elements to enable; enable all if `true`. */
-    elements?: string[] | true;
-}
+export type TAppComponentConfig =
+    | {
+          id: 'editor';
+      }
+    | {
+          id: 'menu';
+          flags: TFeatureFlagMenu;
+      }
+    | {
+          /** Component identifier. */
+          id: 'painter';
+          elements?: string[] | true;
+      }
+    | {
+          id: 'singer';
+          elements?: string[] | true;
+      };
 
 /** Type defintion of an app configuration preset. */
 export interface IAppConfig {
@@ -25,5 +32,5 @@ export interface IAppConfig {
         lang: TI18nLang;
     };
     /** List of components to load */
-    components: (TComponentId | IAppComponentConfig)[];
+    components: TAppComponentConfig[];
 }

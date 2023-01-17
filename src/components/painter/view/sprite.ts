@@ -23,7 +23,7 @@ export function setup(interactor: HTMLElement): void {
 
     _sprite = spriteWrapper;
 
-    spriteWrapper.innerHTML = getAsset('image', 'image.icon.mouse')!.data as string;
+    spriteWrapper.innerHTML = getAsset('image.icon.mouse')!.data as string;
 
     const spriteElem = spriteWrapper.children[0] as SVGElement;
     spriteElem.classList.add('artboard-sprite');

@@ -17,18 +17,16 @@ import { generateAPI, resetProgram } from './core';
 
 // == definition ===================================================================================
 
-export const strings: { [key: string]: string } = {
-    build: 'build button - build the program',
-    help: 'help button - show syntax information',
-};
-
 export const definition: IComponentDefinition = {
     dependencies: {
         optional: ['menu'],
         required: [],
     },
     flags: {},
-    strings,
+    strings: {
+        'editor.build': 'build button - build the program',
+        'editor.help': 'help button - show syntax information',
+    },
     assets: [
         'image.icon.build',
         'image.icon.help',
@@ -38,6 +36,8 @@ export const definition: IComponentDefinition = {
         'image.icon.close',
     ],
 };
+
+export const strings: { [key: string]: string } = definition.strings;
 
 // == public functions =============================================================================
 

@@ -9,12 +9,6 @@ import { getButtons, setup as setupView, updateState } from './view';
 
 // == definition ===================================================================================
 
-export const strings: { [key: string]: string } = {
-    run: 'run button - to start the program execution',
-    stop: 'stop button - to stop the program execution',
-    reset: 'reset button - clear program states',
-};
-
 export const definition: IComponentDefinition = {
     dependencies: {
         optional: [],
@@ -27,7 +21,11 @@ export const definition: IComponentDefinition = {
         loadProject: 'boolean',
         saveProject: 'boolean',
     },
-    strings,
+    strings: {
+        'menu.run': 'run button - to start the program execution',
+        'menu.stop': 'stop button - to stop the program execution',
+        'menu.reset': 'reset button - clear program states',
+    },
     assets: [
         'image.icon.run',
         'image.icon.stop',
@@ -38,6 +36,8 @@ export const definition: IComponentDefinition = {
         'image.icon.stopRecording',
     ],
 };
+
+export const strings: { [key: string]: string } = definition.strings;
 
 // == public functions =============================================================================
 

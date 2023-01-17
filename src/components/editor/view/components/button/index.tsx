@@ -20,8 +20,8 @@ export function setup(container: HTMLElement): void {
   container.id = 'editor-toolbar-btn';
   _container = container;
 
-  _svgCode = getAsset('image', 'image.icon.code')!.data;
-  _svgClose = getAsset('image', 'image.icon.close')!.data;
+  _svgCode = getAsset('image.icon.code')!.data;
+  _svgClose = getAsset('image.icon.close')!.data;
 
   setButtonImg('code');
 }

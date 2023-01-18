@@ -1,0 +1,31 @@
+.splash-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  .splash-logo {
+    width: 200px;
+    height: auto;
+  }
+  .splash-progress-bar {
+    width: 80%;
+    height: 20px;
+    background-color: #ddd;
+    border-radius: 10px;
+    margin: 20px 0;
+    .splash-progress {
+      height: 100%;
+      background-color: #333;
+      border-radius: 10px;
+    }
+  }
+}
+
+
+

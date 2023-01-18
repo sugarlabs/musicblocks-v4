@@ -23,7 +23,7 @@
     "predeploy": "npm run dist",
     "deploy": "gh-pages -d dist",
     "check": "tsc",
-    "lint": "eslint src && textlint --rule terminology --rule no-dead-link README.md",
+    "lint": "eslint src && markdownlint -i src/components/editor-next src && textlint --rule terminology --rule no-dead-link README.md",
     "test:unit": "jest",
     "test:e2e": "cypress run"
   },
@@ -60,6 +60,8 @@
     "jest": "^28.1.3",
     "jqueryui": "^1.11.1",
     "jsonc-parser": "^3.2.0",
+    "markdownlint": "^0.27.0",
+    "markdownlint-cli": "^0.33.0",
     "node-html-parser": "^6.1.4",
     "open": "^8.4.0",
     "prettier": "2.3.1",

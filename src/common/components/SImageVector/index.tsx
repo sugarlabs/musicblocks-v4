@@ -1,21 +1,26 @@
 import { useEffect, useRef } from 'react';
 
-import { getAsset } from '@/core/assets';
-
 // -- stylesheet -----------------------------------------------------------------------------------
 
 import './index.scss';
 
 // -- component definition -------------------------------------------------------------------------
 
-export default function (props: { identifier: string }): JSX.Element {
+/**
+ * React component definition for Image Vector component.
+ */
+export default function (props: {
+  /** SVG content string. */
+  content: string;
+}): JSX.Element {
   const wrapper = useRef(null);
-  const image = getAsset(props.identifier)?.data;
 
   useEffect(() => {
     const _wrapper = wrapper.current! as HTMLDivElement;
-    _wrapper.innerHTML = image ? image : '';
+    _wrapper.innerHTML = props.content;
   }, []);
+
+  // ---------------------------------------------------------------------------
 
   return (
     <>

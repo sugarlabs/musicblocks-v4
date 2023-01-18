@@ -63,7 +63,7 @@ export async function importAsset(identifier: string, manifest: TAssetManifest):
     await _loadAsset(identifier, {
         type: data.match(/data:(.+);base64/)![1] as TAssetType,
         data,
-        meta: meta === undefined ? {} : {},
+        meta: meta !== undefined ? meta : {},
     });
 }
 

@@ -1,2 +1,3 @@
 export { default as WToggleSwitch } from './WToggleSwitch';
-export { default as ImageVector } from './ImageVector';
+
+export { default as SImageVector } from './SImageVector';

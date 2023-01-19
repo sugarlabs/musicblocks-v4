@@ -36,9 +36,7 @@ export interface IComponentDefinition {
     /** Assets used. */
     assets?: string[];
     /** Syntax elements exposed. */
-    elements?: {
-        [identifier: string]: IElementSpecification;
-    };
+    elements?: Record<string, IElementSpecification>;
 }
 
 import { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';

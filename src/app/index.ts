@@ -60,12 +60,51 @@ function updateImportMap(
     return loadMap;
 }
 
-// =================================================================================================
+async function _importComponents(config?: IAppConfig): Promise<{
+    components: Partial<Record<TComponentId, IComponent>>;
+    componentDefinitions: Partial<Record<TComponentId, IComponentDefinition>>;
+}> {
+    /** Map of component identifier and corresponding component module. */
+    let components: Partial<Record<TComponentId, IComponent>>;
+    /** List of 2-tuples of component identifier and component definition. */
+    let componentDefinitions: Partial<Record<TComponentId, IComponentDefinition>>;
 
-(async () => {
-    // load configuration preset file
-    const config = await loadConfig(import.meta.env.VITE_CONFIG_PRESET);
+    {
+        const componentIds = (
+            config !== undefined
+                ? Object.entries(componentMap)
+                      .filter(([id]) =>
+                          config.components.map(({ id }) => id).includes(id as TComponentId),
+                      )
+                      .map(([id]) => id)
+                : Object.keys(componentMap)
+        ) as TComponentId[];
 
+        const callback =
+            config !== undefined
+                ? (componentId: TComponentId) =>
+                      updateImportMap('import', 'components', componentId)
+                : () => 1;
+
+        components = await importComponents(componentIds, callback);
+
+        componentDefinitions = Object.fromEntries(
+            (Object.entries(components) as [TComponentId, IComponent][]).map(([id, component]) => [
+                id,
+                component.definition,
+            ]) as [TComponentId, IComponentDefinition][],
+        );
+    }
+
+    return {
+        components,
+        componentDefinitions,
+    };
+}
+
+// -------------------------------------------------------------------------------------------------
+
+async function init(config: IAppConfig) {
     /*
      * Import and load i18n strings for the configured language asynchronously.
      */
@@ -85,20 +124,9 @@ function updateImportMap(
      */
 
     {
-        components = await importComponents(
-            (import.meta.env.PROD
-                ? Object.entries(componentMap)
-                      .filter(([id]) =>
-                          config.components.map(({ id }) => id).includes(id as TComponentId),
-                      )
-                      .map(([id]) => id)
-                : Object.keys(componentMap)) as TComponentId[],
-            (componentId: TComponentId) => updateImportMap('import', 'components', componentId),
-        );
-
-        componentDefinitionEntries = (
-            Object.entries(components) as [TComponentId, IComponent][]
-        ).map(([id, component]) => [id, component.definition]) as [
+        const _components = await _importComponents(config);
+        components = _components.components;
+        componentDefinitionEntries = Object.entries(_components.componentDefinitions) as [
             TComponentId,
             IComponentDefinition,
         ][];
@@ -150,18 +178,11 @@ function updateImportMap(
 
         // Inject feature flags.
         componentDefinitionEntries.forEach(
-            ([componentId, { flags }]) =>
-                (components[componentId]!.injected.flags = import.meta.env.PROD
-                    ? // @ts-ignore
-                      config.components.find(({ id }) => id === componentId)?.flags
-                    : Object.keys(flags).length !== 0
-                    ? Object.fromEntries(
-                          Object.keys(
-                              componentDefinitionEntries.find(([id]) => id === componentId)![1]
-                                  .flags,
-                          ).map((flag) => [flag, false]),
-                      )
-                    : undefined),
+            ([componentId]) =>
+                (components[componentId]!.injected.flags = config.components.find(
+                    ({ id }) => id === componentId,
+                    // @ts-ignore
+                )?.flags),
         );
     }
 
@@ -199,10 +220,8 @@ function updateImportMap(
             componentsOrdered.map((componentId) => {
                 return {
                     id: componentId,
-                    filter: import.meta.env.PROD
-                        ? // @ts-ignore
-                          config.components.find(({ id }) => id === componentId)?.elements
-                        : true,
+                    // @ts-ignore
+                    filter: config.components.find(({ id }) => id === componentId)?.elements,
                 };
             }),
         );
@@ -220,5 +239,63 @@ function updateImportMap(
 
     if (import.meta.env.PROD) {
         loadServiceWorker();
+    }
+}
+
+// =================================================================================================
+
+(async function () {
+    // load configuration preset file
+    const config = await loadConfig(import.meta.env.VITE_CONFIG_PRESET);
+
+    /**
+     * if PRODUCTION mode, proceed initializing with configuration preset.
+     */
+
+    if (import.meta.env.PROD) {
+        await init(config);
+        return;
+    }
+
+    /**
+     * if DEVELOPMENT mode, and configuration in session storage,
+     * proceed initializing with configuration from session storage.
+     */
+
+    {
+        const config = window.sessionStorage.getItem('appConfig');
+
+        if (config !== null) {
+            await init(JSON.parse(config) as IAppConfig);
+            return;
+        }
+    }
+
+    /**
+     * if DEVELOPMENT mode, and configuration not in session storage,
+     * open configurator page.
+     * @todo currently needs refresh to go to main app page
+     */
+
+    {
+        const { mountConfigPage, updateConfigPage } = await import('@/core/view');
+
+        requestAnimationFrame(() => {
+            (async function () {
+                window.sessionStorage.setItem('appConfig', JSON.stringify(config));
+
+                await mountConfigPage(
+                    { ...config },
+                    (
+                        await _importComponents()
+                    ).componentDefinitions,
+                    (config: IAppConfig) =>
+                        requestAnimationFrame(() => {
+                            window.sessionStorage.setItem('appConfig', JSON.stringify(config));
+                            updateConfigPage(config);
+                        }),
+                );
+            })();
+        });
     }
 })();

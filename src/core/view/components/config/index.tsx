@@ -18,6 +18,8 @@ let _data: {
   handlerUpdate: (config: IAppConfig) => unknown;
 };
 
+let _configCache: IAppConfig;
+
 // -- private functions ----------------------------------------------------------------------------
 
 async function _mount(
@@ -63,6 +65,16 @@ async function _setup(component: 'config' | 'config-page'): Promise<void> {
 
 // -- public functions -----------------------------------------------------------------------------
 
+export function getConfigCache(): IAppConfig {
+  return { ..._configCache };
+}
+
+export function updateConfigCache(callback: (newConfig: IAppConfig) => IAppConfig): void {
+  _configCache = JSON.parse(JSON.stringify(callback(_configCache)));
+}
+
+// -------------------------------------------------------------------------------------------------
+
 /**
  * Mounts the configurator page in the view.
  * @param config app configurations
@@ -75,6 +87,7 @@ export async function mountConfigPage(
   handlerUpdate: (config: IAppConfig) => unknown,
 ) {
   _data = { definitions, config, handlerUpdate };
+  _configCache = JSON.parse(JSON.stringify({ ...config }));
   await _setup('config-page');
 }
 

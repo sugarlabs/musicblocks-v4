@@ -1,6 +1,7 @@
 import type { IAppConfig } from '@/@types/app';
 import type { IComponentDefinition, TComponentId } from '@/@types/components';
 
+import { getConfigCache, updateConfigCache } from '.';
 import { default as componentMap } from '@/components';
 
 // -- ui items -------------------------------------------------------------------------------------
@@ -22,6 +23,8 @@ export default function (props: {
   /** Callback for when configurations are updated. */
   handlerUpdate: (config: IAppConfig) => unknown;
 }): JSX.Element {
+  // ---------------------------------------------------------------------------
+
   function _isActive(componentId: TComponentId): boolean {
     return props.config.components.findIndex(({ id }) => id === componentId) !== -1;
   }
@@ -118,6 +121,8 @@ export default function (props: {
 
   function toggleModule(componentId: TComponentId) {
     _update((config: IAppConfig) => {
+      const configCache = getConfigCache();
+
       if (!modules[componentId].active) {
         const newComponentConfig: {
           id: TComponentId;
@@ -127,23 +132,70 @@ export default function (props: {
           id: componentId,
         };
 
+        const configCacheComponentIndex = configCache.components.findIndex(
+          ({ id }) => id === componentId,
+        );
+
         if ('elements' in props.definitions[componentId]!) {
-          newComponentConfig['elements'] = Object.keys(props.definitions[componentId]!.elements!);
+          newComponentConfig['elements'] =
+            configCacheComponentIndex !== -1
+              ? // @ts-ignore
+                configCache.components[configCacheComponentIndex].elements
+              : Object.keys(props.definitions[componentId]!.elements!);
         }
 
         if ('flags' in props.definitions[componentId]!) {
-          newComponentConfig['flags'] = Object.fromEntries(
-            Object.keys(props.definitions[componentId]!.flags!).map((flag) => [flag, false]),
-          );
+          newComponentConfig['flags'] =
+            configCacheComponentIndex !== -1
+              ? // @ts-ignore
+                configCache.components[configCacheComponentIndex].flags
+              : Object.fromEntries(
+                  Object.keys(props.definitions[componentId]!.flags!).map((flag) => [flag, false]),
+                );
         }
 
         // @ts-ignore
         config = { ...config, components: [...config.components, newComponentConfig] };
       } /** if (modules[componentId].active) */ else {
-        config.components.splice(
-          config.components.findIndex(({ id }) => id === componentId),
-          1,
+        let configCacheComponentIndex = configCache!.components.findIndex(
+          ({ id }) => id === componentId,
         );
+
+        const configComponentIndex = config.components.findIndex(({ id }) => id === componentId);
+
+        if (configCacheComponentIndex === -1) {
+          updateConfigCache((configCache) => {
+            const newConfigCache = { ...configCache };
+            // @ts-ignore
+            newConfigCache.components.push({ id: componentId });
+            configCacheComponentIndex = newConfigCache.components!.length - 1;
+            return newConfigCache;
+          });
+        }
+
+        if ('flags' in config.components[configComponentIndex]) {
+          updateConfigCache((configCache) => {
+            const newConfigCache = { ...configCache };
+            // @ts-ignore
+            newConfigCache.components[configCacheComponentIndex].flags =
+              //@ts-ignore
+              config.components[configComponentIndex].flags;
+            return newConfigCache;
+          });
+        }
+
+        if ('elements' in config.components[configComponentIndex]) {
+          updateConfigCache((configCache) => {
+            const newConfigCache = { ...configCache };
+            // @ts-ignore
+            newConfigCache.components[configCacheComponentIndex].elements =
+              //@ts-ignore
+              config.components[configComponentIndex].elements;
+            return newConfigCache;
+          });
+        }
+
+        config.components.splice(configComponentIndex, 1);
       }
 
       return { ...config };

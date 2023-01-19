@@ -89,7 +89,7 @@ export default class SynthUtils implements ISynthUtils {
     public addSampleSynth(sampleName: string) {
         if (sampleName in this.samples) {
             // Should we just warn or reject overwrites?
-            console.warning('overwriting ' + sampleName);
+            console.warn('overwriting ' + sampleName);
         }
         try {
             this.samples[sampleName] = {
@@ -97,7 +97,7 @@ export default class SynthUtils implements ISynthUtils {
                 ...injected.assets['audio.' + sampleName].meta,
             } as SampleDict;
         } catch (err) {
-            console.err(err);
+            console.error(err);
             throw new InvalidArgumentError(
                 'cannot load sample synth ' + sampleName
             );

@@ -24,10 +24,11 @@ export class Voice implements IVoice {
     private _beatsPerMinute: number;
     private _volume: number;
     private _notesPlayed: NoteTuple[];
+    private _temporalOffset: number;
     private _synthUtils: SynthUtils;
 
     /**
-     * Init the synths for voice 0
+     * Init the state for this voice.
      *
      * @params
      * synthUtils is the common instance of synthUtils used by all voices.
@@ -48,6 +49,7 @@ export class Voice implements IVoice {
         this._beat = 1 / 4;
         this._beatsPerMinute = 90;
         this._notesPlayed = [];
+        this._temporalOffset = 0;
         /**
          * We also track attributes such as a master volume.
          */
@@ -111,23 +113,38 @@ export class Voice implements IVoice {
         return this._notesPlayed.length;
     }
 
+    /**
+     * @remarks
+     * TemporalOffset is used to sync voices.
+     */
+    public get temporalOffset(): number {
+        return this._temporalOffset;
+    }
+ 
+    public set temporalOffset(temporalOffset: number) {
+        this._temporalOffset = temporalOffset;
+    }
+
     /** TODO: Volume */
 
     /**
       * @remarks
       * trigger pitch(es) on a synth for a specified note value.
       *
-      * @param pitches is an array of pitches, e.g., ["c4", "g5"]
+      * @param pitches is an array of pitches, e.g., ["c4", "g5", 440]
       * @param noteValue is a note duration, e.g., 1/4
       * @param instrumentName is the name of an instrument synth (either a sample or builtin)
-      * @param instance is the voice number associated with the instrument synth
+      * @param future is a temportal offset into the future (default is 0)
+      * @param tally is a flag to enable/disable tallying (default is true)
       *
       * @throws {InvalidArgumentError}
       */
     public playNotes(
         pitches: (string|number)[],
         noteValue: number,
-        instrumentName: string
+        instrumentName: string,
+        future: number,
+        tally: boolean
     ) {
         /**
          * We calculate an offset based on how many notes we have already played.
@@ -137,13 +154,38 @@ export class Voice implements IVoice {
             validatePitch(pitches[i]);
         }
 
+        if (future < 0) {
+            throw new InvalidArgumentError('future cannot be negative');
+        }
+
         this._synthUtils.trigger(
             pitches,
             noteValue,
             instrumentName,
-            this._numberOfNotesPlayedInSeconds
+            this._numberOfNotesPlayedInSeconds + this._temporalOffset + future
         );
-        this._numberOfNotesPlayedInSeconds += noteValueInSeconds;
-        this._notesPlayed.push([noteValue, pitches]);
+
+        if (tally) {
+            this._numberOfNotesPlayedInSeconds += noteValueInSeconds;
+            this._notesPlayed.push([noteValue, pitches]);
+        }
+    }
+
+    /**
+      * @remarks
+      * trigger pitch(es) on a synth for a specified note value.
+      *
+      * @param pitch is single pitch, e.g., "c4", "g5", or 440
+      * @param noteValue is a note duration, e.g., 1/4
+      * @param instrumentName is the name of an instrument synth (either a sample or builtin)
+      *
+      * @throws {InvalidArgumentError}
+      */
+    public playNote(
+        pitch: (string|number),
+        noteValue: number,
+        instrumentName: string,
+    ) {
+        this.playNotes([pitch], noteValue, instrumentName, 0, true);
     }
 };

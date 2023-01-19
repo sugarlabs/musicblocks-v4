@@ -9,6 +9,16 @@
 export interface ISynthUtils {
     /**
      * @remarks
+     * Add a new sample synth.
+     * 
+     * @param sample name
+     *     
+     * @throws {InvalidArgumentError}
+     */
+    addSampleSynth: (sampleName: string) => void;
+
+    /**
+     * @remarks
      * Returns a Tone.js synth for an instrument
      *
      * @param instrumentName is the name of a builtin synth (e.g., polySynth)

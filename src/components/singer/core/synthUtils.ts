@@ -9,7 +9,6 @@ import type { ISynthUtils } from '../@types/synthUtils';
 
 import * as Tone from 'tone';
 
-
 import { InvalidArgumentError } from './errors';
 import { injected } from '..';
 
@@ -71,30 +70,46 @@ export default class SynthUtils implements ISynthUtils {
         /** TODO: Add other builtin synths, e.g. noise, sin, etc. */
 
         /**
-         * ADD NEW SAMPLE NAMES HERE.
+         * We enable a few samples by default.
          */
         this.samples = {};
-        this.samples['piano'] = {
-            data: injected.assets['audio.piano'].data,
-            ...injected.assets['audio.piano'].meta,
-        } as SampleDict;
-        this.samples['guitar'] = {
-            data: injected.assets['audio.guitar'].data,
-            ...injected.assets['audio.guitar'].meta,
-        } as SampleDict;
-        this.samples['snare'] = {
-            data: injected.assets['audio.snare'].data,
-            ...injected.assets['audio.snare'].meta,
-        } as SampleDict;
-        for (const sample in this.samples) {
-            const _pitch = this.samples[sample]['centerNote'];
-            this.samplerSynths.set(
-                sample,
-                new Tone.Sampler({
-                    _pitch: this.samples[sample]['data'],
-                }),
+        this.addSampleSynth('piano');
+        this.addSampleSynth('guitar');
+        this.addSampleSynth('snare');
+    }
+
+    /**
+     * @remarks
+     * Add a new sample synth.
+     * 
+     * @param sample name
+     *     
+     * @throws {InvalidArgumentError}
+     */
+    public addSampleSynth(sampleName: string) {
+        if (sampleName in this.samples) {
+            // Should we just warn or reject overwrites?
+            console.warning('overwriting ' + sampleName);
+        }
+        try {
+            this.samples[sampleName] = {
+                data: injected.assets['audio.' + sampleName].data,
+                ...injected.assets['audio.' + sampleName].meta,
+            } as SampleDict;
+        } catch (err) {
+            console.err(err);
+            throw new InvalidArgumentError(
+                'cannot load sample synth ' + sampleName
             );
         }
+
+        const _pitch = this.samples[sample]['centerNote'];
+        this.samplerSynths.set(
+            sampleName,
+            new Tone.Sampler({
+                _pitch: this.samples[sampleName]['data'],
+            }),
+        );
     }
 
     /**

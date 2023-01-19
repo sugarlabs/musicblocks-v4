@@ -9,6 +9,8 @@ import type { IVoice, NoteTuple } from '../@types/voice';
 
 import SynthUtils from './synthUtils';
 import { validatePitch } from './musicUtils';
+import { InvalidArgumentError } from './errors';
+
 
 /**
  * The Voice class manages characteristics such as notes being played for a

@@ -1,5 +1,7 @@
 import type { TI18nLang } from './core/i18n';
 import type { TFeatureFlagMenu } from './components/menu';
+import type { TComponentDefinitionElementsPainter } from './components/painter';
+import type { TComponentDefinitionElementsSinger } from './components/singer';
 
 /** Type definition of an app configuration preset's component configuration. */
 export type TAppComponentConfig =
@@ -12,11 +14,11 @@ export type TAppComponentConfig =
       }
     | {
           id: 'painter';
-          elements?: string[] | true;
+          elements?: TComponentDefinitionElementsPainter[] | true;
       }
     | {
           id: 'singer';
-          elements?: string[] | true;
+          elements?: TComponentDefinitionElementsSinger[] | true;
       };
 
 /** Type defintion of an app configuration preset. */

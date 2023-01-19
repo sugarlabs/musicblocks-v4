@@ -1,5 +1,4 @@
-import type { IComponentDefinition } from '@/@types/components';
-import type { TInjectedPainter } from '@/@types/components/painter';
+import type { IComponentDefinitionPainter, TInjectedPainter } from '@/@types/components/painter';
 import type { IComponentMenu } from '@/@types/components/menu';
 
 import { getComponent } from '@/core/config';
@@ -28,7 +27,7 @@ import { exportDrawing, startRecording, stopRecording } from './core/sketchP5';
 
 // == definition ===================================================================================
 
-export const definition: IComponentDefinition = {
+export const definition: IComponentDefinitionPainter = {
     dependencies: {
         optional: ['menu'],
         required: [],

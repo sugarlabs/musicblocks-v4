@@ -1,5 +1,4 @@
-import type { IComponentDefinition } from '@/@types/components';
-import type { TInjectedSinger } from '@/@types/components/singer';
+import type { IComponentDefinitionSinger, TInjectedSinger } from '@/@types/components/singer';
 
 import { setup as setupComponent } from './singer';
 import {
@@ -11,7 +10,7 @@ import {
 
 // == definition ===================================================================================
 
-export const definition: IComponentDefinition = {
+export const definition: IComponentDefinitionSinger = {
     dependencies: {
         optional: ['menu'],
         required: [],

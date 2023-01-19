@@ -5,12 +5,13 @@
  * Licensed under the AGPL-3.0 License.
  */
 
-import { ISynthUtils } from '../@types/synthUtils';
-import { InvalidArgumentError } from './errors';
+import type { ISynthUtils } from '../@types/synthUtils';
+
 import * as Tone from 'tone';
-import { piano } from '../samples/piano';
-import { guitar } from '../samples/guitar';
-import { snare } from '../samples/snare';
+
+
+import { InvalidArgumentError } from './errors';
+import { injected } from '..';
 
 /**
  * Ensure the synthUtils component is ready.
@@ -73,12 +74,26 @@ export default class SynthUtils implements ISynthUtils {
          * ADD NEW SAMPLE NAMES HERE.
          */
         this.samples = {};
-        this.samples['piano'] = piano;
-        this.samples['guitar'] = guitar;
-        this.samples['snare'] = snare;
+        this.samples['piano'] = {
+            data: injected.assets['audio.piano'].data,
+            ...injected.assets['audio.piano'].meta,
+        } as SampleDict;
+        this.samples['guitar'] = {
+            data: injected.assets['audio.guitar'].data,
+            ...injected.assets['audio.guitar'].meta,
+        } as SampleDict;
+        this.samples['snare'] = {
+            data: injected.assets['audio.snare'].data,
+            ...injected.assets['audio.snare'].meta,
+        } as SampleDict;
         for (const sample in this.samples) {
             const _pitch = this.samples[sample]['centerNote'];
-            this.samplerSynths.set(sample, new Tone.Sampler({ _pitch: this.samples[sample]['data'] }));
+            this.samplerSynths.set(
+                sample,
+                new Tone.Sampler({
+                    _pitch: this.samples[sample]['data'],
+                }),
+            );
         }
     }
 

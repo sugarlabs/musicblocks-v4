@@ -17,6 +17,7 @@ export const definition: IComponentDefinitionSinger = {
     },
     flags: {},
     strings: {},
+    assets: ['audio.guitar', 'audio.piano', 'audio.snare'],
     elements: {
         'test-synth': {
             label: 'test synth',
@@ -48,6 +49,7 @@ export const definition: IComponentDefinitionSinger = {
 export const injected: TInjectedSinger = {
     flags: undefined,
     i18n: undefined,
+    // @ts-ignore
     assets: undefined,
 };
 

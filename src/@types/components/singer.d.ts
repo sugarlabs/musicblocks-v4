@@ -1,4 +1,5 @@
 import type { IComponentDefinition } from '.';
+import { TAsset } from '../core/assets';
 import type { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
 
 export type TComponentDefinitionElementsSinger =
@@ -14,5 +15,5 @@ export interface IComponentDefinitionSinger extends IComponentDefinition {
 export type TInjectedSinger = {
     flags: undefined;
     i18n: undefined;
-    assets: undefined;
+    assets: Record<'audio.guitar' | 'audio.piano' | 'audio.snare', TAsset>;
 };

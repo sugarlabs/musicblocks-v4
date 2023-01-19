@@ -26,6 +26,10 @@ import imageIconCode from './image/icon/code.svg';
 
 import imageIconMouse from './image/icon/mouse.svg';
 
+import audioGuitar from './audio/guitar.wav';
+import audioPiano from './audio/piano.wav';
+import audioSnare from './audio/snare.wav';
+
 // -------------------------------------------------------------------------------------------------
 
 const manifest: {
@@ -83,6 +87,37 @@ const manifest: {
 
     'image.icon.mouse': {
         path: imageIconMouse,
+    },
+
+    'audio.guitar': {
+        path: audioGuitar,
+        meta: {
+            name: 'guitar',
+            category: 'strings',
+            tonal: true,
+            centerNote: 'c4',
+            defaultVolume: 50,
+        },
+    },
+    'audio.piano': {
+        path: audioPiano,
+        meta: {
+            name: 'piano',
+            category: 'percussion',
+            tonal: true,
+            centerNote: 'c4',
+            defaultVolume: 100,
+        },
+    },
+    'audio.snare': {
+        path: audioSnare,
+        meta: {
+            name: 'snare',
+            category: 'percussion',
+            tonal: false,
+            centerNote: 'c3',
+            defaultVolume: 50,
+        },
     },
 };
 

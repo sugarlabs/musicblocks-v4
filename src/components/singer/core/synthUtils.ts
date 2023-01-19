@@ -94,9 +94,11 @@ export default class SynthUtils implements ISynthUtils {
         try {
             // todo: use a constructor to create the TAsset key.
             this.samples[sampleName] = {
-                // ts-ignore
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
                 data: injected.assets['audio.' + sampleName].data,
-                // ts-ignore
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
                 ...injected.assets['audio.' + sampleName].meta,
             } as SampleDict;
         } catch (err) {

@@ -92,8 +92,11 @@ export default class SynthUtils implements ISynthUtils {
             console.warn('overwriting ' + sampleName);
         }
         try {
+            // todo: use a constructor to create the TAsset key.
             this.samples[sampleName] = {
+                // ts-ignore
                 data: injected.assets['audio.' + sampleName].data,
+                // ts-ignore
                 ...injected.assets['audio.' + sampleName].meta,
             } as SampleDict;
         } catch (err) {

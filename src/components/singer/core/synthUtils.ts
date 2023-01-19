@@ -103,7 +103,7 @@ export default class SynthUtils implements ISynthUtils {
             );
         }
 
-        const _pitch = this.samples[sample]['centerNote'];
+        const _pitch = this.samples[sampleName]['centerNote'];
         this.samplerSynths.set(
             sampleName,
             new Tone.Sampler({

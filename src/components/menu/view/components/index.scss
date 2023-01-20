@@ -76,3 +76,18 @@
     }
   }
 }
+
+#stories-menu-wrapper {
+  height: max-content;
+  padding: 0.5rem;
+  background-color: $mb-accent-dark;
+  display: flex;
+  flex-direction: column;
+
+  #menu {
+    width: 2.5rem;
+    margin: 0.25rem 0;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+  }
+}

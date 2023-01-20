@@ -34,6 +34,7 @@ export type TFeatureFlagMenu = {
     saveProject: boolean;
 };
 
+/** Type definition for the items injected into the Menu component after load. */
 export type TInjectedMenu = {
     flags: Record<keyof TFeatureFlagMenu, boolean>;
     i18n: Record<'menu.run' | 'menu.stop' | 'menu.reset', string>;
@@ -48,3 +49,15 @@ export type TInjectedMenu = {
         TAsset
     >;
 };
+
+/** Type definition for the event emitted by the Menu component. */
+export type TEventMenu =
+    | 'menu.run'
+    | 'menu.stop'
+    | 'menu.reset'
+    | 'menu.uploadFile'
+    | 'menu.startRecording'
+    | 'menu.stopRecording'
+    | 'menu.exportDrawing'
+    | 'menu.loadProject'
+    | 'menu.saveProject';

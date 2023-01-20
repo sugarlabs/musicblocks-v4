@@ -2,10 +2,10 @@
 @import '@/common/scss/sizes.scss';
 
 .w-toggle {
-  width: 40px;
+  width: 44px;
   height: 24px;
   padding: 2px;
-  border-radius: $s-border-radius;
+  border-radius: calc($s-border-radius + 2px);
   background-color: $c-bg-white;
   cursor: pointer;
 
@@ -23,13 +23,12 @@
     .w-toggle-handle {
       position: absolute;
       left: 0;
-      transform: translateX(0);
       width: 20px;
       height: 20px;
       border: 1px solid $mb-accent-light;
       outline: 1px solid $mb-accent-light;
       background-color: $c-bg-white;
-      transition: all 0.25s ease;
+      transition: left 0.25s ease;
     }
   }
 
@@ -38,8 +37,7 @@
       background-color: $mb-accent;
 
       .w-toggle-handle {
-        left: 100%;
-        transform: translateX(-100%);
+        left: calc(100% - 20px);
       }
     }
   }

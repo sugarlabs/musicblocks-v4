@@ -45,8 +45,6 @@ export const injected: TInjectedMenu = {
     assets: undefined,
 };
 
-export const strings: { [key: string]: string } = definition.strings;
-
 // == public functions =============================================================================
 
 /**

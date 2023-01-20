@@ -45,8 +45,6 @@ export const injected: TInjectedEditor = {
     assets: undefined,
 };
 
-export const strings: { [key: string]: string } = definition.strings;
-
 // == public functions =============================================================================
 
 /**

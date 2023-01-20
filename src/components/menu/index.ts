@@ -2,6 +2,7 @@ import type { IComponentDefinition } from '@/@types/components';
 import type { TInjectedMenu } from '@/@types/components/menu';
 
 import { getCrumbs, run } from '@sugarlabs/musicblocks-v4-lib';
+import { emitEvent } from '@/core/events';
 
 import { getButtons, setup as setupView, updateState } from './view';
 
@@ -67,12 +68,15 @@ export function setup(): Promise<void> {
                 if (crumbs.length !== 0) run(getCrumbs()[0].nodeID);
                 updateState('running', true);
                 setTimeout(() => updateState('running', false));
+                emitEvent('menu.run');
             });
             buttons.stop.addEventListener('click', () => {
                 updateState('running', false);
+                emitEvent('menu.stop');
             });
             buttons.reset.addEventListener('click', () => {
                 updateState('running', false);
+                emitEvent('menu.reset');
             });
 
             resolve();

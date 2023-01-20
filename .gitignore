@@ -13,6 +13,9 @@
 # linter
 .eslintcache
 
+# storybook
+storybook
+
 # misc
 .DS_Store
 .env.local

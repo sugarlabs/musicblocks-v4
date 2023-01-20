@@ -4,7 +4,7 @@ import type { TInjectedMenu } from '@/@types/components/menu';
 import { getCrumbs, run } from '@sugarlabs/musicblocks-v4-lib';
 import { emitEvent } from '@/core/events';
 
-import { getButtons, setup as setupView, updateState } from './view';
+import { mount as mountView, updateHandler, updateState } from './view';
 
 // == definition ===================================================================================
 
@@ -50,34 +50,29 @@ export const injected: TInjectedMenu = {
 /**
  * Mounts the Menu component.
  */
-export function mount(): Promise<void> {
-    return setupView();
+export async function mount(): Promise<void> {
+    await mountView();
 }
 
 /**
  * Initializes the Menu component.
  */
-export function setup(): Promise<void> {
-    return new Promise((resolve) => {
-        requestAnimationFrame(() => {
-            const buttons = getButtons();
-            buttons.run.addEventListener('click', () => {
-                const crumbs = getCrumbs();
-                if (crumbs.length !== 0) run(getCrumbs()[0].nodeID);
-                updateState('running', true);
-                setTimeout(() => updateState('running', false));
-                emitEvent('menu.run');
-            });
-            buttons.stop.addEventListener('click', () => {
-                updateState('running', false);
-                emitEvent('menu.stop');
-            });
-            buttons.reset.addEventListener('click', () => {
-                updateState('running', false);
-                emitEvent('menu.reset');
-            });
+export async function setup(): Promise<void> {
+    await updateHandler('run', () => {
+        const crumbs = getCrumbs();
+        if (crumbs.length !== 0) run(getCrumbs()[0].nodeID);
+        updateState('running', true);
+        setTimeout(() => updateState('running', false));
+        emitEvent('menu.run');
+    });
 
-            resolve();
-        });
+    await updateHandler('stop', () => {
+        updateState('running', false);
+        emitEvent('menu.stop');
+    });
+
+    await updateHandler('reset', () => {
+        updateState('running', false);
+        emitEvent('menu.reset');
     });
 }

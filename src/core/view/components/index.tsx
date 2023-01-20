@@ -40,7 +40,7 @@ export function setView(
 ): Promise<void> {
   //
   return new Promise((resolve) => {
-    const rootElem = document.getElementById('root')!;
+    const rootElem = document.getElementById('mb-root')!;
 
     if (method === 'setup') {
       resolve((arg as (container: HTMLElement) => Promise<void>)(rootElem));

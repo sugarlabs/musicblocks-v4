@@ -43,16 +43,6 @@ import { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
 
 /** Interface representing a component's API. */
 export interface IComponent {
-    /** Mounts the component (loads subcomponents, mounts DOM elements, etc.). */
-    mount(): Promise<void>;
-    /** Sets up the component — initializes component after it is mounted. */
-    setup(): Promise<void>;
-    /** Map of the string identifiers the component requires i18n for. */
-    strings: { [key: string]: string };
-    /** Syntax element specification object for the component. */
-    specification?: {
-        [identifier: string]: IElementSpecification;
-    };
     /** Component definition. */
     definition: IComponentDefinition;
     /** Items injected into the component after load. */
@@ -64,4 +54,8 @@ export interface IComponent {
         /** Asset entries. */
         assets?: { [assetId: string]: TAsset };
     };
+    /** Mounts the component (loads subcomponents, mounts DOM elements, etc.). */
+    mount(): Promise<void>;
+    /** Sets up the component — initializes component after it is mounted. */
+    setup(): Promise<void>;
 }

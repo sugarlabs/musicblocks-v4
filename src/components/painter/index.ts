@@ -122,10 +122,6 @@ export const injected: TInjectedPainter = {
     assets: undefined,
 };
 
-export const strings = definition.strings;
-
-export const specification = definition.elements;
-
 // == public functions =============================================================================
 
 /**

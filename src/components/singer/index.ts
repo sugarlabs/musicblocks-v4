@@ -58,10 +58,6 @@ export const injected: TInjectedSinger = {
     assets: undefined,
 };
 
-export const strings = definition.strings;
-
-export const specification = definition.elements;
-
 // -- public functions -----------------------------------------------------------------------------
 
 /**

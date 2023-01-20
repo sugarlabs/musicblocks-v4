@@ -1,7 +1,7 @@
 import type { IComponentDefinitionPainter, TInjectedPainter } from '@/@types/components/painter';
-import type { IComponentMenu } from '@/@types/components/menu';
 
-import { getComponent } from '@/core/config';
+import { hearEvent } from '@/core/events';
+import { loadProject, saveProjectHTML, uploadFileInLocalStorage } from '../imp-exp/imp-exp';
 
 import { mount as mountView, mountSketch } from './view';
 import { sketch, run, reset } from './painter';
@@ -20,8 +20,6 @@ import {
     ElementSetBackground,
     ElementClear,
 } from './painter';
-
-import { loadProject, saveProjectHTML, uploadFileInLocalStorage } from '../imp-exp/imp-exp';
 
 import { exportDrawing, startRecording, stopRecording } from './core/sketchP5';
 
@@ -133,7 +131,7 @@ export const specification = definition.elements;
 /**
  * Mounts the Painter component.
  */
-export function mount(): Promise<void> {
+export async function mount(): Promise<void> {
     return new Promise((resolve) => {
         (async () => {
             await mountView();
@@ -146,22 +144,16 @@ export function mount(): Promise<void> {
 /**
  * Initializes the Painter component; mounts the hooks.
  */
-export function setup(): Promise<void> {
-    return new Promise((resolve) => {
-        const menu = getComponent('menu') as IComponentMenu;
-        if (menu) {
-            menu.mountHook('uploadFileInLocalStorage', uploadFileInLocalStorage);
-            menu.mountHook('startRecording', startRecording);
-            menu.mountHook('stopRecording', stopRecording);
-            menu.mountHook('exportDrawing', exportDrawing);
-            menu.mountHook('loadProject', loadProject);
-            menu.mountHook('saveProject', saveProjectHTML);
-            menu.mountHook('run', run);
-            menu.mountHook('reset', reset);
-        }
+export async function setup(): Promise<void> {
+    hearEvent('menu.run', run);
+    hearEvent('menu.reset', reset);
 
-        reset();
+    hearEvent('menu.uploadFile', uploadFileInLocalStorage);
+    hearEvent('menu.startRecording', startRecording);
+    hearEvent('menu.stopRecording', stopRecording);
+    hearEvent('menu.exportDrawing', exportDrawing);
+    hearEvent('menu.loadProject', loadProject);
+    hearEvent('menu.saveProject', saveProjectHTML);
 
-        resolve();
-    });
+    reset();
 }

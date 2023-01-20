@@ -1,9 +1,8 @@
 import type { IComponentDefinition } from '@/@types/components';
 import type { TInjectedEditor } from '@/@types/components/editor';
-import type { IComponentMenu } from '@/@types/components/menu';
 
-import { getComponent } from '@/core/config';
 import { setToolbarExtended, unsetToolbarExtended } from '@/core/view';
+import { hearEvent } from '@/core/events';
 
 import {
     getElement,
@@ -53,7 +52,7 @@ export const strings: { [key: string]: string } = definition.strings;
 /**
  * Mounts the UI components.
  */
-export function mount(): Promise<void> {
+export async function mount(): Promise<void> {
     return new Promise((resolve) => {
         (async () => {
             await setupView();
@@ -65,17 +64,13 @@ export function mount(): Promise<void> {
 /**
  * Initializes the component.
  */
-export function setup(): Promise<void> {
-    return new Promise((resolve) => {
-        const menu = getComponent('menu');
-        if (menu) {
-            (menu as IComponentMenu).mountHook('reset', () => {
-                setStatus('');
-                resetProgram();
-            });
-        }
+export async function setup(): Promise<void> {
+    hearEvent('menu.reset', () => {
+        setStatus('');
+        resetProgram();
+    });
 
-        setCode(`- clear
+    setCode(`- clear
 
 # -------------
 # first hexagon
@@ -103,7 +98,7 @@ export function setup(): Promise<void> {
       - move-forward: 100
       - turn-left: 60`);
 
-        setCode(`- box-number:
+    setCode(`- box-number:
     name: "a"
     value: 0
 - box-number:
@@ -148,37 +143,34 @@ export function setup(): Promise<void> {
           value:
             boxidentifier-number: "c"`);
 
-        setHelp(generateAPI());
+    setHelp(generateAPI());
 
-        const btn = getElement('button');
+    const btn = getElement('button');
 
-        let state: 'initial' | 'float' | 'pinned' = 'initial';
+    let state: 'initial' | 'float' | 'pinned' = 'initial';
 
-        const setState = (_state: 'initial' | 'float' | 'pinned') => {
-            if (_state === 'initial') {
-                unsetToolbarExtended();
-                resetStates();
-            } else {
-                const toolbarContent = setToolbarExtended('Editor', _state, {
-                    pin: () => setState('pinned'),
-                    unpin: () => setState('float'),
-                });
-                const editor = getElement('editor');
-                toolbarContent.appendChild(editor);
-            }
-            state = _state;
-        };
+    const setState = (_state: 'initial' | 'float' | 'pinned') => {
+        if (_state === 'initial') {
+            unsetToolbarExtended();
+            resetStates();
+        } else {
+            const toolbarContent = setToolbarExtended('Editor', _state, {
+                pin: () => setState('pinned'),
+                unpin: () => setState('float'),
+            });
+            const editor = getElement('editor');
+            toolbarContent.appendChild(editor);
+        }
+        state = _state;
+    };
 
-        btn.addEventListener('click', () => {
-            if (state === 'initial') {
-                setButtonState('clicked');
-                setState('float');
-            } else {
-                setButtonState('unclicked');
-                setState('initial');
-            }
-        });
-
-        resolve();
+    btn.addEventListener('click', () => {
+        if (state === 'initial') {
+            setButtonState('clicked');
+            setState('float');
+        } else {
+            setButtonState('unclicked');
+            setState('initial');
+        }
     });
 }

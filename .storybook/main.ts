@@ -1,25 +1,28 @@
-const path = require('path');
+import type { UserConfigExport } from 'vite';
 
-const { mergeConfig } = require('vite');
+import path from 'path';
+import { mergeConfig } from 'vite';
 
 // -------------------------------------------------------------------------------------------------
 
-function resolve(rootPath) {
+function resolve(rootPath: string) {
     return path.resolve(__dirname, '..', rootPath);
 }
-
-module.exports = {
-    stories: ['../src/**/*.stories.mdx', '../src/**/*.stories.@(tsx|ts|jsx|js)'],
+export default {
+    stories: ['../src/**/*.mdx', '../src/**/*.stories.@(tsx|ts|jsx|js)'],
     addons: [
         '@storybook/addon-links',
         '@storybook/addon-essentials',
         '@storybook/addon-interactions',
     ],
-    framework: '@storybook/react',
-    core: {
-        builder: '@storybook/builder-vite',
+    framework: {
+        name: '@storybook/react-vite',
+        options: {},
     },
-    async viteFinal(config) {
+    docs: {
+        autodocs: 'tag',
+    },
+    async viteFinal(config: UserConfigExport) {
         return mergeConfig(config, {
             resolve: {
                 alias: {

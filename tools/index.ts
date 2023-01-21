@@ -10,7 +10,7 @@ import visualize from './scripts/visualize';
 type TCommand = 'build' | 'preview' | 'serve' | 'visualize';
 
 function invoke(command: 'build', base: string): void;
-function invoke(command: 'preview', port: number): void;
+function invoke(command: 'preview', port: number, base: string): void;
 function invoke(command: 'serve', port: number): void;
 function invoke(command: 'visualize', port: number): void;
 function invoke(command: TCommand, ...args: (string | number)[]): void {
@@ -23,7 +23,6 @@ function invoke(command: TCommand, ...args: (string | number)[]): void {
 
     const root = path.resolve(__dirname, '..');
     const config = path.resolve(__dirname, './vite.config.ts');
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     commands[command].call(null, root, config, ...args);
 }
@@ -52,13 +51,20 @@ yargs(hideBin(process.argv))
         'preview',
         "serve production build (run 'build' prior to this)",
         (yargs) =>
-            yargs.option('port', {
-                alias: 'p',
-                type: 'number',
-                description: 'Port to serve on',
-                default: 4173,
-            }),
-        (yargs) => invoke('preview', yargs.port),
+            yargs
+                .option('port', {
+                    alias: 'p',
+                    type: 'number',
+                    description: 'Port to serve on',
+                    default: 4173,
+                })
+                .option('base', {
+                    alias: 'b',
+                    type: 'string',
+                    description: 'Base URL',
+                    default: '/',
+                }),
+        (yargs) => invoke('preview', yargs.port, yargs.base),
     )
     .command(
         'serve',

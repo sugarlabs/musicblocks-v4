@@ -19,6 +19,7 @@
     "build": "ts-node tools build",
     "build:gh": "ts-node tools build -b /musicblocks-v4/",
     "preview": "ts-node tools preview",
+    "preview:gh": "ts-node tools preview -b /musicblocks-v4/",
     "visualize": "ts-node tools visualize",
     "predeploy": "npm run dist",
     "deploy": "gh-pages -d dist",

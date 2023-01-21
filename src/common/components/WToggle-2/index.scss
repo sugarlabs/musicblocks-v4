@@ -1,0 +1,52 @@
+@import '@/common/scss/colors.scss';
+@import '@/common/scss/sizes.scss';
+
+.w-toggle-1 {
+  cursor: pointer;
+  text-indent: -9999px;
+  width: 200px;
+  height: 100px;
+  background: grey;
+  display: block;
+  border-radius: 100px;
+  position: relative;
+
+  * {
+    border-radius: $s-border-radius;
+  }
+
+  .w-toggle-track-1 {
+    cursor: pointer;
+    text-indent: -9999px;
+    width: 200px;
+    height: 100px;
+    background: grey;
+    display: block;
+    border-radius: 100px;
+    position: relative;
+
+    .w-toggle-handle-1 {
+      content: '';
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 90px;
+  height: 90px;
+  background: #fff;
+  border-radius: 90px;
+  transition: 0.3s;
+    }
+  }
+
+  &.w-toggle-active-1 {
+    .w-toggle-track-1 {
+      background: #bada55;
+
+      .w-toggle-handle-1 {
+        left: calc(100% - 5px);
+        transform: translateX(-100%);
+
+      }
+    }
+  }
+}

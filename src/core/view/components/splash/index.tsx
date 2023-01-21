@@ -3,7 +3,9 @@ import type { Root } from 'react-dom/client';
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 
+import { SImage } from '@/common/components';
 import { mountViewOverlay, unmountViewOverlay } from '..';
+import { injected } from '../..';
 
 // -- ui items -------------------------------------------------------------------------------------
 
@@ -20,7 +22,9 @@ export function Splash(props: {
 }): JSX.Element {
   return (
     <div id="splash-container">
-      <img id="splash-logo" src="/logo.png" alt="Logo" />
+      <div id="splash-logo">
+        <SImage asset={injected.assets['image.logo']} />
+      </div>
       <div id="splash-progress-bar">
         <div id="splash-progress" style={{ width: `${props.progress}%` }} />
       </div>

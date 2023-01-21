@@ -1,7 +1,7 @@
 import type { IAppConfig } from '@/@types/app';
 import type { IComponentDefinition, TComponentId } from '@/@types/components';
 
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 import { setView } from '..';
 
@@ -32,7 +32,8 @@ async function _mount(
   },
 ): Promise<void> {
   return new Promise((resolve) => {
-    ReactDOM.render(
+    const rootContainer = createRoot(container);
+    rootContainer.render(
       component === 'config' ? (
         <Config
           definitions={data.definitions}
@@ -46,7 +47,6 @@ async function _mount(
           handlerUpdate={data.handlerUpdate}
         />
       ),
-      container,
     );
 
     requestAnimationFrame(() => resolve());

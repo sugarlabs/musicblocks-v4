@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 import { injected } from '../..';
 
@@ -113,7 +113,8 @@ export function setup(container: HTMLElement): Promise<void> {
     _editor = container as HTMLDivElement;
     _editor.id = 'editor';
 
-    ReactDOM.render(<Editor />, container);
+    const rootContainer = createRoot(container);
+    rootContainer.render(<Editor />);
 
     _mountedCallback = () => requestAnimationFrame(() => resolve());
   });

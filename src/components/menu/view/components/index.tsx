@@ -1,7 +1,8 @@
+import type { Root } from 'react-dom/client';
 import type { TAssetIdentifierMenu, TPropsMenu } from '@/@types/components/menu';
 
 import { useEffect, useRef } from 'react';
-import { render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 // -- ui items -------------------------------------------------------------------------------------
 
@@ -138,9 +139,15 @@ export function Menu(props: TPropsMenu): JSX.Element {
   );
 }
 
+// -- private variables ----------------------------------------------------------------------------
+
+let _rootContainer: Root;
+
+// -- public functions -----------------------------------------------------------------------------
+
 export async function renderComponent(container: HTMLElement, props: TPropsMenu): Promise<void> {
-  return new Promise((resolve) => {
-    render(<Menu {...props} />, container);
-    requestAnimationFrame(() => resolve());
-  });
+  if (_rootContainer === undefined) _rootContainer = createRoot(container);
+  _rootContainer.render(<Menu {...props} />);
+
+  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
 }

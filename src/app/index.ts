@@ -2,21 +2,6 @@ import type { IAppConfig } from '@/@types/app';
 import type { IComponent, IComponentDefinition, TComponentId } from '@/@types/components';
 import type { TAsset } from '@/@types/core/assets';
 
-import { loadServiceWorker } from './utils/misc';
-
-import { default as assetManifest } from '@/assets';
-import { default as componentMap } from '@/components';
-
-import { getStrings, importStrings } from '@/core/i18n';
-import { getAssets, importAssets } from '@/core/assets';
-import {
-    importComponents,
-    mountComponents,
-    setupComponents,
-    registerElements,
-    serializeComponentDependencies,
-} from '@/core/config';
-
 // -------------------------------------------------------------------------------------------------
 
 const loadMap: {
@@ -64,6 +49,8 @@ async function _importComponents(config?: IAppConfig): Promise<{
     components: Partial<Record<TComponentId, IComponent>>;
     componentDefinitions: Partial<Record<TComponentId, IComponentDefinition>>;
 }> {
+    const componentMap = (await import('@/components')).default;
+
     /** Map of component identifier and corresponding component module. */
     let components: Partial<Record<TComponentId, IComponent>>;
     /** List of 2-tuples of component identifier and component definition. */
@@ -86,7 +73,8 @@ async function _importComponents(config?: IAppConfig): Promise<{
                       updateImportMap('import', 'components', componentId)
                 : () => 1;
 
-        components = await importComponents(componentIds, callback);
+        const { importComponents } = await import('@/core/config');
+        components = await importComponents(componentIds, componentMap, callback);
 
         componentDefinitions = Object.fromEntries(
             (Object.entries(components) as [TComponentId, IComponent][]).map(([id, component]) => [
@@ -104,12 +92,29 @@ async function _importComponents(config?: IAppConfig): Promise<{
 
 // -------------------------------------------------------------------------------------------------
 
-async function init(config: IAppConfig) {
+async function init(config?: IAppConfig) {
+    /*
+     * Initializes the application view.
+     */
+
+    {
+        // Initialize view toolkit
+        const { initView, setView } = await import('@/core/view');
+        await initView();
+        await setView('main');
+    }
+
+    if (config === undefined) {
+        config = await loadConfig(import.meta.env.VITE_CONFIG_PRESET);
+    }
+
     /*
      * Import and load i18n strings for the configured language asynchronously.
      */
 
     {
+        const { importStrings } = await import('@/core/i18n');
+
         await importStrings(config.env.lang);
         updateImportMap('import', 'lang');
     }
@@ -137,6 +142,9 @@ async function init(config: IAppConfig) {
      */
 
     {
+        const assetManifest = (await import('@/assets')).default;
+        const { importAssets } = await import('@/core/assets');
+
         try {
             await importAssets(
                 (
@@ -158,6 +166,8 @@ async function init(config: IAppConfig) {
      */
 
     {
+        const { getStrings } = await import('@/core/i18n');
+
         // Inject i18n strings.
         componentDefinitionEntries.forEach(
             ([id, { strings }]) =>
@@ -166,6 +176,8 @@ async function init(config: IAppConfig) {
                         ? getStrings(Object.keys(strings))
                         : undefined),
         );
+
+        const { getAssets } = await import('@/core/assets');
 
         // Inject asset entries.
         componentDefinitionEntries.forEach(
@@ -179,7 +191,7 @@ async function init(config: IAppConfig) {
         // Inject feature flags.
         componentDefinitionEntries.forEach(
             ([componentId]) =>
-                (components[componentId]!.injected.flags = config.components.find(
+                (components[componentId]!.injected.flags = config!.components.find(
                     ({ id }) => id === componentId,
                     // @ts-ignore
                 )?.flags),
@@ -192,10 +204,18 @@ async function init(config: IAppConfig) {
     let componentsOrdered: TComponentId[];
 
     /*
-     * Generate serialized list of component identifiers
+     * Complete the application initialization
      */
 
     {
+        const {
+            mountComponents,
+            setupComponents,
+            registerElements,
+            serializeComponentDependencies,
+        } = await import('@/core/config');
+
+        // Generate serialized list of component identifiers
         componentsOrdered = serializeComponentDependencies(
             componentDefinitionEntries
                 .map<[TComponentId, TComponentId[]]>(([id, { dependencies }]) => [
@@ -204,17 +224,6 @@ async function init(config: IAppConfig) {
                 ])
                 .map(([id, dependencies]) => ({ id, dependencies })),
         );
-    }
-
-    /**
-     * Initializes the application.
-     */
-
-    {
-        // Initialize view toolkit
-        const { initView, setView } = await import('@/core/view');
-        await initView();
-        await setView('main');
 
         // Register syntax elements as configured for each component
         registerElements(
@@ -239,6 +248,7 @@ async function init(config: IAppConfig) {
     }
 
     if (import.meta.env.PROD) {
+        const { loadServiceWorker } = await import('./utils/misc');
         loadServiceWorker();
     }
 }
@@ -246,15 +256,12 @@ async function init(config: IAppConfig) {
 // =================================================================================================
 
 (async function () {
-    // load configuration preset file
-    const config = await loadConfig(import.meta.env.VITE_CONFIG_PRESET);
-
     /**
      * if PRODUCTION mode, proceed initializing with configuration preset.
      */
 
     if (import.meta.env.PROD) {
-        await init(config);
+        await init();
         return;
     }
 
@@ -279,24 +286,26 @@ async function init(config: IAppConfig) {
      */
 
     {
-        const { mountConfigPage, updateConfigPage } = await import('@/core/view');
+        const config = await loadConfig(import.meta.env.VITE_CONFIG_PRESET);
 
-        requestAnimationFrame(() => {
-            (async function () {
-                window.sessionStorage.setItem('appConfig', JSON.stringify(config));
+        const { initView, setView, mountConfigPage, updateConfigPage } = await import(
+            '@/core/view'
+        );
+        await initView();
+        await setView('main');
 
-                await mountConfigPage(
-                    { ...config },
-                    (
-                        await _importComponents()
-                    ).componentDefinitions,
-                    (config: IAppConfig) =>
-                        requestAnimationFrame(() => {
-                            window.sessionStorage.setItem('appConfig', JSON.stringify(config));
-                            updateConfigPage(config);
-                        }),
-                );
-            })();
-        });
+        window.sessionStorage.setItem('appConfig', JSON.stringify(config));
+
+        await mountConfigPage(
+            { ...config },
+            (
+                await _importComponents()
+            ).componentDefinitions,
+            (config: IAppConfig) =>
+                requestAnimationFrame(() => {
+                    window.sessionStorage.setItem('appConfig', JSON.stringify(config));
+                    updateConfigPage(config);
+                }),
+        );
     }
 })();

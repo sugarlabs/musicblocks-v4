@@ -1,5 +1,6 @@
 import type { Root } from 'react-dom/client';
 
+import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 
 // -- ui items -------------------------------------------------------------------------------------
@@ -66,9 +67,13 @@ let _rootMainContainer: Root;
 export async function initView(): Promise<void> {
   if (_rootContainer === undefined)
     _rootContainer = createRoot(document.getElementById('mb-root') as HTMLElement);
-  _rootContainer.render(<App activeOverlay={_state.activeOverlay}></App>);
 
-  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+  return new Promise((resolve) =>
+    flushSync(() => {
+      _rootContainer.render(<App activeOverlay={_state.activeOverlay}></App>);
+      requestAnimationFrame(() => resolve());
+    }),
+  );
 }
 
 /**
@@ -105,9 +110,10 @@ export function setView(
     const rootComponent = method === 'embed' ? (arg as () => JSX.Element)() : <AppMain></AppMain>;
 
     if (_rootMainContainer === undefined) _rootMainContainer = createRoot(rootElem);
-    _rootMainContainer.render(rootComponent);
-
-    requestAnimationFrame(() => resolve());
+    flushSync(() => {
+      _rootMainContainer.render(rootComponent);
+      requestAnimationFrame(() => resolve());
+    });
   });
 }
 

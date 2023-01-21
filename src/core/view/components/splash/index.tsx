@@ -1,15 +1,16 @@
-import React from 'react';
+// -- ui items -------------------------------------------------------------------------------------
+
 import './index.scss';
 
 // -- component definition -------------------------------------------------------------------------
 
 export default function Splash({ progress }: { progress: number }): JSX.Element {
-    return (
-        <div className="splash-container" id="splash">
-            <img className="splash-logo" src="/logo.png" alt="Logo" />
-            <div className="splash-progress-bar">
-                <div className="splash-progress" style={{ width: `${progress}%` }} />
-            </div>
-        </div>
-    );
+  return (
+    <div id="splash-container">
+      <img id="splash-logo" src="/logo.png" alt="Logo" />
+      <div id="splash-progress-bar">
+        <div id="splash-progress" style={{ width: `${progress + 20}%` }} />
+      </div>
+    </div>
+  );
 }

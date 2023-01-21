@@ -16,8 +16,8 @@ export default function (props: {
   // ---------------------------------------------------------------------------
 
   return (
-    <div className="w-button" onClick={() => props.handlerClick()}>
+    <button className="w-button" onClick={() => props.handlerClick()}>
       {props.content}
-    </div>
+    </button>
   );
 }

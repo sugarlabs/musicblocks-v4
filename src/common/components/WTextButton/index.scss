@@ -3,14 +3,14 @@
 
 .w-button {
   height: 32px;
-  width: 75px;
+  border: none;
   color: $mb-accent;
   background-color: $background-light;
   border-radius: $s-border-radius;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 14.4px;
+  font-size: 0.9rem;
 }
 
 #stories-button-wrapper {

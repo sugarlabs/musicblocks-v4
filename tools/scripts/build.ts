@@ -31,7 +31,7 @@ export default async function (root: string, config: string, base: string) {
         )()
     `) as VisualizerData;
 
-    const stats = getStats(data, ['lang', 'module']);
+    const stats = getStats(data);
 
     fs.writeFileSync(path.resolve(root, 'dist', 'stats.json'), JSON.stringify(stats));
 }

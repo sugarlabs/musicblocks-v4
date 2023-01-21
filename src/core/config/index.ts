@@ -1,7 +1,5 @@
-import type { IComponent, TComponentId } from '@/@types/components';
+import type { IComponent, TComponentId, TComponentMap } from '@/@types/components';
 import type { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
-
-import { default as componentMap } from '@/components';
 
 import {
     registerElementSpecificationEntries,
@@ -63,6 +61,7 @@ export function getComponent(componentId: TComponentId): IComponent | null {
  */
 export async function importComponents(
     componentIds: TComponentId[],
+    componentMap: TComponentMap,
     callback: (componentId: TComponentId) => unknown,
 ): Promise<Partial<Record<TComponentId, IComponent>>> {
     Object.fromEntries(

@@ -13,8 +13,15 @@ export default function App(): JSX.Element {
 
 // -------------------------------------------------------------------------------------------------
 
-import React from 'react';
-import ReactDOM from 'react-dom';
+import type { Root } from 'react-dom/client';
+
+import { createRoot } from 'react-dom/client';
+
+// -- private variables ----------------------------------------------------------------------------
+
+let _rootContainer: Root;
+
+// -- public functions -----------------------------------------------------------------------------
 
 /**
  * Sets the main application view.
@@ -43,13 +50,14 @@ export function setView(
     const rootElem = document.getElementById('mb-root')!;
 
     if (method === 'setup') {
-      resolve((arg as (container: HTMLElement) => Promise<void>)(rootElem));
+      (arg as (container: HTMLElement) => Promise<void>)(rootElem).then(() => resolve());
       return;
     }
 
     const rootComponent = method === 'embed' ? (arg as () => JSX.Element)() : <App></App>;
 
-    ReactDOM.render(<React.StrictMode>{rootComponent}</React.StrictMode>, rootElem);
+    if (_rootContainer === undefined) _rootContainer = createRoot(rootElem);
+    _rootContainer.render(rootComponent);
 
     requestAnimationFrame(() => resolve());
   });

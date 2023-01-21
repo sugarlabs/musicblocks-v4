@@ -131,6 +131,17 @@ export async function mountViewOverlay(setup: (container: HTMLElement) => Promis
  * Unmounts the application overlay view.
  */
 export async function unmountViewOverlay(): Promise<void> {
-  _state.activeOverlay = false;
-  await initView();
+  return new Promise((resolve) => {
+    const timeTransition = import.meta.env.VITE_APP_VIEW_OVERLAY_TRANSITION || 500;
+    const timeTransitionBuffer = import.meta.env.VITE_APP_VIEW_OVERLAY_TRANSITION_BUFFER || 50;
+
+    const overlay = document.getElementById('root-overlay') as HTMLElement;
+    overlay.style.transition = `top ${timeTransition / 1000}s ease`;
+    overlay.style.top = 'calc(-100% - 50px)';
+
+    setTimeout(() => {
+      _state.activeOverlay = false;
+      initView().then(() => resolve());
+    }, timeTransition + timeTransitionBuffer);
+  });
 }

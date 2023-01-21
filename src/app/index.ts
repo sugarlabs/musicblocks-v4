@@ -99,8 +99,9 @@ async function init(config?: IAppConfig) {
 
     {
         // Initialize view toolkit
-        const { initView, setView } = await import('@/core/view');
+        const { initView, mountSplash, setView } = await import('@/core/view');
         await initView();
+        await mountSplash();
         await setView('main');
     }
 
@@ -245,6 +246,9 @@ async function init(config?: IAppConfig) {
         await setupComponents(componentsOrdered, (componentId) =>
             updateImportMap('setup', 'components', componentId),
         );
+
+        const { unmountSplash } = await import('@/core/view');
+        await unmountSplash();
     }
 
     if (import.meta.env.PROD) {

@@ -1,4 +1,5 @@
 import type { Root } from 'react-dom/client';
+import type { TAsset } from '@/@types/core/assets';
 
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
@@ -17,13 +18,15 @@ import './index.scss';
  * React component definition for the Splash component.
  */
 export function Splash(props: {
+  /** Image asset for logo. */
+  logo: TAsset;
   /** Load progress [0 - 100]. */
   progress: number;
 }): JSX.Element {
   return (
     <div id="splash-container">
       <div id="splash-logo">
-        <SImage asset={injected.assets['image.logo']} />
+        <SImage asset={props.logo} />
       </div>
       <div id="splash-progress-bar">
         <div id="splash-progress" style={{ width: `${props.progress}%` }} />
@@ -46,7 +49,7 @@ export async function mountSplash(): Promise<void> {
     return new Promise((resolve) => {
       _rootContainer = createRoot(container);
       flushSync(() => {
-        _rootContainer.render(<Splash progress={0}></Splash>);
+        _rootContainer.render(<Splash logo={injected.assets['image.logo']} progress={0}></Splash>);
         requestAnimationFrame(() => resolve());
       });
     });

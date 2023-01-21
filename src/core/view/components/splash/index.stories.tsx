@@ -23,7 +23,20 @@ export default {
   parameters: {
     layout: 'fullscreen',
   },
-  render: (args) => <Splash {...args} />,
+  render: (args, { loaded: { logo } }) => <Splash {...args} logo={logo} />,
+  loaders: [
+    async () => {
+      const { importAssets, getAsset } = await import('@/core/assets');
+      const assetManifest = (await import('@/assets')).default;
+      await importAssets(
+        Object.entries(assetManifest).map(([identifier, manifest]) => ({ identifier, manifest })),
+        () => undefined,
+      );
+      return {
+        logo: getAsset('image.logo'),
+      };
+    },
+  ],
 } as Meta<typeof Splash>;
 
 type Story = StoryObj<typeof Splash>;

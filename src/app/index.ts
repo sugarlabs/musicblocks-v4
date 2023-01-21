@@ -212,7 +212,8 @@ async function init(config: IAppConfig) {
 
     {
         // Initialize view toolkit
-        const { setView } = await import('@/core/view');
+        const { initView, setView } = await import('@/core/view');
+        await initView();
         await setView('main');
 
         // Register syntax elements as configured for each component

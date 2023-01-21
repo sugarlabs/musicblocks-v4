@@ -1,7 +1,8 @@
-import type { ComponentStory, ComponentMeta } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
-import { linkTo } from '@storybook/addon-links';
 import { default as WTextButton } from '.';
+
+// -------------------------------------------------------------------------------------------------
 
 export default {
   title: 'Common/WTextButton',
@@ -16,12 +17,15 @@ export default {
   parameters: {
     layout: 'centered',
   },
-} as ComponentMeta<typeof WTextButton>;
+} as Meta<typeof WTextButton>;
 
-const Template: ComponentStory<typeof WTextButton> = (args) => <WTextButton {...args} />;
+type Story = StoryObj<typeof WTextButton>;
 
-export const Button = Template.bind({});
-Button.args = {
-  content: "BUTTON",
-  handlerClick: linkTo('Common/WTextButton', 'Button'),
+// -------------------------------------------------------------------------------------------------
+
+export const Button: Story = {
+  args: {
+    content: 'BUTTON',
+    handlerClick: () => undefined,
+  },
 };

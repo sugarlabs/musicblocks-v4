@@ -1,3 +1,5 @@
+import type { TAsset } from '@/@types/core/assets';
+
 // -- private functions ----------------------------------------------------------------------------
 
 function _createToolbarItem(
@@ -51,6 +53,24 @@ export function createItem(
     }
 }
 
-export { setView } from './components';
+export { initView, setView, mountViewOverlay, unmountViewOverlay } from './components';
 export { mountConfigPage, updateConfigPage } from './components/config';
+export { mountSplash, unmountSplash } from './components/splash';
 export { setToolbarExtended, unsetToolbarExtended } from './components/toolbar';
+
+// -------------------------------------------------------------------------------------------------
+
+type TAssetIdentifierView = 'image.logo';
+
+export const definition: {
+    assets: TAssetIdentifierView[];
+} = {
+    assets: ['image.logo'],
+};
+
+export const injected: {
+    assets: Record<TAssetIdentifierView, TAsset>;
+} = {
+    // @ts-ignore
+    assets: undefined,
+};

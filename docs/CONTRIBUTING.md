@@ -74,3 +74,17 @@ Each PR must pass the checks before being reviewed.
 8. Each PR needs to have supporting unit tests covering all (or as much practical) use cases to qualify
 for review. In case testing is done via some non-standard method, adequate description of the method/s
 need/s to be specified in the PR body.
+
+## Checklist before Commits
+
+- Make sure there are no _TypeScript_ warnings/errors. Run `npm run check` to verify.
+
+- Make sure there are no linting errors. Run `npm run lint` to verify.
+
+- Format code you've modified. Run `npx prettier -w <file 1> <file 2> ...`.
+
+- Make sure the application builds successfully. Run `npm run build` to verify.
+
+- Add meaningful documentation to every new function/method/class/type added.
+
+- One commit must address only one concept. Do not add multiple unrelated changes in one commit.

@@ -1,31 +1,39 @@
-.splash-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: #fff;
+@import '@/common/scss/colors.scss';
+@import '@/common/scss/sizes.scss';
+
+#splash-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  .splash-logo {
-    width: 200px;
+  gap: 24px;
+  width: 100%;
+  height: 100%;
+  padding-bottom: 196px;
+  background-color: $c-bg-white;
+
+  #splash-logo {
+    width: 120px;
+    height: 120px;
     height: auto;
   }
-  .splash-progress-bar {
-    width: 80%;
-    height: 20px;
-    background-color: #ddd;
-    border-radius: 10px;
-    margin: 20px 0;
-    .splash-progress {
+
+  #splash-progress-bar {
+    width: 320px;
+    height: 8px;
+    border-radius: $s-border-radius;
+    background-color: $c-bg-grey;
+
+    #splash-progress {
       height: 100%;
-      background-color: #333;
-      border-radius: 10px;
+      border-radius: $s-border-radius;
+      background-color: $mb-accent-light;
+      transition: width 0.25s ease;
     }
   }
 }
 
-
-
+#stories-splash-wrapper {
+  width: 100%;
+  height: 100vh;
+}

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 import { setupCartesian } from './utils/background';
 
@@ -62,7 +62,8 @@ export function setup(container: HTMLElement): Promise<{
   interactor: HTMLDivElement;
 }> {
   return new Promise((resolve) => {
-    ReactDOM.render(<Painter />, container);
+    const rootContainer = createRoot(container);
+    rootContainer.render(<Painter />);
 
     _mountedCallback = () =>
       requestAnimationFrame(() => {

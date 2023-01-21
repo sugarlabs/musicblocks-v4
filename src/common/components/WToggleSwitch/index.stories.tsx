@@ -1,7 +1,9 @@
-import type { ComponentStory, ComponentMeta } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
 import { linkTo } from '@storybook/addon-links';
 import { default as WToggleSwitch } from '.';
+
+// -------------------------------------------------------------------------------------------------
 
 export default {
   title: 'Common/WToggleSwitch',
@@ -9,18 +11,22 @@ export default {
   parameters: {
     layout: 'centered',
   },
-} as ComponentMeta<typeof WToggleSwitch>;
+} as Meta<typeof WToggleSwitch>;
 
-const Template: ComponentStory<typeof WToggleSwitch> = (args) => <WToggleSwitch {...args} />;
+type Story = StoryObj<typeof WToggleSwitch>;
 
-export const Active = Template.bind({});
-Active.args = {
-  active: true,
-  handlerClick: linkTo('Common/WToggleSwitch', 'Inactive'),
+// -------------------------------------------------------------------------------------------------
+
+export const Active: Story = {
+  args: {
+    active: true,
+    handlerClick: linkTo('Common/WToggleSwitch', 'Inactive'),
+  },
 };
 
-export const Inactive = Template.bind({});
-Inactive.args = {
-  active: false,
-  handlerClick: linkTo('Common/WToggleSwitch', 'Active'),
+export const Inactive: Story = {
+  args: {
+    active: false,
+    handlerClick: linkTo('Common/WToggleSwitch', 'Active'),
+  },
 };

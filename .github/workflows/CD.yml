@@ -31,7 +31,7 @@ jobs:
           rm -rf .npmrc
 
       - name: Build for Production
-        run: npm run build
+        run: npm run build:gh
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3

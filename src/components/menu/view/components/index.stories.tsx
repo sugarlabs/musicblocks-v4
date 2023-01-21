@@ -1,4 +1,4 @@
-import type { ComponentStory, ComponentMeta } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 import type { TInjectedMenu } from '@/@types/components/menu';
 
 import { Menu } from '.';
@@ -39,20 +39,21 @@ export default {
       };
     },
   ],
-} as ComponentMeta<typeof Menu>;
+  render: (args, { loaded: { i18n, assets } }) => (
+    <Menu
+      {...args}
+      {...{
+        injected: {
+          flags: args.injected.flags,
+          i18n,
+          assets,
+        },
+      }}
+    />
+  ),
+} as Meta<typeof Menu>;
 
-const Template: ComponentStory<typeof Menu> = (args, { loaded: { i18n, assets } }) => (
-  <Menu
-    {...args}
-    {...{
-      injected: {
-        flags: args.injected.flags,
-        i18n,
-        assets,
-      },
-    }}
-  />
-);
+type Story = StoryObj<typeof Menu>;
 
 // -------------------------------------------------------------------------------------------------
 
@@ -72,117 +73,125 @@ const injected: TInjectedMenu = {
 
 // == state - not running ==================================
 
-export const StateNotRunning = Template.bind({});
-StateNotRunning.args = {
-  states: { running: false },
-  injected,
+export const StateNotRunning: Story = {
+  args: {
+    states: { running: false },
+    injected,
+  },
+  name: 'State - Not Running',
 };
-StateNotRunning.storyName = 'State - Not Running';
 
 // == state - running ======================================
 
-export const StateRunning = Template.bind({});
-StateRunning.args = {
-  states: { running: true },
-  injected,
+export const StateRunning: Story = {
+  args: {
+    states: { running: true },
+    injected,
+  },
+  name: 'State - Running',
 };
-StateRunning.storyName = 'State - Running';
 
 // == flags - upload file ==================================
 
-export const FlagsUploadFile = Template.bind({});
-FlagsUploadFile.args = {
-  states: { running: false },
-  injected: {
-    flags: {
-      ...injected.flags,
-      uploadFile: true,
+export const FlagsUploadFile: Story = {
+  args: {
+    states: { running: false },
+    injected: {
+      flags: {
+        ...injected.flags,
+        uploadFile: true,
+      },
+      i18n: { ...injected.i18n },
+      assets: { ...injected.assets },
     },
-    i18n: { ...injected.i18n },
-    assets: { ...injected.assets },
   },
+  name: 'Flags - Upload File',
 };
-FlagsUploadFile.storyName = 'Flags - Upload File';
 
 // == flags - recording ====================================
 
-export const FlagsRecording = Template.bind({});
-FlagsRecording.args = {
-  states: { running: false },
-  injected: {
-    flags: {
-      ...injected.flags,
-      recording: true,
+export const FlagsRecording: Story = {
+  args: {
+    states: { running: false },
+    injected: {
+      flags: {
+        ...injected.flags,
+        recording: true,
+      },
+      i18n: { ...injected.i18n },
+      assets: { ...injected.assets },
     },
-    i18n: { ...injected.i18n },
-    assets: { ...injected.assets },
   },
+  name: 'Flags - Recording',
 };
-FlagsRecording.storyName = 'Flags - Recording';
 
 // == flags - export drawing ===============================
 
-export const FlagsExportDrawing = Template.bind({});
-FlagsExportDrawing.args = {
-  states: { running: false },
-  injected: {
-    flags: {
-      ...injected.flags,
-      exportDrawing: true,
+export const FlagsExportDrawing: Story = {
+  args: {
+    states: { running: false },
+    injected: {
+      flags: {
+        ...injected.flags,
+        exportDrawing: true,
+      },
+      i18n: { ...injected.i18n },
+      assets: { ...injected.assets },
     },
-    i18n: { ...injected.i18n },
-    assets: { ...injected.assets },
   },
+  name: 'Flags - Export Drawing',
 };
-FlagsExportDrawing.storyName = 'Flags - Export Drawing';
 
 // == flags - load project =================================
 
-export const FlagsLoadProject = Template.bind({});
-FlagsLoadProject.args = {
-  states: { running: false },
-  injected: {
-    flags: {
-      ...injected.flags,
-      loadProject: true,
+export const FlagsLoadProject: Story = {
+  args: {
+    states: { running: false },
+    injected: {
+      flags: {
+        ...injected.flags,
+        loadProject: true,
+      },
+      i18n: { ...injected.i18n },
+      assets: { ...injected.assets },
     },
-    i18n: { ...injected.i18n },
-    assets: { ...injected.assets },
   },
+  name: 'Flags - Load Project',
 };
-FlagsLoadProject.storyName = 'Flags - Load Project';
 
 // == flags - save project =================================
 
-export const FlagsSaveProject = Template.bind({});
-FlagsSaveProject.args = {
-  states: { running: false },
-  injected: {
-    flags: {
-      ...injected.flags,
-      saveProject: true,
+export const FlagsSaveProject: Story = {
+  args: {
+    states: { running: false },
+    injected: {
+      flags: {
+        ...injected.flags,
+        saveProject: true,
+      },
+      i18n: { ...injected.i18n },
+      assets: { ...injected.assets },
     },
-    i18n: { ...injected.i18n },
-    assets: { ...injected.assets },
   },
+  name: 'Flags - Save Project',
 };
-FlagsSaveProject.storyName = 'Flags - Save Project';
 
 // == flags - all ==========================================
 
-export const FlagsAll = Template.bind({});
-FlagsAll.args = {
-  states: { running: false },
-  injected: {
-    flags: {
-      uploadFile: true,
-      recording: true,
-      exportDrawing: true,
-      loadProject: true,
-      saveProject: true,
+export const FlagsAll: Story = {
+  args: {
+    states: { running: false },
+    injected: {
+      flags: {
+        uploadFile: true,
+        recording: true,
+        exportDrawing: true,
+        loadProject: true,
+        saveProject: true,
+      },
+      i18n: { ...injected.i18n },
+      assets: { ...injected.assets },
     },
-    i18n: { ...injected.i18n },
-    assets: { ...injected.assets },
   },
+  name: 'Flags - All',
 };
-FlagsAll.storyName = 'Flags - All';

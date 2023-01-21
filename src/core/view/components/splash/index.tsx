@@ -14,7 +14,7 @@ import './index.scss';
 /**
  * React component definition for the Splash component.
  */
-export default function Splash(props: {
+export function Splash(props: {
   /** Load progress [0 - 100]. */
   progress: number;
 }): JSX.Element {

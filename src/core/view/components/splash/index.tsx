@@ -39,21 +39,44 @@ export function Splash(props: {
 
 let _rootContainer: Root;
 
+// -- private functions ----------------------------------------------------------------------------
+
+/**
+ * Helper function to render/update the Splash component.
+ * @param progress progress bar value [0 - 100]
+ */
+async function _renderComponent(progress?: number): Promise<void> {
+  return new Promise((resolve) => {
+    flushSync(() => {
+      _rootContainer.render(
+        <Splash
+          logo={injected.assets['image.logo']}
+          progress={Math.min(Math.max(progress || 0, 0), 100)}
+        ></Splash>,
+      );
+      requestAnimationFrame(() => resolve());
+    });
+  });
+}
+
 // -- public functions -----------------------------------------------------------------------------
 
 /**
  * Mounts the Splash component in the view overlay.
  */
 export async function mountSplash(): Promise<void> {
-  await mountViewOverlay((container: HTMLElement) => {
-    return new Promise((resolve) => {
-      _rootContainer = createRoot(container);
-      flushSync(() => {
-        _rootContainer.render(<Splash logo={injected.assets['image.logo']} progress={0}></Splash>);
-        requestAnimationFrame(() => resolve());
-      });
-    });
+  await mountViewOverlay(async (container: HTMLElement) => {
+    _rootContainer = createRoot(container);
+    await _renderComponent();
   });
+}
+
+/**
+ * Updates the Splash component in the view overlay.
+ * @param progress progress bar value [0 - 100]
+ */
+export async function updateSplash(progress: number): Promise<void> {
+  await _renderComponent(progress);
 }
 
 /**
@@ -62,6 +85,9 @@ export async function mountSplash(): Promise<void> {
 export async function unmountSplash(): Promise<void> {
   await unmountViewOverlay();
   return new Promise((resolve) => {
-    flushSync(() => requestAnimationFrame(() => resolve()));
+    flushSync(() => {
+      _rootContainer.unmount();
+      requestAnimationFrame(() => resolve());
+    });
   });
 }

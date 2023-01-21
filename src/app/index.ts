@@ -93,31 +93,46 @@ async function _importComponents(config?: IAppConfig): Promise<{
 // -------------------------------------------------------------------------------------------------
 
 async function init(config?: IAppConfig) {
-    /*
-     * Initializes the application view.
-     */
-
-    {
-        // Initialize view toolkit
-        const { initView, mountSplash, setView } = await import('@/core/view');
-        await initView();
-        await mountSplash();
-        await setView('main');
-    }
-
     if (config === undefined) {
         config = await loadConfig(import.meta.env.VITE_CONFIG_PRESET);
     }
+
+    const { importStrings, getStrings } = await import('@/core/i18n');
+    const { importAssets, getAssets } = await import('@/core/assets');
+    const assetManifest = (await import('@/assets')).default;
 
     /*
      * Import and load i18n strings for the configured language asynchronously.
      */
 
     {
-        const { importStrings } = await import('@/core/i18n');
-
         await importStrings(config.env.lang);
         updateImportMap('import', 'lang');
+    }
+
+    /*
+     * Initializes the application view.
+     */
+
+    {
+        const { initView, mountSplash, setView, definition, injected } = await import(
+            '@/core/view'
+        );
+
+        await importAssets(
+            Object.entries(assetManifest)
+                .filter(([identifier]) => (definition.assets as string[]).includes(identifier))
+                .map(([identifier, manifest]) => ({ identifier, manifest })),
+            () => undefined,
+        );
+
+        // @ts-ignore
+        injected.assets = getAssets(definition.assets);
+
+        // Initialize view toolkit
+        await initView();
+        await mountSplash();
+        await setView('main');
     }
 
     /** Map of component identifier and corresponding component module. */
@@ -143,9 +158,6 @@ async function init(config?: IAppConfig) {
      */
 
     {
-        const assetManifest = (await import('@/assets')).default;
-        const { importAssets } = await import('@/core/assets');
-
         try {
             await importAssets(
                 (
@@ -167,8 +179,6 @@ async function init(config?: IAppConfig) {
      */
 
     {
-        const { getStrings } = await import('@/core/i18n');
-
         // Inject i18n strings.
         componentDefinitionEntries.forEach(
             ([id, { strings }]) =>
@@ -177,8 +187,6 @@ async function init(config?: IAppConfig) {
                         ? getStrings(Object.keys(strings))
                         : undefined),
         );
-
-        const { getAssets } = await import('@/core/assets');
 
         // Inject asset entries.
         componentDefinitionEntries.forEach(

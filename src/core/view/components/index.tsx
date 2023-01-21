@@ -132,8 +132,9 @@ export async function mountViewOverlay(setup: (container: HTMLElement) => Promis
  */
 export async function unmountViewOverlay(): Promise<void> {
   return new Promise((resolve) => {
-    const timeTransition = import.meta.env.VITE_APP_VIEW_OVERLAY_TRANSITION || 500;
-    const timeTransitionBuffer = import.meta.env.VITE_APP_VIEW_OVERLAY_TRANSITION_BUFFER || 50;
+    const timeTransition = Number(import.meta.env.VITE_APP_VIEW_OVERLAY_TRANSITION) || 500;
+    const timeTransitionBuffer =
+      Number(import.meta.env.VITE_APP_VIEW_OVERLAY_TRANSITION_BUFFER) || 50;
 
     const overlay = document.getElementById('root-overlay') as HTMLElement;
     overlay.style.transition = `top ${timeTransition / 1000}s ease`;

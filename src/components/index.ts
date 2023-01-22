@@ -1,6 +1,6 @@
-import type { TComponentMap } from '@/@types/components';
+import type { TComponentManifest } from '@/@types/components';
 
-const componentMap: TComponentMap = {
+const manifest: TComponentManifest = {
     editor: {
         path: 'editor',
         name: 'Editor',
@@ -90,4 +90,4 @@ const componentMap: TComponentMap = {
     },
 };
 
-export default componentMap;
+export default manifest;

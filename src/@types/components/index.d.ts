@@ -54,7 +54,7 @@ export interface IComponentDefinitionExtended extends IComponentDefinition {
 }
 
 /** Type that represents the map of each component identifier with related fields. */
-export type TComponentMap = Record<
+export type TComponentManifest = Record<
     TComponentId,
     {
         /** Relative path to folder containing the component's modules. */

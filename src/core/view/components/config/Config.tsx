@@ -2,7 +2,7 @@ import type { IAppConfig } from '@/@types/app';
 import type { IComponentDefinitionExtended, TComponentId } from '@/@types/components';
 
 import { getConfigCache, updateConfigCache } from '.';
-import { default as componentMap } from '@/components';
+import { default as componentManifest } from '@/components';
 
 // -- ui items -------------------------------------------------------------------------------------
 
@@ -58,7 +58,7 @@ export default function (props: {
   }
 
   const modules = Object.fromEntries(
-    Object.entries(componentMap)
+    Object.entries(componentManifest)
       .map(
         ([componentId, { name, desc }]) =>
           ({

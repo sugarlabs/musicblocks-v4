@@ -49,16 +49,16 @@ async function _importComponents(config?: IAppConfig): Promise<{
     components: Partial<Record<TComponentId, IComponent>>;
     componentDefinitions: Partial<Record<TComponentId, IComponentDefinition>>;
 }> {
-    const componentMap = (await import('@/components')).default;
+    const componentManifest = (await import('@/components')).default;
 
     const componentIdsEnabled: TComponentId[] =
         config === undefined
-            ? (Object.keys(componentMap) as TComponentId[])
+            ? (Object.keys(componentManifest) as TComponentId[])
             : config.components.map(({ id }) => id);
 
     /** List of 2-tuples of component identifier and component definition. */
     let componentDefinitions: Record<TComponentId, IComponentDefinition> = Object.fromEntries(
-        Object.entries(componentMap)
+        Object.entries(componentManifest)
             .filter(([componentId]) => componentIdsEnabled.includes(componentId as TComponentId))
             .map(([componentId, { definition }]) => [componentId, definition]),
     ) as Record<TComponentId, IComponentDefinition>;
@@ -69,12 +69,12 @@ async function _importComponents(config?: IAppConfig): Promise<{
     {
         const componentIds = (
             config !== undefined
-                ? Object.entries(componentMap)
+                ? Object.entries(componentManifest)
                       .filter(([id]) =>
                           config.components.map(({ id }) => id).includes(id as TComponentId),
                       )
                       .map(([id]) => id)
-                : Object.keys(componentMap)
+                : Object.keys(componentManifest)
         ) as TComponentId[];
 
         const callback =
@@ -84,7 +84,7 @@ async function _importComponents(config?: IAppConfig): Promise<{
                 : () => 1;
 
         const { importComponents } = await import('@/core/config');
-        components = await importComponents(componentIds, componentMap, callback);
+        components = await importComponents(componentIds, componentManifest, callback);
     }
 
     return {

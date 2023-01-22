@@ -40,7 +40,7 @@
 
   &.w-toggle-active-1 {
     .w-toggle-track-1 {
-      background: #bada55;
+      background: $mb-accent;
 
       .w-toggle-handle-1 {
         left: calc(100% - 5px);

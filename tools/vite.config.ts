@@ -1,5 +1,3 @@
-import type { PluginOption } from 'vite';
-
 import path from 'path';
 
 import { defineConfig } from 'vite';
@@ -53,11 +51,47 @@ export default defineConfig({
         }),
 
         eslint(),
+        // this emits bundle data as HTML (required for bundle visualisation)
         visualizer({
             emitFile: true,
-            filename: 'stats.html',
             gzipSize: true,
-        }) as PluginOption,
+            filename: 'stats.html',
+        }),
+        // this emits bundle data as JSON (required for bundle assessment)
+        visualizer({
+            emitFile: true,
+            gzipSize: true,
+            template: 'raw-data',
+        }),
+
+        // only for use in DEV mode
+        {
+            name: 'stats-plugin',
+            resolveId(id) {
+                if (id === 'virtual:stats') {
+                    return '\0' + 'virtual:stats';
+                }
+            },
+            load(id) {
+                if (id === '\0' + 'virtual:stats') {
+                    let stats:
+                        | {
+                              i18n: Record<string, number>;
+                              assets: Record<string, number>;
+                              modules: Record<string, number>;
+                          }
+                        | undefined;
+                    try {
+                        // if build was run before, this will be present
+                        // eslint-disable-next-line
+                        stats = require('../dist/stats.json');
+                    } catch (e) {
+                        // do nothing
+                    }
+                    return `export const stats = ${JSON.stringify(stats)}`;
+                }
+            },
+        },
     ],
 
     resolve: {

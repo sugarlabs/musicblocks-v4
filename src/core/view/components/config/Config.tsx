@@ -1,5 +1,5 @@
 import type { IAppConfig } from '@/@types/app';
-import type { IComponentDefinition, TComponentId } from '@/@types/components';
+import type { IComponentDefinitionExtended, TComponentId } from '@/@types/components';
 
 import { getConfigCache, updateConfigCache } from '.';
 import { default as componentMap } from '@/components';
@@ -19,7 +19,7 @@ export default function (props: {
   /** App configurations. */
   config: IAppConfig;
   /** Map of component definitions. */
-  definitions: Partial<Record<TComponentId, IComponentDefinition>>;
+  definitions: Partial<Record<TComponentId, IComponentDefinitionExtended>>;
   /** Callback for when configurations are updated. */
   handlerUpdate: (config: IAppConfig) => unknown;
 }): JSX.Element {

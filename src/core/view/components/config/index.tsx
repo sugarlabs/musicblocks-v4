@@ -1,5 +1,5 @@
 import type { IAppConfig } from '@/@types/app';
-import type { IComponentDefinition, TComponentId } from '@/@types/components';
+import type { IComponentDefinitionExtended, TComponentId } from '@/@types/components';
 
 import { createRoot } from 'react-dom/client';
 
@@ -13,7 +13,7 @@ import ConfigPage from './ConfigPage';
 // -- private variables ----------------------------------------------------------------------------
 
 let _data: {
-  definitions: Partial<Record<TComponentId, IComponentDefinition>>;
+  definitions: Partial<Record<TComponentId, IComponentDefinitionExtended>>;
   config: IAppConfig;
   handlerUpdate: (config: IAppConfig) => unknown;
 };
@@ -26,12 +26,13 @@ async function _mount(
   container: HTMLElement,
   component: 'config' | 'config-page',
   data: {
-    definitions: Partial<Record<TComponentId, IComponentDefinition>>;
+    definitions: Partial<Record<TComponentId, IComponentDefinitionExtended>>;
     config: IAppConfig;
     handlerUpdate: (config: IAppConfig) => unknown;
   },
 ): Promise<void> {
   return new Promise((resolve) => {
+    console.log(container);
     const rootContainer = createRoot(container);
     rootContainer.render(
       component === 'config' ? (
@@ -54,13 +55,22 @@ async function _mount(
 }
 
 async function _setup(component: 'config' | 'config-page'): Promise<void> {
-  return new Promise((resolve) => {
-    setView('setup', async (container: HTMLElement) => {
-      await _mount(container, component, _data);
-    });
-
-    requestAnimationFrame(() => resolve());
-  });
+  await setView(
+    'embed',
+    component === 'config' ? (
+      <Config
+        definitions={_data.definitions}
+        config={_data.config}
+        handlerUpdate={_data.handlerUpdate}
+      />
+    ) : (
+      <ConfigPage
+        definitions={_data.definitions}
+        config={_data.config}
+        handlerUpdate={_data.handlerUpdate}
+      />
+    ),
+  );
 }
 
 // -- public functions -----------------------------------------------------------------------------
@@ -83,7 +93,7 @@ export function updateConfigCache(callback: (newConfig: IAppConfig) => IAppConfi
  */
 export async function mountConfigPage(
   config: IAppConfig,
-  definitions: Partial<Record<TComponentId, IComponentDefinition>>,
+  definitions: Partial<Record<TComponentId, IComponentDefinitionExtended>>,
   handlerUpdate: (config: IAppConfig) => unknown,
 ) {
   _data = { definitions, config, handlerUpdate };

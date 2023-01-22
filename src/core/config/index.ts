@@ -154,13 +154,13 @@ export function registerElements(
         .filter(({ filter }) => filter !== undefined)
         .map(({ id, filter }) => {
             if (filter === true) {
-                return { id, specification: _components[id]!.definition.elements };
+                return { id, specification: _components[id]!.elements };
             }
 
             return {
                 id,
                 specification: Object.fromEntries(
-                    Object.entries(_components[id]!.definition.elements!).filter(([elementName]) =>
+                    Object.entries(_components[id]!.elements!).filter(([elementName]) =>
                         filter?.includes(elementName),
                     ),
                 ),

@@ -1,6 +1,4 @@
-import type { IComponentDefinition } from '.';
 import type { TAsset } from '../core/assets';
-import type { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
 
 export type TComponentDefinitionElementsPainter =
     | 'move-forward'
@@ -16,10 +14,6 @@ export type TComponentDefinitionElementsPainter =
     | 'pen-down'
     | 'set-background'
     | 'clear';
-
-export interface IComponentDefinitionPainter extends IComponentDefinition {
-    elements: Record<TComponentDefinitionElementsPainter, IElementSpecification>;
-}
 
 export type TInjectedPainter = {
     flags: undefined;

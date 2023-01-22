@@ -17,11 +17,11 @@ export default function Toggle(props: {
 
   return (
     <div
-      className={`w-toggle-1 ${props.active ? 'w-toggle-active-1' : ''}`}
+      className={`w-toggle-r ${props.active ? 'w-toggle-r-active' : ''}`}
       onClick={() => props.handlerClick()}
     >
-      <div className="w-toggle-track-1">
-        <div className="w-toggle-handle-1"></div>
+      <div className="w-toggle-r-track">
+        <div className="w-toggle-r-handle"></div>
       </div>
     </div>
   );

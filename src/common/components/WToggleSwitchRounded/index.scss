@@ -1,49 +1,42 @@
 @import '@/common/scss/colors.scss';
 @import '@/common/scss/sizes.scss';
 
-.w-toggle-1 {
+.w-toggle-r {
+  width: 40px;
+  height: 24px;
+  padding: 2px;
+  border-radius: 20px;
+  background-color: $c-bg-white;
   cursor: pointer;
-  text-indent: -9999px;
-  width: 50px;
-  height: 30px;
-  background: $c-bg-grey;
-  display: block;
-  border-radius: 100px;
-  position: relative;
 
-  * {
-    border-radius: $s-border-radius;
-  }
-
-  .w-toggle-track-1 {
-    cursor: pointer;
-    text-indent: -9999px;
-    width: 55px;
-    height: 30px;
-    background: $c-bg-grey;
-    display: block;
-    border-radius: 100px;
+  .w-toggle-r-track {
     position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 18px;
+    box-shadow: inset 0px 0px 4px $c-shadow;
+    background-color: $c-bg-grey;
+    transition: background-color 0.5s ease;
 
-    .w-toggle-handle-1 {
-      content: '';
+    .w-toggle-r-handle {
       position: absolute;
-      top: 4.5px;
-      left: 5px;
-      width: 21px;
-      height: 21px;
-      background: $background-light;
-      border-radius: 90px;
-      transition: 0.3s;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      border-radius: 8px;
+      box-shadow: 0px 0px 4px $c-shadow;
+      background-color: $c-bg-white;
+      transition: left 0.25s ease;
     }
   }
 
-  &.w-toggle-active-1 {
-    .w-toggle-track-1 {
-      background: $mb-accent;
+  &.w-toggle-r-active {
+    .w-toggle-r-track {
+      background-color: $mb-accent;
 
-      .w-toggle-handle-1 {
-        left: calc(100% - 25px);
+      .w-toggle-r-handle {
+        left: calc(100% - 18px);
       }
     }
   }

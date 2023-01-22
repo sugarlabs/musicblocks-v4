@@ -1,120 +1,62 @@
-import type { IAppConfig } from '@/@types/app';
-import type { IComponent, IComponentDefinition, TComponentId } from '@/@types/components';
+import type { IAppConfig, TAppImportMap } from '@/@types/app';
+import type {
+    IComponent,
+    IComponentDefinition,
+    IComponentDefinitionExtended,
+    TComponentId,
+} from '@/@types/components';
 import type { TAsset } from '@/@types/core/assets';
+import type { TI18nLang } from '@/@types/core/i18n';
 
 // -------------------------------------------------------------------------------------------------
 
-const loadMap: {
-    lang: boolean;
-    assets: Record<string, boolean>;
-    components: Partial<Record<TComponentId, boolean>>;
-} = {
-    lang: false,
+const _importMap: TAppImportMap = {
+    lang: undefined,
     assets: {},
     components: {},
 };
 
 // -------------------------------------------------------------------------------------------------
 
-async function loadConfig(preset: number): Promise<IAppConfig> {
+async function _loadConfig(preset: number): Promise<IAppConfig> {
     return (await import(`./config/preset-${preset}.ts`)).default;
 }
 
-function updateImportMap(stage: 'import', item: 'lang'): typeof loadMap;
-function updateImportMap(stage: 'import', item: 'assets', subitem: string): typeof loadMap;
-function updateImportMap(
-    stage: 'import' | 'mount' | 'setup',
-    item: 'components',
-    subitem: TComponentId,
-): typeof loadMap;
-function updateImportMap(
-    stage: 'import' | 'mount' | 'setup',
-    item: keyof typeof loadMap,
-    subitem?: string,
-): typeof loadMap {
+function _updateImportMap(item: 'lang', subitem: TI18nLang): TAppImportMap;
+function _updateImportMap(item: 'assets', subitem: string): TAppImportMap;
+function _updateImportMap(item: 'components', subitem: TComponentId): TAppImportMap;
+function _updateImportMap(item: keyof TAppImportMap, subitem?: string): TAppImportMap {
     if (item === 'lang') {
-        loadMap.lang = true;
+        _importMap.lang = subitem as TI18nLang;
     } else if (item === 'assets') {
-        loadMap.assets[subitem as string] = true;
+        const assets = { ..._importMap.assets };
+        assets[subitem as string] = true;
+        _importMap.assets = { ...assets };
     } else if (item === 'components') {
-        loadMap.components[subitem as TComponentId] = true;
+        const components = { ..._importMap.components };
+        components[subitem as TComponentId] = true;
+        _importMap.components = { ...components };
     }
 
-    // if (import.meta.env.DEV) console.log(`${stage}: ${item}${subitem ? ` > ${subitem}` : ''}`);
+    // if (import.meta.env.DEV) console.log(`${item}${subitem ? ` > ${subitem}` : ''}`);
 
-    return loadMap;
-}
-
-async function _importComponents(config?: IAppConfig): Promise<{
-    components: Partial<Record<TComponentId, IComponent>>;
-    componentDefinitions: Partial<Record<TComponentId, IComponentDefinition>>;
-}> {
-    const componentManifest = (await import('@/components')).default;
-
-    const componentIdsEnabled: TComponentId[] =
-        config === undefined
-            ? (Object.keys(componentManifest) as TComponentId[])
-            : config.components.map(({ id }) => id);
-
-    /** List of 2-tuples of component identifier and component definition. */
-    let componentDefinitions: Record<TComponentId, IComponentDefinition> = Object.fromEntries(
-        Object.entries(componentManifest)
-            .filter(([componentId]) => componentIdsEnabled.includes(componentId as TComponentId))
-            .map(([componentId, { definition }]) => [componentId, definition]),
-    ) as Record<TComponentId, IComponentDefinition>;
-
-    /** Map of component identifier and corresponding component module. */
-    let components: Partial<Record<TComponentId, IComponent>>;
-
-    {
-        const componentIds = (
-            config !== undefined
-                ? Object.entries(componentManifest)
-                      .filter(([id]) =>
-                          config.components.map(({ id }) => id).includes(id as TComponentId),
-                      )
-                      .map(([id]) => id)
-                : Object.keys(componentManifest)
-        ) as TComponentId[];
-
-        const callback =
-            config !== undefined
-                ? (componentId: TComponentId) =>
-                      updateImportMap('import', 'components', componentId)
-                : () => 1;
-
-        const { importComponents } = await import('@/core/config');
-        components = await importComponents(componentIds, componentManifest, callback);
-    }
-
-    return {
-        components,
-        componentDefinitions,
-    };
+    return _importMap;
 }
 
 // -------------------------------------------------------------------------------------------------
 
 async function init(config?: IAppConfig) {
     if (config === undefined) {
-        config = await loadConfig(import.meta.env.VITE_CONFIG_PRESET);
+        config = await _loadConfig(import.meta.env.VITE_CONFIG_PRESET);
     }
 
-    const { importStrings, getStrings } = await import('@/core/i18n');
-    const { importAssets, getAssets } = await import('@/core/assets');
+    const componentManifest = (await import('@/components')).default;
     const assetManifest = (await import('@/assets')).default;
 
-    /*
-     * Import and load i18n strings for the configured language asynchronously.
-     */
-
-    {
-        await importStrings(config.env.lang);
-        updateImportMap('import', 'lang');
-    }
+    const { importAssets, getAssets } = await import('@/core/assets');
 
     /*
-     * Initializes the application view.
+     * Initialize the application view and mount the spalsh screen.
      */
 
     {
@@ -138,50 +80,93 @@ async function init(config?: IAppConfig) {
         await setView('main');
     }
 
-    /** Map of component identifier and corresponding component module. */
-    let components: Partial<Record<TComponentId, IComponent>>;
-    /** List of 2-tuples of component identifier and component definition. */
-    let componentDefinitionEntries: [TComponentId, IComponentDefinition][];
+    /*
+     * Dynamically import components, strings, and assets asynchronously.
+     */
+
+    {
+        const importItemLang = config.env.lang;
+        /** List to component Ids to import. */
+        const importListComponents = config.components.map(({ id }) => id);
+        /** List to asset Ids to import. */
+        const importListAssets = (() => {
+            try {
+                return Object.entries(componentManifest)
+                    .map(
+                        ([
+                            _,
+                            {
+                                definition: { assets },
+                            },
+                        ]) => assets,
+                    )
+                    .reduce((a, b) => [...new Set([...a, ...b])]);
+            } catch (e) {
+                return [];
+            }
+        })();
+
+        const updateSplashData = (data: TAppImportMap) => {
+            console.log(data);
+        };
+
+        const { importStrings } = await import('@/core/i18n');
+        const { importComponent } = await import('@/core/config');
+        const { importAsset } = await import('@/core/assets');
+
+        await Promise.all([
+            // import ES module for i18n and load strings
+            importStrings(importItemLang).then(() =>
+                updateSplashData(_updateImportMap('lang', importItemLang)),
+            ),
+            // import ES modules for components
+            ...importListComponents.map(
+                (componentId) =>
+                    new Promise<void>((resolve) => {
+                        importComponent(componentId, componentManifest[componentId].path).then(
+                            () => {
+                                updateSplashData(_updateImportMap('components', componentId));
+                                resolve();
+                            },
+                        );
+                    }),
+            ),
+            // import asset files and load data
+            ...importListAssets.map(
+                (assetId) =>
+                    new Promise<void>((resolve) => {
+                        importAsset(assetId, assetManifest[assetId]).then(() => {
+                            updateSplashData(_updateImportMap('assets', assetId));
+                            resolve();
+                        });
+                    }),
+            ),
+        ]);
+    }
 
     /*
-     * Import components asynchronously.
+     * Collect imported components.
      */
 
-    {
-        const _components = await _importComponents(config);
-        components = _components.components;
-        componentDefinitionEntries = Object.entries(_components.componentDefinitions) as [
-            TComponentId,
-            IComponentDefinition,
-        ][];
-    }
+    const { getComponent } = await import('@/core/config');
+    const componentIds = config.components.map(({ id }) => id);
 
-    /**
-     * Import assets as defined by each component asynchronously.
-     */
-
-    {
-        try {
-            await importAssets(
-                (
-                    componentDefinitionEntries
-                        .map(([_, { assets }]) => assets)
-                        .filter((assets) => assets !== undefined) as string[][]
-                )
-                    .reduce((a, b) => [...new Set([...a, ...b])])
-                    .map((assetId) => ({ identifier: assetId, manifest: assetManifest[assetId] })),
-                (assetId: string) => updateImportMap('import', 'assets', assetId),
-            );
-        } catch (e) {
-            // do nothing
-        }
-    }
+    /** Map of component identifier and corresponding component module. */
+    const components: Partial<Record<TComponentId, IComponent>> = Object.fromEntries(
+        componentIds.map((componentId) => [componentId, getComponent(componentId)]),
+    );
+    /** List of 2-tuples of component identifier and component definition. */
+    const componentDefinitionEntries: [TComponentId, IComponentDefinition][] = componentIds.map(
+        (componentId) => [componentId, componentManifest[componentId].definition],
+    );
 
     /**
      * Inject items into component modules.
      */
 
     {
+        const { getStrings } = await import('@/core/i18n');
+
         // Inject i18n strings.
         componentDefinitionEntries.forEach(
             ([id, { strings }]) =>
@@ -249,15 +234,12 @@ async function init(config?: IAppConfig) {
         );
 
         // Mount components in serialized order
-        await mountComponents(componentsOrdered, (componentId) =>
-            updateImportMap('mount', 'components', componentId),
-        );
+        await mountComponents(componentsOrdered);
 
         // Initialize components in serialized order
-        await setupComponents(componentsOrdered, (componentId) =>
-            updateImportMap('setup', 'components', componentId),
-        );
+        await setupComponents(componentsOrdered);
 
+        // Unmount the splash screen.
         const { unmountSplash } = await import('@/core/view');
         await unmountSplash();
     }
@@ -301,17 +283,32 @@ async function init(config?: IAppConfig) {
      */
 
     {
-        const config = await loadConfig(import.meta.env.VITE_CONFIG_PRESET);
+        const config = await _loadConfig(import.meta.env.VITE_CONFIG_PRESET);
 
-        const { initView, setView, mountConfigPage, updateConfigPage } = await import(
-            '@/core/view'
-        );
+        const { initView, mountConfigPage, updateConfigPage } = await import('@/core/view');
         await initView();
-        await setView('main');
 
         window.sessionStorage.setItem('appConfig', JSON.stringify(config));
 
-        const { components, componentDefinitions } = await _importComponents();
+        const componentManifest = (await import('@/components')).default;
+        const { importComponent } = await import('@/core/config');
+        const components = Object.fromEntries(
+            await Promise.all(
+                (Object.keys(componentManifest) as TComponentId[]).map((componentId) =>
+                    importComponent(componentId, componentManifest[componentId].path).then(
+                        (component) => [componentId, component],
+                    ),
+                ),
+            ),
+        ) as Record<TComponentId, IComponent>;
+        const componentDefinitions = Object.fromEntries(
+            Object.entries(componentManifest).map<[TComponentId, IComponentDefinitionExtended]>(
+                ([componentId, { definition }]) => [
+                    componentId as TComponentId,
+                    { ...definition, elements: components[componentId as TComponentId].elements },
+                ],
+            ),
+        ) as Record<TComponentId, IComponentDefinition>;
 
         await mountConfigPage(
             { ...config },

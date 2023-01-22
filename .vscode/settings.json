@@ -1,5 +1,7 @@
 {
-  "editor.rulers": [100],
+  "editor.rulers": [
+    100
+  ],
   "editor.renderWhitespace": "boundary",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "javascript.updateImportsOnFileMove.enabled": "always",
@@ -18,7 +20,8 @@
     "editor.tabSize": 2
   },
   "[typescriptreact]": {
-    "editor.tabSize": 2
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "vscode.typescript-language-features"
   },
   "[dart]": {
     "editor.selectionHighlight": false,

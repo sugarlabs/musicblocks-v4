@@ -45,7 +45,7 @@ export function getAssets(identifiers: string[]): { [identifier: string]: TAsset
 export async function importAsset(identifier: string, manifest: TAssetManifest): Promise<void> {
     let { path, meta } = manifest;
     path = import.meta.env.PROD
-        ? path.replace(new RegExp(`${import.meta.env.BASE_URL}`, 'g'), '')
+        ? path.replace(new RegExp(`${import.meta.env.BASE_URL}`), '')
         : path;
 
     const data = await fetch(path)
@@ -81,12 +81,12 @@ export async function importAssets(
         /** Asset details. */
         manifest: TAssetManifest;
     }[],
-    callback: (assetId: string) => unknown,
+    callback?: (assetId: string) => unknown,
 ): Promise<void> {
     await Promise.all(
         items.map(({ identifier, manifest }) =>
             importAsset(identifier, manifest).then(() => {
-                callback(identifier);
+                if (callback !== undefined) callback(identifier);
             }),
         ),
     );

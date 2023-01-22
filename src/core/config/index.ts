@@ -14,17 +14,6 @@ const _components: Partial<Record<TComponentId, IComponent>> = {};
 // -- private functions ----------------------------------------------------------------------------
 
 /**
- * Imports a component module.
- * @param componentId component identifier
- * @param path path to the module relative to `src/components`
- * @returns a Promise to the component's module
- */
-async function _importComponent(componentId: TComponentId, path: string): Promise<IComponent> {
-    _components[componentId] = await import(`../../components/${path}/index.ts`);
-    return _components[componentId]!;
-}
-
-/**
  * Mounts a component module.
  * @param componentId component identifier
  */
@@ -54,6 +43,20 @@ export function getComponent(componentId: TComponentId): IComponent | null {
 }
 
 /**
+ * Imports a component module.
+ * @param componentId component identifier
+ * @param path path to the module relative to `src/components`
+ * @returns a Promise to the component's module
+ */
+export async function importComponent(
+    componentId: TComponentId,
+    path: string,
+): Promise<IComponent> {
+    _components[componentId] = await import(`../../components/${path}/index.ts`);
+    return _components[componentId]!;
+}
+
+/**
  * Imports a list of component modules asynchronously.
  * @param componentIds list of component identifiers
  * @param callback callback function to call after succesful import of each component's module
@@ -62,15 +65,15 @@ export function getComponent(componentId: TComponentId): IComponent | null {
 export async function importComponents(
     componentIds: TComponentId[],
     componentManifest: TComponentManifest,
-    callback: (componentId: TComponentId) => unknown,
+    callback?: (componentId: TComponentId) => unknown,
 ): Promise<Partial<Record<TComponentId, IComponent>>> {
     Object.fromEntries(
         await Promise.all(
             componentIds
                 .map((id) => [id, componentManifest[id].path] as [TComponentId, string])
                 .map(([id, path]) =>
-                    _importComponent(id, path).then((component) => {
-                        callback(id);
+                    importComponent(id, path).then((component) => {
+                        if (callback !== undefined) callback(id);
                         return [id, component];
                     }),
                 ),
@@ -87,7 +90,7 @@ export async function importComponents(
  */
 export async function mountComponents(
     componentIds: TComponentId[],
-    callback: (componentId: TComponentId) => unknown,
+    callback?: (componentId: TComponentId) => unknown,
 ): Promise<void> {
     return new Promise((resolve) => {
         const iterator = componentIds.entries();
@@ -99,7 +102,7 @@ export async function mountComponents(
 
             const [_, componentId] = iteratorResult.value;
             await _mountComponent(componentId);
-            callback(componentId);
+            if (callback !== undefined) callback(componentId);
 
             return _mountHelper(iterator.next());
         }
@@ -115,7 +118,7 @@ export async function mountComponents(
  */
 export async function setupComponents(
     componentIds: TComponentId[],
-    callback: (componentId: TComponentId) => unknown,
+    callback?: (componentId: TComponentId) => unknown,
 ): Promise<void> {
     return new Promise((resolve) => {
         const iterator = componentIds.entries();
@@ -127,7 +130,7 @@ export async function setupComponents(
 
             const [_, componentId] = iteratorResult.value;
             await _setupComponent(componentId);
-            callback(componentId);
+            if (callback !== undefined) callback(componentId);
 
             return _setupHelper(iterator.next());
         }

@@ -1,4 +1,5 @@
 import type { TI18nLang } from './core/i18n';
+import type { TComponentId } from './components';
 import type { TFeatureFlagMenu } from './components/menu';
 import type { TComponentDefinitionElementsPainter } from './components/painter';
 import type { TComponentDefinitionElementsSinger } from './components/singer';
@@ -35,3 +36,10 @@ export interface IAppConfig {
     /** List of components to load */
     components: TAppComponentConfig[];
 }
+
+/** Type definition for the map of items imported at app load. */
+export type TAppImportMap = {
+    lang: TI18nLang | undefined;
+    assets: Record<string, boolean>;
+    components: Partial<Record<TComponentId, boolean>>;
+};

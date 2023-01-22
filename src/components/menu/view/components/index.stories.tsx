@@ -2,7 +2,9 @@ import type { Meta, StoryObj } from '@storybook/react';
 import type { TInjectedMenu } from '@/@types/components/menu';
 
 import { Menu } from '.';
-import { definition } from '../..';
+import componentMap from '../../..';
+
+const { definition } = componentMap.menu;
 
 // -------------------------------------------------------------------------------------------------
 

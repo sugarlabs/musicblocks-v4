@@ -1,9 +1,11 @@
-import type { IComponentDefinitionPainter, TInjectedPainter } from '@/@types/components/painter';
+import type { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
+import type { TInjectedPainter } from '@/@types/components/painter';
 
 import { hearEvent } from '@/core/events';
 import { loadProject, saveProjectHTML, uploadFileInLocalStorage } from '../imp-exp/imp-exp';
 
 import { mount as mountView, mountSketch } from './view';
+import { exportDrawing, startRecording, stopRecording } from './core/sketchP5';
 import { sketch, run, reset } from './painter';
 import {
     ElementMoveForward,
@@ -21,108 +23,7 @@ import {
     ElementClear,
 } from './painter';
 
-import { exportDrawing, startRecording, stopRecording } from './core/sketchP5';
-
-// == definition ===================================================================================
-
-export const definition: IComponentDefinitionPainter = {
-    dependencies: {
-        optional: ['menu'],
-        required: [],
-    },
-    flags: {},
-    strings: {},
-    assets: ['image.icon.mouse'],
-    elements: {
-        'move-forward': {
-            label: 'forward',
-            type: 'Statement',
-            category: 'Graphics',
-            prototype: ElementMoveForward,
-        },
-        'move-backward': {
-            label: 'backward',
-            type: 'Statement',
-            category: 'Graphics',
-            prototype: ElementMoveBackward,
-        },
-        'turn-left': {
-            label: 'left',
-            type: 'Statement',
-            category: 'Graphics',
-            prototype: ElementTurnLeft,
-        },
-        'turn-right': {
-            label: 'right',
-            type: 'Statement',
-            category: 'Graphics',
-            prototype: ElementTurnRight,
-        },
-        'set-xy': {
-            label: 'set xy',
-            type: 'Statement',
-            category: 'Graphics',
-            prototype: ElementSetXY,
-        },
-        'set-heading': {
-            label: 'set heading',
-            type: 'Statement',
-            category: 'Graphics',
-            prototype: ElementSetHeading,
-        },
-        'draw-arc': {
-            label: 'draw arc',
-            type: 'Statement',
-            category: 'Graphics',
-            prototype: ElementDrawArc,
-        },
-        'set-color': {
-            label: 'set color',
-            type: 'Statement',
-            category: 'Pen',
-            prototype: ElementSetColor,
-        },
-        'set-thickness': {
-            label: 'set thickness',
-            type: 'Statement',
-            category: 'Pen',
-            prototype: ElementSetThickness,
-        },
-        'pen-up': {
-            label: 'pen up',
-            type: 'Statement',
-            category: 'Pen',
-            prototype: ElementPenUp,
-        },
-        'pen-down': {
-            label: 'pen down',
-            type: 'Statement',
-            category: 'Pen',
-            prototype: ElementPenDown,
-        },
-        'set-background': {
-            label: 'set background',
-            type: 'Statement',
-            category: 'Pen',
-            prototype: ElementSetBackground,
-        },
-        'clear': {
-            label: 'clear',
-            type: 'Statement',
-            category: 'Pen',
-            prototype: ElementClear,
-        },
-    },
-};
-
-export const injected: TInjectedPainter = {
-    flags: undefined,
-    i18n: undefined,
-    // @ts-ignore
-    assets: undefined,
-};
-
-// == public functions =============================================================================
+// -- public functions -----------------------------------------------------------------------------
 
 /**
  * Mounts the Painter component.
@@ -153,3 +54,94 @@ export async function setup(): Promise<void> {
 
     reset();
 }
+// -- public variables -----------------------------------------------------------------------------
+
+export const injected: TInjectedPainter = {
+    // @ts-ignore
+    flags: undefined,
+    // @ts-ignore
+    i18n: undefined,
+    // @ts-ignore
+    assets: undefined,
+};
+
+export const elements: Record<string, IElementSpecification> = {
+    'move-forward': {
+        label: 'forward',
+        type: 'Statement',
+        category: 'Graphics',
+        prototype: ElementMoveForward,
+    },
+    'move-backward': {
+        label: 'backward',
+        type: 'Statement',
+        category: 'Graphics',
+        prototype: ElementMoveBackward,
+    },
+    'turn-left': {
+        label: 'left',
+        type: 'Statement',
+        category: 'Graphics',
+        prototype: ElementTurnLeft,
+    },
+    'turn-right': {
+        label: 'right',
+        type: 'Statement',
+        category: 'Graphics',
+        prototype: ElementTurnRight,
+    },
+    'set-xy': {
+        label: 'set xy',
+        type: 'Statement',
+        category: 'Graphics',
+        prototype: ElementSetXY,
+    },
+    'set-heading': {
+        label: 'set heading',
+        type: 'Statement',
+        category: 'Graphics',
+        prototype: ElementSetHeading,
+    },
+    'draw-arc': {
+        label: 'draw arc',
+        type: 'Statement',
+        category: 'Graphics',
+        prototype: ElementDrawArc,
+    },
+    'set-color': {
+        label: 'set color',
+        type: 'Statement',
+        category: 'Pen',
+        prototype: ElementSetColor,
+    },
+    'set-thickness': {
+        label: 'set thickness',
+        type: 'Statement',
+        category: 'Pen',
+        prototype: ElementSetThickness,
+    },
+    'pen-up': {
+        label: 'pen up',
+        type: 'Statement',
+        category: 'Pen',
+        prototype: ElementPenUp,
+    },
+    'pen-down': {
+        label: 'pen down',
+        type: 'Statement',
+        category: 'Pen',
+        prototype: ElementPenDown,
+    },
+    'set-background': {
+        label: 'set background',
+        type: 'Statement',
+        category: 'Pen',
+        prototype: ElementSetBackground,
+    },
+    'clear': {
+        label: 'clear',
+        type: 'Statement',
+        category: 'Pen',
+        prototype: ElementClear,
+    },
+};

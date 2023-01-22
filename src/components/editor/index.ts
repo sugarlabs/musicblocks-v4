@@ -1,4 +1,3 @@
-import type { IComponentDefinition } from '@/@types/components';
 import type { TInjectedEditor } from '@/@types/components/editor';
 
 import { setToolbarExtended, unsetToolbarExtended } from '@/core/view';
@@ -15,37 +14,7 @@ import {
 } from './view';
 import { generateAPI, resetProgram } from './core';
 
-// == definition ===================================================================================
-
-export const definition: IComponentDefinition = {
-    dependencies: {
-        optional: ['menu'],
-        required: [],
-    },
-    flags: {},
-    strings: {
-        'editor.build': 'build button - build the program',
-        'editor.help': 'help button - show syntax information',
-    },
-    assets: [
-        'image.icon.build',
-        'image.icon.help',
-        'image.icon.pin',
-        'image.icon.unpin',
-        'image.icon.code',
-        'image.icon.close',
-    ],
-};
-
-export const injected: TInjectedEditor = {
-    flags: undefined,
-    // @ts-ignore
-    i18n: undefined,
-    // @ts-ignore
-    assets: undefined,
-};
-
-// == public functions =============================================================================
+// -- public functions -----------------------------------------------------------------------------
 
 /**
  * Mounts the UI components.
@@ -172,3 +141,14 @@ export async function setup(): Promise<void> {
         }
     });
 }
+
+// -- public variables -----------------------------------------------------------------------------
+
+export const injected: TInjectedEditor = {
+    // @ts-ignore
+    flags: undefined,
+    // @ts-ignore
+    i18n: undefined,
+    // @ts-ignore
+    assets: undefined,
+};

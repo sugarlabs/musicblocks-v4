@@ -51,10 +51,20 @@ async function _importComponents(config?: IAppConfig): Promise<{
 }> {
     const componentMap = (await import('@/components')).default;
 
+    const componentIdsEnabled: TComponentId[] =
+        config === undefined
+            ? (Object.keys(componentMap) as TComponentId[])
+            : config.components.map(({ id }) => id);
+
+    /** List of 2-tuples of component identifier and component definition. */
+    let componentDefinitions: Record<TComponentId, IComponentDefinition> = Object.fromEntries(
+        Object.entries(componentMap)
+            .filter(([componentId]) => componentIdsEnabled.includes(componentId as TComponentId))
+            .map(([componentId, { definition }]) => [componentId, definition]),
+    ) as Record<TComponentId, IComponentDefinition>;
+
     /** Map of component identifier and corresponding component module. */
     let components: Partial<Record<TComponentId, IComponent>>;
-    /** List of 2-tuples of component identifier and component definition. */
-    let componentDefinitions: Partial<Record<TComponentId, IComponentDefinition>>;
 
     {
         const componentIds = (
@@ -75,13 +85,6 @@ async function _importComponents(config?: IAppConfig): Promise<{
 
         const { importComponents } = await import('@/core/config');
         components = await importComponents(componentIds, componentMap, callback);
-
-        componentDefinitions = Object.fromEntries(
-            (Object.entries(components) as [TComponentId, IComponent][]).map(([id, component]) => [
-                id,
-                component.definition,
-            ]) as [TComponentId, IComponentDefinition][],
-        );
     }
 
     return {
@@ -308,11 +311,21 @@ async function init(config?: IAppConfig) {
 
         window.sessionStorage.setItem('appConfig', JSON.stringify(config));
 
+        const { components, componentDefinitions } = await _importComponents();
+
         await mountConfigPage(
             { ...config },
-            (
-                await _importComponents()
-            ).componentDefinitions,
+            Object.fromEntries(
+                (
+                    Object.entries(componentDefinitions) as [TComponentId, IComponentDefinition][]
+                ).map(([componentId, definition]) => [
+                    componentId,
+                    {
+                        ...definition,
+                        elements: components[componentId]?.elements,
+                    },
+                ]),
+            ),
             (config: IAppConfig) =>
                 requestAnimationFrame(() => {
                     window.sessionStorage.setItem('appConfig', JSON.stringify(config));

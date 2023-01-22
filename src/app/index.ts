@@ -55,6 +55,8 @@ async function init(config?: IAppConfig) {
 
     const { importAssets, getAssets } = await import('@/core/assets');
 
+    let splashTimeStart: number;
+
     /*
      * Initialize the application view and mount the spalsh screen.
      */
@@ -77,6 +79,7 @@ async function init(config?: IAppConfig) {
         // Initialize view toolkit
         await initView();
         await mountSplash();
+        splashTimeStart = Date.now();
         await setView('main');
     }
 
@@ -85,6 +88,17 @@ async function init(config?: IAppConfig) {
      */
 
     {
+        const { updateSplash } = await import('@/core/view');
+
+        const updateSplashData = (data: TAppImportMap) => {
+            const total = 1 + Object.keys(data.assets).length + Object.keys(data.components).length;
+            const items =
+                (data.lang !== undefined ? 1 : 0) +
+                Object.values(data.assets).filter((flag) => flag).length +
+                Object.values(data.components).filter((flag) => flag).length;
+            updateSplash((items / total) * 100);
+        };
+
         const importItemLang = config.env.lang;
         /** List to component Ids to import. */
         const importListComponents = config.components.map(({ id }) => id);
@@ -106,9 +120,10 @@ async function init(config?: IAppConfig) {
             }
         })();
 
-        const updateSplashData = (data: TAppImportMap) => {
-            console.log(data);
-        };
+        _importMap.assets = Object.fromEntries(importListAssets.map((assetId) => [assetId, false]));
+        _importMap.components = Object.fromEntries(
+            importListComponents.map((componentId) => [componentId, false]),
+        );
 
         const { importStrings } = await import('@/core/i18n');
         const { importComponent } = await import('@/core/config');
@@ -241,7 +256,10 @@ async function init(config?: IAppConfig) {
 
         // Unmount the splash screen.
         const { unmountSplash } = await import('@/core/view');
-        await unmountSplash();
+        const splashTimeEnd = Date.now();
+        const splashTime = splashTimeEnd - splashTimeStart;
+        const splashBuffer = Math.max(import.meta.env.VITE_APP_SPLASH_MIN_DELAY - splashTime, 0);
+        setTimeout(() => unmountSplash(), splashBuffer);
     }
 
     if (import.meta.env.PROD) {

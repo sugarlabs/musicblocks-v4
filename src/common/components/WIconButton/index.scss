@@ -1,0 +1,22 @@
+@import '@/common/scss/colors.scss';
+@import '@/common/scss/sizes.scss';
+
+.w-icon-button {
+    width: 44px;
+    height: 44px;
+    padding: 2px;
+    border-radius: calc($s-border-radius + 2px);
+    background-color: $c-bg-white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    &-big{
+        width: 56px;
+        height: 56px;
+    }
+    &-small{
+        width: 30px;
+        height: 30px;
+    }
+}

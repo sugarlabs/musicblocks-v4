@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { linkTo } from '@storybook/addon-links';
 import { default as WIconButton } from '.';
 // -------------------------------------------------------------------------------------------------
 
@@ -18,13 +19,13 @@ type Story = StoryObj<typeof WIconButton>;
 export const Big: Story = {
   args: {
     big:true,
-    handlerClick: ()=>{console.log('Big Button')},
+    handlerClick: linkTo('Common/WIconButton', 'Big'),
   },
 };
 
 export const Small: Story = {
   args: {
     big:false,
-    handlerClick: ()=>{console.log('Small Button')},
+    handlerClick: linkTo('Common/WIconButton', 'Small'),
   },
 };

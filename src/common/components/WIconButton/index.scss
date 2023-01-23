@@ -1,0 +1,36 @@
+@import '@/common/scss/colors.scss';
+@import '@/common/scss/sizes.scss';
+
+
+.main{
+  position: relative;
+  height: 3.3vw;
+  width: 3.3vw;
+  background-color:$mb-accent-dark;
+}
+
+.w-icon-button{
+  border-radius: 9vw;
+  height: 2vw;
+  width: 2vw;
+  position: absolute;
+  left: 0.7vw;
+  top: 0.6vw;
+  background-color: $mb-accent;
+}
+
+.root-big{
+  text-align: center;
+  .main{
+    height: 5vw;
+    width: 5vw;
+  }
+  .w-icon-button{
+   top: 20%;
+   left:20%; 
+   height:3vw;
+   width: 3vw;
+  }
+}
+
+

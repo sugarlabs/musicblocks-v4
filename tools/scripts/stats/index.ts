@@ -51,6 +51,17 @@ export function getStats(data: VisualizerData): {
     }
 
     const _getSizeFiles = (prefix: string): [string, number][] => {
+        if (process.platform === 'win32') {
+            return Object.values(data.nodeMetas)
+                .filter(({ id }) => id.includes(prefix))
+                .map<[string, number]>(({ id, moduleParts }) => [
+                    id.split(prefix).slice(-1)[0],
+                    Object.values(moduleParts)
+                        .map((moduleId) => data.nodeParts[moduleId].gzipLength)
+                        .reduce((a, b) => a + b),
+                ]);
+        }
+
         return Object.values(data.nodeMetas)
             .filter(({ id }) => id.startsWith(prefix))
             .map<[string, number]>(({ id, moduleParts }) => [

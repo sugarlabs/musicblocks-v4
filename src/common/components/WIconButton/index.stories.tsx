@@ -17,16 +17,14 @@ type Story = StoryObj<typeof WIconButton>;
 
 export const Big: Story = {
   args: {
-    big: true,
-    content:'',
+    big:true,
     handlerClick: ()=>{console.log('Big Button')},
   },
 };
 
 export const Small: Story = {
   args: {
-    big: false,
-    content:'',
+    big:false,
     handlerClick: ()=>{console.log('Small Button')},
   },
 };

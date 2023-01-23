@@ -109,9 +109,13 @@ export function getStats(data: VisualizerData): {
 
     const _getSizeFiles = (prefix: string): [string, number][] => {
         return Object.values(data.nodeMetas)
-            .filter(({ id }) => id.startsWith(prefix))
+            .filter(({ id }) =>
+                process.platform === 'win32' ? id.includes(prefix) : id.startsWith(prefix),
+            )
             .map<[string, number]>(({ id, moduleParts }) => [
-                id.replace(new RegExp(`${prefix}`, 'g'), ''),
+                process.platform === 'win32'
+                    ? id.split(prefix).slice(-1)[0]
+                    : id.replace(new RegExp(`${prefix}`, 'g'), ''),
                 Object.values(moduleParts)
                     .map((moduleId) => data.nodeParts[moduleId].gzipLength)
                     .reduce((a, b) => a + b),

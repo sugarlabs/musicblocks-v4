@@ -1,6 +1,8 @@
 // -- stylesheet -----------------------------------------------------------------------------------
 
 import './index.scss';
+import SImageVector from '../SImageVector/index';
+
 
 // -- component definition -------------------------------------------------------------------------
 
@@ -21,8 +23,8 @@ export default function (props: {
     <div className={`root ${props.big ? 'root-big':'root'}`} >
      <div className='main'>
        <div className="w-icon-button" onClick={() => props.handlerClick()}>
-       {props.content}
        </div>
+       <SImageVector content={props.content}/>
      </div>
     </div>
     

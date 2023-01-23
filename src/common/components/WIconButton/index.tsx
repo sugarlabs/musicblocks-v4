@@ -1,7 +1,8 @@
 // -- stylesheet -----------------------------------------------------------------------------------
 
 import './index.scss';
-import SImageVector from '../SImageVector/index';
+import SImage from '../SImage/index';
+import type { TAsset } from '@/@types/core/assets'
 
 
 // -- component definition -------------------------------------------------------------------------
@@ -24,7 +25,7 @@ export default function (props: {
      <div className='main'>
        <div className="w-icon-button" onClick={() => props.handlerClick()}>
        </div>
-       <SImageVector content={props.content}/>
+       <SImage asset={props.asset}/>
      </div>
     </div>
   );

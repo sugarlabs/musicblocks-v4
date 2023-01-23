@@ -1,4 +1,3 @@
-import { linkTo } from '@storybook/addon-links';
 import type { Meta, StoryObj } from '@storybook/react';
 
 import { default as WIconButton } from '.';

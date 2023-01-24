@@ -50,3 +50,35 @@ export function getStats(data: VisualizerData, extract: string[]) {
         ]),
     );
 }
+
+// -------------------------------------------------------------------------------------------------
+
+import fs from 'fs';
+import path from 'path';
+import process from 'process';
+
+import { parse } from 'node-html-parser';
+
+{
+    const root = process.cwd();
+
+    const statsPath = path.resolve(root, 'dist', 'stats.html');
+
+    const data = eval(`
+        (
+            function () {
+                ${
+                    parse(fs.readFileSync(statsPath, 'utf-8'))
+                        .getElementsByTagName('script')[1]
+                        .innerHTML.match(/const data = {(.+)};/g)
+                        ?.toString() as string
+                }
+                return data;
+            }
+        )()
+    `) as VisualizerData;
+
+    const stats = getStats(data, ['lang', 'module']);
+
+    fs.writeFileSync(path.resolve(root, 'dist', 'stats.json'), JSON.stringify(stats));
+}

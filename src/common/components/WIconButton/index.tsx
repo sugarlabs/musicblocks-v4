@@ -1,9 +1,10 @@
-// -- stylesheet -----------------------------------------------------------------------------------
+import type { TAsset } from '@/@types/core/assets';
+
+// -- ui items -------------------------------------------------------------------------------------
+
+import { SImage } from '..';
+
 import './index.scss';
-
-// -- import of the required custom component
-
-import { SImageVector } from '..';
 
 // -- component definition -------------------------------------------------------------------------
 
@@ -13,17 +14,22 @@ import { SImageVector } from '..';
 export default function (props: {
   /** Choosable button size */
   size: `big` | `small`;
-  /** SVG data string. */
-  content: string;
+  /** Asset entry. */
+  asset: TAsset;
   /** Callback function for click event. */
-  handlerClick: CallableFunction
+  handlerClick: CallableFunction;
 }): JSX.Element {
   // ---------------------------------------------------------------------------
 
   return (
     <>
-      <button className={`${props.size === 'big' ? 'w-button-lg' : 'w-button'}`} onClick={() => props.handlerClick()}>
-        <SImageVector content={props.content} />
+      <button
+        className={`w-button-icon ${
+          props.size === 'big' ? 'w-button-icon-lg' : 'w-button-icon-sm'
+        }`}
+        onClick={() => props.handlerClick()}
+      >
+        <SImage asset={props.asset} />
       </button>
     </>
   );

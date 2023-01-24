@@ -1,28 +1,32 @@
 @import '@/common/scss/colors.scss';
 @import '@/common/scss/sizes.scss';
 
-.w-button {
-  height: 32px;
-  border: none;
-  color: $mb-accent;
-  background-color: $background-light;
+.w-button-icon {
+  display: grid;
+  place-items: center;
   border-radius: $s-border-radius;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 0.9rem;
-}
+  border: none;
+  outline: none;
+  background-color: $background-light;
+  cursor: pointer;
 
-.w-button-lg {
-  height: 46px;
-  border: none;
-  color: $mb-accent;
-  background-color: $background-light;
-  border-radius: $s-border-radius;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 0.9rem;
+  svg {
+    .path-fill {
+      fill: $mb-accent;
+    }
+  }
+
+  &.w-button-icon-lg {
+    width: 40px;
+    height: 40px;
+    padding: 4px;
+  }
+
+  &.w-button-icon-sm {
+    width: 24px;
+    height: 24px;
+    padding: 2px;
+  }
 }
 
 #stories-button-wrapper {

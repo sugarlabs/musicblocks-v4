@@ -90,13 +90,37 @@ async function init(config?: IAppConfig) {
     {
         const { updateSplash } = await import('@/core/view');
 
+        const { stats } = await (import.meta.env.PROD
+            ? fetch('stats.json')
+                  .then((res) => res.json())
+                  .then((res) => ({ stats: res }))
+            : import('virtual:stats'));
+
+        console.log(stats);
+
         const updateSplashData = (data: TAppImportMap) => {
-            const total = 1 + Object.keys(data.assets).length + Object.keys(data.components).length;
-            const items =
-                (data.lang !== undefined ? 1 : 0) +
-                Object.values(data.assets).filter((flag) => flag).length +
-                Object.values(data.components).filter((flag) => flag).length;
-            updateSplash((items / total) * 100);
+            /** @todo implement with stats data */
+            function updateSplashWithStats() {
+                const total =
+                    1 + Object.keys(data.assets).length + Object.keys(data.components).length;
+                const items =
+                    (data.lang !== undefined ? 1 : 0) +
+                    Object.values(data.assets).filter((flag) => flag).length +
+                    Object.values(data.components).filter((flag) => flag).length;
+                updateSplash((items / total) * 100);
+            }
+
+            if (import.meta.env.DEV && stats === undefined) {
+                const total =
+                    1 + Object.keys(data.assets).length + Object.keys(data.components).length;
+                const items =
+                    (data.lang !== undefined ? 1 : 0) +
+                    Object.values(data.assets).filter((flag) => flag).length +
+                    Object.values(data.components).filter((flag) => flag).length;
+                updateSplash((items / total) * 100);
+            } else {
+                updateSplashWithStats();
+            }
         };
 
         const importItemLang = config.env.lang;

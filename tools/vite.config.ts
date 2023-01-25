@@ -86,6 +86,11 @@ export default defineConfig({
                 'core.i18n': resolve('src/core/i18n/index.ts'),
                 'core.view': resolve('src/core/view/index.ts'),
             },
+            output: {
+                entryFileNames:"assets/[name].js",
+                chunkFileNames:"assets/[name].js",
+                assetFileNames:"assets/[name].[ext]"
+            },
         },
     },
 });

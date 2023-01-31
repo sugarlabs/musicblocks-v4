@@ -20,7 +20,9 @@ export type TAssetIdentifierMenu =
     | 'image.icon.saveProjectHTML'
     | 'image.icon.exportDrawing'
     | 'image.icon.startRecording'
-    | 'image.icon.stopRecording';
+    | 'image.icon.stopRecording'
+    | 'image.icon.uploadFile'
+    | 'image.icon.loadProject';
 
 /** Type definition for the items injected into the Menu component after load. */
 export type TInjectedMenu = {

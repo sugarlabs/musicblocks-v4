@@ -15,12 +15,11 @@ export function Menu(props: TPropsMenu): JSX.Element {
   return (
     <>
       <>
-        <label className="menu-input-btn-label">
-          <input
-            type="file"
-            className={`menu-btn ${!props.injected.flags.uploadFile ? 'menu-btn-hidden' : ''}`}
-            multiple={true}
-          ></input>
+        <label className={`menu-btn ${!props.injected.flags.uploadFile ? 'menu-btn-hidden' : ''}`}>
+          <div className="menu-btn-img">
+            <SImage asset={props.injected.assets['image.icon.uploadFile']} />
+          </div>
+          <input type="file" className="menu-btn-input" multiple={true}></input>
         </label>
 
         <button className={`menu-btn ${!props.injected.flags.recording ? 'menu-btn-hidden' : ''}`}>
@@ -52,12 +51,11 @@ export function Menu(props: TPropsMenu): JSX.Element {
           </div>
         </button>
 
-        <label className="menu-input-btn-label">
-          <input
-            type="file"
-            className={`menu-btn ${!props.injected.flags.loadProject ? 'menu-btn-hidden' : ''}`}
-            accept="text/html"
-          ></input>
+        <label className={`menu-btn ${!props.injected.flags.loadProject ? 'menu-btn-hidden' : ''}`}>
+          <div className="menu-btn-img">
+            <SImage asset={props.injected.assets['image.icon.loadProject']} />
+          </div>
+          <input type="file" className="menu-btn-input" accept="text/html"></input>
         </label>
 
         <button

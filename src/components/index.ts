@@ -54,6 +54,8 @@ const manifest: TComponentManifest = {
                 'image.icon.exportDrawing',
                 'image.icon.startRecording',
                 'image.icon.stopRecording',
+                'image.icon.uploadFile',
+                'image.icon.loadProject',
             ],
         },
     },

@@ -20,6 +20,8 @@ import imageIconSaveProjectHTML from './image/icon/saveProjectHTML.svg';
 import imageIconExportDrawing from './image/icon/exportDrawing.svg';
 import imageIconStartRecording from './image/icon/startRecording.svg';
 import imageIconStopRecording from './image/icon/stopRecording.svg';
+import imageIconUploadFile from './image/icon/uploadFile.svg';
+import imageIconLoadProject from './image/icon/loadProject.svg';
 
 import imageIconClose from './image/icon/close.svg';
 import imageIconCode from './image/icon/code.svg';
@@ -72,6 +74,12 @@ const manifest: {
     },
     'image.icon.stopRecording': {
         path: imageIconStopRecording,
+    },
+    'image.icon.uploadFile': {
+        path: imageIconUploadFile,
+    },
+    'image.icon.loadProject': {
+        path: imageIconLoadProject,
     },
 
     'image.icon.close': {

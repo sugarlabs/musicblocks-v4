@@ -7,6 +7,7 @@
  */
 
 import Temperament from '../temperament';
+import { PitchTuple } from '../../@types/temperament';
 
 describe('class Temperament', () => {
     describe('Temperament generation', () => {
@@ -123,6 +124,27 @@ describe('class Temperament', () => {
         test('Expect the index of the frequency nearest to the target frequency i.e 440 Hz to be 57', () => {
             const num: number = t.getNearestFreqIndex(440);
             expect(num).toBe(57);
+        });
+
+        test('Expect the PitchTuple of the frequency 440 to be ["n9", 4, 0]', () => {
+            const pt: PitchTuple = t.frequencyToPitchOctaveCents(440);
+            expect(pt[0]).toBe('n9');
+            expect(pt[1]).toBe(4);
+            expect(pt[2]).toBe(0);
+        });
+
+        test('Expect the PitchTuple of the frequency 441 to be ["n9", 4, 10]', () => {
+            const pt: PitchTuple = t.frequencyToPitchOctaveCents(442);
+            expect(pt[0]).toBe('n9');
+            expect(pt[1]).toBe(4);
+            expect(pt[2]).toBe(8);
+        });
+
+        test('Expect the PitchTuple of the frequency 439 to be ["n8", 4, 90]', () => {
+            const pt: PitchTuple = t.frequencyToPitchOctaveCents(439);
+            expect(pt[0]).toBe('n8');
+            expect(pt[1]).toBe(4);
+            expect(pt[2]).toBe(96);
         });
     });
 

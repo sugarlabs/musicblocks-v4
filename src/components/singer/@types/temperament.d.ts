@@ -6,6 +6,9 @@
  * Licensed under the AGPL-3.0 License.
  */
 
+/** A tuple containing a pitch name, an octave, and cents */
+export type PitchTuple = [string, number, number];
+
 /** Interface for the Temperament class. */
 export interface ITemperament {
     /** Setter and Getter for the base frequency (in Hertz) used to seed the calculations. */
@@ -49,4 +52,6 @@ export interface ITemperament {
     generateCustom: (intervals: string[], ratios: { [key: string]: number }, name: string) => void;
     /** Calculates a base frequency based on a pitch and frequency. */
     tune: (pitchNameArg: string, octave: number, frequency: number) => number;
+    /** Returns PitchTuple for a given frequency */
+    frequencyToPitchOctaveCents: (frequency: number) => PitchTuple;
 }

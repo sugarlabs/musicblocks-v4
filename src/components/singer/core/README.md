@@ -112,6 +112,15 @@ public getScalarInterval: (numberOfScalarSteps: number) => number;
  * Thrown if the temperament is not an equal temperament.
  */
 public frequencyToPitchOctaveCents: (frequency: number) => PitchTuple;
+
+/**
+ * @remarks
+ * Pitch name can be used to calculate an index the pitches in an octave.
+ *
+ * @param pitch is a pitchTuple - e.g., ['n9', 4, 8]
+ * @returns The frequency that corresponds to the index and octave and cents (in Hertz).
+ */
+public getFreqByGenericPitchNameOctaveCents: (pitch: PitchTuple) => number;
 ```
 
 ### Description

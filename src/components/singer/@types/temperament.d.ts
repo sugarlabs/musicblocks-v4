@@ -54,4 +54,6 @@ export interface ITemperament {
     tune: (pitchNameArg: string, octave: number, frequency: number) => number;
     /** Returns PitchTuple for a given frequency */
     frequencyToPitchOctaveCents: (frequency: number) => PitchTuple;
+    /** Returns The frequency that corresponds to the index and octave and cents. */
+    getFreqByGenericPitchNameOctaveCents: (pitch: PitchTuple) => number;
 }

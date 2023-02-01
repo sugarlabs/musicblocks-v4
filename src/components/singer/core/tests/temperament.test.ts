@@ -220,9 +220,21 @@ describe('class Temperament', () => {
             expect(num).toBe(16.3516);
         });
 
-        test("Expect frequency 16.3516 Hz when generic note name is 'a' (invalid)", () => {
-            const num: number = t.getFreqByGenericNoteNameAndOctave('n0', 0);
-            expect(num).toBe(16.3516);
+        test("Expect error when generic note name is 'a' (invalid)", () => {
+            expect(() => {
+                t.getFreqByGenericNoteNameAndOctave('a', 0);
+            }).toThrowError("Note 'a' not found in generic note names.");
+        });
+
+        test("Expect frequency 442 Hz when generic note name is 'n9', octave is 4, cents is 8 ", () => {
+            const num: number = t.getFreqByGenericPitchNameOctaveCents(['n9', 4, 8]);
+            expect(num.toFixed(0)).toBe("442");
+        });
+
+        test("Expect error when cents is -200 (invalid) ", () => {
+            expect(() => {
+                t.getFreqByGenericPitchNameOctaveCents(['n9', 4, -200]);
+            }).toThrowError("cents < -100 || cents > 100");
         });
     });
 

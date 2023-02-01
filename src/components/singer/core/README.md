@@ -101,6 +101,17 @@ public getSemitoneInterval: (numberOfHalfSteps: number) => number;
  * @returns The frequency of the note at the specified interval.
  */
 public getScalarInterval: (numberOfScalarSteps: number) => number;
+
+/**
+ * If we are using an equal temperament, we can calculate cents.
+ *
+ * @param frequency - in hertz
+ * @returns PitchTuple [generic note name, octave, cents]
+ *
+ * @throws {InvalidArgumentError}
+ * Thrown if the temperament is not an equal temperament.
+ */
+public frequencyToPitchOctaveCents: (frequency: number) => PitchTuple;
 ```
 
 ### Description

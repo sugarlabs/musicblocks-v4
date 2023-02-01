@@ -6,7 +6,7 @@
  * Licensed under the AGPL-3.0 License.
  */
 
-import { ITemperament } from '../@types/temperament';
+import { ITemperament, PitchTuple } from '../@types/temperament';
 import { normalizePitch, CHROMATIC_NOTES_SHARP, CHROMATIC_NOTES_FLAT } from './musicUtils';
 import { ItemNotFoundDefaultError } from './errors';
 
@@ -565,7 +565,7 @@ export default class Temperament implements ITemperament {
         if (nsteps < 1) {
             nsteps = 1;
         }
-        this._name = `name_${nsteps}`;
+        this._name = `equal_${nsteps}`;  // By convention, start the name with 'equal'.
         this._octaveLength = nsteps;
         this._freqs = [this._baseFrequency];
 
@@ -656,5 +656,44 @@ export default class Temperament implements ITemperament {
             freqs.push((f + 0.005).toFixed(2));
         }
         return `this.name temperament:\n\n${freqs.join('\n')}\n`;
+    }
+
+    /**
+     * If we are using an equal temperament, we can calculate cents.
+     *
+     * @param frequency - in hertz
+     * @returns PitchTuple [generic note name, octave, cents]
+     *
+     * @throws {InvalidArgumentError}
+     * Thrown if the temperament is not an equal temperament.
+     */
+    public frequencyToPitchOctaveCents(frequency: number): PitchTuple {
+        // Calculate the pitch and octave based on frequency, rounding to
+        // the nearest cent.
+        if (frequency < this._baseFrequency) {
+            return ["n0", 0, 0];
+        }
+
+        // Find the nearest note.
+        let pitchIndex: number = this.getNearestFreqIndex(frequency);
+        const thisFreq: number = this.getFreqByIndex(pitchIndex);
+        if (thisFreq > frequency * 1.0003) {  // We must have rounded up.
+            pitchIndex -= 1;
+        }
+
+        // nth root of 2
+        const root: number = Math.pow(2, 1 / (this._octaveLength * 100));
+
+        for (let cents = 0; cents < 100; cents++) {
+            const f: number = this._baseFrequency * Math.pow(root, (pitchIndex * 100) + cents);
+            if (frequency < f * 1.0003 && frequency > f * 0.9997) {
+                const obj: [string, number] = this.getGenericNoteNameAndOctaveByFreqIndex(
+                    pitchIndex
+                );
+                return [obj[0], obj[1], cents];
+            }
+        }
+        // no match???
+        throw new ItemNotFoundDefaultError("No matching note found in temperament", 0);
     }
 }

@@ -284,7 +284,7 @@ export default class KeySignature implements IKeySignature {
         if (typeof this._key === 'string') {
             key = normalizePitch(key);
             preferSharps = this._preferSharps(this._key, this._mode) || this._key.includes('#');
-            console.debug(key, preferSharps);
+            // console.debug(key, preferSharps);
             if (preferSharps) {
                 if (!CHROMATIC_NOTES_SHARP.includes(this._key)) {
                     this._key = EQUIVALENT_SHARPS[this._key];

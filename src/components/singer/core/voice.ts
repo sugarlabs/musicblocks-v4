@@ -27,7 +27,7 @@ export class Voice implements IVoice {
     private _volume: number;
     private _notesPlayed: NoteTuple[];
     private _temporalOffset: number;
-    private _synthUtils: SynthUtils;
+    private _synthUtils: SynthUtils | null;
 
     /**
      * Init the state for this voice.
@@ -35,7 +35,7 @@ export class Voice implements IVoice {
      * @params
      * synthUtils is the common instance of synthUtils used by all voices.
      */
-    constructor(synthUtils: SynthUtils) {
+    constructor(synthUtils: SynthUtils | null) {
         /**
          * @remarks
          * The constructor registers the voice with SynthUtils.
@@ -160,12 +160,14 @@ export class Voice implements IVoice {
             throw new InvalidArgumentError('future cannot be negative');
         }
 
-        this._synthUtils.trigger(
-            pitches,
-            noteValue,
-            instrumentName,
-            this._numberOfNotesPlayedInSeconds + this._temporalOffset + future
-        );
+        if (this._synthUtils !== null) {
+            this._synthUtils.trigger(
+                pitches,
+                noteValue,
+                instrumentName,
+                this._numberOfNotesPlayedInSeconds + this._temporalOffset + future
+            );
+        }
 
         if (tally) {
             this._numberOfNotesPlayedInSeconds += noteValueInSeconds;

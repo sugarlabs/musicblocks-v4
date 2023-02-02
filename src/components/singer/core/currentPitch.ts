@@ -56,7 +56,7 @@ export default class CurrentPitch implements ICurrentPitch {
 
         this._genericName = this._t.getNoteName(this._semitoneIndex);
         this._freq = this._t.getFreqByModalIndexAndOctave(this._semitoneIndex, this._octave);
-        //console.log(this._genericName);
+        // console.log(this._genericName);
 
         // What is the absolute pitch number?
         this._number = this._octave * this._t.numberOfSemitonesInOctave + this._semitoneIndex;

@@ -93,10 +93,8 @@ describe('class CurrentPitch', () => {
         const ks = new KeySignature('major', 'g');
         test('Walk through a scale and expect ocatve to switch at C', () => {
             const cp = new CurrentPitch(ks);
-            console.debug(cp.genericName, cp.octave);
             for (let i = 0; i < ks.modeLength; i++) {
                 cp.applyScalarTransposition(1);
-                console.debug(cp.genericName, cp.octave);
             }
         });
     });

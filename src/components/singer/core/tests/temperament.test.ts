@@ -236,6 +236,18 @@ describe('class Temperament', () => {
                 t.getFreqByGenericPitchNameOctaveCents(['n9', 4, -200]);
             }).toThrowError("cents < -100 || cents > 100");
         });
+
+        const jit = new Temperament('just intonation');
+        test("Expect frequency 426 Hz when pitch is ['n9', 4, 0] ", () => {
+            const num: number = jit.getFreqByGenericPitchNameOctaveCents(['n9', 4, 0]);
+            expect(num.toFixed(0)).toBe("426");
+        });
+
+        test("Expect frequency 429 Hz when pitch is ['n9', 4, 10] ", () => {
+            const num: number = jit.getFreqByGenericPitchNameOctaveCents(['n9', 4, 10]);
+            expect(num.toFixed(0)).toBe("429");
+        });
+
     });
 
     describe('Frequency Index from Generic Note Name and Octave', () => {

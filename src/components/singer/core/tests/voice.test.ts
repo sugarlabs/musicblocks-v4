@@ -28,6 +28,11 @@ describe('class Voice', () => {
             expect(myVoice.numberOfNotesPlayed()).toEqual(2);
         });
 
+        test('voice get beat and measure', () => {
+            expect(myVoice.getCurrentBeat()).toEqual(1);
+            expect(myVoice.getCurrentMeasure()).toEqual(2);
+        });
+
         test('voice expect number of notes played to be 2', () => {
             expect(Number(myVoice.numberOfNotesPlayedInSeconds.toFixed(2))).toEqual(3.33);
         });
@@ -35,6 +40,33 @@ describe('class Voice', () => {
         test('voice play [c4, e4, g4], 1/8, "piano "', () => {
             myVoice.playNotes(["c4", "e4", "g4"], 1/8, "piano", 0, true);
             expect(Number(myVoice.numberOfNotesPlayedInSeconds.toFixed(2))).toEqual(3.67);
+        });
+
+        test('voice get beat and measure', () => {
+            myVoice.playNotes(["c4", "e4", "g4"], 1/8, "piano", 0, true);
+            expect(myVoice.getCurrentBeat()).toEqual(2);
+            expect(myVoice.getCurrentMeasure()).toEqual(2);
+        });
+
+        test('number of quarter notes played', () => {
+            expect(myVoice.getNumberOfNotesPlayedByNoteValue(1 / 4)).toEqual(6);
+            expect(myVoice.getNumberOfNotesPlayedByNoteValue(1 / 8)).toEqual(12);
+        });
+
+        test('set meter', () => {
+            myVoice.setMeter(4, 1/4);
+            expect(myVoice.beatsPerMeasure).toEqual(4);
+            expect(myVoice.noteValuePerBeat).toEqual(1 / 4);
+            expect(myVoice.strongBeats).toEqual([0, 2]);
+            expect(myVoice.weakBeats).toEqual([1, 3]);
+            myVoice.setMeter(6, 1/8);
+            expect(myVoice.beatsPerMeasure).toEqual(6);
+            expect(myVoice.noteValuePerBeat).toEqual(1 / 8);
+            expect(myVoice.strongBeats).toEqual([0, 3]);
+            expect(myVoice.weakBeats).toEqual([1, 2, 4, 5]);
+            myVoice.setStrongBeat(1);
+            expect(myVoice.strongBeats).toContain(1);
+            expect(myVoice.weakBeats).not.toContain(1);
         });
     });
 });

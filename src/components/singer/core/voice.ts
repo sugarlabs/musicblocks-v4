@@ -23,6 +23,7 @@ export class Voice implements IVoice {
      */
     private _numberOfNotesPlayedInSeconds: number;
     private _numberOfQuarterNotesPlayed: number;
+    private _numberOfQuarterNotesPlayedInMeter: number;
     private _beat: number;
     private _beatsPerMinute: number;
     private _volume: number;
@@ -30,10 +31,12 @@ export class Voice implements IVoice {
     private _temporalOffset: number;
     private _synthUtils: SynthUtils | null;
     private _pickup: number;
+    private _pickupInMeter: number;
     private _beatsPerMeasure: number;
     private _noteValuePerBeat: number;
     private _currentBeat: number;
     private _currentMeasure: number;
+    private _previousMeasures: number;
     private _strongBeats: number[];
     private _weakBeats: number[];
 
@@ -68,10 +71,13 @@ export class Voice implements IVoice {
 
         /** Parameters used in time signature */
         this._pickup = 0;
+        this._pickupInMeter = 0;
+        this._numberOfQuarterNotesPlayedInMeter = 0;
         this._beatsPerMeasure = 4;
         this._noteValuePerBeat = 1 / 4;
         this._currentBeat = 0;
         this._currentMeasure = 0;
+        this._previousMeasures = 0;
         this._strongBeats = [0, 2];
         this._weakBeats = [1, 3];
 
@@ -170,6 +176,7 @@ export class Voice implements IVoice {
             throw new InvalidArgumentError('pickup must be >= 0');
         }
         this._pickup = pickup;
+        this._pickupInMeter = pickup;
     }
 
     public get pickup(): number {
@@ -189,6 +196,17 @@ export class Voice implements IVoice {
         }
         if (noteValuePerBeat <= 0) {
             throw new InvalidArgumentError('noteValuePerBeat must be > 0');
+        }
+
+        /** We need to start the count anew after each meter change */
+        this._numberOfQuarterNotesPlayedInMeter = 0;
+        this._previousMeasures += this._currentMeasure;
+        this._currentMeasure = 0;
+        if (
+               (this._numberOfQuarterNotesPlayed * (1/4) / this._noteValuePerBeat)
+               >= this._pickupInMeter
+           ) {
+            this._pickupInMeter = 0;
         }
 
         this._beatsPerMeasure = beatsPerMeasure <= 0 ? 4 : beatsPerMeasure;
@@ -305,18 +323,24 @@ export class Voice implements IVoice {
 
     private _updateCurrentBeat() {
         this._currentBeat = (
-            (this._numberOfQuarterNotesPlayed * (1/4) / this._noteValuePerBeat) - this._pickup
+            (this._numberOfQuarterNotesPlayed * (1/4) / this._noteValuePerBeat)
+            - this._pickupInMeter
         ) % this._beatsPerMeasure;
     }
 
     private _updateCurrentMeasure() {
-        if ((this._numberOfQuarterNotesPlayed * (1/4) / this._noteValuePerBeat) < this._pickup) {
+        if (
+               (this._numberOfQuarterNotesPlayed * (1/4) / this._noteValuePerBeat)
+               < this._pickupInMeter
+           ) {
             this._currentMeasure = 0;
         } else {
             this._currentMeasure = Math.floor (
-                ((this._numberOfQuarterNotesPlayed * (1/4) / this._noteValuePerBeat) - this._pickup)
-                / this._beatsPerMeasure
-            ) + 1;
+                (
+                   (this._numberOfQuarterNotesPlayedInMeter * (1/4) / this._noteValuePerBeat)
+                   - this._pickupInMeter
+                ) / this._beatsPerMeasure
+            ) + 1 + this._previousMeasures;
         }
     }
 
@@ -367,6 +391,7 @@ export class Voice implements IVoice {
         if (tally) {
             this._numberOfNotesPlayedInSeconds += noteValueInSeconds;
             this._numberOfQuarterNotesPlayed += noteValue / (1 / 4);
+            this._numberOfQuarterNotesPlayedInMeter += noteValue / (1 / 4);
             this._notesPlayed.push([noteValue, pitches]);
             this._updateCurrentBeat();
             this._updateCurrentMeasure();

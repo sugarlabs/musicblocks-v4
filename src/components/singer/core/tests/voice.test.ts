@@ -59,6 +59,7 @@ describe('class Voice', () => {
             expect(myVoice.noteValuePerBeat).toEqual(1 / 4);
             expect(myVoice.strongBeats).toEqual([0, 2]);
             expect(myVoice.weakBeats).toEqual([1, 3]);
+            expect(myVoice.getCurrentMeasure()).toEqual(2);
             myVoice.setMeter(6, 1/8);
             expect(myVoice.beatsPerMeasure).toEqual(6);
             expect(myVoice.noteValuePerBeat).toEqual(1 / 8);
@@ -67,6 +68,20 @@ describe('class Voice', () => {
             myVoice.setStrongBeat(1);
             expect(myVoice.strongBeats).toContain(1);
             expect(myVoice.weakBeats).not.toContain(1);
+            expect(myVoice.getCurrentMeasure()).toEqual(2);
+        });
+
+        test('measure test', () => {
+            myVoice.playNote("g4", 1/4, "piano");
+            myVoice.playNote("g4", 1/4, "piano");
+            myVoice.playNote("g4", 1/4, "piano");
+            expect(myVoice.getCurrentMeasure()).toEqual(3);
+            myVoice.playNote("g4", 3/4, "piano");
+            expect(myVoice.getCurrentMeasure()).toEqual(4);
+            myVoice.playNote("g4", 3/4, "piano");
+            expect(myVoice.getCurrentMeasure()).toEqual(5);
+            myVoice.playNote("g4", 3/4, "piano");
+            expect(myVoice.getCurrentMeasure()).toEqual(6);
         });
     });
 });

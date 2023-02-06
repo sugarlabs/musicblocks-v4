@@ -204,7 +204,7 @@ export class Voice implements IVoice {
         this._currentMeasure = 0;
         if (
                (this._numberOfQuarterNotesPlayed * (1/4) / this._noteValuePerBeat)
-               >= this._pickupInMeter
+               >= this._pickup
            ) {
             this._pickupInMeter = 0;
         }
@@ -318,12 +318,12 @@ export class Voice implements IVoice {
 
     /** What measure are we in? */
     public getCurrentMeasure(): number {
-        return this._currentMeasure;
+        return this._previousMeasures + this._currentMeasure;
     }
 
     private _updateCurrentBeat() {
         this._currentBeat = (
-            (this._numberOfQuarterNotesPlayed * (1/4) / this._noteValuePerBeat)
+            (this._numberOfQuarterNotesPlayedInMeter * (1/4) / this._noteValuePerBeat)
             - this._pickupInMeter
         ) % this._beatsPerMeasure;
     }
@@ -335,12 +335,12 @@ export class Voice implements IVoice {
            ) {
             this._currentMeasure = 0;
         } else {
-            this._currentMeasure = Math.floor (
+            this._currentMeasure = Math.ceil (
                 (
                    (this._numberOfQuarterNotesPlayedInMeter * (1/4) / this._noteValuePerBeat)
                    - this._pickupInMeter
                 ) / this._beatsPerMeasure
-            ) + 1 + this._previousMeasures;
+            );
         }
     }
 

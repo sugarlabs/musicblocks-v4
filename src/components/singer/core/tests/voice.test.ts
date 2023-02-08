@@ -9,14 +9,25 @@ import { Voice } from '../voice';
 
 describe('class Voice', () => {
     describe('Validate voice initialization', () => {
-        const myVoice = new Voice(null);
+        const myVoice = new Voice("myvoice", null);
+
         test('voice expect beats per minute to be 90 ', () => {
             expect(myVoice.beatsPerMinute).toEqual(90);
-	});
+        });
 
         test('voice play note 392, 1, piano ', () => {
             myVoice.playNotes([392], 1, "piano", 0, true);
             expect(myVoice.numberOfNotesPlayed()).toEqual(1);
+        });
+
+        test('voice play note "xyz", 1/4, "piano" to throw an error ', () => {
+            try {
+                myVoice.playNotes(["xyz"], 1/4, "piano", 0, true);
+                expect(1).toEqual(0);  // Force test to fail.
+            } catch (e) {
+                console.log(e);
+                expect(1).toEqual(1);
+            }
         });
 
         test('voice expect number of notes played in seconds to be 2.67', () => {

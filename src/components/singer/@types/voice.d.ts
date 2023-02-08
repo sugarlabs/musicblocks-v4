@@ -47,6 +47,11 @@ export interface IVoice {
     getCurrentMeasure: () => number;
     /** Getter and Setter for the temporal offset */
     temporalOffset: number;
+    /** Enable/disable event dispatchers */
+    setEveryNoteEventDispatcher: (value: boolean) => void;
+    setEveryBeatEventDispatcher: (value: boolean) => void;
+    setEveryStrongBeatEventDispatcher: (value: boolean) => void;
+    setEveryWeakBeatEventDispatcher: (value: boolean) => void;
     /** Send notes to be played to the synth. */
     playNotes: (
         pitches: (string|number)[],

@@ -21,6 +21,7 @@ export class Voice implements IVoice {
      * @remarks
      * The class variables maintain state.
      */
+    private _name: string;
     private _numberOfNotesPlayedInSeconds: number;
     private _numberOfQuarterNotesPlayed: number;
     private _numberOfQuarterNotesPlayedInMeter: number;
@@ -40,17 +41,33 @@ export class Voice implements IVoice {
     private _strongBeats: number[];
     private _weakBeats: number[];
 
+    /** Note and beat event management */
+    private _everyNoteEventName: string;
+    private _dispatchEveryNoteEvent: boolean;
+    private _everyNoteEvent: Event;
+    private _everyBeatEventName: string;
+    private _dispatchEveryBeatEvent: boolean;
+    private _everyBeatEvent: Event;
+    private _everyStrongBeatEventName: string;
+    private _dispatchEveryStrongBeatEvent: boolean;
+    private _everyStrongBeatEvent: Event;
+    private _everyWeakBeatEventName: string;
+    private _dispatchEveryWeakBeatEvent: boolean;
+    private _everyWeakBeatEvent: Event;
+
     /**
      * Init the state for this voice.
      *
      * @params
+     * name is the unique name of the voice; used when constructing event names.
      * synthUtils is the common instance of synthUtils used by all voices.
      */
-    constructor(synthUtils: SynthUtils | null) {
+    constructor(name: string, synthUtils: SynthUtils | null) {
         /**
          * @remarks
          * The constructor registers the voice with SynthUtils.
          */
+        this._name = name;
         this._synthUtils = synthUtils;
 
         /** In order to sync voices, we may neetd to introduce an offset. */
@@ -80,6 +97,20 @@ export class Voice implements IVoice {
         this._previousMeasures = 0;
         this._strongBeats = [0, 2];
         this._weakBeats = [1, 3];
+
+        /** events */
+        this._everyNoteEventName = "__every_note_" + this._name + "__";
+        this._dispatchEveryNoteEvent = false;
+        this._everyNoteEvent = new Event(this._everyNoteEventName);
+        this._everyBeatEventName = "__every_beat_" + this._name + "__";
+        this._dispatchEveryBeatEvent = false;
+        this._everyBeatEvent = new Event(this._everyBeatEventName);
+        this._everyStrongBeatEventName = "__every_strong_beat_" + this._name + "__";
+        this._dispatchEveryStrongBeatEvent = false;
+        this._everyStrongBeatEvent = new Event(this._everyStrongBeatEventName);
+        this._everyWeakBeatEventName = "__every_weak_beat_" + this._name + "__";
+        this._dispatchEveryWeakBeatEvent = false;
+        this._everyWeakBeatEvent = new Event(this._everyWeakBeatEventName);
 
         /** We also track attributes such as a master volume. */
         this._volume = 50;
@@ -321,11 +352,49 @@ export class Voice implements IVoice {
         return this._previousMeasures + this._currentMeasure;
     }
 
+    /** Enable/disable event dispatchers */
+    public setEveryNoteEventDispatcher(value: boolean) {
+        this._dispatchEveryNoteEvent = value;
+    }
+
+    public setEveryBeatEventDispatcher(value: boolean) {
+        this._dispatchEveryBeatEvent = value;
+    }
+
+    public setEveryStrongBeatEventDispatcher(value: boolean) {
+        this._dispatchEveryStrongBeatEvent = value;
+    }
+
+    public setEveryWeakBeatEventDispatcher(value: boolean) {
+        this._dispatchEveryWeakBeatEvent = value;
+    }
+
     private _updateCurrentBeat() {
         this._currentBeat = (
             (this._numberOfQuarterNotesPlayedInMeter * (1/4) / this._noteValuePerBeat)
             - this._pickupInMeter
         ) % this._beatsPerMeasure;
+
+        /** Depending on the beat, dispatch event(s). */
+        if (this._dispatchEveryNoteEvent) {
+            // obj.dispatchEvent(this._everyNoteEvent);
+        }
+        if (this._dispatchEveryBeatEvent) {
+            if (this._strongBeats.indexOf(this._currentBeat) !== -1 ||
+                this._weakBeats.indexOf(this._currentBeat) !== -1) {
+                // obj.dispatchEvent(this._everyBeatEvent);
+            }
+        }
+        if (this._dispatchEveryStrongBeatEvent) {
+            if (this._strongBeats.indexOf(this._currentBeat) !== -1) {
+                // obj.dispatchEvent(this._everyStrongBeatEvent);
+            }
+        }
+        if (this._dispatchEveryWeakBeatEvent) {
+            if (this._weakBeats.indexOf(this._currentBeat) !== -1) {
+                // obj.dispatchEvent(this._everyWeakBeatEvent);
+            }
+        }
     }
 
     private _updateCurrentMeasure() {
@@ -405,6 +474,8 @@ export class Voice implements IVoice {
       * @param pitch is single pitch, e.g., "c4", "g5", or 440
       * @param noteValue is a note duration, e.g., 1/4
       * @param instrumentName is the name of an instrument synth (either a sample or builtin)
+      *
+      * @throws {InvalidArgumentError}
       */
     public playNote(
         pitch: (string|number),

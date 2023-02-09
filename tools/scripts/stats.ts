@@ -138,7 +138,7 @@ export function getStats(data: VisualizerData): {
             .readdirSync(path.resolve(root, 'dist', 'assets'), { withFileTypes: true })
             .filter((dirent) => dirent.isFile())
             .map((dirent) => dirent.name)
-            .filter((name) => /\.(png|jpg|jpeg|gif|svg)$/.test(name));
+            .filter((name) => /\.(png|jpg|jpeg|gif|svg|mp3|ogg|wav|xml)$/.test(name));
 
         const assetsStats: Record<string, number> = {};
 

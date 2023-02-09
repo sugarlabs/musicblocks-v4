@@ -132,9 +132,24 @@ export function getStats(data: VisualizerData): {
     };
 
     const _getSizeAssets = (): Record<string, number> => {
-        return Object.fromEntries(
-            _getSizeFiles('/src/assets/').filter(([file]) => !file.endsWith('.ts')),
-        );
+        const root = process.cwd();
+
+        const assetsFiles = fs
+            .readdirSync(path.resolve(root, 'dist', 'assets'), { withFileTypes: true })
+            .filter((dirent) => dirent.isFile())
+            .map((dirent) => dirent.name)
+            .filter((name) => /\.(png|jpg|jpeg|gif|svg)$/.test(name));
+
+        const assetsStats: Record<string, number> = {};
+
+        assetsFiles.forEach((file) => {
+            // Get the size of the file in bytes
+            const size = fs.statSync(path.resolve(root, 'dist', 'assets', file)).size;
+
+            assetsStats[file] = size;
+        });
+
+        return assetsStats;
     };
 
     return {

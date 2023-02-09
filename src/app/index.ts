@@ -96,18 +96,38 @@ async function init(config?: IAppConfig) {
                   .then((res) => ({ stats: res }))
             : import('virtual:stats'));
 
-        console.log(stats);
-
         const updateSplashData = (data: TAppImportMap) => {
-            /** @todo implement with stats data */
             function updateSplashWithStats() {
-                const total =
-                    1 + Object.keys(data.assets).length + Object.keys(data.components).length;
-                const items =
-                    (data.lang !== undefined ? 1 : 0) +
-                    Object.values(data.assets).filter((flag) => flag).length +
-                    Object.values(data.components).filter((flag) => flag).length;
-                updateSplash((items / total) * 100);
+                function getAssetsSize(all = true): number {
+                    return Object.entries(data.assets)
+                        .filter(([, val]) => all || val)
+                        .map(
+                            ([key]) =>
+                                stats.assets[assetManifest[key].path.split('assets/').slice(-1)[0]],
+                        )
+                        .reduce((a, b) => a + b, 0);
+                }
+
+                function getComponentsSize(all = true): number {
+                    return Object.entries(data.components)
+                        .filter(([, val]) => all || val)
+                        .map(([key]) => stats.modules[key])
+                        .reduce((a, b) => a + b, 0);
+                }
+
+                const allAssetsSize = getAssetsSize();
+                const loadedAssetsSize = getAssetsSize(false);
+
+                const allComponentsSize = getComponentsSize();
+                const loadedComponentsSize = getComponentsSize(false);
+
+                const allLangSize = stats.i18n.en as number;
+                const loadedLangSize = data.lang ? (stats.i18n.en as number) : 0;
+
+                const totalSize = allAssetsSize + allComponentsSize + allLangSize;
+                const loadedSize = loadedAssetsSize + loadedComponentsSize + loadedLangSize;
+
+                updateSplash((loadedSize / totalSize) * 100);
             }
 
             if (import.meta.env.DEV && stats === undefined) {

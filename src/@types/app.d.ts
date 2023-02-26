@@ -39,7 +39,7 @@ export interface IAppConfig {
 
 /** Type definition for the map of items imported at app load. */
 export type TAppImportMap = {
-    lang: TI18nLang | undefined;
+    lang: Partial<Record<TI18nLang, boolean>>;
     assets: Record<string, boolean>;
     components: Partial<Record<TComponentId, boolean>>;
 };

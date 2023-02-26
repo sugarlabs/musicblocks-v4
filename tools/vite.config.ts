@@ -63,35 +63,6 @@ export default defineConfig({
             gzipSize: true,
             template: 'raw-data',
         }),
-
-        // only for use in DEV mode
-        {
-            name: 'stats-plugin',
-            resolveId(id) {
-                if (id === 'virtual:stats') {
-                    return '\0' + 'virtual:stats';
-                }
-            },
-            load(id) {
-                if (id === '\0' + 'virtual:stats') {
-                    let stats:
-                        | {
-                              i18n: Record<string, number>;
-                              assets: Record<string, number>;
-                              modules: Record<string, number>;
-                          }
-                        | undefined;
-                    try {
-                        // if build was run before, this will be present
-                        // eslint-disable-next-line
-                        stats = require('../dist/stats.json');
-                    } catch (e) {
-                        // do nothing
-                    }
-                    return `export const stats = ${JSON.stringify(stats)}`;
-                }
-            },
-        },
     ],
 
     resolve: {

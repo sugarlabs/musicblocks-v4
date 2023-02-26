@@ -11,7 +11,7 @@ import type { TI18nLang } from '@/@types/core/i18n';
 // -------------------------------------------------------------------------------------------------
 
 const _importMap: TAppImportMap = {
-    lang: undefined,
+    lang: {},
     assets: {},
     components: {},
 };
@@ -27,7 +27,7 @@ function _updateImportMap(item: 'assets', subitem: string): TAppImportMap;
 function _updateImportMap(item: 'components', subitem: TComponentId): TAppImportMap;
 function _updateImportMap(item: keyof TAppImportMap, subitem?: string): TAppImportMap {
     if (item === 'lang') {
-        _importMap.lang = subitem as TI18nLang;
+        _importMap.lang[subitem as TI18nLang] = true;
     } else if (item === 'assets') {
         const assets = { ..._importMap.assets };
         assets[subitem as string] = true;
@@ -121,8 +121,9 @@ async function init(config?: IAppConfig) {
                 const allComponentsSize = getComponentsSize();
                 const loadedComponentsSize = getComponentsSize(false);
 
-                const allLangSize = stats.i18n.en as number;
-                const loadedLangSize = data.lang ? (stats.i18n.en as number) : 0;
+                const langName = Object.keys(data.lang)[0] as TI18nLang;
+                const allLangSize = stats.i18n[langName];
+                const loadedLangSize = data.lang[langName] ? allLangSize : 0;
 
                 const totalSize = allAssetsSize + allComponentsSize + allLangSize;
                 const loadedSize = loadedAssetsSize + loadedComponentsSize + loadedLangSize;
@@ -164,6 +165,7 @@ async function init(config?: IAppConfig) {
             }
         })();
 
+        _importMap.lang = Object.fromEntries([[importItemLang, false]]);
         _importMap.assets = Object.fromEntries(importListAssets.map((assetId) => [assetId, false]));
         _importMap.components = Object.fromEntries(
             importListComponents.map((componentId) => [componentId, false]),

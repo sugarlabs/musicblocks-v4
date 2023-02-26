@@ -90,15 +90,21 @@ async function init(config?: IAppConfig) {
     {
         const { updateSplash } = await import('@/core/view');
 
-        const { stats } = await (import.meta.env.PROD
-            ? fetch('stats.json')
-                  .then((res) => res.json())
-                  .then((res) => ({ stats: res }))
-            : import('virtual:stats'));
+        const stats = import.meta.env.PROD
+            ? await fetch('stats.json').then((res) => res.json())
+            : undefined;
 
         const updateSplashData = (data: TAppImportMap) => {
-            function updateSplashWithStats() {
-                function getAssetsSize(all = true): number {
+            if (import.meta.env.DEV) {
+                const total =
+                    1 + Object.keys(data.assets).length + Object.keys(data.components).length;
+                const items =
+                    (data.lang !== undefined ? 1 : 0) +
+                    Object.values(data.assets).filter((flag) => flag).length +
+                    Object.values(data.components).filter((flag) => flag).length;
+                updateSplash((items / total) * 100);
+            } else {
+                const getAssetsSize = (all = true): number => {
                     return Object.entries(data.assets)
                         .filter(([, val]) => all || val)
                         .map(
@@ -106,14 +112,14 @@ async function init(config?: IAppConfig) {
                                 stats.assets[assetManifest[key].path.split('assets/').slice(-1)[0]],
                         )
                         .reduce((a, b) => a + b, 0);
-                }
+                };
 
-                function getComponentsSize(all = true): number {
+                const getComponentsSize = (all = true): number => {
                     return Object.entries(data.components)
                         .filter(([, val]) => all || val)
                         .map(([key]) => stats.modules[key])
                         .reduce((a, b) => a + b, 0);
-                }
+                };
 
                 const allAssetsSize = getAssetsSize();
                 const loadedAssetsSize = getAssetsSize(false);
@@ -129,18 +135,6 @@ async function init(config?: IAppConfig) {
                 const loadedSize = loadedAssetsSize + loadedComponentsSize + loadedLangSize;
 
                 updateSplash((loadedSize / totalSize) * 100);
-            }
-
-            if (import.meta.env.DEV && stats === undefined) {
-                const total =
-                    1 + Object.keys(data.assets).length + Object.keys(data.components).length;
-                const items =
-                    (data.lang !== undefined ? 1 : 0) +
-                    Object.values(data.assets).filter((flag) => flag).length +
-                    Object.values(data.components).filter((flag) => flag).length;
-                updateSplash((items / total) * 100);
-            } else {
-                updateSplashWithStats();
             }
         };
 

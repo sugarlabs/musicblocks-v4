@@ -55,3 +55,17 @@ export function constructWasmUrl(importPath: string): string {
         return importPath;
     }
 }
+/**
+ * Returns the content of a meta tag with the specified name.
+ *
+ * @param name the name of the meta tag to retrieve the content for
+ * @returns the content of the meta tag or an empty string if the tag is not found
+ */
+export function getMetaTagContent(name: string): string {
+  const tag = document.querySelector(`meta[name="${name}"]`);
+  if (tag) {
+    return tag.getAttribute('content') || '';
+  }
+  return '';
+}
+

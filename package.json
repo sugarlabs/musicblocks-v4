@@ -1,5 +1,5 @@
 {
-  "name": "musicblocks",
+  "name": "@sugarlabs/musicblocks4",
   "version": "4.2.0",
   "description": "A complete overhaul of Music Blocks",
   "private": true,

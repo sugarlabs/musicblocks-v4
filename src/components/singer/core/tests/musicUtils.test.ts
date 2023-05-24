@@ -13,7 +13,7 @@ import {
     findSharpIndex,
     isAFlat,
     findFlatIndex,
-    getPitchType
+    getPitchType,
 } from '../musicUtils';
 
 describe('Music utilities', () => {

@@ -484,15 +484,15 @@ export function findFlatIndex(pitchName: string): number {
  * @throws {InvalidArgumentError}
  * Thrown if pitchName isn't valid.
  */
-export function validatePitch(pitchName: string|number) {
+export function validatePitch(pitchName: string | number) {
     // Only letter names and hertz -- no solfege or generic names
     // since it feeds the synth code.
-    if (typeof(pitchName) === 'number') {
-       if (pitchName > 0) {
-           return;
-       }
+    if (typeof pitchName === 'number') {
+        if (pitchName > 0) {
+            return;
+        }
     } else if (!isNaN(Number(pitchName))) {
-        pitchName = Number(pitchName);  // pitch in Hertz
+        pitchName = Number(pitchName); // pitch in Hertz
         if (pitchName >= 0) {
             return;
         }
@@ -500,11 +500,13 @@ export function validatePitch(pitchName: string|number) {
         // Must be of the form letter[accidental]ocatve, e.g., f#4.
         if (['c', 'd', 'e', 'f', 'g', 'a', 'b'].indexOf(pitchName.charAt(0)) !== -1) {
             const octave = pitchName.charAt(pitchName.length - 1);
-            if (!isNaN(Number(octave)) && Number(octave) > 0) {  // Octave must be a positive int.
+            if (!isNaN(Number(octave)) && Number(octave) > 0) {
+                // Octave must be a positive int.
                 if (pitchName.length === 2) {
                     return;
                 }
-                if (pitchName.length === 3) {  // There could be an accidental.
+                if (pitchName.length === 3) {
+                    // There could be an accidental.
                     const accidental = pitchName.charAt(1);
                     if (['#b'].indexOf(accidental) !== -1) {
                         return;

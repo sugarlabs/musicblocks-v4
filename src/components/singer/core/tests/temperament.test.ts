@@ -228,26 +228,25 @@ describe('class Temperament', () => {
 
         test("Expect frequency 442 Hz when generic note name is 'n9', octave is 4, cents is 8 ", () => {
             const num: number = t.getFreqByGenericPitchNameOctaveCents(['n9', 4, 8]);
-            expect(num.toFixed(0)).toBe("442");
+            expect(num.toFixed(0)).toBe('442');
         });
 
-        test("Expect error when cents is -200 (invalid) ", () => {
+        test('Expect error when cents is -200 (invalid) ', () => {
             expect(() => {
                 t.getFreqByGenericPitchNameOctaveCents(['n9', 4, -200]);
-            }).toThrowError("cents < -100 || cents > 100");
+            }).toThrowError('cents < -100 || cents > 100');
         });
 
         const jit = new Temperament('just intonation');
         test("Expect frequency 426 Hz when pitch is ['n9', 4, 0] ", () => {
             const num: number = jit.getFreqByGenericPitchNameOctaveCents(['n9', 4, 0]);
-            expect(num.toFixed(0)).toBe("426");
+            expect(num.toFixed(0)).toBe('426');
         });
 
         test("Expect frequency 429 Hz when pitch is ['n9', 4, 10] ", () => {
             const num: number = jit.getFreqByGenericPitchNameOctaveCents(['n9', 4, 10]);
-            expect(num.toFixed(0)).toBe("429");
+            expect(num.toFixed(0)).toBe('429');
         });
-
     });
 
     describe('Frequency Index from Generic Note Name and Octave', () => {

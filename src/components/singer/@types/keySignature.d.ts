@@ -54,7 +54,7 @@ export interface IKeySignature {
     genericNoteNameConvertToType: (
         pitchName: string,
         targetType: string,
-        preferSharps: boolean
+        preferSharps: boolean,
     ) => string;
     /** Calculates the distance between two notes in semitone steps. */
     semitoneDistance: (pitchA: string, octaveA: number, pitchB: string, octaveB: number) => number;
@@ -63,7 +63,7 @@ export interface IKeySignature {
         pitchA: string,
         octaveA: number,
         pitchB: string,
-        octaveB: number
+        octaveB: number,
     ) => [number, number];
     /** Rotates a series of notes around an invert point. */
     invert: (
@@ -71,7 +71,7 @@ export interface IKeySignature {
         octave: number,
         invertPointPitch: string,
         invertPointOctave: number,
-        invertMode: 'even' | 'odd' | 'scalar'
+        invertMode: 'even' | 'odd' | 'scalar',
     ) => [string, number];
     /**
      * Given a target pitch, returns the closest note in the current key signature (key and mode).

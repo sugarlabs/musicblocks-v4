@@ -11,7 +11,6 @@ import SynthUtils from './synthUtils';
 import { validatePitch } from './musicUtils';
 import { InvalidArgumentError } from './errors';
 
-
 /**
  * The Voice class manages characteristics such as notes being played for a
  * "voice" (one of many parallel threads) in Music Blocks.
@@ -99,16 +98,16 @@ export class Voice implements IVoice {
         this._weakBeats = [1, 3];
 
         /** events */
-        this._everyNoteEventName = "__every_note_" + this._name + "__";
+        this._everyNoteEventName = '__every_note_' + this._name + '__';
         this._dispatchEveryNoteEvent = false;
         this._everyNoteEvent = new Event(this._everyNoteEventName);
-        this._everyBeatEventName = "__every_beat_" + this._name + "__";
+        this._everyBeatEventName = '__every_beat_' + this._name + '__';
         this._dispatchEveryBeatEvent = false;
         this._everyBeatEvent = new Event(this._everyBeatEventName);
-        this._everyStrongBeatEventName = "__every_strong_beat_" + this._name + "__";
+        this._everyStrongBeatEventName = '__every_strong_beat_' + this._name + '__';
         this._dispatchEveryStrongBeatEvent = false;
         this._everyStrongBeatEvent = new Event(this._everyStrongBeatEventName);
-        this._everyWeakBeatEventName = "__every_weak_beat_" + this._name + "__";
+        this._everyWeakBeatEventName = '__every_weak_beat_' + this._name + '__';
         this._dispatchEveryWeakBeatEvent = false;
         this._everyWeakBeatEvent = new Event(this._everyWeakBeatEventName);
 
@@ -136,7 +135,7 @@ export class Voice implements IVoice {
     public get beat(): number {
         return this._beat;
     }
- 
+
     /**
      * @remarks
      * Beats per minute is the number of beats played in a minute, e.g., 90
@@ -166,7 +165,7 @@ export class Voice implements IVoice {
         if (noteValue <= 0) {
             throw new InvalidArgumentError('noteValue must be > 0');
         }
-        return this._numberOfQuarterNotesPlayed * (1/4) / noteValue;
+        return (this._numberOfQuarterNotesPlayed * (1 / 4)) / noteValue;
     }
 
     /**
@@ -196,7 +195,7 @@ export class Voice implements IVoice {
     public get temporalOffset(): number {
         return this._temporalOffset;
     }
- 
+
     /**
      * @remarks
      * pickup is used to provide an offset for the starting measure.
@@ -213,7 +212,7 @@ export class Voice implements IVoice {
     public get pickup(): number {
         return this._pickup;
     }
- 
+
     /**
      * @remarks
      * set the beats per measure, note value per beat and
@@ -233,10 +232,7 @@ export class Voice implements IVoice {
         this._numberOfQuarterNotesPlayedInMeter = 0;
         this._previousMeasures += this._currentMeasure;
         this._currentMeasure = 0;
-        if (
-               (this._numberOfQuarterNotesPlayed * (1/4) / this._noteValuePerBeat)
-               >= this._pickup
-           ) {
+        if ((this._numberOfQuarterNotesPlayed * (1 / 4)) / this._noteValuePerBeat >= this._pickup) {
             this._pickupInMeter = 0;
         }
 
@@ -341,7 +337,7 @@ export class Voice implements IVoice {
     public get noteValuePerBeat(): number {
         return this._noteValuePerBeat;
     }
- 
+
     /** What beat are we on? */
     public getCurrentBeat(): number {
         return this._currentBeat;
@@ -370,18 +366,20 @@ export class Voice implements IVoice {
     }
 
     private _updateCurrentBeat() {
-        this._currentBeat = (
-            (this._numberOfQuarterNotesPlayedInMeter * (1/4) / this._noteValuePerBeat)
-            - this._pickupInMeter
-        ) % this._beatsPerMeasure;
+        this._currentBeat =
+            ((this._numberOfQuarterNotesPlayedInMeter * (1 / 4)) / this._noteValuePerBeat -
+                this._pickupInMeter) %
+            this._beatsPerMeasure;
 
         /** Depending on the beat, dispatch event(s). */
         if (this._dispatchEveryNoteEvent) {
             // obj.dispatchEvent(this._everyNoteEvent);
         }
         if (this._dispatchEveryBeatEvent) {
-            if (this._strongBeats.indexOf(this._currentBeat) !== -1 ||
-                this._weakBeats.indexOf(this._currentBeat) !== -1) {
+            if (
+                this._strongBeats.indexOf(this._currentBeat) !== -1 ||
+                this._weakBeats.indexOf(this._currentBeat) !== -1
+            ) {
                 // obj.dispatchEvent(this._everyBeatEvent);
             }
         }
@@ -399,16 +397,15 @@ export class Voice implements IVoice {
 
     private _updateCurrentMeasure() {
         if (
-               (this._numberOfQuarterNotesPlayed * (1/4) / this._noteValuePerBeat)
-               < this._pickupInMeter
-           ) {
+            (this._numberOfQuarterNotesPlayed * (1 / 4)) / this._noteValuePerBeat <
+            this._pickupInMeter
+        ) {
             this._currentMeasure = 0;
         } else {
-            this._currentMeasure = Math.ceil (
-                (
-                   (this._numberOfQuarterNotesPlayedInMeter * (1/4) / this._noteValuePerBeat)
-                   - this._pickupInMeter
-                ) / this._beatsPerMeasure
+            this._currentMeasure = Math.ceil(
+                ((this._numberOfQuarterNotesPlayedInMeter * (1 / 4)) / this._noteValuePerBeat -
+                    this._pickupInMeter) /
+                    this._beatsPerMeasure,
             );
         }
     }
@@ -418,23 +415,23 @@ export class Voice implements IVoice {
     /** TODO: Volume */
 
     /**
-      * @remarks
-      * trigger pitch(es) on a synth for a specified note value.
-      *
-      * @param pitches is an array of pitches, e.g., ["c4", "g5", 440]
-      * @param noteValue is a note duration, e.g., 1/4
-      * @param instrumentName is the name of an instrument synth (either a sample or builtin)
-      * @param future is a temportal offset into the future (default is 0)
-      * @param tally is a flag to enable/disable tallying (default is true)
-      *
-      * @throws {InvalidArgumentError}
-      */
+     * @remarks
+     * trigger pitch(es) on a synth for a specified note value.
+     *
+     * @param pitches is an array of pitches, e.g., ["c4", "g5", 440]
+     * @param noteValue is a note duration, e.g., 1/4
+     * @param instrumentName is the name of an instrument synth (either a sample or builtin)
+     * @param future is a temportal offset into the future (default is 0)
+     * @param tally is a flag to enable/disable tallying (default is true)
+     *
+     * @throws {InvalidArgumentError}
+     */
     public playNotes(
-        pitches: (string|number)[],
+        pitches: (string | number)[],
         noteValue: number,
         instrumentName: string,
         future: number,
-        tally: boolean
+        tally: boolean,
     ) {
         /**
          * We calculate an offset based on how many notes we have already played.
@@ -453,7 +450,7 @@ export class Voice implements IVoice {
                 pitches,
                 noteValue,
                 instrumentName,
-                this._numberOfNotesPlayedInSeconds + this._temporalOffset + future
+                this._numberOfNotesPlayedInSeconds + this._temporalOffset + future,
             );
         }
 
@@ -468,20 +465,16 @@ export class Voice implements IVoice {
     }
 
     /**
-      * @remarks
-      * trigger pitch(es) on a synth for a specified note value.
-      *
-      * @param pitch is single pitch, e.g., "c4", "g5", or 440
-      * @param noteValue is a note duration, e.g., 1/4
-      * @param instrumentName is the name of an instrument synth (either a sample or builtin)
-      *
-      * @throws {InvalidArgumentError}
-      */
-    public playNote(
-        pitch: (string|number),
-        noteValue: number,
-        instrumentName: string,
-    ) {
+     * @remarks
+     * trigger pitch(es) on a synth for a specified note value.
+     *
+     * @param pitch is single pitch, e.g., "c4", "g5", or 440
+     * @param noteValue is a note duration, e.g., 1/4
+     * @param instrumentName is the name of an instrument synth (either a sample or builtin)
+     *
+     * @throws {InvalidArgumentError}
+     */
+    public playNote(pitch: string | number, noteValue: number, instrumentName: string) {
         this.playNotes([pitch], noteValue, instrumentName, 0, true);
     }
-};
+}

@@ -1,3 +1,0 @@
-[submodule "editor-next"]
-	path = src/components/editor-next/lib
-	url = https://github.com/sugarlabs/musicblocks-v4-code-editor.git

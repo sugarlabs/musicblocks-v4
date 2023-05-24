@@ -1,3 +1,5 @@
+import { TAsset } from '../core/assets';
+
 export type TComponentDefinitionElementsSinger =
     | 'test-synth'
     | 'play-note'
@@ -8,5 +10,5 @@ export type TComponentDefinitionElementsSinger =
 export type TInjectedSinger = {
     flags: undefined;
     i18n: undefined;
-    assets: undefined;
+    assets: Record<'audio.guitar' | 'audio.piano' | 'audio.snare', TAsset>;
 };

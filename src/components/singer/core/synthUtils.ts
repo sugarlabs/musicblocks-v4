@@ -66,7 +66,7 @@ export default class SynthUtils implements ISynthUtils {
         this.samplerSynths = new Map();
         this.playerSynths = new Map();
 
-        this.builtinSynths.set("electronic synth", new Tone.PolySynth(Tone.Synth).toDestination());
+        this.builtinSynths.set('electronic synth', new Tone.PolySynth(Tone.Synth).toDestination());
         /** TODO: Add other builtin synths, e.g. noise, sin, etc. */
 
         /**
@@ -81,9 +81,9 @@ export default class SynthUtils implements ISynthUtils {
     /**
      * @remarks
      * Add a new sample synth.
-     * 
+     *
      * @param sample name
-     *     
+     *
      * @throws {InvalidArgumentError}
      */
     public addSampleSynth(sampleName: string) {
@@ -103,9 +103,7 @@ export default class SynthUtils implements ISynthUtils {
             } as SampleDict;
         } catch (err) {
             console.error(err);
-            throw new InvalidArgumentError(
-                'cannot load sample synth ' + sampleName
-            );
+            throw new InvalidArgumentError('cannot load sample synth ' + sampleName);
         }
 
         const _pitch = this.samples[sampleName]['centerNote'];
@@ -227,10 +225,10 @@ export default class SynthUtils implements ISynthUtils {
      * @throws {InvalidArgumentError}
      */
     public trigger(
-        pitches: (string|number)[],
+        pitches: (string | number)[],
         noteValueInSeconds: number,
         instrumentName: string,
-        offset: number
+        offset: number,
     ) {
         const now = Tone.now();
 
@@ -246,7 +244,11 @@ export default class SynthUtils implements ISynthUtils {
                     if (this.samples[instrumentName]['tonal']) {
                         synth.triggerAttackRelease(pitches, noteValueInSeconds, now + offset);
                     } else {
-                        synth.triggerAttackRelease(this.samples[instrumentName]['centerNote'], noteValueInSeconds, now + offset);
+                        synth.triggerAttackRelease(
+                            this.samples[instrumentName]['centerNote'],
+                            noteValueInSeconds,
+                            now + offset,
+                        );
                     }
                 });
             }
@@ -261,4 +263,4 @@ export default class SynthUtils implements ISynthUtils {
             throw new InvalidArgumentError('cannot find instrument');
         }
     }
-};
+}

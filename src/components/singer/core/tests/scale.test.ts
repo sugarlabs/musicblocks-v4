@@ -25,13 +25,13 @@ describe('class Scale', () => {
                 'n8',
                 'n9',
                 'n10',
-                'n11'
+                'n11',
             ]);
         });
 
         test('Generate scale for C Major with pitch format and verify', () => {
             expect(
-                sCMaj.getScale(['c', 'c#', 'd', 'd#', 'e', 'f', 'f#', 'g', 'g#', 'a', 'a#', 'b'])
+                sCMaj.getScale(['c', 'c#', 'd', 'd#', 'e', 'f', 'f#', 'g', 'g#', 'a', 'a#', 'b']),
             ).toEqual(['c', 'd', 'e', 'f', 'g', 'a', 'b', 'c']);
         });
 
@@ -69,7 +69,7 @@ describe('class Scale', () => {
                 'n9',
                 'n10',
                 'n11',
-                'n0'
+                'n0',
             ]);
         });
 
@@ -83,7 +83,7 @@ describe('class Scale', () => {
                 'n3',
                 'n6',
                 'n10',
-                'n12'
+                'n12',
             ]);
         });
     });

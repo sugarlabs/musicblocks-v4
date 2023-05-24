@@ -19,7 +19,7 @@ import {
     GENERIC_NOTE_NAME,
     SCALAR_MODE_NUMBER,
     UNKNOWN_PITCH_NAME,
-    EAST_INDIAN_SOLFEGE_NAME
+    EAST_INDIAN_SOLFEGE_NAME,
 } from '../musicUtils';
 
 describe('Key Signature', () => {
@@ -139,8 +139,8 @@ describe('Key Signature', () => {
         const t = new Temperament();
         expect(
             Math.floor(
-                t.getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('a'), 4) + 0.5
-            )
+                t.getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('a'), 4) + 0.5,
+            ),
         ).toBe(440);
 
         const ks1 = new KeySignature('chromatic', 'c');
@@ -303,32 +303,34 @@ describe('Key Signature', () => {
 
         expect(
             Number(
-                t.getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('g'), 4).toFixed(2)
-            )
+                t.getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('g'), 4).toFixed(2),
+            ),
         ).toBe(392.0);
         expect(
             Number(
                 t
                     .getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('sol'), 4)
-                    .toFixed(2)
-            )
+                    .toFixed(2),
+            ),
         ).toBe(392.0);
         expect(
             Number(
-                t.getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('5'), 4).toFixed(2)
-            )
+                t.getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('5'), 4).toFixed(2),
+            ),
         ).toBe(392.0);
         expect(
             Number(
-                t.getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('pa'), 4).toFixed(2)
-            )
+                t
+                    .getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('pa'), 4)
+                    .toFixed(2),
+            ),
         ).toBe(392.0);
         expect(
             Number(
                 t
                     .getFreqByGenericNoteNameAndOctave(ks.convertToGenericNoteName('golf'), 4)
-                    .toFixed(2)
-            )
+                    .toFixed(2),
+            ),
         ).toBe(392.0);
     });
 
@@ -356,147 +358,155 @@ describe('Key Signature', () => {
     });
 
     test('Testing scales', () => {
-        const EXPECTED: [ string, string ][][] = [
+        const EXPECTED: [string, string][][] = [
             [
-                ["c", "C IONIAN [c d e f g a b c]"],
-                ["d", "D DORIAN [d e f g a b c d]"],
-                ["e", "E PHRYGIAN [e f g a b c d e]"],
-                ["f", "F LYDIAN [f g a b c d e f]"],
-                ["g", "G MIXOLYDIAN [g a b c d e f g]"],
-                ["a", "A AEOLIAN [a b c d e f g a]"],
-                ["b", "B LOCRIAN [b c d e f g a b]"],
+                ['c', 'C IONIAN [c d e f g a b c]'],
+                ['d', 'D DORIAN [d e f g a b c d]'],
+                ['e', 'E PHRYGIAN [e f g a b c d e]'],
+                ['f', 'F LYDIAN [f g a b c d e f]'],
+                ['g', 'G MIXOLYDIAN [g a b c d e f g]'],
+                ['a', 'A AEOLIAN [a b c d e f g a]'],
+                ['b', 'B LOCRIAN [b c d e f g a b]'],
             ],
             [
-                ["g", "G IONIAN [g a b c d e f# g]"],
-                ["a", "A DORIAN [a b c d e f# g a]"],
-                ["b", "B PHRYGIAN [b c d e f# g a b]"],
-                ["c", "C LYDIAN [c d e f# g a b c]"],
-                ["d", "D MIXOLYDIAN [d e f# g a b c d]"],
-                ["e", "E AEOLIAN [e f# g a b c d e]"],
-                ["f#", "F# LOCRIAN [f# g a b c d e f#]"],
+                ['g', 'G IONIAN [g a b c d e f# g]'],
+                ['a', 'A DORIAN [a b c d e f# g a]'],
+                ['b', 'B PHRYGIAN [b c d e f# g a b]'],
+                ['c', 'C LYDIAN [c d e f# g a b c]'],
+                ['d', 'D MIXOLYDIAN [d e f# g a b c d]'],
+                ['e', 'E AEOLIAN [e f# g a b c d e]'],
+                ['f#', 'F# LOCRIAN [f# g a b c d e f#]'],
             ],
             [
-                ["d", "D IONIAN [d e f# g a b c# d]"],
-                ["e", "E DORIAN [e f# g a b c# d e]"],
-                ["f#", "F# PHRYGIAN [f# g a b c# d e f#]"],
-                ["g", "G LYDIAN [g a b c# d e f# g]"],
-                ["a", "A MIXOLYDIAN [a b c# d e f# g a]"],
-                ["b", "B AEOLIAN [b c# d e f# g a b]"],
-                ["c#", "C# LOCRIAN [c# d e f# g a b c#]"],
+                ['d', 'D IONIAN [d e f# g a b c# d]'],
+                ['e', 'E DORIAN [e f# g a b c# d e]'],
+                ['f#', 'F# PHRYGIAN [f# g a b c# d e f#]'],
+                ['g', 'G LYDIAN [g a b c# d e f# g]'],
+                ['a', 'A MIXOLYDIAN [a b c# d e f# g a]'],
+                ['b', 'B AEOLIAN [b c# d e f# g a b]'],
+                ['c#', 'C# LOCRIAN [c# d e f# g a b c#]'],
             ],
             [
-                ["a", "A IONIAN [a b c# d e f# g# a]"],
-                ["b", "B DORIAN [b c# d e f# g# a b]"],
-                ["c#", "C# PHRYGIAN [c# d e f# g# a b c#]"],
-                ["d", "D LYDIAN [d e f# g# a b c# d]"],
-                ["e", "E MIXOLYDIAN [e f# g# a b c# d e]"],
-                ["f#", "F# AEOLIAN [f# g# a b c# d e f#]"],
-                ["g#", "G# LOCRIAN [g# a b c# d e f# g#]"],
+                ['a', 'A IONIAN [a b c# d e f# g# a]'],
+                ['b', 'B DORIAN [b c# d e f# g# a b]'],
+                ['c#', 'C# PHRYGIAN [c# d e f# g# a b c#]'],
+                ['d', 'D LYDIAN [d e f# g# a b c# d]'],
+                ['e', 'E MIXOLYDIAN [e f# g# a b c# d e]'],
+                ['f#', 'F# AEOLIAN [f# g# a b c# d e f#]'],
+                ['g#', 'G# LOCRIAN [g# a b c# d e f# g#]'],
             ],
             [
-                ["e", "E IONIAN [e f# g# a b c# d# e]"],
-                ["f#", "F# DORIAN [f# g# a b c# d# e f#]"],
-                ["g#", "G# PHRYGIAN [g# a b c# d# e f# g#]"],
-                ["a", "A LYDIAN [a b c# d# e f# g# a]"],
-                ["b", "B MIXOLYDIAN [b c# d# e f# g# a b]"],
-                ["c#", "C# AEOLIAN [c# d# e f# g# a b c#]"],
-                ["d#", "D# LOCRIAN [d# e f# g# a b c# d#]"],
+                ['e', 'E IONIAN [e f# g# a b c# d# e]'],
+                ['f#', 'F# DORIAN [f# g# a b c# d# e f#]'],
+                ['g#', 'G# PHRYGIAN [g# a b c# d# e f# g#]'],
+                ['a', 'A LYDIAN [a b c# d# e f# g# a]'],
+                ['b', 'B MIXOLYDIAN [b c# d# e f# g# a b]'],
+                ['c#', 'C# AEOLIAN [c# d# e f# g# a b c#]'],
+                ['d#', 'D# LOCRIAN [d# e f# g# a b c# d#]'],
             ],
             [
-                ["b", "B IONIAN [b c# d# e f# g# a# b]"],
-                ["c#", "C# DORIAN [c# d# e f# g# a# b c#]"],
-                ["d#", "D# PHRYGIAN [d# e f# g# a# b c# d#]"],
-                ["e", "E LYDIAN [e f# g# a# b c# d# e]"],
-                ["f#", "F# MIXOLYDIAN [f# g# a# b c# d# e f#]"],
-                ["g#", "G# AEOLIAN [g# a# b c# d# e f# g#]"],
-                ["a#", "A# LOCRIAN [a# b c# d# e f# g# a#]"],
+                ['b', 'B IONIAN [b c# d# e f# g# a# b]'],
+                ['c#', 'C# DORIAN [c# d# e f# g# a# b c#]'],
+                ['d#', 'D# PHRYGIAN [d# e f# g# a# b c# d#]'],
+                ['e', 'E LYDIAN [e f# g# a# b c# d# e]'],
+                ['f#', 'F# MIXOLYDIAN [f# g# a# b c# d# e f#]'],
+                ['g#', 'G# AEOLIAN [g# a# b c# d# e f# g#]'],
+                ['a#', 'A# LOCRIAN [a# b c# d# e f# g# a#]'],
             ],
             [
-                ["f#", "F# IONIAN [f# g# a# b c# d# e# f#]"],
-                ["g#", "G# DORIAN [g# a# b c# d# e# f# g#]"],
-                ["a#", "A# PHRYGIAN [a# b c# d# e# f# g# a#]"],
-                ["b", "B LYDIAN [b c# d# e# f# g# a# b]"],
-                ["c#", "C# MIXOLYDIAN [c# d# e# f# g# a# b c#]"],
-                ["d#", "D# AEOLIAN [d# e# f# g# a# b c# d#]"],
-                ["e#", "E# LOCRIAN [e# f# g# a# b c# d# e#]"],
+                ['f#', 'F# IONIAN [f# g# a# b c# d# e# f#]'],
+                ['g#', 'G# DORIAN [g# a# b c# d# e# f# g#]'],
+                ['a#', 'A# PHRYGIAN [a# b c# d# e# f# g# a#]'],
+                ['b', 'B LYDIAN [b c# d# e# f# g# a# b]'],
+                ['c#', 'C# MIXOLYDIAN [c# d# e# f# g# a# b c#]'],
+                ['d#', 'D# AEOLIAN [d# e# f# g# a# b c# d#]'],
+                ['e#', 'E# LOCRIAN [e# f# g# a# b c# d# e#]'],
             ],
             [
-                ["c#", "C# IONIAN [c# d# e# f# g# a# b# c#]"],
-                ["d#", "D# DORIAN [d# e# f# g# a# b# c# d#]"],
-                ["e#", "E# PHRYGIAN [e# f# g# a# b# c# d# e#]"],
-                ["f#", "F# LYDIAN [f# g# a# b# c# d# e# f#]"],
-                ["g#", "G# MIXOLYDIAN [g# a# b# c# d# e# f# g#]"],
-                ["a#", "A# AEOLIAN [a# b# c# d# e# f# g# a#]"],
-                ["b#", "B# LOCRIAN [b# c# d# e# f# g# a# b#]"],
+                ['c#', 'C# IONIAN [c# d# e# f# g# a# b# c#]'],
+                ['d#', 'D# DORIAN [d# e# f# g# a# b# c# d#]'],
+                ['e#', 'E# PHRYGIAN [e# f# g# a# b# c# d# e#]'],
+                ['f#', 'F# LYDIAN [f# g# a# b# c# d# e# f#]'],
+                ['g#', 'G# MIXOLYDIAN [g# a# b# c# d# e# f# g#]'],
+                ['a#', 'A# AEOLIAN [a# b# c# d# e# f# g# a#]'],
+                ['b#', 'B# LOCRIAN [b# c# d# e# f# g# a# b#]'],
             ],
             [
-                ["f", "F IONIAN [f g a bb c d e f]"],
-                ["g", "G DORIAN [g a bb c d e f g]"],
-                ["a", "A PHRYGIAN [a bb c d e f g a]"],
-                ["bb", "Bb LYDIAN [bb c d e f g a bb]"],
-                ["c", "C MIXOLYDIAN [c d e f g a bb c]"],
-                ["d", "D AEOLIAN [d e f g a bb c d]"],
-                ["e", "E LOCRIAN [e f g a bb c d e]"],
+                ['f', 'F IONIAN [f g a bb c d e f]'],
+                ['g', 'G DORIAN [g a bb c d e f g]'],
+                ['a', 'A PHRYGIAN [a bb c d e f g a]'],
+                ['bb', 'Bb LYDIAN [bb c d e f g a bb]'],
+                ['c', 'C MIXOLYDIAN [c d e f g a bb c]'],
+                ['d', 'D AEOLIAN [d e f g a bb c d]'],
+                ['e', 'E LOCRIAN [e f g a bb c d e]'],
             ],
             [
-                ["bb", "Bb IONIAN [bb c d eb f g a bb]"],
-                ["c", "C DORIAN [c d eb f g a bb c]"],
-                ["d", "D PHRYGIAN [d eb f g a bb c d]"],
-                ["eb", "Eb LYDIAN [eb f g a bb c d eb]"],
-                ["f", "F MIXOLYDIAN [f g a bb c d eb f]"],
-                ["g", "G AEOLIAN [g a bb c d eb f g]"],
-                ["a", "A LOCRIAN [a bb c d eb f g a]"],
+                ['bb', 'Bb IONIAN [bb c d eb f g a bb]'],
+                ['c', 'C DORIAN [c d eb f g a bb c]'],
+                ['d', 'D PHRYGIAN [d eb f g a bb c d]'],
+                ['eb', 'Eb LYDIAN [eb f g a bb c d eb]'],
+                ['f', 'F MIXOLYDIAN [f g a bb c d eb f]'],
+                ['g', 'G AEOLIAN [g a bb c d eb f g]'],
+                ['a', 'A LOCRIAN [a bb c d eb f g a]'],
             ],
             [
-                ["eb", "Eb IONIAN [eb f g ab bb c d eb]"],
-                ["f", "F DORIAN [f g ab bb c d eb f]"],
-                ["g", "G PHRYGIAN [g ab bb c d eb f g]"],
-                ["ab", "Ab LYDIAN [ab bb c d eb f g ab]"],
-                ["bb", "Bb MIXOLYDIAN [bb c d eb f g ab bb]"],
-                ["c", "C AEOLIAN [c d eb f g ab bb c]"],
-                ["d", "D LOCRIAN [d eb f g ab bb c d]"],
+                ['eb', 'Eb IONIAN [eb f g ab bb c d eb]'],
+                ['f', 'F DORIAN [f g ab bb c d eb f]'],
+                ['g', 'G PHRYGIAN [g ab bb c d eb f g]'],
+                ['ab', 'Ab LYDIAN [ab bb c d eb f g ab]'],
+                ['bb', 'Bb MIXOLYDIAN [bb c d eb f g ab bb]'],
+                ['c', 'C AEOLIAN [c d eb f g ab bb c]'],
+                ['d', 'D LOCRIAN [d eb f g ab bb c d]'],
             ],
             [
-                ["ab", "Ab IONIAN [ab bb c db eb f g ab]"],
-                ["bb", "Bb DORIAN [bb c db eb f g ab bb]"],
-                ["c", "C PHRYGIAN [c db eb f g ab bb c]"],
-                ["db", "Db LYDIAN [db eb f g ab bb c db]"],
-                ["eb", "Eb MIXOLYDIAN [eb f g ab bb c db eb]"],
-                ["f", "F AEOLIAN [f g ab bb c db eb f]"],
-                ["g", "G LOCRIAN [g ab bb c db eb f g]"],
+                ['ab', 'Ab IONIAN [ab bb c db eb f g ab]'],
+                ['bb', 'Bb DORIAN [bb c db eb f g ab bb]'],
+                ['c', 'C PHRYGIAN [c db eb f g ab bb c]'],
+                ['db', 'Db LYDIAN [db eb f g ab bb c db]'],
+                ['eb', 'Eb MIXOLYDIAN [eb f g ab bb c db eb]'],
+                ['f', 'F AEOLIAN [f g ab bb c db eb f]'],
+                ['g', 'G LOCRIAN [g ab bb c db eb f g]'],
             ],
             [
-                ["db", "Db IONIAN [db eb f gb ab bb c db]"],
-                ["eb", "Eb DORIAN [eb f gb ab bb c db eb]"],
-                ["e", "E PHRYGIAN [e f g a b c d e]"],
-                ["gb", "Gb LYDIAN [gb ab bb c db eb f gb]"],
-                ["ab", "Ab MIXOLYDIAN [ab bb c db eb f gb ab]"],
-                ["bb", "Bb AEOLIAN [bb c db eb f gb ab bb]"],
-                ["c", "C LOCRIAN [c db eb f gb ab bb c]"],
+                ['db', 'Db IONIAN [db eb f gb ab bb c db]'],
+                ['eb', 'Eb DORIAN [eb f gb ab bb c db eb]'],
+                ['e', 'E PHRYGIAN [e f g a b c d e]'],
+                ['gb', 'Gb LYDIAN [gb ab bb c db eb f gb]'],
+                ['ab', 'Ab MIXOLYDIAN [ab bb c db eb f gb ab]'],
+                ['bb', 'Bb AEOLIAN [bb c db eb f gb ab bb]'],
+                ['c', 'C LOCRIAN [c db eb f gb ab bb c]'],
             ],
             [
-                ["gb", "Gb IONIAN [gb ab bb cb db eb f gb]"],
-                ["ab", "Ab DORIAN [ab bb cb db eb f gb ab]"],
-                ["bb", "Bb PHRYGIAN [bb cb db eb f gb ab bb]"],
-                ["cb", "Cb LYDIAN [cb db eb f gb ab bb cb]"],
-                ["db", "Db MIXOLYDIAN [db eb f gb ab bb cb db]"],
-                ["eb", "Eb AEOLIAN [eb f gb ab bb cb db eb]"],
-                ["f", "F LOCRIAN [f gb ab bb cb db eb f]"],
+                ['gb', 'Gb IONIAN [gb ab bb cb db eb f gb]'],
+                ['ab', 'Ab DORIAN [ab bb cb db eb f gb ab]'],
+                ['bb', 'Bb PHRYGIAN [bb cb db eb f gb ab bb]'],
+                ['cb', 'Cb LYDIAN [cb db eb f gb ab bb cb]'],
+                ['db', 'Db MIXOLYDIAN [db eb f gb ab bb cb db]'],
+                ['eb', 'Eb AEOLIAN [eb f gb ab bb cb db eb]'],
+                ['f', 'F LOCRIAN [f gb ab bb cb db eb f]'],
             ],
             [
-                ["cb", "Cb IONIAN [cb db eb fb gb ab bb cb]"],
-                ["db", "Db DORIAN [db eb fb gb ab bb cb db]"],
-                ["eb", "Eb PHRYGIAN [eb fb gb ab bb cb db eb]"],
-                ["fb", "Fb LYDIAN [fb gb ab bb cb db eb fb]"],
-                ["gb", "Gb MIXOLYDIAN [gb ab bb cb db eb fb gb]"],
-                ["ab", "Ab AEOLIAN [ab bb cb db eb fb gb ab]"],
-                ["bb", "Bb LOCRIAN [bb cb db eb fb gb ab bb]"],
-            ]
+                ['cb', 'Cb IONIAN [cb db eb fb gb ab bb cb]'],
+                ['db', 'Db DORIAN [db eb fb gb ab bb cb db]'],
+                ['eb', 'Eb PHRYGIAN [eb fb gb ab bb cb db eb]'],
+                ['fb', 'Fb LYDIAN [fb gb ab bb cb db eb fb]'],
+                ['gb', 'Gb MIXOLYDIAN [gb ab bb cb db eb fb gb]'],
+                ['ab', 'Ab AEOLIAN [ab bb cb db eb fb gb ab]'],
+                ['bb', 'Bb LOCRIAN [bb cb db eb fb gb ab bb]'],
+            ],
         ];
 
         for (let i = 0; i < EXPECTED.length; i++) {
             for (let j = 0; j < EXPECTED[i].length; j++) {
-                const m = ['ionian', 'dorian', 'phrygian', 'lydian', 'mixolydian', 'aeolian', 'locrian'][j];
+                const m = [
+                    'ionian',
+                    'dorian',
+                    'phrygian',
+                    'lydian',
+                    'mixolydian',
+                    'aeolian',
+                    'locrian',
+                ][j];
                 const k = EXPECTED[i][j][0];
                 const ks = new KeySignature(m, k);
                 expect(ks.toString()).toEqual(EXPECTED[i][j][1]);
@@ -504,48 +514,48 @@ describe('Key Signature', () => {
         }
 
         const EXPECTED2: { [key: string]: { [key: string]: string } } = {
-           "major pentatonic": {
-               "c": "C MAJOR PENTATONIC [c d e g a c]",
-               "g": "G MAJOR PENTATONIC [g a b d e g]",
-               "d": "D MAJOR PENTATONIC [d e f# a b d]",
-               "a": "A MAJOR PENTATONIC [a b c# e f# a]",
-               "e": "E MAJOR PENTATONIC [e f# g# b c# e]",
-               "b": "B MAJOR PENTATONIC [b c# d# f# g# b]",
-               "f#": "F# MAJOR PENTATONIC [f# g# a# c# d# f#]",
-               "db": "Db MAJOR PENTATONIC [db eb f ab bb db]",
-               "ab": "Ab MAJOR PENTATONIC [ab bb c eb f ab]",
-               "eb": "Eb MAJOR PENTATONIC [eb f g bb c eb]",
-               "bb": "Bb MAJOR PENTATONIC [bb c d f g bb]",
-               "f": "F MAJOR PENTATONIC [f g a c d f]",
-           },
-           "minor pentatonic": {
-               "c": "C MINOR PENTATONIC [c eb f g bb c]",
-               "g": "G MINOR PENTATONIC [g bb c d f g]",
-               "d": "D MINOR PENTATONIC [d f g a c d]",
-               "a": "A MINOR PENTATONIC [a c d e g a]",
-               "e": "E MINOR PENTATONIC [e g a b d e]",
-               "b": "B MINOR PENTATONIC [b d e f# a b]",
-               "f#": "F# MINOR PENTATONIC [f# a b c# e f#]",
-               "db": "Db MINOR PENTATONIC [db e gb ab b db]",
-               "ab": "Ab MINOR PENTATONIC [ab b db eb gb ab]",
-               "eb": "Eb MINOR PENTATONIC [eb gb ab bb db eb]",
-               "bb": "Bb MINOR PENTATONIC [bb db eb f ab bb]",
-               "f": "F MINOR PENTATONIC [f ab bb c eb f]",
+            'major pentatonic': {
+                'c': 'C MAJOR PENTATONIC [c d e g a c]',
+                'g': 'G MAJOR PENTATONIC [g a b d e g]',
+                'd': 'D MAJOR PENTATONIC [d e f# a b d]',
+                'a': 'A MAJOR PENTATONIC [a b c# e f# a]',
+                'e': 'E MAJOR PENTATONIC [e f# g# b c# e]',
+                'b': 'B MAJOR PENTATONIC [b c# d# f# g# b]',
+                'f#': 'F# MAJOR PENTATONIC [f# g# a# c# d# f#]',
+                'db': 'Db MAJOR PENTATONIC [db eb f ab bb db]',
+                'ab': 'Ab MAJOR PENTATONIC [ab bb c eb f ab]',
+                'eb': 'Eb MAJOR PENTATONIC [eb f g bb c eb]',
+                'bb': 'Bb MAJOR PENTATONIC [bb c d f g bb]',
+                'f': 'F MAJOR PENTATONIC [f g a c d f]',
             },
-            "whole tone": {
-               "c": "C WHOLE TONE [c d e f# g# a# c]",
-               "g": "G WHOLE TONE [g a b c# d# f g]",
-               "d": "D WHOLE TONE [d e f# g# a# c d]",
-               "a": "A WHOLE TONE [a b c# d# f g a]",
-               "e": "E WHOLE TONE [e f# g# a# c d e]",
-               "b": "B WHOLE TONE [b c# d# f g a b]",
-               "f#": "F# WHOLE TONE [f# g# a# c d e f#]",
-               "db": "Db WHOLE TONE [db eb f g a b db]",
-               "ab": "Ab WHOLE TONE [ab bb c d e gb ab]",
-               "eb": "Eb WHOLE TONE [eb f g a b db eb]",
-               "bb": "Bb WHOLE TONE [bb c d e gb ab bb]",
-               "f": "F WHOLE TONE [f g a b db eb f]",
-            }
+            'minor pentatonic': {
+                'c': 'C MINOR PENTATONIC [c eb f g bb c]',
+                'g': 'G MINOR PENTATONIC [g bb c d f g]',
+                'd': 'D MINOR PENTATONIC [d f g a c d]',
+                'a': 'A MINOR PENTATONIC [a c d e g a]',
+                'e': 'E MINOR PENTATONIC [e g a b d e]',
+                'b': 'B MINOR PENTATONIC [b d e f# a b]',
+                'f#': 'F# MINOR PENTATONIC [f# a b c# e f#]',
+                'db': 'Db MINOR PENTATONIC [db e gb ab b db]',
+                'ab': 'Ab MINOR PENTATONIC [ab b db eb gb ab]',
+                'eb': 'Eb MINOR PENTATONIC [eb gb ab bb db eb]',
+                'bb': 'Bb MINOR PENTATONIC [bb db eb f ab bb]',
+                'f': 'F MINOR PENTATONIC [f ab bb c eb f]',
+            },
+            'whole tone': {
+                'c': 'C WHOLE TONE [c d e f# g# a# c]',
+                'g': 'G WHOLE TONE [g a b c# d# f g]',
+                'd': 'D WHOLE TONE [d e f# g# a# c d]',
+                'a': 'A WHOLE TONE [a b c# d# f g a]',
+                'e': 'E WHOLE TONE [e f# g# a# c d e]',
+                'b': 'B WHOLE TONE [b c# d# f g a b]',
+                'f#': 'F# WHOLE TONE [f# g# a# c d e f#]',
+                'db': 'Db WHOLE TONE [db eb f g a b db]',
+                'ab': 'Ab WHOLE TONE [ab bb c d e gb ab]',
+                'eb': 'Eb WHOLE TONE [eb f g a b db eb]',
+                'bb': 'Bb WHOLE TONE [bb c d e gb ab bb]',
+                'f': 'F WHOLE TONE [f g a b db eb f]',
+            },
         };
 
         for (const m of ['major pentatonic', 'minor pentatonic', 'whole tone']) {

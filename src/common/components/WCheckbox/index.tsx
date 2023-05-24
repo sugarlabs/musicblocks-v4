@@ -14,7 +14,7 @@ export default function (props: {
   handlerClick: CallableFunction;
 }): JSX.Element {
   // ---------------------------------------------------------------------------
-  
+
   return (
     <div
       className={`w-checkbox ${props.active ? 'w-checkbox-active' : ''}`}

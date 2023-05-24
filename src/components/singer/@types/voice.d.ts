@@ -25,10 +25,7 @@ export interface IVoice {
     /** Getter and Setter for the pickup */
     pickup: number;
     /** set the meter, e.g., 4:4 */
-    setMeter: (
-        beatsPerMeasure: number,
-        noteValuePerBeat: number
-    ) => void;
+    setMeter: (beatsPerMeasure: number, noteValuePerBeat: number) => void;
     /** Getter and Setter for the strong beats */
     strongBeats: number[];
     /** set a strong beat */
@@ -40,7 +37,7 @@ export interface IVoice {
     /** Getter and Setter for beats per measure */
     beatsPerMeasure: number;
     /** Getter and Setter for note value per beat */
-    noteValuePerBeat: number
+    noteValuePerBeat: number;
     /** current beat */
     getCurrentBeat: () => number;
     /** current measure */
@@ -54,16 +51,12 @@ export interface IVoice {
     setEveryWeakBeatEventDispatcher: (value: boolean) => void;
     /** Send notes to be played to the synth. */
     playNotes: (
-        pitches: (string|number)[],
+        pitches: (string | number)[],
         noteValue: number,
         instrumentName: string,
         future: number,
-        tally: boolean
+        tally: boolean,
     ) => void;
     /** Send one pitched note to the synth. */
-    playNote: (
-        pitche: (string|number),
-        noteValue: number,
-        instrumentName: string
-    ) => void;
+    playNote: (pitche: string | number, noteValue: number, instrumentName: string) => void;
 }

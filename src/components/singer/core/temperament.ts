@@ -476,26 +476,26 @@ export default class Temperament implements ITemperament {
             return 0;
         }
         if (pitch[2] < -100 || pitch[2] > 100) {
-            throw new InvalidArgumentError("cents < -100 || cents > 100");
+            throw new InvalidArgumentError('cents < -100 || cents > 100');
         }
         const pitchIndex = this.getFreqIndexByGenericNoteNameAndOctave(pitch[0], pitch[1]);
-        if (this._name.substring(0, 5) === "equal") {
+        if (this._name.substring(0, 5) === 'equal') {
             // With equal temperament, we can directly calculate the cents.
             const root: number = Math.pow(2, 1 / (this._octaveLength * 100));
-            return this._baseFrequency * Math.pow(root, (pitchIndex * 100) + pitch[2]);
+            return this._baseFrequency * Math.pow(root, pitchIndex * 100 + pitch[2]);
         } else {
             // The cents calculation won't be accurate in non-equal temperaments.
             // Interpolate
             if (pitch[2] < 0) {
                 if (pitchIndex === 0) {
-                    throw new ItemNotFoundDefaultError<number>("Pitch not found: too low.", 0);
+                    throw new ItemNotFoundDefaultError<number>('Pitch not found: too low.', 0);
                 }
                 const freq1 = this._freqs[pitchIndex - 1];
                 const freq2 = this._freqs[pitchIndex];
                 return freq1 + ((100 - pitch[2]) / 100) * (freq2 - freq1);
             } else {
                 if (pitchIndex > this._freqs.length - 2) {
-                    throw new ItemNotFoundDefaultError<number>("Pitch not found: too high", 0);
+                    throw new ItemNotFoundDefaultError<number>('Pitch not found: too high', 0);
                 }
                 const freq1 = this._freqs[pitchIndex];
                 const freq2 = this._freqs[pitchIndex + 1];
@@ -601,7 +601,7 @@ export default class Temperament implements ITemperament {
         if (nsteps < 1) {
             nsteps = 1;
         }
-        this._name = `equal_${nsteps}`;  // By convention, start the name with 'equal'.
+        this._name = `equal_${nsteps}`; // By convention, start the name with 'equal'.
         this._octaveLength = nsteps;
         this._freqs = [this._baseFrequency];
 
@@ -707,13 +707,14 @@ export default class Temperament implements ITemperament {
         // Calculate the pitch and octave based on frequency, rounding to
         // the nearest cent.
         if (frequency < this._baseFrequency) {
-            return ["n0", 0, 0];
+            return ['n0', 0, 0];
         }
 
         // Find the nearest note.
         let pitchIndex: number = this.getNearestFreqIndex(frequency);
         const thisFreq: number = this.getFreqByIndex(pitchIndex);
-        if (thisFreq > frequency * 1.0003) {  // We must have rounded up.
+        if (thisFreq > frequency * 1.0003) {
+            // We must have rounded up.
             pitchIndex -= 1;
         }
 
@@ -721,15 +722,14 @@ export default class Temperament implements ITemperament {
         const root: number = Math.pow(2, 1 / (this._octaveLength * 100));
 
         for (let cents = 0; cents < 100; cents++) {
-            const f: number = this._baseFrequency * Math.pow(root, (pitchIndex * 100) + cents);
+            const f: number = this._baseFrequency * Math.pow(root, pitchIndex * 100 + cents);
             if (frequency < f * 1.0003 && frequency > f * 0.9997) {
-                const obj: [string, number] = this.getGenericNoteNameAndOctaveByFreqIndex(
-                    pitchIndex
-                );
+                const obj: [string, number] =
+                    this.getGenericNoteNameAndOctaveByFreqIndex(pitchIndex);
                 return [obj[0], obj[1], cents];
             }
         }
         // no match???
-        throw new ItemNotFoundDefaultError<number>("No matching note found in temperament", 0);
+        throw new ItemNotFoundDefaultError<number>('No matching note found in temperament', 0);
     }
 }

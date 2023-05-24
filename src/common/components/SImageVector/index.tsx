@@ -18,7 +18,7 @@ export default function (props: {
   useEffect(() => {
     const _wrapper = wrapper.current! as HTMLDivElement;
     _wrapper.innerHTML = props.content;
-  }, []);
+  });
 
   // ---------------------------------------------------------------------------
 

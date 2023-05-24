@@ -9,21 +9,21 @@ import { Voice } from '../voice';
 
 describe('class Voice', () => {
     describe('Validate voice initialization', () => {
-        const myVoice = new Voice("myvoice", null);
+        const myVoice = new Voice('myvoice', null);
 
         test('voice expect beats per minute to be 90 ', () => {
             expect(myVoice.beatsPerMinute).toEqual(90);
         });
 
         test('voice play note 392, 1, piano ', () => {
-            myVoice.playNotes([392], 1, "piano", 0, true);
+            myVoice.playNotes([392], 1, 'piano', 0, true);
             expect(myVoice.numberOfNotesPlayed()).toEqual(1);
         });
 
         test('voice play note "xyz", 1/4, "piano" to throw an error ', () => {
             try {
-                myVoice.playNotes(["xyz"], 1/4, "piano", 0, true);
-                expect(1).toEqual(0);  // Force test to fail.
+                myVoice.playNotes(['xyz'], 1 / 4, 'piano', 0, true);
+                expect(1).toEqual(0); // Force test to fail.
             } catch (e) {
                 console.log(e);
                 expect(1).toEqual(1);
@@ -35,7 +35,7 @@ describe('class Voice', () => {
         });
 
         test('voice play g4, 1/4, "piano" ', () => {
-            myVoice.playNote("g4", 1/4, "piano");
+            myVoice.playNote('g4', 1 / 4, 'piano');
             expect(myVoice.numberOfNotesPlayed()).toEqual(2);
         });
 
@@ -49,12 +49,12 @@ describe('class Voice', () => {
         });
 
         test('voice play [c4, e4, g4], 1/8, "piano "', () => {
-            myVoice.playNotes(["c4", "e4", "g4"], 1/8, "piano", 0, true);
+            myVoice.playNotes(['c4', 'e4', 'g4'], 1 / 8, 'piano', 0, true);
             expect(Number(myVoice.numberOfNotesPlayedInSeconds.toFixed(2))).toEqual(3.67);
         });
 
         test('voice get beat and measure', () => {
-            myVoice.playNotes(["c4", "e4", "g4"], 1/8, "piano", 0, true);
+            myVoice.playNotes(['c4', 'e4', 'g4'], 1 / 8, 'piano', 0, true);
             expect(myVoice.getCurrentBeat()).toEqual(2);
             expect(myVoice.getCurrentMeasure()).toEqual(2);
         });
@@ -65,13 +65,13 @@ describe('class Voice', () => {
         });
 
         test('set meter', () => {
-            myVoice.setMeter(4, 1/4);
+            myVoice.setMeter(4, 1 / 4);
             expect(myVoice.beatsPerMeasure).toEqual(4);
             expect(myVoice.noteValuePerBeat).toEqual(1 / 4);
             expect(myVoice.strongBeats).toEqual([0, 2]);
             expect(myVoice.weakBeats).toEqual([1, 3]);
             expect(myVoice.getCurrentMeasure()).toEqual(2);
-            myVoice.setMeter(6, 1/8);
+            myVoice.setMeter(6, 1 / 8);
             expect(myVoice.beatsPerMeasure).toEqual(6);
             expect(myVoice.noteValuePerBeat).toEqual(1 / 8);
             expect(myVoice.strongBeats).toEqual([0, 3]);
@@ -83,15 +83,15 @@ describe('class Voice', () => {
         });
 
         test('measure test', () => {
-            myVoice.playNote("g4", 1/4, "piano");
-            myVoice.playNote("g4", 1/4, "piano");
-            myVoice.playNote("g4", 1/4, "piano");
+            myVoice.playNote('g4', 1 / 4, 'piano');
+            myVoice.playNote('g4', 1 / 4, 'piano');
+            myVoice.playNote('g4', 1 / 4, 'piano');
             expect(myVoice.getCurrentMeasure()).toEqual(3);
-            myVoice.playNote("g4", 3/4, "piano");
+            myVoice.playNote('g4', 3 / 4, 'piano');
             expect(myVoice.getCurrentMeasure()).toEqual(4);
-            myVoice.playNote("g4", 3/4, "piano");
+            myVoice.playNote('g4', 3 / 4, 'piano');
             expect(myVoice.getCurrentMeasure()).toEqual(5);
-            myVoice.playNote("g4", 3/4, "piano");
+            myVoice.playNote('g4', 3 / 4, 'piano');
             expect(myVoice.getCurrentMeasure()).toEqual(6);
         });
     });

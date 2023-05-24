@@ -10,9 +10,9 @@ export interface ISynthUtils {
     /**
      * @remarks
      * Add a new sample synth.
-     * 
+     *
      * @param sample name
-     *     
+     *
      * @throws {InvalidArgumentError}
      */
     addSampleSynth: (sampleName: string) => void;
@@ -75,9 +75,9 @@ export interface ISynthUtils {
      * @throws {InvalidArgumentError}
      */
     trigger: (
-        pitches: (string|number)[],
+        pitches: (string | number)[],
         noteValue: number,
         instrumentName: string,
-        offset: number
+        offset: number,
     ) => void;
 }

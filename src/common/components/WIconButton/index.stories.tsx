@@ -25,7 +25,7 @@ export default {
   },
   loaders: [
     async () => {
-      const { importAssets, getAsset } = await import('@/core/assets');
+      const { importAssets, getAsset } = await import('@sugarlabs/mb4-assets');
       const assetManifest = (await import('@/assets')).default;
       await importAssets(
         Object.entries(assetManifest).map(([identifier, manifest]) => ({ identifier, manifest })),

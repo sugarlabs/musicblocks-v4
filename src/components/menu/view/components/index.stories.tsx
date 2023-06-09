@@ -28,7 +28,7 @@ export default {
       const { importStrings, getStrings } = await import('@sugarlabs/mb4-i18n');
       await importStrings('es');
 
-      const { importAssets, getAssets } = await import('@/core/assets');
+      const { importAssets, getAssets } = await import('@sugarlabs/mb4-assets');
       const assetManifest = (await import('@/assets')).default;
       await importAssets(
         Object.entries(assetManifest).map(([identifier, manifest]) => ({ identifier, manifest })),

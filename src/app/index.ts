@@ -165,7 +165,7 @@ async function init(config?: IAppConfig) {
             importListComponents.map((componentId) => [componentId, false]),
         );
 
-        const { importStrings } = await import('@/core/i18n');
+        const { importStrings } = await import('@sugarlabs/mb4-i18n');
         const { importComponent } = await import('@/core/config');
         const { importAsset } = await import('@/core/assets');
 
@@ -220,7 +220,7 @@ async function init(config?: IAppConfig) {
      */
 
     {
-        const { getStrings } = await import('@/core/i18n');
+        const { getStrings } = await import('@sugarlabs/mb4-i18n');
 
         // Inject i18n strings.
         componentDefinitionEntries.forEach(

@@ -25,7 +25,7 @@ export default {
   },
   loaders: [
     async () => {
-      const { importStrings, getStrings } = await import('@/core/i18n');
+      const { importStrings, getStrings } = await import('@sugarlabs/mb4-i18n');
       await importStrings('es');
 
       const { importAssets, getAssets } = await import('@/core/assets');

@@ -53,7 +53,7 @@ async function init(config?: IAppConfig) {
     const componentManifest = (await import('@/components')).default;
     const assetManifest = (await import('@/assets')).default;
 
-    const { importAssets, getAssets } = await import('@/core/assets');
+    const { importAssets, getAssets } = await import('@sugarlabs/mb4-assets');
 
     let splashTimeStart: number;
 
@@ -167,7 +167,7 @@ async function init(config?: IAppConfig) {
 
         const { importStrings } = await import('@sugarlabs/mb4-i18n');
         const { importComponent } = await import('@/core/config');
-        const { importAsset } = await import('@/core/assets');
+        const { importAsset } = await import('@sugarlabs/mb4-assets');
 
         await Promise.all([
             // import ES module for i18n and load strings

@@ -1,0 +1,10 @@
+{
+  "name": "@sugarlabs/mb4-i18n",
+  "version": "4.2.0",
+  "description": "Internationalisation (i18n)",
+  "private": "true",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

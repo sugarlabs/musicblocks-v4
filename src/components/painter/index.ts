@@ -1,7 +1,7 @@
 import type { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
 import type { TInjectedPainter } from '@/@types/components/painter';
 
-import { hearEvent } from '@/core/events';
+import { hearEvent } from '@sugarlabs/mb4-events';
 import { loadProject, saveProjectHTML, uploadFileInLocalStorage } from '../imp-exp/imp-exp';
 
 import { mount as mountView, mountSketch } from './view';

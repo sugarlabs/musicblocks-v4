@@ -1,7 +1,7 @@
 import type { TInjectedMenu } from '@/@types/components/menu';
 
 import { getCrumbs, run } from '@sugarlabs/musicblocks-v4-lib';
-import { emitEvent } from '@/core/events';
+import { emitEvent } from '@sugarlabs/mb4-events';
 
 import { mount as mountView, updateHandler, updateState } from './view';
 

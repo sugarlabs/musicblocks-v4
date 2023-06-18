@@ -166,7 +166,7 @@ async function init(config?: IAppConfig) {
         );
 
         const { importStrings } = await import('@sugarlabs/mb4-i18n');
-        const { importComponent } = await import('@/core/config');
+        const { importComponent } = await import('@sugarlabs/mb4-config');
         const { importAsset } = await import('@sugarlabs/mb4-assets');
 
         await Promise.all([
@@ -203,7 +203,7 @@ async function init(config?: IAppConfig) {
      * Collect imported components.
      */
 
-    const { getComponent } = await import('@/core/config');
+    const { getComponent } = await import('@sugarlabs/mb4-config');
     const componentIds = config.components.map(({ id }) => id);
 
     /** Map of component identifier and corresponding component module. */
@@ -265,7 +265,7 @@ async function init(config?: IAppConfig) {
             setupComponents,
             registerElements,
             serializeComponentDependencies,
-        } = await import('@/core/config');
+        } = await import('@sugarlabs/mb4-config');
 
         // Generate serialized list of component identifiers
         componentsOrdered = serializeComponentDependencies(
@@ -349,7 +349,7 @@ async function init(config?: IAppConfig) {
         window.sessionStorage.setItem('appConfig', JSON.stringify(config));
 
         const componentManifest = (await import('@/components')).default;
-        const { importComponent } = await import('@/core/config');
+        const { importComponent } = await import('@sugarlabs/mb4-config');
         const components = Object.fromEntries(
             await Promise.all(
                 (Object.keys(componentManifest) as TComponentId[]).map((componentId) =>

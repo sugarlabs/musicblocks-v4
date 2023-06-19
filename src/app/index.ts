@@ -50,7 +50,7 @@ async function init(config?: IAppConfig) {
         config = await _loadConfig(import.meta.env.VITE_CONFIG_PRESET);
     }
 
-    const componentManifest = (await import('@/components')).default;
+    const componentManifest = (await import('./components')).default;
     const assetManifest = (await import('@/assets')).default;
 
     const { importAssets, getAssets } = await import('@sugarlabs/mb4-assets');
@@ -348,7 +348,7 @@ async function init(config?: IAppConfig) {
 
         window.sessionStorage.setItem('appConfig', JSON.stringify(config));
 
-        const componentManifest = (await import('@/components')).default;
+        const componentManifest = (await import('./components')).default;
         const { importComponent } = await import('@sugarlabs/mb4-config');
         const components = Object.fromEntries(
             await Promise.all(

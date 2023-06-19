@@ -2,7 +2,7 @@ import type { IAppConfig } from '@/@types/app';
 import type { IComponentDefinitionExtended, TComponentId } from '@/@types/components';
 
 import { getConfigCache, updateConfigCache } from '.';
-import { default as componentManifest } from '@/components';
+import { default as componentManifest } from '../components';
 
 // -- ui items -------------------------------------------------------------------------------------
 

@@ -23,7 +23,7 @@ const manifest: TComponentManifest = {
                 'image.icon.close',
             ],
         },
-        importFunc: () => import('./editor'),
+        importFunc: () => import('@/components/editor'),
     },
     menu: {
         name: 'Menu',
@@ -57,7 +57,7 @@ const manifest: TComponentManifest = {
                 'image.icon.loadProject',
             ],
         },
-        importFunc: () => import('./menu'),
+        importFunc: () => import('@/components/menu'),
     },
     painter: {
         name: 'Painter',
@@ -74,7 +74,7 @@ const manifest: TComponentManifest = {
                 //
             ],
         },
-        importFunc: () => import('./painter'),
+        importFunc: () => import('@/components/painter'),
     },
     singer: {
         name: 'Singer',
@@ -88,7 +88,7 @@ const manifest: TComponentManifest = {
             strings: {},
             assets: [],
         },
-        importFunc: () => import('./singer'),
+        importFunc: () => import('@/components/singer'),
     },
 };
 

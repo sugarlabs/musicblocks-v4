@@ -115,6 +115,7 @@
     "lib/config",
     "lib/events",
     "lib/i18n",
+    "lib/transport",
     "lib/view",
     "lib/components"
   ]

@@ -5,12 +5,28 @@ import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 
 import { SImage } from '@/common/components';
-import { mountViewOverlay, unmountViewOverlay } from '..';
-import { injected } from '../..';
+import { mountViewOverlay, unmountViewOverlay } from '@/core/view';
 
 // -- ui items -------------------------------------------------------------------------------------
 
 import './index.scss';
+
+// -------------------------------------------------------------------------------------------------
+
+type TAssetIdentifierView = 'image.logo';
+
+export const definition: {
+  assets: TAssetIdentifierView[];
+} = {
+  assets: ['image.logo'],
+};
+
+export const injected: {
+  assets: Record<TAssetIdentifierView, TAsset>;
+} = {
+  // @ts-ignore
+  assets: undefined,
+};
 
 // -- component definition -------------------------------------------------------------------------
 

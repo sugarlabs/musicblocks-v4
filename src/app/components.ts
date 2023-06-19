@@ -88,7 +88,7 @@ const manifest: TComponentManifest = {
             strings: {},
             assets: [],
         },
-        importFunc: () => import('@/components/singer'),
+        importFunc: () => import('@sugarlabs/mb4-module-singer'),
     },
 };
 

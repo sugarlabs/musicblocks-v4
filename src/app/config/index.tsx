@@ -3,7 +3,7 @@ import type { IComponentDefinitionExtended, TComponentId } from '@/@types/compon
 
 import { createRoot } from 'react-dom/client';
 
-import { setView } from '@/core/view';
+import { setView } from '@sugarlabs/mb4-view';
 
 // -- ui items -------------------------------------------------------------------------------------
 

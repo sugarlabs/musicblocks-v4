@@ -1,6 +1,6 @@
 import type { TInjectedEditor } from '@/@types/components/editor';
 
-import { setToolbarExtended, unsetToolbarExtended } from '@/core/view';
+import { setToolbarExtended, unsetToolbarExtended } from '@sugarlabs/mb4-view';
 import { hearEvent } from '@sugarlabs/mb4-events';
 
 import {

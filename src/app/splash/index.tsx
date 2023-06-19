@@ -5,7 +5,7 @@ import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 
 import { SImage } from '@/common/components';
-import { mountViewOverlay, unmountViewOverlay } from '@/core/view';
+import { mountViewOverlay, unmountViewOverlay } from '@sugarlabs/mb4-view';
 
 // -- ui items -------------------------------------------------------------------------------------
 

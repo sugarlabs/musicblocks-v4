@@ -1,4 +1,4 @@
-import { createItem } from '@/core/view';
+import { createItem } from '@sugarlabs/mb4-view';
 import { buildProgram } from '../core';
 
 import { setStatus, setup as setupComponent } from './components';

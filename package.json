@@ -114,6 +114,7 @@
     "packages/assets",
     "packages/config",
     "packages/events",
-    "packages/i18n"
+    "packages/i18n",
+    "packages/components"
   ]
 }

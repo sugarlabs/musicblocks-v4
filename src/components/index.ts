@@ -2,7 +2,6 @@ import type { TComponentManifest } from '@/@types/components';
 
 const manifest: TComponentManifest = {
     editor: {
-        path: 'editor',
         name: 'Editor',
         desc: 'Code editor for programs',
         definition: {
@@ -24,9 +23,9 @@ const manifest: TComponentManifest = {
                 'image.icon.close',
             ],
         },
+        importFunc: () => import('./editor'),
     },
     menu: {
-        path: 'menu',
         name: 'Menu',
         desc: 'Menubar of the Primary Toolbar',
         definition: {
@@ -58,9 +57,9 @@ const manifest: TComponentManifest = {
                 'image.icon.loadProject',
             ],
         },
+        importFunc: () => import('./menu'),
     },
     painter: {
-        path: 'painter',
         name: 'Painter',
         desc: 'Allows creation of artwork in the workspace',
         definition: {
@@ -75,9 +74,9 @@ const manifest: TComponentManifest = {
                 //
             ],
         },
+        importFunc: () => import('./painter'),
     },
     singer: {
-        path: 'singer',
         name: 'Singer',
         desc: 'Allows creation of music in the workspace',
         definition: {
@@ -89,6 +88,7 @@ const manifest: TComponentManifest = {
             strings: {},
             assets: [],
         },
+        importFunc: () => import('./singer'),
     },
 };
 

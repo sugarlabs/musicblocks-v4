@@ -177,12 +177,13 @@ async function init(config?: IAppConfig) {
             ...importListComponents.map(
                 (componentId) =>
                     new Promise<void>((resolve) => {
-                        importComponent(componentId, componentManifest[componentId].path).then(
-                            () => {
-                                updateSplashData(_updateImportMap('components', componentId));
-                                resolve();
-                            },
-                        );
+                        importComponent(
+                            componentId,
+                            componentManifest[componentId].importFunc,
+                        ).then(() => {
+                            updateSplashData(_updateImportMap('components', componentId));
+                            resolve();
+                        });
                     }),
             ),
             // import asset files and load data
@@ -352,7 +353,7 @@ async function init(config?: IAppConfig) {
         const components = Object.fromEntries(
             await Promise.all(
                 (Object.keys(componentManifest) as TComponentId[]).map((componentId) =>
-                    importComponent(componentId, componentManifest[componentId].path).then(
+                    importComponent(componentId, componentManifest[componentId].importFunc).then(
                         (component) => [componentId, component],
                     ),
                 ),

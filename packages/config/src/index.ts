@@ -50,9 +50,9 @@ export function getComponent(componentId: TComponentId): IComponent | null {
  */
 export async function importComponent(
     componentId: TComponentId,
-    path: string,
+    importFunc: () => Promise<IComponent>,
 ): Promise<IComponent> {
-    _components[componentId] = await import(`../../../src/components/${path}/index.ts`);
+    _components[componentId] = await importFunc();
     return _components[componentId]!;
 }
 
@@ -70,9 +70,15 @@ export async function importComponents(
     Object.fromEntries(
         await Promise.all(
             componentIds
-                .map((id) => [id, componentManifest[id].path] as [TComponentId, string])
-                .map(([id, path]) =>
-                    importComponent(id, path).then((component) => {
+                .map(
+                    (id) =>
+                        [id, componentManifest[id].importFunc] as [
+                            TComponentId,
+                            () => Promise<IComponent>,
+                        ],
+                )
+                .map(([id, importFunc]) =>
+                    importComponent(id, importFunc).then((component) => {
                         if (callback !== undefined) callback(id);
                         return [id, component];
                     }),

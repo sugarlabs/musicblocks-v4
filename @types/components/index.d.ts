@@ -57,13 +57,13 @@ export interface IComponentDefinitionExtended extends IComponentDefinition {
 export type TComponentManifest = Record<
     TComponentId,
     {
-        /** Relative path to folder containing the component's modules. */
-        path: string;
         /** Display name of the component. */
         name: string;
         /** Description of the component. */
         desc: string;
         /** Component definition. */
         definition: IComponentDefinition;
+        /** Import function. */
+        importFunc(): Promise<IComponent>;
     }
 >;

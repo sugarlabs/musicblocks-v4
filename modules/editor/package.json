@@ -1,0 +1,20 @@
+{
+  "name": "@sugarlabs/mb4-module-editor",
+  "version": "4.2.0",
+  "description": "YAML based program editor",
+  "private": "true",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "peerDependencies": {
+    "react": "~18.x",
+    "react-dom": "~18.x"
+  },
+  "dependencies": {
+    "@sugarlabs/mb4-events": "*",
+    "@sugarlabs/mb4-view": "*",
+    "@sugarlabs/musicblocks-v4-lib": "^0.2.0",
+    "js-yaml": "^3.14.1"
+  }
+}

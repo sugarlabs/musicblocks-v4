@@ -119,6 +119,7 @@
     "lib/view",
     "lib/components",
     "modules/editor",
-    "modules/menu"
+    "modules/menu",
+    "modules/painter"
   ]
 }

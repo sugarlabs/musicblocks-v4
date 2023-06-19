@@ -74,7 +74,7 @@ const manifest: TComponentManifest = {
                 //
             ],
         },
-        importFunc: () => import('@/components/painter'),
+        importFunc: () => import('@sugarlabs/mb4-module-painter'),
     },
     singer: {
         name: 'Singer',

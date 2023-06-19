@@ -1,5 +1,4 @@
 import { pathsToModuleNameMapper } from 'ts-jest';
-import { compilerOptions } from './tsconfig.paths.json';
 
 import type { Config } from '@jest/types';
 
@@ -11,7 +10,9 @@ export default async (): Promise<Config.InitialOptions> => {
         rootDir: './src',
         testPathIgnorePatterns: [`node_modules`],
         moduleNameMapper: {
-            ...pathsToModuleNameMapper(compilerOptions.paths),
+            ...pathsToModuleNameMapper({
+                '@/*': ['./*'],
+            }),
         },
     };
 };

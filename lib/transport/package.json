@@ -1,0 +1,13 @@
+{
+  "name": "@sugarlabs/mb4-transport",
+  "version": "4.2.0",
+  "description": "Utilities for export and import",
+  "private": "true",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@sugarlabs/musicblocks-v4-lib": "^0.2.0"
+  }
+}

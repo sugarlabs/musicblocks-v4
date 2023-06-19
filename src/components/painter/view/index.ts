@@ -1,6 +1,6 @@
 import { ISketch } from '../@types';
 
-import { createItem } from '@/core/view';
+import { createItem } from '@sugarlabs/mb4-view';
 import { setup as setupComponent } from './components';
 import { setup as setupSprite } from './sprite';
 

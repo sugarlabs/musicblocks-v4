@@ -62,7 +62,7 @@ async function init(config?: IAppConfig) {
      */
 
     {
-        const { initView, setView } = await import('@/core/view');
+        const { initView, setView } = await import('@sugarlabs/mb4-view');
         const { mountSplash, definition, injected } = await import('./splash');
 
         await importAssets(
@@ -342,7 +342,7 @@ async function init(config?: IAppConfig) {
     {
         const config = await _loadConfig(import.meta.env.VITE_CONFIG_PRESET);
 
-        const { initView } = await import('@/core/view');
+        const { initView } = await import('@sugarlabs/mb4-view');
         await initView();
 
         window.sessionStorage.setItem('appConfig', JSON.stringify(config));

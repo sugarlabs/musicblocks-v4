@@ -1,6 +1,6 @@
 import type { TPropsMenu } from '@/@types/components/menu';
 
-import { createItem } from '@/core/view';
+import { createItem } from '@sugarlabs/mb4-view';
 
 import { renderComponent } from './components';
 import { injected } from '..';

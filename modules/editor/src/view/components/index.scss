@@ -1,0 +1,176 @@
+@import '@res/themes/light';
+
+#editor {
+  width: 26rem;
+  height: 100%;
+
+  .editor-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+
+    &.editor-wrapper-hidden {
+      display: none;
+    }
+
+    > * {
+      width: 100%;
+      margin: 0;
+    }
+
+    #editor-codebox {
+      flex-shrink: 1;
+      height: 100%;
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      border: none;
+      border-radius: 0.25rem 0.25rem;
+      font-size: 0.9rem;
+      font-family: 'Courier New', Courier, monospace;
+      font-weight: bold;
+      color: $text-dark;
+      resize: none;
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    #editor-console {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      width: 100%;
+      height: 2.5rem;
+      border-radius: 0 0 0.25rem 0.25rem;
+
+      > * {
+        box-sizing: border-box;
+        height: 100%;
+        margin-right: 0.5rem;
+      }
+
+      #editor-btn-help {
+        flex-shrink: 0;
+        width: 2.5rem;
+        padding: 0.5rem;
+        border: none;
+        border-radius: 0.25rem;
+        text-transform: uppercase;
+        background-color: white;
+        cursor: pointer;
+        transition: all 0.25s ease;
+
+        svg {
+          width: 100%;
+          height: 100%;
+
+          .path-fill {
+            fill: $mb-accent;
+            transition: all 0.25s ease;
+          }
+        }
+      }
+
+      #editor-status-wrapper {
+        flex-shrink: 1;
+        width: 100%;
+
+        #editor-status {
+          width: 100%;
+          height: 100%;
+          margin: 0;
+          padding: 0.5rem;
+          border-radius: 0.25rem;
+          font-size: 0.9rem;
+          font-family: 'Courier New', Courier, monospace;
+          font-weight: bold;
+          color: $text-dark;
+          background-color: $background-light;
+          overflow: auto;
+        }
+      }
+
+      #editor-btn-build {
+        flex-shrink: 0;
+        width: 2.5rem;
+        margin-right: 0;
+        padding: 0.5rem;
+        border: none;
+        border-radius: 0.25rem;
+        text-transform: uppercase;
+        background-color: white;
+        cursor: pointer;
+        transition: all 0.25s ease;
+
+        svg {
+          width: 100%;
+          height: 100%;
+
+          .path-fill {
+            fill: $mb-accent;
+            transition: all 0.25s ease;
+          }
+        }
+
+        &:hover {
+          svg {
+            .path-fill {
+              fill: $mb-accent-light;
+            }
+          }
+        }
+      }
+    }
+
+    #editor-help {
+      flex-shrink: 1;
+      height: 100%;
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      border: none;
+      border-radius: 0.25rem;
+      font-size: 0.9rem;
+      font-family: 'Courier New', Courier, monospace;
+      font-weight: bold;
+      color: $mb-accent-light;
+      background-color: $mb-accent-dark;
+      resize: none;
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    #editor-help-close {
+      flex-shrink: 0;
+      width: 2.5rem;
+      height: 2.5rem;
+      border: none;
+      border-radius: 0.25rem;
+      background-color: unset;
+      cursor: pointer;
+
+      svg {
+        width: calc(100% - 0.5rem);
+        height: calc(100% - 0.5rem);
+        margin: 0.25rem;
+
+        .path-fill {
+          fill: $mb-accent-dark;
+          transition: all 0.25s ease;
+        }
+      }
+
+      &:hover {
+        svg {
+          .path-fill {
+            fill: $text-light;
+          }
+        }
+      }
+    }
+  }
+}

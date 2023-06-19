@@ -1,0 +1,27 @@
+@import '@res/themes/light';
+
+#editor-toolbar-btn {
+  padding: 0.25rem;
+
+  svg {
+    width: 100%;
+    height: 100%;
+
+    &.editor-toolbar-btn-img-hidden {
+      display: none;
+    }
+
+    .path-fill {
+      fill: $mb-accent;
+      transition: all 0.25s ease;
+    }
+  }
+
+  &:hover {
+    svg {
+      .path-fill {
+        fill: $mb-accent-light;
+      }
+    }
+  }
+}

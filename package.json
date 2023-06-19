@@ -117,6 +117,7 @@
     "lib/i18n",
     "lib/transport",
     "lib/view",
-    "lib/components"
+    "lib/components",
+    "modules/editor"
   ]
 }

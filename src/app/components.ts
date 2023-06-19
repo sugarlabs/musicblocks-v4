@@ -23,7 +23,7 @@ const manifest: TComponentManifest = {
                 'image.icon.close',
             ],
         },
-        importFunc: () => import('@/components/editor'),
+        importFunc: () => import('@sugarlabs/mb4-module-editor'),
     },
     menu: {
         name: 'Menu',

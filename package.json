@@ -111,11 +111,11 @@
     "web-vitals": "^2.1.4"
   },
   "workspaces": [
-    "packages/assets",
-    "packages/config",
-    "packages/events",
-    "packages/i18n",
-    "packages/view",
-    "packages/components"
+    "lib/assets",
+    "lib/config",
+    "lib/events",
+    "lib/i18n",
+    "lib/view",
+    "lib/components"
   ]
 }

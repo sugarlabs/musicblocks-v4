@@ -118,6 +118,7 @@
     "lib/transport",
     "lib/view",
     "lib/components",
-    "modules/editor"
+    "modules/editor",
+    "modules/menu"
   ]
 }

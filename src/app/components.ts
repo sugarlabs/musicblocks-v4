@@ -57,7 +57,7 @@ const manifest: TComponentManifest = {
                 'image.icon.loadProject',
             ],
         },
-        importFunc: () => import('@/components/menu'),
+        importFunc: () => import('@sugarlabs/mb4-module-menu'),
     },
     painter: {
         name: 'Painter',

@@ -120,6 +120,7 @@
     "lib/components",
     "modules/editor",
     "modules/menu",
-    "modules/painter"
+    "modules/painter",
+    "modules/singer"
   ]
 }

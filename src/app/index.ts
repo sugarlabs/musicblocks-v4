@@ -62,9 +62,8 @@ async function init(config?: IAppConfig) {
      */
 
     {
-        const { initView, mountSplash, setView, definition, injected } = await import(
-            '@/core/view'
-        );
+        const { initView, setView } = await import('@/core/view');
+        const { mountSplash, definition, injected } = await import('./splash');
 
         await importAssets(
             Object.entries(assetManifest)
@@ -88,7 +87,7 @@ async function init(config?: IAppConfig) {
      */
 
     {
-        const { updateSplash } = await import('@/core/view');
+        const { updateSplash } = await import('./splash');
 
         const stats = import.meta.env.PROD
             ? await fetch('stats.json').then((res) => res.json())
@@ -295,7 +294,7 @@ async function init(config?: IAppConfig) {
         await setupComponents(componentsOrdered);
 
         // Unmount the splash screen.
-        const { unmountSplash } = await import('@/core/view');
+        const { unmountSplash } = await import('./splash');
         const splashTimeEnd = Date.now();
         const splashTime = splashTimeEnd - splashTimeStart;
         const splashBuffer = Math.max(import.meta.env.VITE_APP_SPLASH_MIN_DELAY - splashTime, 0);

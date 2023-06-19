@@ -19,7 +19,7 @@ const _importMap: TAppImportMap = {
 // -------------------------------------------------------------------------------------------------
 
 async function _loadConfig(preset: number): Promise<IAppConfig> {
-    return (await import(`./config/preset-${preset}.ts`)).default;
+    return (await import(`./config/preset/preset-${preset}.ts`)).default;
 }
 
 function _updateImportMap(item: 'lang', subitem: TI18nLang): TAppImportMap;
@@ -343,7 +343,7 @@ async function init(config?: IAppConfig) {
     {
         const config = await _loadConfig(import.meta.env.VITE_CONFIG_PRESET);
 
-        const { initView, mountConfigPage, updateConfigPage } = await import('@/core/view');
+        const { initView } = await import('@/core/view');
         await initView();
 
         window.sessionStorage.setItem('appConfig', JSON.stringify(config));
@@ -367,6 +367,8 @@ async function init(config?: IAppConfig) {
                 ],
             ),
         ) as Record<TComponentId, IComponentDefinition>;
+
+        const { mountConfigPage, updateConfigPage } = await import('./config');
 
         await mountConfigPage(
             { ...config },

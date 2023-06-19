@@ -54,7 +54,6 @@ export function createItem(
 }
 
 export { initView, setView, mountViewOverlay, unmountViewOverlay } from './components';
-export { mountConfigPage, updateConfigPage } from './components/config';
 export { mountSplash, updateSplash, unmountSplash } from './components/splash';
 export { setToolbarExtended, unsetToolbarExtended } from './components/toolbar';
 

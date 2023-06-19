@@ -1,0 +1,20 @@
+@import '@res/scss/sizes.scss';
+@import '@res/themes/light.scss';
+
+.w-button {
+  height: 32px;
+  border: none;
+  color: $mb-accent;
+  background-color: $background-light;
+  border-radius: $s-border-radius;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+#stories-button-wrapper {
+  height: max-content;
+  padding: 0.5rem;
+  background-color: $mb-accent-dark;
+}

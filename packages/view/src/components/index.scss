@@ -1,0 +1,40 @@
+@import '@res/scss/base.scss';
+
+#mb-root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  * {
+    box-sizing: border-box;
+  }
+
+  #root-overlay {
+    position: absolute;
+    z-index: 9999;
+    top: 0;
+    width: 100%;
+    height: 100%;
+
+    #root-overlay-body {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  #root-main {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+
+    #workspace {
+      flex-shrink: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+  }
+}

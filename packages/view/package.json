@@ -1,0 +1,14 @@
+{
+  "name": "@sugarlabs/mb4-view",
+  "version": "4.2.0",
+  "description": "View SDK",
+  "private": "true",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "peerDependencies": {
+    "react": "~18.x",
+    "react-dom": "~18.x"
+  }
+}

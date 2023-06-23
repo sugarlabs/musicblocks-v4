@@ -1,11 +1,4 @@
-import type {
-    TBrickArgDataType,
-    TBrickColor,
-    TBrickCoords,
-    TBrickExtent,
-    TBrickKind,
-    TBrickType,
-} from '@/@types/brick';
+import type { TBrickArgDataType, TBrickColor, TBrickCoords, TBrickExtent } from '@/@types/brick';
 
 import { BrickModelExpression } from '../model';
 
@@ -18,10 +11,7 @@ import { BrickModelExpression } from '../model';
 export default class BrickExpression extends BrickModelExpression {
     constructor(params: {
         // intrinsic
-        uuid: string;
         name: string;
-        kind: TBrickKind;
-        type: TBrickType;
         label: string;
         glyph: string;
         dataType: TBrickArgDataType;

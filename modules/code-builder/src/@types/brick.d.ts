@@ -50,13 +50,13 @@ export type TBrickColor = ['rgb' | 'hsl', number, number, number] | string;
  */
 export interface IBrickStyle {
     /** background color */
-    colorBg: TBrickColor;
+    get colorBg(): TBrickColor;
     /** foreground color */
-    colorFg: TBrickColor;
+    get colorFg(): TBrickColor;
     /** outline/stroke color */
-    outline: TBrickColor;
+    get outline(): TBrickColor;
     /** scale factor of the brick SVG */
-    scale: number;
+    get scale(): number;
 }
 
 /**
@@ -65,7 +65,7 @@ export interface IBrickStyle {
  */
 export interface IBrickArgs {
     /** map of argument ID to data associated with the argument */
-    args: Record<
+    get args(): Record<
         string,
         {
             /** argument label */
@@ -93,19 +93,19 @@ export interface IBrickArgsState {
  * @interface
  * Type definition of a generic brick (any type).
  */
-export interface IBrick {
+export interface IBrick extends IBrickStyle {
     /** unique ID of the brick */
-    uuid: string;
+    get uuid(): string;
     /** name of the brick — to be used for internal bookkeeping */
-    name: string;
+    get name(): string;
     /** kind of the brick */
-    kind: TBrickKind;
+    get kind(): TBrickKind;
     /** type of the brick */
-    type: TBrickType;
+    get type(): TBrickType;
     /** label for the brick */
-    label: string;
+    get label(): string;
     /** glyph icon associated with the brick */
-    glyph: string;
+    get glyph(): string;
 
     // states
     /** whether brick is highlighted */
@@ -123,19 +123,19 @@ export interface IBrick {
  */
 export interface IBrickArgument extends IBrick {
     /** data type returned by an argument brick */
-    dataType: TBrickArgDataType;
+    get dataType(): TBrickArgDataType;
 }
 
 /**
  * @interface
  * Type definition of a generic instruction brick (statement or block type).
  */
-export interface IBrickInstruction extends IBrick {
+export interface IBrickInstruction extends IBrick, IBrickArgs, IBrickArgsState {
     // style
     /** is connection allowed above the brick */
-    connectAbove: boolean;
+    get connectAbove(): boolean;
     /** is connection allowed below the brick */
-    connectBelow: boolean;
+    get connectBelow(): boolean;
 }
 
 /**
@@ -144,11 +144,11 @@ export interface IBrickInstruction extends IBrick {
  */
 export interface IBrickData extends IBrickArgument {
     /** whether brick has a static label or value can be updated */
-    dynamic: boolean;
+    get dynamic(): boolean;
     /** (if dynamic) current value of the brick */
-    value?: boolean | number | string;
+    get value(): undefined | boolean | number | string;
     /** (if dynamic) input mode for the brick (checkbox, number box, text box, dropdown, etc.) */
-    input?: 'boolean' | 'number' | 'string' | 'options';
+    get input(): undefined | 'boolean' | 'number' | 'string' | 'options';
 }
 
 /**
@@ -156,7 +156,7 @@ export interface IBrickData extends IBrickArgument {
  * Type definition of an argument brick.
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface IBrickExpression extends IBrickArgument {
+export interface IBrickExpression extends IBrickArgument, IBrickArgs, IBrickArgsState {
     // reserving spot for future-proofing
 }
 

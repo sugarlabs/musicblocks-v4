@@ -1,14 +1,11 @@
 import type {
     IBrick,
-    IBrickArgs,
-    IBrickArgsState,
     IBrickArgument,
     IBrickBlock,
     IBrickData,
     IBrickExpression,
     IBrickInstruction,
     IBrickStatement,
-    IBrickStyle,
     TBrickArgDataType,
     TBrickColor,
     TBrickCoords,
@@ -24,7 +21,7 @@ import type {
  * @class
  * Defines the data model of a generic brick.
  */
-abstract class BrickModel implements IBrick, IBrickStyle {
+abstract class BrickModel implements IBrick {
     protected _uuid: string;
     protected _name: string;
     protected _kind: TBrickKind;
@@ -41,7 +38,6 @@ abstract class BrickModel implements IBrick, IBrickStyle {
 
     constructor(params: {
         // intrinsic
-        uuid: string;
         name: string;
         kind: TBrickKind;
         type: TBrickType;
@@ -53,7 +49,7 @@ abstract class BrickModel implements IBrick, IBrickStyle {
         outline: TBrickColor;
         scale: number;
     }) {
-        this._uuid = params.uuid;
+        this._uuid = '';
         this._name = params.name;
         this._kind = params.kind;
         this._type = params.type;
@@ -120,9 +116,7 @@ abstract class BrickModelArgument extends BrickModel implements IBrickArgument {
 
     constructor(params: {
         // intrinsic
-        uuid: string;
         name: string;
-        kind: TBrickKind;
         type: TBrickType;
         label: string;
         glyph: string;
@@ -133,7 +127,7 @@ abstract class BrickModelArgument extends BrickModel implements IBrickArgument {
         outline: TBrickColor;
         scale: number;
     }) {
-        super(params);
+        super({ ...params, kind: 'argument' });
 
         this._dataType = params.dataType;
     }
@@ -148,10 +142,7 @@ abstract class BrickModelArgument extends BrickModel implements IBrickArgument {
  * @class
  * Defines the data model of a generic instruction brick.
  */
-abstract class BrickModelInstruction
-    extends BrickModel
-    implements IBrickInstruction, IBrickArgs, IBrickArgsState
-{
+abstract class BrickModelInstruction extends BrickModel implements IBrickInstruction {
     protected _args: Record<
         string,
         {
@@ -168,9 +159,7 @@ abstract class BrickModelInstruction
 
     constructor(params: {
         // intrinsic
-        uuid: string;
         name: string;
-        kind: TBrickKind;
         type: TBrickType;
         label: string;
         glyph: string;
@@ -190,7 +179,7 @@ abstract class BrickModelInstruction
         connectAbove: boolean;
         connectBelow: boolean;
     }) {
-        super(params);
+        super({ ...params, kind: 'instruction' });
 
         this._args = params.args;
         this._connectAbove = params.connectAbove;
@@ -233,10 +222,7 @@ export abstract class BrickModelData extends BrickModelArgument implements IBric
 
     constructor(params: {
         // intrinsic
-        uuid: string;
         name: string;
-        kind: TBrickKind;
-        type: TBrickType;
         label: string;
         glyph: string;
         dataType: TBrickArgDataType;
@@ -249,7 +235,7 @@ export abstract class BrickModelData extends BrickModelArgument implements IBric
         outline: TBrickColor;
         scale: number;
     }) {
-        super(params);
+        super({ ...params, type: 'data' });
 
         this._dynamic = params.dynamic;
         this._value = params.value;
@@ -274,10 +260,7 @@ export abstract class BrickModelData extends BrickModelArgument implements IBric
  * @class
  * Defines the data model of an expression brick.
  */
-export abstract class BrickModelExpression
-    extends BrickModelArgument
-    implements IBrickExpression, IBrickArgs, IBrickArgsState
-{
+export abstract class BrickModelExpression extends BrickModelArgument implements IBrickExpression {
     protected _args: Record<
         string,
         {
@@ -291,10 +274,7 @@ export abstract class BrickModelExpression
 
     constructor(params: {
         // intrinsic
-        uuid: string;
         name: string;
-        kind: TBrickKind;
-        type: TBrickType;
         label: string;
         glyph: string;
         dataType: TBrickArgDataType;
@@ -312,7 +292,7 @@ export abstract class BrickModelExpression
         outline: TBrickColor;
         scale: number;
     }) {
-        super(params);
+        super({ ...params, type: 'expression' });
 
         this._args = params.args;
     }
@@ -339,10 +319,7 @@ export abstract class BrickModelExpression
 export abstract class BrickModelStatement extends BrickModelInstruction implements IBrickStatement {
     constructor(params: {
         // intrinsic
-        uuid: string;
         name: string;
-        kind: TBrickKind;
-        type: TBrickType;
         label: string;
         glyph: string;
         args: Record<
@@ -361,7 +338,7 @@ export abstract class BrickModelStatement extends BrickModelInstruction implemen
         connectAbove: boolean;
         connectBelow: boolean;
     }) {
-        super(params);
+        super({ ...params, type: 'statement' });
     }
 }
 
@@ -376,10 +353,7 @@ export abstract class BrickModelBlock extends BrickModelInstruction implements I
 
     constructor(params: {
         // intrinsic
-        uuid: string;
         name: string;
-        kind: TBrickKind;
-        type: TBrickType;
         label: string;
         glyph: string;
         args: Record<
@@ -398,6 +372,6 @@ export abstract class BrickModelBlock extends BrickModelInstruction implements I
         connectAbove: boolean;
         connectBelow: boolean;
     }) {
-        super(params);
+        super({ ...params, type: 'block' });
     }
 }

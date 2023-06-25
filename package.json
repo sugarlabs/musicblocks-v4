@@ -87,5 +87,8 @@
     "modules/painter",
     "modules/singer",
     "app"
-  ]
+  ],
+  "dependencies": {
+    "quadtree-lib": "^1.0.9"
+  }
 }

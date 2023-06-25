@@ -45,7 +45,10 @@ class QuadTree {
 
     public delObject(ID: string): void {
         if (this._tree) {
-            // this._tree.remove(item);
+            const treeNode = this._tree.where({ ID: ID });
+            if (treeNode.length > 0) {
+                this._tree.remove(treeNode[0]);
+            }
         }
     }
 

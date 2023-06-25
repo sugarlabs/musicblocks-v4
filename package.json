@@ -16,21 +16,13 @@
   "module": "true",
   "scripts": {
     "serve": "lerna --scope @sugarlabs/mb4-app run serve",
-    "stats": "ts-node tools/scripts/stats",
-    "build": "vite build -c tools/vite.config.ts --base / && npm run stats",
-    "build:gh": "vite build -c tools/vite.config.ts --base /musicblocks-v4/ && npm run stats",
-    "preview": "vite preview -c tools/vite.config.ts --host --port 4173 --base /",
-    "preview:gh": "vite preview -c tools/vite.config.ts --host --port 4173 --base /musicblocks-v4/",
-    "visualize": "npm run preview -- --open http://localhost:4173/stats.html",
-    "predeploy": "npm run dist",
-    "deploy": "gh-pages -d dist",
-    "check": "tsc",
-    "lint": "eslint src && markdownlint -i src/components/editor-next src && textlint --rule terminology --rule no-dead-link README.md",
-    "test:unit": "jest",
-    "test:e2e": "cypress run",
-    "storybook": "storybook dev -p 6006",
-    "storybook-build": "storybook build -o storybook",
-    "storybook-serve": "http-server storybook -p 6007"
+    "build": "lerna --scope @sugarlabs/mb4-app run build",
+    "build:gh": "lerna --scope @sugarlabs/mb4-app run build:gh",
+    "preview": "lerna --scope @sugarlabs/mb4-app run preview",
+    "preview:gh": "lerna --scope @sugarlabs/mb4-app run preview:gh",
+    "visualize": "lerna --scope @sugarlabs/mb4-app run visualize",
+    "deploy": "lerna --scope @sugarlabs/mb4-app run deploy",
+    "lint": "markdownlint -i node_modules . && textlint --rule terminology --rule no-dead-link README.md"
   },
   "devDependencies": {
     "@babel/core": "^7.18.6",

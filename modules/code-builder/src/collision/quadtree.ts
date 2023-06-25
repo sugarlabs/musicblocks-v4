@@ -1,16 +1,16 @@
 import Quadtree from 'quadtree-lib';
 
-type Block = { x: number; y: number; width: number; height: number };
+type Block = { x: number; y: number; ID: string };
 class QuadTree {
     private _tree: Quadtree<Block> | null = null;
     private _width: number;
     private _height: number;
     private _maxElements: number;
 
-    constructor(width: number, height: number, maxElements: number) {
-        this._width = width;
-        this._height = height;
-        this._maxElements = maxElements;
+    constructor() {
+        this._width = 0;
+        this._height = 0;
+        this._maxElements = 4;
         this._tree = null;
     }
 
@@ -22,28 +22,49 @@ class QuadTree {
         });
     }
 
-    public push(item: Block) {
+    public setDimensions(width: number, height: number): void {
+        this._width = width;
+        this._height = height;
+    }
+
+    public setMaxElements(maxElements: number): void {
+        this._maxElements = maxElements;
+    }
+
+    public addObject(item: Block): void {
         if (this._tree) {
             this._tree.push(item);
         }
     }
 
-    public pushAll(items: Block[]) {
+    public addObjects(items: Block[]): void {
         if (this._tree) {
             this._tree.pushAll(items);
         }
     }
 
-    public remove(item: Block) {
+    public delObject(ID: string): void {
         if (this._tree) {
-            this._tree.remove(item);
+            // this._tree.remove(item);
         }
     }
 
-    public clear() {
+    public clear(): void {
         if (this._tree) {
             this._tree.clear();
         }
+    }
+
+    public checkCollision(item: Block): Block[] {
+        if (this._tree) {
+            const collisions = this._tree.colliding(item);
+            if (collisions.length > 0) {
+                return collisions;
+            } else {
+                return [];
+            }
+        }
+        return [];
     }
 }
 

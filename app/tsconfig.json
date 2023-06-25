@@ -1,0 +1,26 @@
+{
+    "extends": "../tsconfig.json",
+    "include": [
+        "./**/*.ts",
+        "./**/*.tsx",
+        "./.storybook/**/*.ts",
+        "./.storybook/**/*.tsx"
+    ],
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "./src/*"
+            ],
+            "#/@types/*": [
+                "../@types/*"
+            ],
+            "@res/*": [
+                "../res/*"
+            ]
+        },
+        "types": [
+            "vite/client"
+        ]
+    }
+}

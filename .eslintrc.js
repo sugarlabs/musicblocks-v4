@@ -69,5 +69,15 @@ module.exports = {
                 '@typescript-eslint/no-use-before-define': ['error', 'nofunc'],
             },
         },
+
+        {
+            files: ['**/*.json'],
+
+            extends: ['plugin:json/recommended'],
+
+            rules: {
+                'prettier/prettier': 'off',
+            },
+        },
     ],
 };

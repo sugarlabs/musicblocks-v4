@@ -1,7 +1,8 @@
 import Quadtree from 'quadtree-lib';
 
+type Block = { x: number; y: number; width: number; height: number };
 class QuadTree {
-    private _tree;
+    private _tree: Quadtree<Block> | null = null;
     private _width: number;
     private _height: number;
     private _maxElements: number;
@@ -10,6 +11,7 @@ class QuadTree {
         this._width = width;
         this._height = height;
         this._maxElements = maxElements;
+        this._tree = null;
     }
 
     public init() {
@@ -18,6 +20,22 @@ class QuadTree {
             height: this._height,
             maxElements: this._maxElements,
         });
+    }
+
+    public push(item: Block) {
+        this._tree.push(item);
+    }
+
+    public pushAll(items: Block[]) {
+        this._tree.pushAll(items);
+    }
+
+    public remove(item: Block) {
+        this._tree.remove(item);
+    }
+
+    public clear() {
+        this._tree.clear();
     }
 }
 

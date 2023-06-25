@@ -1,17 +1,36 @@
 import Quadtree from 'quadtree-lib';
 
 type Block = { x: number; y: number; ID: string };
+type options =
+    | {
+          type: 'circle';
+          radius: number;
+          collisionProperties: 'distance' | 'overlap';
+      }
+    | {
+          type: 'square';
+          length: number;
+          collisionProperties: 'distance' | 'overlap';
+      };
 class QuadTree {
     private _tree: Quadtree<Block> | null = null;
     private _width: number;
     private _height: number;
     private _maxElements: number;
+    private _shape: 'circle' | 'square' | null;
+    private _radius?: number;
+    private _length?: number;
+    private _collisionProperties: 'distance' | 'overlap' | null;
 
     constructor() {
         this._width = 0;
         this._height = 0;
         this._maxElements = 4;
         this._tree = null;
+        this._shape = null;
+        this._radius = undefined;
+        this._length = undefined;
+        this._collisionProperties = null;
     }
 
     public init() {
@@ -55,6 +74,19 @@ class QuadTree {
     public clear(): void {
         if (this._tree) {
             this._tree.clear();
+        }
+    }
+
+    public setOptions(options: options): void {
+        if (this._tree) {
+            this._shape = options.type;
+            this._collisionProperties = options.collisionProperties;
+            if (options.type === 'circle') {
+                this._radius = options.radius;
+            }
+            if (options.type === 'square') {
+                this._length = options.length;
+            }
         }
     }
 

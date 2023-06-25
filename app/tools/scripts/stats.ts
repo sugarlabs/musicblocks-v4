@@ -107,15 +107,11 @@ export function getStats(data: VisualizerData): {
         );
     }
 
-    const _getSizeFiles = (prefix: string): [string, number][] => {
+    const _getSizeFiles = (subPath: string): [string, number][] => {
         return Object.values(data.nodeMetas)
-            .filter(({ id }) =>
-                process.platform === 'win32' ? id.includes(prefix) : id.startsWith(prefix),
-            )
+            .filter(({ id }) => id.includes(subPath))
             .map<[string, number]>(({ id, moduleParts }) => [
-                process.platform === 'win32'
-                    ? id.split(prefix).slice(-1)[0]
-                    : id.replace(new RegExp(`${prefix}`, 'g'), ''),
+                id.split(subPath).slice(-1)[0],
                 Object.values(moduleParts)
                     .map((moduleId) => data.nodeParts[moduleId].gzipLength)
                     .reduce((a, b) => a + b),
@@ -124,10 +120,7 @@ export function getStats(data: VisualizerData): {
 
     const _getSizeI18n = (): Record<string, number> => {
         return Object.fromEntries(
-            _getSizeFiles('/src/core/i18n/lang/').map(([file, size]) => [
-                file.replace('.ts', ''),
-                size,
-            ]),
+            _getSizeFiles('/lib/i18n/lang/').map(([file, size]) => [file.replace('.ts', ''), size]),
         );
     };
 

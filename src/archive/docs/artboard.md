@@ -175,4 +175,4 @@ we return some jsx of a div that has the ref attribute equal to the value of our
 
 Similarly, useEffect hook is used to reflect the change on the canvas. In the above example we see
 the `updateWithProps()` function, which is called when the properties of a wrapper component are
-changed. Read more [here](https://github.com/jamesrweb/react-p5-wrapper).
+changed. Read more [here](https://github.com/P5-wrapper/react).

@@ -5,7 +5,7 @@
 ### Without Docker
 
 This is a _**TypeScript**_ project that uses _**React**_. You'll just need
-_[**Node.js**](https://nodejs.org/en/) v16_ and _**npm**_ installed on your development machine.
+_[**Node.js**](https://nodejs.org/en) v16_ and _**npm**_ installed on your development machine.
 Although, this is sufficient to run, build, and test the project as a whole, you might need some
 extra tools for other development tasks.
 
@@ -141,7 +141,7 @@ your _GitHub Personal Access Token_ (_PAT_) is stored in your local system's _np
 **Note: Be sure to request permission for ```read: packages```**
 
 Learn
-[how to create a _PAT_](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token#creating-a-token).
+[how to create a _PAT_](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-token).
 
 Add your _PAT_ to `.npmrc` using
 
@@ -244,7 +244,7 @@ After you are set-up, the steps you take depend on what you want to do:
 ## Editor
 
 _All code is just plain text, so it doesn't really matter what you use to edit them._ However,
-using modern, feature-rich IDEs/text-editors like [_**Atom**_](https://atom.io/),
+using modern, feature-rich IDEs/text-editors like [_**Atom**_](https://github.blog/2022-06-08-sunsetting-atom/),
 [_**Brackets**_](https://brackets.io), [_**WebStorm**_](https://www.jetbrains.com/webstorm/),
 [_**Sublime Text**_](https://www.sublimetext.com/),
 [_**Visual Studio Code**_](https://code.visualstudio.com/), etc. makes life way easier. These come

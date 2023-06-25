@@ -23,7 +23,7 @@
     "visualize": "lerna --scope @sugarlabs/mb4-app run visualize",
     "deploy": "lerna --scope @sugarlabs/mb4-app run deploy",
     "check": "lerna run check",
-    "lint": "lerna run lint && markdownlint -i '**/node_modules/**' . && textlint --rule terminology --rule no-dead-link README.md"
+    "lint": "lerna run lint && markdownlint -i '**/node_modules/**' . && textlint --rule terminology --rule no-dead-link '**/*.md'"
   },
   "devDependencies": {
     "@babel/core": "^7.18.6",

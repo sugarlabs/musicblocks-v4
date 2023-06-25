@@ -23,19 +23,27 @@ class QuadTree {
     }
 
     public push(item: Block) {
-        this._tree.push(item);
+        if (this._tree) {
+            this._tree.push(item);
+        }
     }
 
     public pushAll(items: Block[]) {
-        this._tree.pushAll(items);
+        if (this._tree) {
+            this._tree.pushAll(items);
+        }
     }
 
     public remove(item: Block) {
-        this._tree.remove(item);
+        if (this._tree) {
+            this._tree.remove(item);
+        }
     }
 
     public clear() {
-        this._tree.clear();
+        if (this._tree) {
+            this._tree.clear();
+        }
     }
 }
 

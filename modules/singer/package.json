@@ -5,7 +5,8 @@
   "private": "true",
   "main": "src/index.ts",
   "scripts": {
-    "test": "jest",
+    "test": "vitest",
+    "coverage": "vitest run --coverage",
     "check": "tsc",
     "lint": "eslint src"
   },

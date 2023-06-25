@@ -5,14 +5,12 @@
   "private": "true",
   "main": "src/index.ts",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "check": "tsc",
+    "lint": "eslint src"
   },
   "dependencies": {
     "@sugarlabs/musicblocks-v4-lib": "^0.2.0",
     "tone": "^14.7.77"
-  },
-  "devDependencies": {
-    "@types/jest": "^27.5.2",
-    "ts-jest": "^28.0.8"
   }
 }

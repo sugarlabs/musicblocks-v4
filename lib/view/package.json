@@ -5,7 +5,8 @@
   "private": "true",
   "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "check": "tsc",
+    "lint": "eslint src"
   },
   "peerDependencies": {
     "react": "~18.x",

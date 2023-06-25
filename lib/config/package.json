@@ -5,6 +5,10 @@
   "private": "true",
   "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "check": "tsc",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@sugarlabs/musicblocks-v4-lib": "^0.2.0"
   }
 }

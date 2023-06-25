@@ -1,4 +1,7 @@
 {
+  "include": [
+    "@types"
+  ],
   "compilerOptions": {
     "target": "es5",
     "lib": [
@@ -21,13 +24,8 @@
     "jsx": "react-jsx",
     "downlevelIteration": true
   },
-  "include": [
-    "src",
-    "tests"
-  ],
-  "extends": "./tsconfig.paths.json",
   /**
-   * `compilerOptions` should be `UMD` to execute vite scripts using `ts-node`
+   * `compilerOptions.module` should be UMD to execute modules with import statements
    */
   "ts-node": {
     "compilerOptions": {

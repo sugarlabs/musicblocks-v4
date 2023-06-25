@@ -1,7 +1,7 @@
 ---
 # Documentation: https://help.github.com/en/articles/workflow-syntax-for-github-actions
 
-name: Super-Linter
+name: Linting
 
 on:
   pull_request:
@@ -30,26 +30,6 @@ jobs:
           npm ci
           rm -rf .npmrc
 
-      - name: Lint new and edited files
-        uses: github/super-linter/slim@v4
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DEFAULT_BRANCH: develop
-          LINTER_RULES_PATH: /
-          JAVASCRIPT_ES_CONFIG_FILE: .eslintrc
-          TYPESCRIPT_ES_CONFIG_FILE: .eslintrc
-          MARKDOWN_CONFIG_FILE: .markdownlint.jsonc
-          VALIDATE_ALL_CODEBASE: false
-          VALIDATE_CSS: false
-          VALIDATE_DOCKERFILE: false
-          VALIDATE_DOCKERFILE_HADOLINT: false
-          VALIDATE_HTML: false
-          VALIDATE_JAVASCRIPT_STANDARD: false
-          VALIDATE_TYPESCRIPT_STANDARD: false
-          VALIDATE_JSCPD: false
-          VALIDATE_PYTHON: false
-          VALIDATE_PYTHON_BLACK: false
-          VALIDATE_PYTHON_FLAKE8: false
-          VALIDATE_PYTHON_ISORT: false
-          VALIDATE_PYTHON_MYPY: false
-          VALIDATE_PYTHON_PYLINT: false
+      - name: Lint files
+        run: |
+          npm run lint

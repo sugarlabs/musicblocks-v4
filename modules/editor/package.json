@@ -17,5 +17,8 @@
     "@sugarlabs/mb4-view": "*",
     "@sugarlabs/musicblocks-v4-lib": "^0.2.0",
     "js-yaml": "^3.14.1"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.5"
   }
 }

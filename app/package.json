@@ -16,7 +16,7 @@
     "deploy": "gh-pages -d dist",
     "storybook": "storybook dev -p 6006 --no-open",
     "check": "tsc",
-    "lint": "eslint src && markdownlint -i node_modules . && textlint --rule terminology --rule no-dead-link README.md"
+    "lint": "eslint src"
   },
   "dependencies": {
     "@sugarlabs/mb4-assets": "*",

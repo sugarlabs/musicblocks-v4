@@ -6,8 +6,8 @@
   "main": "index.ts",
   "scripts": {
     "storybook": "storybook dev -p 6006",
-    "storybook-build": "storybook build -o storybook",
-    "storybook-serve": "http-server storybook -p 6007"
+    "check": "tsc --types 'vite/client'",
+    "lint": "eslint src"
   },
   "dependencies": {
     "@sugarlabs/mb4-assets": "*"
@@ -15,16 +15,5 @@
   "peerDependencies": {
     "react": "~18.x",
     "react-dom": "~18.x"
-  },
-  "devDependencies": {
-    "@storybook/addon-essentials": "^7.0.22",
-    "@storybook/addon-interactions": "^7.0.22",
-    "@storybook/addon-links": "^7.0.22",
-    "@storybook/blocks": "^7.0.22",
-    "@storybook/react": "^7.0.22",
-    "@storybook/react-vite": "^7.0.22",
-    "@storybook/testing-library": "^0.1.0",
-    "storybook": "^7.0.22",
-    "vite": "^4.0.4"
   }
 }

@@ -1,0 +1,52 @@
+{
+  "name": "@sugarlabs/mb4-app",
+  "version": "4.2.0",
+  "description": "Music Blocks (v4) main application",
+  "private": "true",
+  "main": "src/index.ts",
+  "scripts": {
+    "serve": "vite -c tools/vite.config.ts --host --port 5173",
+    "stats": "ts-node tools/scripts/stats",
+    "build": "vite build -c tools/vite.config.ts --base / && npm run stats",
+    "build:gh": "vite build -c tools/vite.config.ts --base /musicblocks-v4/ && npm run stats",
+    "preview": "vite preview -c tools/vite.config.ts --host --port 4173 --base /",
+    "preview:gh": "vite preview -c tools/vite.config.ts --host --port 4173 --base /musicblocks-v4/",
+    "visualize": "npm run preview -- --open http://localhost:4173/stats.html",
+    "predeploy": "npm run dist",
+    "deploy": "gh-pages -d dist",
+    "storybook": "storybook dev -p 6006 --no-open",
+    "storybook-build": "storybook build -o storybook",
+    "storybook-serve": "http-serve storybook -p 6007"
+  },
+  "peerDependencies": {
+    "react": "~18.x",
+    "react-dom": "~18.x"
+  },
+  "dependencies": {
+    "@sugarlabs/mb4-assets": "*",
+    "@sugarlabs/mb4-events": "*",
+    "@sugarlabs/mb4-transport": "*",
+    "@sugarlabs/mb4-view": "*",
+    "@sugarlabs/musicblocks-v4-lib": "^0.2.0",
+    "web-vitals": "^2.1.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^3.0.1",
+    "@storybook/addon-essentials": "^7.0.22",
+    "@storybook/addon-interactions": "^7.0.22",
+    "@storybook/addon-links": "^7.0.22",
+    "@storybook/blocks": "^7.0.22",
+    "@storybook/react": "^7.0.22",
+    "@storybook/react-vite": "^7.0.22",
+    "@storybook/testing-library": "^0.1.0",
+    "jsonc-parser": "^3.2.0",
+    "rollup-plugin-visualizer": "5.9.0",
+    "storybook": "^7.0.22",
+    "ts-node": "^10.8.1",
+    "vite": "^4.0.4",
+    "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-ejs": "^1.6.4",
+    "vite-plugin-eslint": "^1.8.1",
+    "vite-plugin-pwa": "^0.14.1"
+  }
+}

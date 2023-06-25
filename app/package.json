@@ -6,7 +6,7 @@
   "main": "src/index.ts",
   "scripts": {
     "serve": "vite -c tools/vite.config.ts --host --port 5173",
-    "stats": "ts-node tools/scripts/stats",
+    "stats": "ts-node -O \"{ \\\"types\\\": [\\\"node\\\"] }\" tools/scripts/stats",
     "build": "vite build -c tools/vite.config.ts --base / && npm run stats",
     "build:gh": "vite build -c tools/vite.config.ts --base /musicblocks-v4/ && npm run stats",
     "preview": "vite preview -c tools/vite.config.ts --host --port 4173 --base /",

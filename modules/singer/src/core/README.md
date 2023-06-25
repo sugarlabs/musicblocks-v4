@@ -7,8 +7,8 @@ _current pitch_ object.
 
 ## Current Pitch
 
-The `CurrentPitch` class in [`currentPitch.ts`](currentPitch.ts) manages pitch state. A pitch is a
-note within a scale and temperament (tuning system).
+The `CurrentPitch` class in `currentPitch.ts` manages pitch state. A pitch is a note within a scale
+and temperament (tuning system).
 
 ### Constructor
 
@@ -207,7 +207,7 @@ const freq: number = cp.getScalarInterval(2);
 
 ## Temperament
 
-The `Temperament` class in [`temperament.ts`](temperament.ts) allows generation of new Temperaments.
+The `Temperament` class in `temperament.ts` allows generation of new Temperaments.
 In musical tuning, temperament is a tuning system that defines the notes (semitones) in an octave.
 Most modern Western musical instruments are tuned in the equal temperament system based on the 1/12
 root of 2 (12 semitones per octave). Many traditional temperaments are based on ratios.
@@ -447,8 +447,7 @@ const freq: number = t.getFreqByIndex(pitchNumber);
 
 ## Scale
 
-The `Scale` class in [`scale.ts`](scale.ts) allows defining a scale. A scale is a selection
-of notes in an octave.
+The `Scale` class in `scale.ts` allows defining a scale. A scale is a selection of notes in an octave.
 
 ### Constructor
 
@@ -524,8 +523,8 @@ associated with a scale (new octaves always start at `C` regardless of the tempe
 
 ## KeySignature
 
-The `KeySignature` class in [`keysignature.ts`](keysignature.ts) allows defining a scale. A key
-signature is a set of _sharp_, _flat_, and _natural_ symbols.
+The `KeySignature` class in `keysignature.ts` allows defining a scale. A key signature is a set of
+_sharp_, _flat_, and _natural_ symbols.
 
 ### Constructor
 
@@ -826,8 +825,8 @@ let genericName: string, deltaOctave: number;
 
 ## Music Utils
 
-The constants and the utilities retated to musical state in [`musicUtils.ts`](musicUtils.ts) are
-required by other related modules.
+The constants and the utilities retated to musical state in `musicUtils.ts` are required by other
+related modules.
 
 ### Constants
 
@@ -1224,8 +1223,7 @@ function getPitchType: (pitchName: string) => string;
 
 ## Synth Utils
 
-Synth Utils class in [`synthUtils.ts`](synthUtils.ts) is used to manage the synthesizers used
-by MusicBlocks.
+Synth Utils class in `synthUtils.ts` is used to manage the synthesizers used by MusicBlocks.
 
 ### Constructor
 

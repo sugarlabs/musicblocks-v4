@@ -28,6 +28,7 @@ jobs:
         run: |
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
           npm ci
+          npx lerna bootstrap
           rm -rf .npmrc
 
       - name: Lint files

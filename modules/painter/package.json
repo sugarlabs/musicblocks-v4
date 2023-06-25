@@ -18,5 +18,8 @@
     "@sugarlabs/mb4-view": "*",
     "@sugarlabs/musicblocks-v4-lib": "^0.2.0",
     "p5": "^1.4.1"
+  },
+  "devDependencies": {
+    "@types/p5": "^1.4.2"
   }
 }

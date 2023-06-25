@@ -79,5 +79,26 @@ module.exports = {
                 'prettier/prettier': 'off',
             },
         },
+
+        {
+            files: ['**/*.spec.ts', '**/*.test.ts'],
+
+            globals: {
+                suite: true,
+                test: true,
+                describe: true,
+                it: true,
+                expectTypeOf: true,
+                assertType: true,
+                expect: true,
+                assert: true,
+                vitest: true,
+                vi: true,
+                beforeAll: true,
+                afterAll: true,
+                beforeEach: true,
+                afterEach: true,
+            },
+        },
     ],
 };

@@ -18,9 +18,6 @@
             "@res/*": [
                 "../res/*"
             ]
-        },
-        "types": [
-            "vite/client"
-        ]
+        }
     }
 }

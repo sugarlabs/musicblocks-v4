@@ -1,7 +1,4 @@
 {
-  "include": [
-    "@types"
-  ],
   "compilerOptions": {
     "target": "es5",
     "lib": [
@@ -22,7 +19,11 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "types": [
+      "vite/client",
+      "vitest/globals"
+    ]
   },
   /**
    * `compilerOptions.module` should be UMD to execute modules with import statements

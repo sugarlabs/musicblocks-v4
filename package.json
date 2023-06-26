@@ -24,7 +24,7 @@
     "deploy": "lerna --scope @sugarlabs/mb4-app run deploy",
     "check": "lerna run check",
     "lint": "lerna run lint && markdownlint -i '**/node_modules/**' . && textlint --rule terminology --rule no-dead-link '**/*.md'",
-    "test:unit": "lerna run test",
+    "test": "lerna run test",
     "coverage": "./coverage.sh"
   },
   "devDependencies": {

@@ -60,7 +60,7 @@ jobs:
         run: npm run build
 
   source-test:
-    name: Run Unit and E2E Tests on Source Code
+    name: Run Tests on Source Code
 
     runs-on: ubuntu-latest
 
@@ -86,7 +86,7 @@ jobs:
           rm -rf .npmrc
 
       - name: Run Unit Tests
-        run: npm run test:unit
+        run: npm run test
 
       # - name: Cypress run
       #   uses: cypress-io/github-action@v4

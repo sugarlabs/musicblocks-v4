@@ -1,0 +1,18 @@
+{
+  "name": "@sugarlabs/mb4-module-code-builder",
+  "version": "4.2.0",
+  "description": "Graphical project builder using drag & drop code bricks",
+  "private": "true",
+  "main": "src/index.ts",
+  "scripts": {},
+  "peerDependencies": {
+    "react": "~18.x",
+    "react-dom": "~18.x"
+  },
+  "dependencies": {
+    "@sugarlabs/musicblocks-v4-lib": "^0.2.0"
+  },
+  "devDependencies": {
+    "vite": "^4.0.4"
+  }
+}

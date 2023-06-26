@@ -81,6 +81,7 @@
     "lib/transport",
     "lib/view",
     "lib/components",
+    "modules/code-builder",
     "modules/editor",
     "modules/menu",
     "modules/painter",

@@ -5,7 +5,8 @@
   "private": "true",
   "main": "src/index.ts",
   "scripts": {
-    "storybook": "storybook dev -p 6501 --no-open"
+    "storybook": "storybook dev -p 6501 --no-open",
+    "playground": "vite playground --host --port 5601"
   },
   "peerDependencies": {
     "react": "~18.x",
@@ -13,17 +14,5 @@
   },
   "dependencies": {
     "@sugarlabs/musicblocks-v4-lib": "^0.2.0"
-  },
-  "devDependencies": {
-    "@storybook/addon-essentials": "^7.0.22",
-    "@storybook/addon-interactions": "^7.0.22",
-    "@storybook/addon-links": "^7.0.22",
-    "@storybook/blocks": "^7.0.22",
-    "@storybook/react": "^7.0.22",
-    "@storybook/react-vite": "^7.0.22",
-    "@storybook/testing-library": "^0.1.0",
-    "sass": "^1.53.0",
-    "storybook": "^7.0.22",
-    "vite": "^4.0.4"
   }
 }

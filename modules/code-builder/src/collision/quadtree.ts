@@ -92,7 +92,25 @@ class QuadTree {
 
     public checkCollision(item: Block): Block[] {
         if (this._tree) {
-            const collisions = this._tree.colliding(item);
+            let collisions: Block[] = [];
+            if (this._collisionProperties === 'distance') {
+                collisions = this._tree.colliding(item);
+            }
+            if (this._collisionProperties === 'overlap') {
+                collisions = this._tree.colliding(item, (a: Block, b: Block) => {
+                    const intersection = a.intersection(b);
+                    if (!intersection) {
+                        return 0.0;
+                    }
+
+                    const area1 = a.area();
+                    const area2 = b.area();
+                    const intersectionArea = intersection.area();
+
+                    return intersectionArea / Math.min(area1, area2);
+                });
+            }
+
             if (collisions.length > 0) {
                 return collisions;
             } else {

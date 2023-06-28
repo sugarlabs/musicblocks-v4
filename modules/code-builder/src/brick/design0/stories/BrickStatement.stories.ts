@@ -12,7 +12,7 @@ export const NoArgs: Story = {
     args: {
         prototype: BrickStatement,
         label: 'Statement',
-        args: ['Label 1'],
+        args: [],
         colorBg: 'yellow',
         colorFg: 'black',
         outline: 'red',

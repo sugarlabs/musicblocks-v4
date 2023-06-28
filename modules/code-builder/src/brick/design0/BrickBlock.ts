@@ -48,7 +48,7 @@ export default class BrickBlock extends BrickModelBlock {
         return generatePath({
             hasNest: true,
             hasNotchNest: true,
-            hasNotchArg: argsLength > 0,
+            hasNotchArg: true,
             hasNotchInsTop: this._connectAbove,
             hasNotchInsBot: this._connectBelow,
             scale: this._scale,

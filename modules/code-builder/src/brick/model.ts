@@ -103,7 +103,7 @@ abstract class BrickModel implements IBrick {
 
     public abstract get extent(): TBrickExtent;
 
-    public abstract get SVG(): string;
+    public abstract get SVGpath(): string;
 }
 
 /**

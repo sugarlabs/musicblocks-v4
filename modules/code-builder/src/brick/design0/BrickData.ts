@@ -32,8 +32,10 @@ export default class BrickData extends BrickModelData {
         return { width: 0, height: 0 };
     }
 
-    public get SVGpath(): string {
-        return generatePath({
+    public get SVGpaths(): string[] {
+        let result: string[] = [];
+
+        const path = generatePath({
             hasNest: false,
             hasNotchArg: true,
             hasNotchInsTop: false,
@@ -42,5 +44,9 @@ export default class BrickData extends BrickModelData {
             innerLengthX: 100,
             argHeights: [],
         }).path;
+
+        result.push(path);
+
+        return result;
     }
 }

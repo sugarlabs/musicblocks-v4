@@ -42,10 +42,11 @@ export default class BrickBlock extends BrickModelBlock {
         return {};
     }
 
-    public get SVGpath(): string {
+    public get SVGpaths(): string[] {
         const argsLength = Object.keys(this._args).length;
+        let result: string[] = [];
 
-        return generatePath({
+        const path = generatePath({
             hasNest: true,
             hasNotchNest: true,
             hasNotchArg: true,
@@ -56,5 +57,9 @@ export default class BrickBlock extends BrickModelBlock {
             innerLengthX: 100,
             argHeights: Array.from({ length: argsLength }, () => 17),
         }).path;
+
+        result.push(path);
+
+        return result;
     }
 }

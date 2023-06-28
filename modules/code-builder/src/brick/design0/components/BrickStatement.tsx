@@ -52,7 +52,7 @@ export default function (props: TBrickStatementProps): JSX.Element {
   return (
     <g transform={`scale(${instance.scale})`}>
       <path
-        d={instance.SVGpath}
+        d={instance.SVGpaths[0]}
         style={{
           fill: instance.colorBg as string,
           fillOpacity: 1,

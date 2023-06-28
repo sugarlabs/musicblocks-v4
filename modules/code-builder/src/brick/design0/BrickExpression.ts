@@ -41,10 +41,11 @@ export default class BrickExpression extends BrickModelExpression {
         return {};
     }
 
-    public get SVGpath(): string {
+    public get SVGpaths(): string[] {
         const argsLength = Object.keys(this._args).length;
+        let result: string[] = [];
 
-        return generatePath({
+        const path = generatePath({
             hasNest: false,
             hasNotchArg: true,
             hasNotchInsTop: false,
@@ -53,5 +54,9 @@ export default class BrickExpression extends BrickModelExpression {
             innerLengthX: 100,
             argHeights: Array.from({ length: argsLength }, () => 17),
         }).path;
+
+        result.push(path);
+
+        return result;
     }
 }

@@ -52,11 +52,12 @@ export default function (props: TBrickBlockProps): JSX.Element {
   return (
     <g transform={`scale(${instance.scale})`}>
       <path
-        d={instance.SVGpath}
+        d={instance.SVGpaths[0]}
         style={{
           fill: instance.colorBg as string,
           fillOpacity: 1,
           stroke: instance.outline as string,
+          strokeWidth: 1,
           strokeLinecap: 'round',
           strokeOpacity: 1,
         }}

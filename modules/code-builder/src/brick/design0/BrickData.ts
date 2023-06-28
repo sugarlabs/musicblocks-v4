@@ -1,6 +1,7 @@
 import type { TBrickArgDataType, TBrickColor, TBrickExtent } from '@/@types/brick';
 
 import { BrickModelData } from '../model';
+import { generatePath } from './utils/path';
 
 // -------------------------------------------------------------------------------------------------
 
@@ -31,7 +32,15 @@ export default class BrickData extends BrickModelData {
         return { width: 0, height: 0 };
     }
 
-    public get SVG(): string {
-        return '';
+    public get SVGpath(): string {
+        return generatePath({
+            hasNest: false,
+            hasNotchArg: true,
+            hasNotchInsTop: false,
+            hasNotchInsBot: false,
+            scale: this._scale,
+            innerLengthX: 100,
+            argHeights: [],
+        }).path;
     }
 }

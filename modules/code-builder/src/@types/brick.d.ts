@@ -114,7 +114,7 @@ export interface IBrick extends IBrickStyle {
     get extent(): IBrickExtent;
 
     /** SVG string for the brick based on defining properties and current state */
-    get SVG(): string;
+    get SVGpath(): string;
 }
 
 /**

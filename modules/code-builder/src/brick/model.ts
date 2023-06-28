@@ -86,19 +86,19 @@ abstract class BrickModel implements IBrick {
     }
 
     public get colorBg(): TBrickColor {
-        return this.colorBg;
+        return this._colorBg;
     }
 
     public get colorFg(): TBrickColor {
-        return this.colorFg;
+        return this._colorFg;
     }
 
     public get outline(): TBrickColor {
-        return this.outline;
+        return this._outline;
     }
 
     public get scale(): number {
-        return this.scale;
+        return this._scale;
     }
 
     public abstract get extent(): TBrickExtent;

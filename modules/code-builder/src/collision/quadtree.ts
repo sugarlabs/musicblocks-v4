@@ -1,6 +1,6 @@
 import Quadtree from 'quadtree-lib';
 
-type Block = { x: number; y: number; ID: string };
+type Block = { x: number; y: number; ID: string; radius?: number; width?: number; height?: number };
 type options =
     | {
           type: 'circle';
@@ -21,6 +21,8 @@ class QuadTree {
     private _radius?: number;
     private _length?: number;
     private _collisionProperties: 'distance' | 'overlap' | null;
+    private _thresholdPercent?: number = 0.5;
+    private _thresholdNumber?: number = 0.5;
 
     constructor() {
         this._width = 0;
@@ -94,20 +96,96 @@ class QuadTree {
         if (this._tree) {
             let collisions: Block[] = [];
             if (this._collisionProperties === 'distance') {
-                collisions = this._tree.colliding(item);
-            }
-            if (this._collisionProperties === 'overlap') {
                 collisions = this._tree.colliding(item, (a: Block, b: Block) => {
-                    const intersection = a.intersection(b);
-                    if (!intersection) {
-                        return 0.0;
+                    const distanceX = Math.abs(b.x - a.x);
+                    const distanceY = Math.abs(b.y - a.y);
+
+                    if (a.radius !== undefined && b.radius !== undefined) {
+                        const distance = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
+                        return distance < (this._thresholdNumber as number);
+                    } else if (
+                        a.width !== undefined &&
+                        b.width !== undefined &&
+                        a.height !== undefined &&
+                        b.height !== undefined
+                    ) {
+                        const halfWidth1 = a.width / 2;
+                        const halfHeight1 = a.height / 2;
+                        const halfWidth2 = b.width / 2;
+                        const halfHeight2 = b.height / 2;
+
+                        const deltaX = distanceX - halfWidth1 - halfWidth2;
+                        const deltaY = distanceY - halfHeight1 - halfHeight2;
+
+                        return (
+                            deltaX < (this._thresholdNumber as number) &&
+                            deltaY < (this._thresholdNumber as number)
+                        );
+                    } else {
+                        return false;
                     }
+                });
+            } else if (this._collisionProperties === 'overlap') {
+                collisions = this._tree.colliding(item, (a: Block, b: Block) => {
+                    const isCircle1 = a.radius !== undefined;
+                    const isCircle2 = b.radius !== undefined;
 
-                    const area1 = a.area();
-                    const area2 = b.area();
-                    const intersectionArea = intersection.area();
+                    if (isCircle1 && isCircle2) {
+                        const distance = Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
 
-                    return intersectionArea / Math.min(area1, area2);
+                        if (distance >= (a.radius as number) + (b.radius as number)) {
+                            return false;
+                        }
+                        if (distance <= Math.abs((a.radius as number) - (b.radius as number))) {
+                            return true;
+                        }
+
+                        const angle1 = Math.acos(
+                            (Math.pow(a.radius as number, 2) +
+                                Math.pow(distance, 2) -
+                                Math.pow(b.radius as number, 2)) /
+                                (2 * (a.radius as number) * distance),
+                        );
+                        const angle2 = Math.acos(
+                            (Math.pow(b.radius as number, 2) +
+                                Math.pow(distance, 2) -
+                                Math.pow(a.radius as number, 2)) /
+                                (2 * (b.radius as number) * distance),
+                        );
+                        const area1 = (angle1 - Math.sin(angle1)) * Math.pow(a.radius as number, 2);
+                        const area2 = (angle2 - Math.sin(angle2)) * Math.pow(b.radius as number, 2);
+                        const overlapArea = area1 + area2;
+
+                        const percentage =
+                            (overlapArea /
+                                Math.min(
+                                    Math.PI * Math.pow(a.radius as number, 2),
+                                    Math.PI * Math.pow(b.radius as number, 2),
+                                )) *
+                            100;
+
+                        return percentage > (this._thresholdPercent as number);
+                    } else if (!isCircle1 && !isCircle2) {
+                        const xOverlap = Math.max(
+                            0,
+                            Math.min(a.x + a.width!, b.x + b.width!) - Math.max(a.x, b.x),
+                        );
+                        const yOverlap = Math.max(
+                            0,
+                            Math.min(a.y + a.height!, b.y + b.height!) - Math.max(a.y, b.y),
+                        );
+
+                        const overlapArea = xOverlap * yOverlap;
+
+                        const area1 = a.width! * a.height!;
+                        const area2 = b.width! * b.height!;
+
+                        const percentage = (overlapArea / Math.min(area1, area2)) * 100;
+
+                        return percentage > (this._thresholdPercent as number);
+                    } else {
+                        return false;
+                    }
                 });
             }
 

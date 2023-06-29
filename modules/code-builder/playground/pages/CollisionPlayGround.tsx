@@ -78,7 +78,7 @@ export default function (): JSX.Element {
 
   const handleCollision = (e) => {
     const blocks = quadTree.checkCollision({ x: e.clientX, y: e.clientY, ID: e.target.id });
-    console.log(blocks);
+    if (blocks.length > 0) console.log('collision : ', blocks);
   };
 
   useEffect(() => {

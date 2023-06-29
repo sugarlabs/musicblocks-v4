@@ -186,12 +186,7 @@ class QuadTree {
                     }
                 });
             }
-
-            if (collisions.length > 0) {
-                return collisions;
-            } else {
-                return [];
-            }
+            return collisions;
         }
         return [];
     }

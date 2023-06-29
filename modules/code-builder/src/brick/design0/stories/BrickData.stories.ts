@@ -1,5 +1,6 @@
 import { MetaData, Story } from '../../stories/brickData';
-import BrickData from '../BrickData';
+import MBrickData from '../BrickData';
+import CBrickData from '../components/BrickData';
 
 export default {
     title: 'Design 0/Data Brick',
@@ -10,7 +11,8 @@ export default {
 
 export const Static: Story = {
     args: {
-        prototype: BrickData,
+        Component: CBrickData,
+        prototype: MBrickData,
         label: 'Data',
         colorBg: 'yellow',
         colorFg: 'black',

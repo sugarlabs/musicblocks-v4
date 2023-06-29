@@ -1,10 +1,60 @@
-import BrickBlock from '@/brick/design0/components/BrickBlock';
-import type { TBrickBlockProps } from '@/brick/design0/components/BrickBlock';
+import type { IBrickBlock, TBrickArgDataType, TBrickColor } from '@/@types/brick';
 
-export default function (props: TBrickBlockProps): JSX.Element {
+import BrickWrapper from './BrickWrapper';
+
+// -------------------------------------------------------------------------------------------------
+
+export default function (props: {
+  Component: (props: { instance: IBrickBlock }) => JSX.Element;
+  prototype: new (params: {
+    name: string;
+    label: string;
+    glyph: string;
+    args: Record<
+      string,
+      {
+        label: string;
+        dataType: TBrickArgDataType;
+        meta: unknown;
+      }
+    >;
+    colorBg: TBrickColor;
+    colorFg: TBrickColor;
+    outline: TBrickColor;
+    scale: number;
+    connectAbove: boolean;
+    connectBelow: boolean;
+  }) => IBrickBlock;
+  label: string;
+  args: string[];
+  colorBg: string;
+  colorFg: string;
+  outline: string;
+  scale: number;
+}): JSX.Element {
+  const { Component, prototype, label, args, colorBg, colorFg, outline, scale } = props;
+
+  const instance = new prototype({
+    label,
+    args: Object.fromEntries(
+      args.map<[string, { label: string; dataType: TBrickArgDataType; meta: unknown }]>((name) => [
+        name,
+        { label: name, dataType: 'any', meta: undefined },
+      ]),
+    ),
+    colorBg,
+    colorFg,
+    outline,
+    scale,
+    glyph: '',
+    connectAbove: true,
+    connectBelow: true,
+    name: '',
+  });
+
   return (
-    <svg version="1.1" xmlns="http://www.w3.org/2000/svg">
-      <BrickBlock {...props} />
-    </svg>
+    <BrickWrapper>
+      <Component instance={instance} />
+    </BrickWrapper>
   );
 }

@@ -1,40 +1,7 @@
-import type { IBrickData, TBrickArgDataType, TBrickColor } from '@/@types/brick';
+import type { IBrickData } from '@/@types/brick';
 
-export type TBrickDataProps = {
-  prototype: new (params: {
-    name: string;
-    label: string;
-    glyph: string;
-    dataType: TBrickArgDataType;
-    dynamic: boolean;
-    value?: boolean | number | string;
-    input?: 'boolean' | 'number' | 'string' | 'options';
-    colorBg: TBrickColor;
-    colorFg: TBrickColor;
-    outline: TBrickColor;
-    scale: number;
-  }) => IBrickData;
-  label: string;
-  colorBg: string;
-  colorFg: string;
-  outline: string;
-  scale: number;
-};
-
-export default function (props: TBrickDataProps): JSX.Element {
-  const { prototype, label, colorBg, colorFg, outline, scale } = props;
-
-  const instance = new prototype({
-    label,
-    colorBg,
-    colorFg,
-    outline,
-    scale,
-    glyph: '',
-    dynamic: false,
-    dataType: 'any',
-    name: '',
-  });
+export default function (props: { instance: IBrickData }): JSX.Element {
+  const { instance } = props;
 
   return (
     <g transform={`scale(${instance.scale})`}>

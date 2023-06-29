@@ -1,5 +1,6 @@
 import { MetaData, Story } from '../../stories/brickBlock';
-import BrickBlock from '../BrickBlock';
+import MBrickBlock from '../BrickBlock';
+import CBrickBlock from '../components/BrickBlock';
 
 export default {
     title: 'Design 0/Block Brick',
@@ -10,7 +11,8 @@ export default {
 
 export const NoArgs: Story = {
     args: {
-        prototype: BrickBlock,
+        Component: CBrickBlock,
+        prototype: MBrickBlock,
         label: 'Block',
         args: [],
         colorBg: 'yellow',
@@ -22,7 +24,8 @@ export const NoArgs: Story = {
 
 export const WithArgs: Story = {
     args: {
-        prototype: BrickBlock,
+        Component: CBrickBlock,
+        prototype: MBrickBlock,
         label: 'Block',
         args: ['Label 1'],
         colorBg: 'yellow',

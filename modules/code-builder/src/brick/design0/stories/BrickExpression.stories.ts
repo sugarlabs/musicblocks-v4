@@ -1,5 +1,6 @@
 import { MetaData, Story } from '../../stories/brickExpression';
-import BrickExpression from '../BrickExpression';
+import MBrickExpression from '../BrickExpression';
+import CBrickExpression from '../components/BrickExpression';
 
 export default {
     title: 'Design 0/Expression Brick',
@@ -10,7 +11,8 @@ export default {
 
 export const NoArgs: Story = {
     args: {
-        prototype: BrickExpression,
+        Component: CBrickExpression,
+        prototype: MBrickExpression,
         label: 'Expression',
         args: [],
         colorBg: 'yellow',
@@ -22,7 +24,8 @@ export const NoArgs: Story = {
 
 export const WithArgs: Story = {
     args: {
-        prototype: BrickExpression,
+        Component: CBrickExpression,
+        prototype: MBrickExpression,
         label: 'Expression',
         args: ['Label 1'],
         colorBg: 'yellow',

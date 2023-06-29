@@ -1,10 +1,47 @@
-import BrickData from '@/brick/design0/components/BrickData';
-import type { TBrickDataProps } from '@/brick/design0/components/BrickData';
+import type { IBrickData, TBrickArgDataType, TBrickColor } from '@/@types/brick';
 
-export default function (props: TBrickDataProps): JSX.Element {
+import BrickWrapper from './BrickWrapper';
+
+// -------------------------------------------------------------------------------------------------
+
+export default function (props: {
+  Component: (props: { instance: IBrickData }) => JSX.Element;
+  prototype: new (params: {
+    name: string;
+    label: string;
+    glyph: string;
+    dataType: TBrickArgDataType;
+    dynamic: boolean;
+    value?: boolean | number | string;
+    input?: 'boolean' | 'number' | 'string' | 'options';
+    colorBg: TBrickColor;
+    colorFg: TBrickColor;
+    outline: TBrickColor;
+    scale: number;
+  }) => IBrickData;
+  label: string;
+  colorBg: string;
+  colorFg: string;
+  outline: string;
+  scale: number;
+}): JSX.Element {
+  const { Component, prototype, label, colorBg, colorFg, outline, scale } = props;
+
+  const instance = new prototype({
+    label,
+    colorBg,
+    colorFg,
+    outline,
+    scale,
+    glyph: '',
+    dynamic: false,
+    dataType: 'any',
+    name: '',
+  });
+
   return (
-    <svg version="1.1" xmlns="http://www.w3.org/2000/svg">
-      <BrickData {...props} />
-    </svg>
+    <BrickWrapper>
+      <Component instance={instance} />
+    </BrickWrapper>
   );
 }

@@ -1,4 +1,5 @@
 import QuadTree from '@/collision/quadtree';
+import { doc } from 'prettier';
 import { useEffect } from 'react';
 
 const positionGenerator = (): { x: number; y: number } => {
@@ -73,14 +74,24 @@ export default function (): JSX.Element {
   const quadTree = new QuadTree();
   quadTree.setDimensions(window.innerWidth, window.innerHeight);
   quadTree.init();
-  quadTree.addObjects(collisionPlayGround.getDivsObject());
+  const divsOBJ = collisionPlayGround.getDivsObject();
+  quadTree.addObjects(divsOBJ);
   quadTree.setOptions({ type: 'circle', radius: 20, collisionProperties: 'distance' });
 
   const handleCollision = (e) => {
     const blocks = quadTree.checkCollision({ x: e.clientX, y: e.clientY, ID: e.target.id });
-    if (blocks.length > 0) console.log('collision : ', blocks);
-  };
 
+    if (blocks.length > 0) {
+      const collidedDiv = document.getElementById(blocks[0].ID as string);
+      collidedDiv!.style.backgroundColor = 'red';
+      console.log('collision:', blocks);
+    } else {
+      const draggableDivs = document.querySelectorAll<HTMLElement>('.draggableDiv');
+      draggableDivs.forEach((div) => {
+        div.style.backgroundColor = 'black';
+      });
+    }
+  };
   useEffect(() => {
     document.addEventListener('mousemove', handleCollision);
     return () => {

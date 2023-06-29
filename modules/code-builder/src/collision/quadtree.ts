@@ -102,16 +102,14 @@ class QuadTree {
                     const distanceY = Math.abs(b.y - a.y);
 
                     if (this._radius !== undefined) {
-                        const distance = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
+                        const distance = Math.sqrt(distanceX ** 2 + distanceY ** 2);
                         return distance < (this._thresholdNumber as number);
                     } else if (this._length !== undefined) {
-                        const halfWidth1 = this._length / 2;
-                        const halfHeight1 = this._length / 2;
-                        const halfWidth2 = this._length / 2;
-                        const halfHeight2 = this._length / 2;
+                        const halfWidth = this._length / 2;
+                        const halfHeight = this._length / 2;
 
-                        const deltaX = distanceX - halfWidth1 - halfWidth2;
-                        const deltaY = distanceY - halfHeight1 - halfHeight2;
+                        const deltaX = distanceX - halfWidth;
+                        const deltaY = distanceY - halfHeight;
 
                         return (
                             deltaX < (this._thresholdNumber as number) &&
@@ -124,61 +122,38 @@ class QuadTree {
             } else if (this._collisionProperties === 'overlap') {
                 collisions = this._tree.colliding(item, (a: Block, b: Block) => {
                     if (this._radius !== undefined) {
-                        const distance = Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
+                        const distance = Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2);
 
-                        if (distance >= (this._radius as number) + (this._radius as number)) {
+                        if (distance >= 2 * this._radius) {
                             return false;
                         }
-                        if (
-                            distance <=
-                            Math.abs((this._radius as number) - (this._radius as number))
-                        ) {
+
+                        if (distance <= Math.abs(this._radius - this._radius)) {
                             return true;
                         }
 
-                        const angle1 = Math.acos(
-                            (Math.pow(this._radius as number, 2) +
-                                Math.pow(distance, 2) -
-                                Math.pow(this._radius as number, 2)) /
-                                (2 * (this._radius as number) * distance),
+                        const angle = Math.acos(
+                            (2 * this._radius ** 2 - distance ** 2) / (2 * this._radius * distance),
                         );
-                        const angle2 = Math.acos(
-                            (Math.pow(this._radius as number, 2) +
-                                Math.pow(distance, 2) -
-                                Math.pow(this._radius as number, 2)) /
-                                (2 * (this._radius as number) * distance),
-                        );
-                        const area1 =
-                            (angle1 - Math.sin(angle1)) * Math.pow(this._radius as number, 2);
-                        const area2 =
-                            (angle2 - Math.sin(angle2)) * Math.pow(this._radius as number, 2);
-                        const overlapArea = area1 + area2;
+                        const area = (angle - Math.sin(angle)) * this._radius ** 2;
+                        const overlapArea = 2 * area;
 
-                        const percentage =
-                            (overlapArea /
-                                Math.min(
-                                    Math.PI * Math.pow(this._radius as number, 2),
-                                    Math.PI * Math.pow(this._radius as number, 2),
-                                )) *
-                            100;
+                        const percentage = (overlapArea / (Math.PI * this._radius ** 2)) * 100;
 
                         return percentage > (this._thresholdPercent as number);
-                    } else if (this._length) {
+                    } else if (this._length !== undefined) {
                         const xOverlap = Math.max(
                             0,
-                            Math.min(a.x + this._length!, b.x + this._length!) - Math.max(a.x, b.x),
+                            Math.min(a.x + this._length, b.x + this._length) - Math.max(a.x, b.x),
                         );
                         const yOverlap = Math.max(
                             0,
-                            Math.min(a.y + this._length!, b.y + this._length!) - Math.max(a.y, b.y),
+                            Math.min(a.y + this._length, b.y + this._length) - Math.max(a.y, b.y),
                         );
 
                         const overlapArea = xOverlap * yOverlap;
-
-                        const area1 = this._length! * this._length!;
-                        const area2 = this._length! * this._length!;
-
-                        const percentage = (overlapArea / Math.min(area1, area2)) * 100;
+                        const area = this._length ** 2;
+                        const percentage = (overlapArea / area) * 100;
 
                         return percentage > (this._thresholdPercent as number);
                     } else {

@@ -49,10 +49,7 @@ function _setOptions(options: {
 }
 
 function _getPathTop() {
-    const lineLengthX =
-        _innerLengthX -
-        cornerRadius * 2 -
-        (_hasNotchInsTop ? notchInsOffsetX + notchInsLengthX : 0);
+    const lineLengthX = _innerLengthX - cornerRadius * 2 - (notchInsOffsetX + notchInsLengthX);
 
     return [
         `a ${cornerRadius} ${cornerRadius} 90 0 1 ${cornerRadius} -${cornerRadius}`,
@@ -100,8 +97,8 @@ function _getPathBottom() {
     const lineLengthX =
         _innerLengthX -
         cornerRadius * 2 -
-        (_hasNotchInsTop ? notchInsOffsetX + notchInsLengthX : 0) -
-        (_hasNest ? cornerRadius + notchInsOffsetX + 1 : 0);
+        (notchInsOffsetX + notchInsLengthX) -
+        (cornerRadius + notchInsOffsetX + 1);
 
     return [
         `a ${cornerRadius} ${cornerRadius} 90 0 1 -${cornerRadius} ${cornerRadius}`,
@@ -278,7 +275,7 @@ function _getNotchInsBBox(): {
     };
 }
 
-function _getNotchArgsBBox(): {
+function _getNotchArgBBox(): {
     extent: { width: number; height: number };
     coords: { x: number; y: number };
 } {
@@ -334,6 +331,7 @@ export function generatePath(
               innerLengthX: number;
               argHeights: number[];
           },
+    print?: boolean,
 ): {
     path: string;
     extent: { width: number; height: number };
@@ -341,7 +339,7 @@ export function generatePath(
         extent: { width: number; height: number };
         coords: { x: number; y: number };
     };
-    notchArgsBBox: {
+    notchArgBBox: {
         extent: { width: number; height: number };
         coords: { x: number; y: number };
     };
@@ -352,11 +350,15 @@ export function generatePath(
 } {
     _setOptions(options);
 
-    return {
+    const results = {
         path: _getPath(),
         extent: _getExtent(),
         notchInsBBox: _getNotchInsBBox(),
-        notchArgsBBox: _getNotchArgsBBox(),
+        notchArgBBox: _getNotchArgBBox(),
         argsBBox: _getArgsBBox(),
     };
+
+    if (print) console.log(results);
+
+    return results;
 }

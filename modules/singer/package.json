@@ -5,6 +5,7 @@
   "private": "true",
   "main": "src/index.ts",
   "scripts": {
+    "playground": "vite playground --host --port 5601",
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "check": "tsc",

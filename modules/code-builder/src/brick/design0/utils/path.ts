@@ -1,3 +1,5 @@
+// == constants ====================================================================================
+
 const cornerRadius = 4;
 
 const notchInsOffsetX = 4;
@@ -13,6 +15,8 @@ const notchArgStemLengthY = 4;
 const nestLengthYMin = cornerRadius * 2 + notchArgLengthY;
 const innerLengthXMin = cornerRadius * 2 + notchInsOffsetX * 2 + notchInsLengthX;
 
+// == private variables ============================================================================
+
 let _hasNest = false;
 let _hasNotchArg = false;
 let _hasNotchInsTop = false;
@@ -23,6 +27,14 @@ let _nestLengthY = nestLengthYMin;
 let _innerLengthX = innerLengthXMin;
 let _argsLengthY: number[] = [];
 
+// == private functions ============================================================================
+
+/**
+ * Sets internal variables that control the shape of the path
+ * @param options options to control the shape of the path
+ *
+ * @private
+ */
 function _setOptions(options: {
     hasNest: boolean;
     hasNotchArg: boolean;
@@ -45,7 +57,15 @@ function _setOptions(options: {
     _argsLengthY = options.argHeights;
 }
 
-function _getPathTop() {
+/**
+ * Generates top section of the path (left arc to right arc)
+ *
+ * @remarks
+ * left to right
+ *
+ * @private
+ */
+function _getPathTop(): string[] {
     const lineLengthX = _innerLengthX - cornerRadius * 2 - (notchInsOffsetX + notchInsLengthX);
 
     return [
@@ -67,7 +87,15 @@ function _getPathTop() {
     ];
 }
 
-function _getPathBottom() {
+/**
+ * Generates bottom section of the path (right arc to left arc; includes nest)
+ *
+ * @remarks
+ * right to left
+ *
+ * @private
+ */
+function _getPathBottom(): string[] {
     if (!_hasNest) {
         const lineLengthX = _innerLengthX - cornerRadius * 2 - (notchInsOffsetX + notchInsLengthX);
 
@@ -141,7 +169,15 @@ function _getPathBottom() {
     ];
 }
 
-function _getNotchArgInner() {
+/**
+ * Generates the argument connector (concave) positioned on the right
+ *
+ * @remarks
+ * top to bottom
+ *
+ * @private
+ */
+function _getNotchArgInner(): string[] {
     const endLineLengthY = (notchArgLengthY - notchArgStemLengthY) / 2;
     const stemLengthX = notchArgLengthX - notchArgBaseLengthX;
     const baseRiseLengthY = (notchArgBaseLengthY - notchArgStemLengthY) / 2;
@@ -159,7 +195,15 @@ function _getNotchArgInner() {
     ];
 }
 
-function _getNotchArgOuter() {
+/**
+ * Generates the argument connector (convex) positioned on the left
+ *
+ * @remarks
+ * bottom to top
+ *
+ * @private
+ */
+function _getNotchArgOuter(): string[] {
     const endLineLengthY = (notchArgLengthY - notchArgStemLengthY) / 2 + 1;
     const stemLengthX = notchArgLengthX - notchArgBaseLengthX + 2;
     const baseRiseLengthY = (notchArgBaseLengthY - notchArgStemLengthY) / 2;
@@ -177,11 +221,23 @@ function _getNotchArgOuter() {
     ];
 }
 
+/**
+ * Generates portion for one argument connector (concave) positioned on the right
+ * @param options determines shape
+ *
+ * @remarks
+ * top to bottom
+ *
+ * @private
+ */
 function _generateArgSection(options: {
+    /** whether protrude vertical top line */
     hasOffsetTop: boolean;
+    /** whether protrude vertical bottom line */
     hasOffsetBot: boolean;
+    /** total vertical length of the portion */
     sectionLengthY: number;
-}) {
+}): string[] {
     const { hasOffsetTop, hasOffsetBot, sectionLengthY } = options;
 
     const sectionOffsetTopY = hasOffsetTop ? cornerRadius : 0;
@@ -196,6 +252,14 @@ function _generateArgSection(options: {
     ];
 }
 
+/**
+ * Generates right section of the path (includes argument connectors)
+ *
+ * @remarks
+ * top to bottom
+ *
+ * @private
+ */
 function _getPathRight() {
     const sectionLengthYMin = cornerRadius * 2 + notchArgLengthY;
 
@@ -215,6 +279,14 @@ function _getPathRight() {
               .reduce((a, b) => [...a, ...b], []);
 }
 
+/**
+ * Generates left section of the path (includes argument notch)
+ *
+ * @remarks
+ * bottom to top
+ *
+ * @private
+ */
 function _getPathLeft() {
     const lineLengthY = Math.max(
         0,
@@ -233,6 +305,13 @@ function _getPathLeft() {
     ];
 }
 
+// -- private helper functions ---------------------------------------------------------------------
+
+/**
+ * Generates brick SVG path
+ *
+ * @private
+ */
 function _getPath(): string {
     const offsetX = 0.5 + (_hasNotchArg ? notchArgLengthX : 0);
     const offsetY = 0.5 + cornerRadius;
@@ -246,6 +325,11 @@ function _getPath(): string {
     ].join(' ');
 }
 
+/**
+ * Generates bounding box of the brick (excludes notches)
+ *
+ * @private
+ */
 function _getBBoxBrick(): {
     extent: { width: number; height: number };
     coords: { x: number; y: number };
@@ -262,6 +346,11 @@ function _getBBoxBrick(): {
     };
 }
 
+/**
+ * Generates bounding box of the argument notch positioned on the left
+ *
+ * @private
+ */
 function _getBBoxNotchArg(): {
     extent: { width: number; height: number };
     coords: { x: number; y: number };
@@ -278,6 +367,11 @@ function _getBBoxNotchArg(): {
     };
 }
 
+/**
+ * Generates bounding box of the top instruction notch
+ *
+ * @private
+ */
 function _getBBoxNotchInsTop(): {
     extent: { width: number; height: number };
     coords: { x: number; y: number };
@@ -294,6 +388,11 @@ function _getBBoxNotchInsTop(): {
     };
 }
 
+/**
+ * Generates bounding box of the bottom instruction notch
+ *
+ * @private
+ */
 function _getBBoxNotchInsBot(): {
     extent: { width: number; height: number };
     coords: { x: number; y: number };
@@ -310,6 +409,11 @@ function _getBBoxNotchInsBot(): {
     };
 }
 
+/**
+ * Generates bounding box of the top instruction notch inside a nesting
+ *
+ * @private
+ */
 function _getBBoxNotchInsNestTop(): {
     extent: { width: number; height: number };
     coords: { x: number; y: number };
@@ -326,26 +430,40 @@ function _getBBoxNotchInsNestTop(): {
     };
 }
 
+/**
+ * Generates list of bounding boxes for each argument connector positioned on the right
+ *
+ * @private
+ */
 function _getBBoxArgs(): {
     extent: { width: number; height: number };
     coords: { x: number; y: number }[];
-}[] {
-    return [
-        {
-            extent: {
-                width: notchArgLengthX,
-                height: notchArgLengthY,
-            },
-            coords: [
-                {
-                    x: 0,
-                    y: 0,
-                },
-            ],
+} {
+    return {
+        extent: {
+            width: notchArgLengthX,
+            height: notchArgLengthY,
         },
-    ];
+        coords: [
+            {
+                x: 0,
+                y: 0,
+            },
+        ],
+    };
 }
 
+// == public functions =============================================================================
+
+/**
+ * Generates SVG path along with information about the bounding boxes of notches and arguments.
+ *
+ * @remarks
+ * Use https://yqnn.github.io/svg-path-editor/ to visualize the path
+ *
+ * @param options determines how the path looks
+ * @param print whether to print results in the console (only to be used during development)
+ */
 export function generatePath(
     options:
         | {
@@ -369,31 +487,50 @@ export function generatePath(
           },
     print?: boolean,
 ): {
+    /** path definition commands string */
     path: string;
+    /** bounding box of the brick (actual area of the brick excluding notches) */
     bBoxBrick: {
+        /** width and height of the brick */
         extent: { width: number; height: number };
+        /** x and y co-ordinates of the brick relative to the origin of the SVG */
         coords: { x: number; y: number };
     };
+    /** bounding box of the argument notch (on the left) */
     bBoxNotchArg: {
+        /** width and height of the argument notch */
         extent: { width: number; height: number };
+        /** x and y co-ordinates of the argument notch relative to the origin of the SVG */
         coords: { x: number; y: number };
     } | null;
+    /** bounding box of the top instruction notch */
     bBoxNotchInsTop: {
+        /** width and height of the top instruction notch */
         extent: { width: number; height: number };
+        /** x and y co-ordinates of the top instruction notch relative to the origin of the SVG */
         coords: { x: number; y: number };
     } | null;
+    /** bounding box of the bottom instruction notch */
     bBoxNotchInsBot: {
+        /** width and height of the bottom instruction notch */
         extent: { width: number; height: number };
+        /** x and y co-ordinates of the bottom instruction notch relative to the origin of the SVG */
         coords: { x: number; y: number };
     } | null;
+    /** bounding box of the top instruction notch inside a nest (only for bricks with nesting) */
     bBoxNotchInsNestTop: {
+        /** width and height of the top instruction notch inside a nest */
         extent: { width: number; height: number };
+        /** x and y co-ordinates of the top instruction notch inside a nest relative to the origin of the SVG */
         coords: { x: number; y: number };
     } | null;
+    /** list of bounding boxes for the argument connections */
     bBoxArgs: {
+        /** width and height of each argument connection */
         extent: { width: number; height: number };
+        /** list of x and y co-ordinates of each argument connection relative to the origin of the SVG */
         coords: { x: number; y: number }[];
-    }[];
+    };
 } {
     _setOptions(options);
 

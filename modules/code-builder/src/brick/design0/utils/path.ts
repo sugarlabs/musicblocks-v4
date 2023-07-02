@@ -14,7 +14,6 @@ const nestLengthYMin = cornerRadius * 2 + notchArgLengthY;
 const innerLengthXMin = cornerRadius * 2 + notchInsOffsetX * 2 + notchInsLengthX;
 
 let _hasNest = false;
-let _hasNotchNest = false;
 let _hasNotchArg = false;
 let _hasNotchInsTop = false;
 let _hasNotchInsBot = false;
@@ -26,7 +25,6 @@ let _argsLengthY: number[] = [];
 
 function _setOptions(options: {
     hasNest: boolean;
-    hasNotchNest?: boolean;
     hasNotchArg: boolean;
     hasNotchInsTop: boolean;
     hasNotchInsBot: boolean;
@@ -36,7 +34,6 @@ function _setOptions(options: {
     argHeights: number[];
 }): void {
     _hasNest = options.hasNest;
-    if (options.hasNotchNest) _hasNotchNest = options.hasNotchNest;
 
     _hasNotchArg = options.hasNotchArg;
     _hasNotchInsTop = options.hasNotchInsTop;
@@ -249,24 +246,14 @@ function _getPath(): string {
     ].join(' ');
 }
 
-function _getExtent(): {
-    width: number;
-    height: number;
-} {
-    return {
-        width: _innerLengthX,
-        height: _argsLengthY.reduce((a, b) => a + b, 0),
-    };
-}
-
-function _getNotchInsBBox(): {
+function _getBBoxBrick(): {
     extent: { width: number; height: number };
     coords: { x: number; y: number };
 } {
     return {
         extent: {
-            width: notchInsLengthX,
-            height: notchInsLengthY,
+            width: _innerLengthX,
+            height: _argsLengthY.reduce((a, b) => a + b, 0),
         },
         coords: {
             x: 0,
@@ -275,7 +262,7 @@ function _getNotchInsBBox(): {
     };
 }
 
-function _getNotchArgBBox(): {
+function _getBBoxNotchArg(): {
     extent: { width: number; height: number };
     coords: { x: number; y: number };
 } {
@@ -291,29 +278,78 @@ function _getNotchArgBBox(): {
     };
 }
 
-function _getArgsBBox(): {
+function _getBBoxNotchInsTop(): {
     extent: { width: number; height: number };
-    coords: { x: number; y: number }[];
+    coords: { x: number; y: number };
 } {
     return {
         extent: {
-            width: notchArgLengthX,
-            height: notchArgLengthY,
+            width: notchInsLengthX,
+            height: notchInsLengthY,
         },
-        coords: [
-            {
-                x: 0,
-                y: 0,
-            },
-        ],
+        coords: {
+            x: 0,
+            y: 0,
+        },
     };
+}
+
+function _getBBoxNotchInsBot(): {
+    extent: { width: number; height: number };
+    coords: { x: number; y: number };
+} {
+    return {
+        extent: {
+            width: notchInsLengthX,
+            height: notchInsLengthY,
+        },
+        coords: {
+            x: 0,
+            y: 0,
+        },
+    };
+}
+
+function _getBBoxNotchInsNestTop(): {
+    extent: { width: number; height: number };
+    coords: { x: number; y: number };
+} {
+    return {
+        extent: {
+            width: notchInsLengthX,
+            height: notchInsLengthY,
+        },
+        coords: {
+            x: 0,
+            y: 0,
+        },
+    };
+}
+
+function _getBBoxArgs(): {
+    extent: { width: number; height: number };
+    coords: { x: number; y: number }[];
+}[] {
+    return [
+        {
+            extent: {
+                width: notchArgLengthX,
+                height: notchArgLengthY,
+            },
+            coords: [
+                {
+                    x: 0,
+                    y: 0,
+                },
+            ],
+        },
+    ];
 }
 
 export function generatePath(
     options:
         | {
               hasNest: true;
-              hasNotchNest: boolean;
               hasNotchArg: boolean;
               hasNotchInsTop: boolean;
               hasNotchInsBot: boolean;
@@ -334,28 +370,41 @@ export function generatePath(
     print?: boolean,
 ): {
     path: string;
-    extent: { width: number; height: number };
-    notchInsBBox: {
+    bBoxBrick: {
         extent: { width: number; height: number };
         coords: { x: number; y: number };
     };
-    notchArgBBox: {
+    bBoxNotchArg: {
         extent: { width: number; height: number };
         coords: { x: number; y: number };
-    };
-    argsBBox: {
+    } | null;
+    bBoxNotchInsTop: {
+        extent: { width: number; height: number };
+        coords: { x: number; y: number };
+    } | null;
+    bBoxNotchInsBot: {
+        extent: { width: number; height: number };
+        coords: { x: number; y: number };
+    } | null;
+    bBoxNotchInsNestTop: {
+        extent: { width: number; height: number };
+        coords: { x: number; y: number };
+    } | null;
+    bBoxArgs: {
         extent: { width: number; height: number };
         coords: { x: number; y: number }[];
-    };
+    }[];
 } {
     _setOptions(options);
 
     const results = {
         path: _getPath(),
-        extent: _getExtent(),
-        notchInsBBox: _getNotchInsBBox(),
-        notchArgBBox: _getNotchArgBBox(),
-        argsBBox: _getArgsBBox(),
+        bBoxBrick: _getBBoxBrick(),
+        bBoxNotchArg: _getBBoxNotchArg(),
+        bBoxNotchInsTop: _getBBoxNotchInsTop(),
+        bBoxNotchInsBot: _getBBoxNotchInsBot(),
+        bBoxNotchInsNestTop: _getBBoxNotchInsNestTop(),
+        bBoxArgs: _getBBoxArgs(),
     };
 
     if (print) console.log(results);

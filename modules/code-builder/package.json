@@ -7,6 +7,7 @@
   "scripts": {
     "test": "vitest",
     "coverage": "vitest run --coverage",
+    "lint": "eslint src",
     "storybook": "storybook dev -p 6501 --no-open",
     "playground": "vite playground --host --port 5601"
   },

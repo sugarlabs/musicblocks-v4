@@ -5,6 +5,8 @@
   "private": "true",
   "main": "src/index.ts",
   "scripts": {
+    "test": "vitest",
+    "coverage": "vitest run --coverage",
     "storybook": "storybook dev -p 6501 --no-open",
     "playground": "vite playground --host --port 5601"
   },

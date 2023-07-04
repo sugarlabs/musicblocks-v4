@@ -9,6 +9,7 @@ export default class implements ICollisionSpace {
     private _width;
     private _height;
     private _objType: 'circle' | 'rect' = 'circle';
+    private _colThres = 0;
 
     private _tree?: Quadtree<TCollisionObject>;
     private _objMap: Map<string, TCollisionObject> = new Map();
@@ -24,10 +25,11 @@ export default class implements ICollisionSpace {
         });
     }
 
-    public setOptions(options: { objType: 'circle' | 'rect' }): void {
-        const { objType } = options;
+    public setOptions(options: { objType: 'circle' | 'rect'; colThres: number }): void {
+        const { objType, colThres } = options;
 
         this._objType = objType;
+        this._colThres = colThres;
     }
 
     public addObjects(objects: TCollisionObject[]): void {
@@ -58,7 +60,10 @@ export default class implements ICollisionSpace {
 
     public checkCollision(object: TCollisionObject): string[] {
         return this._tree!.colliding(object, (objA, objB) => {
-            return checkCollision(objA, objB, { objType: this._objType });
+            return checkCollision(objA, objB, {
+                objType: this._objType,
+                colThres: this._colThres,
+            });
         }).map(({ id }) => id);
     }
 

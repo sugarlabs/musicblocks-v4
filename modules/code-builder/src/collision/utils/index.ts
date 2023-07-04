@@ -1,16 +1,26 @@
 import type { TCollisionObject } from '@/@types/collision';
 
-function _checkCollisionCircle(objA: TCollisionObject, objB: TCollisionObject): boolean {
+function _checkCollisionCircle(
+    objA: TCollisionObject,
+    objB: TCollisionObject,
+    threshold: number,
+): boolean {
     // width should be equal to height though
     const sizeObjA = Math.min(objA.width, objA.height);
     const sizeObjB = Math.min(objB.width, objB.height);
 
     const distance = Math.sqrt(Math.pow(objA.x - objB.x, 2) + Math.pow(objA.y - objB.y, 2));
 
-    return distance < (sizeObjA >> 1) + (sizeObjB >> 1);
+    return (
+        distance < ((sizeObjA >> 1) + (sizeObjB >> 1)) * (1 - Math.max(0, Math.min(1, threshold)))
+    );
 }
 
-function _checkCollisionRect(objA: TCollisionObject, objB: TCollisionObject): boolean {
+function _checkCollisionRect(
+    objA: TCollisionObject,
+    objB: TCollisionObject,
+    threshold: number,
+): boolean {
     const [ax1, ax2, ax3, ax4] = [
         objA.x - (objA.width >> 1),
         objA.x + (objA.width >> 1),
@@ -54,7 +64,7 @@ function _checkCollisionRect(objA: TCollisionObject, objB: TCollisionObject): bo
         const areaB = (bx2 - bx1) * (by3 - by1);
         const areaC = (cx2 - cx1) * (cy3 - cy1);
 
-        return areaC > Math.min(areaA, areaB);
+        return areaC > Math.min(areaA, areaB) * Math.max(0, Math.min(1, threshold));
     }
 
     return false;
@@ -71,9 +81,14 @@ export function checkCollision(
     objB: TCollisionObject,
     options: {
         objType: 'circle' | 'rect';
+        colThres: number;
     },
 ): boolean {
-    const { objType } = options;
+    const { objType, colThres } = options;
 
-    return (objType === 'circle' ? _checkCollisionCircle : _checkCollisionRect)(objA, objB);
+    return (objType === 'circle' ? _checkCollisionCircle : _checkCollisionRect)(
+        objA,
+        objB,
+        colThres,
+    );
 }

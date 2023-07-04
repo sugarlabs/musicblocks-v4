@@ -18,6 +18,14 @@ export interface ICollisionSpace {
     setOptions(options: {
         /** whether objects are circles or rectangles */
         objType: 'circle' | 'rect';
+        /**
+         * a number between (0-1] that determines when collision is counted
+         * @description
+         * value greater than 0 means just starting to overlap, while 1 mean full overlap;
+         * for circles, calculation is based on distance between the centres
+         * for rectanges, calculation is based on overlapped area
+         */
+        colThres: number;
     }): void;
 
     /**

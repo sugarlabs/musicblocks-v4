@@ -6,6 +6,7 @@ export default class implements ICollisionSpace {
     private _width;
     private _height;
     private _objType: 'circle' | 'rect' = 'circle';
+    private _colThres = 0;
 
     private _objects: TCollisionObject[] = [];
 
@@ -14,10 +15,11 @@ export default class implements ICollisionSpace {
         this._height = height;
     }
 
-    public setOptions(options: { objType: 'circle' | 'rect' }): void {
-        const { objType } = options;
+    public setOptions(options: { objType: 'circle' | 'rect'; colThres: number }): void {
+        const { objType, colThres } = options;
 
         this._objType = objType;
+        this._colThres = colThres;
     }
 
     public addObjects(objects: TCollisionObject[]): void {
@@ -45,7 +47,10 @@ export default class implements ICollisionSpace {
                 const objA = { ...object };
                 const objB = { ..._object };
 
-                return checkCollision(objA, objB, { objType: this._objType });
+                return checkCollision(objA, objB, {
+                    objType: this._objType,
+                    colThres: this._colThres,
+                });
             })
             .map(({ id }) => id);
     }

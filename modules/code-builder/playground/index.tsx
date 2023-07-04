@@ -1,21 +1,16 @@
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 
-import PageBrickFactory from './pages/BrickFactory';
-import CollisionPlayGround from './pages/CollisionPlayGround';
+import PageCollision from './pages/Collision';
 
 const router = createBrowserRouter([
   {
-    path: 'factory',
-    element: <PageBrickFactory />,
+    path: '/collision',
+    element: <PageCollision />,
   },
   {
     path: '/',
-    element: <Navigate to="factory" />,
-  },
-  {
-    path: '/collision',
-    element: <CollisionPlayGround />,
+    element: <Navigate to="/collision" />,
   },
 ]);
 

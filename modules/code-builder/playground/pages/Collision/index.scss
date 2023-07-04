@@ -1,0 +1,94 @@
+#collision-space-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+
+  box-sizing: border-box;
+  width: 100vw;
+  height: 100vh;
+  padding: 8px 16px 16px 16px;
+  background-color: grey;
+
+  * {
+    box-sizing: border-box;
+  }
+
+  #collision-space-controls {
+    flex-grow: 0;
+    flex-shrink: 0;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    .collision-space-control {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+
+      > * {
+        text-transform: uppercase;
+        font-weight: bold;
+      }
+
+      label {
+        color: white;
+      }
+
+      input[type='number'] {
+        border: unset;
+        border-radius: 4px;
+        outline: none;
+        text-align: end;
+      }
+
+      button {
+        border: unset;
+        border-radius: 4px;
+        outline: none;
+        background-color: white;
+        cursor: pointer;
+
+        &:hover,
+        &:focus {
+          background-color: lightblue;
+        }
+      }
+    }
+  }
+
+  #collision-space {
+    flex-grow: 0;
+    flex-shrink: 1;
+
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+
+    .collision-space-object {
+      position: absolute;
+      border: 2px solid lime;
+      background-color: aliceblue;
+      transition: background-color 0.25s ease, border 0.25s ease;
+
+      &.collision-space-object-active {
+        border: 2px solid gold;
+        background-color: royalblue;
+      }
+
+      &.collision-space-object-target {
+        border: 2px solid red;
+        background: none;
+        cursor: crosshair;
+      }
+    }
+  }
+}

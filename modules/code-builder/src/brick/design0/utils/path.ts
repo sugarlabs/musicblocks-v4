@@ -1,6 +1,7 @@
 // == constants ====================================================================================
 
 const cornerRadius = 4;
+const strokeWidth = 0.5;
 
 const notchInsOffsetX = 4;
 const notchInsLengthX = 10;
@@ -334,13 +335,27 @@ function _getBBoxBrick(): {
     extent: { width: number; height: number };
     coords: { x: number; y: number };
 } {
+    const argSectionLengthYMin = cornerRadius * 2 + notchArgLengthY;
+    const argsLength = _argsLengthY
+        .map((sectionLengthY) => Math.max(argSectionLengthYMin, sectionLengthY))
+        .reduce((a, b) => a + b, 0);
+
+    let height =
+        strokeWidth +
+        (argsLength !== 0 ? argsLength : 2 * cornerRadius + notchArgLengthY) +
+        strokeWidth;
+
+    if (_hasNest) {
+        height += _nestLengthY + strokeWidth * 4 + 2 * cornerRadius + notchArgLengthY;
+    }
+
     return {
         extent: {
-            width: _innerLengthX,
-            height: _argsLengthY.reduce((a, b) => a + b, 0),
+            width: strokeWidth + _innerLengthX + strokeWidth,
+            height: height,
         },
         coords: {
-            x: 0,
+            x: _hasNotchArg ? notchArgLengthX : 0,
             y: 0,
         },
     };

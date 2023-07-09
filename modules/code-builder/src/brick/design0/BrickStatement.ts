@@ -52,7 +52,7 @@ export default class BrickStatement extends BrickModelStatement {
             hasNotchInsTop: true,
             hasNotchInsBot: true,
             scale: this._scale,
-            innerLengthX: 100,
+            innerLengthX: this.labelWidth,
             argHeights: Array.from({ length: argsLength }, () => 17),
         }).path;
 

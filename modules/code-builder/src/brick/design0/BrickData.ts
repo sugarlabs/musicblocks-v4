@@ -41,7 +41,7 @@ export default class BrickData extends BrickModelData {
             hasNotchInsTop: false,
             hasNotchInsBot: false,
             scale: this._scale,
-            innerLengthX: 100,
+            innerLengthX: this.labelWidth,
             argHeights: [],
         }).path;
 

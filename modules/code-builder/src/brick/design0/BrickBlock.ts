@@ -48,13 +48,12 @@ export default class BrickBlock extends BrickModelBlock {
 
         const path = generatePath({
             hasNest: true,
-            hasNotchNest: true,
             hasNotchArg: true,
             hasNotchInsTop: this._connectAbove,
             hasNotchInsBot: this._connectBelow,
             scale: this._scale,
             nestLengthY: 30,
-            innerLengthX: 100,
+            innerLengthX: this.labelWidth,
             argHeights: Array.from({ length: argsLength }, () => 17),
         }).path;
 

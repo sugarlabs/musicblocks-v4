@@ -107,6 +107,8 @@ export interface IBrick extends IBrickStyle {
     /** glyph icon associated with the brick */
     get glyph(): string;
 
+    get labelWidth(): number;
+    set labelWidth(value: number);
     // states
     /** whether brick is highlighted */
     highlighted: boolean;

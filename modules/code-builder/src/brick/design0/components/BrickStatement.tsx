@@ -23,7 +23,7 @@ export default function (props: { instance: IBrickStatement }): JSX.Element {
   useEffect(() => {
     let argsWidth = argsRef.current?.getBBox().width;
     if (argsWidth && argsWidth > 0) {
-      argsWidth += 20;
+      argsWidth += 15;
     } else {
       argsWidth = 30;
     }
@@ -59,8 +59,8 @@ export default function (props: { instance: IBrickStatement }): JSX.Element {
         {argLabels.map((argLabel, index) => (
           <text
             key={index}
-            x="30%"
-            y={`${index == 0 ? 8 : 5 * index + (index + 1) * 8}%`}
+            x={`${(labelRef.current?.getBBox().width as number) + 25}px`}
+            y={`${index == 0 ? 11 : 9 * index + (index + 1) * 11}px`}
             dominantBaseline="middle"
             style={{
               fontSize: '0.8em',

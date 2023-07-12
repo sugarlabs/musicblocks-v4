@@ -59,8 +59,8 @@ export default function (props: { instance: IBrickBlock }): JSX.Element {
         {argLabels.map((argLabel, index) => (
           <text
             key={index}
-            x="25%"
-            y={`${index == 0 ? 8 : 5 * index + (index + 1) * 8}%`}
+            x={`${(labelRef.current?.getBBox().width as number) + 40}px`}
+            y={`${index == 0 ? 11 : 9 * index + (index + 1) * 11}px`}
             dominantBaseline="middle"
             style={{
               fontSize: '0.8em',

@@ -419,12 +419,17 @@ function _getBBoxNotchInsBot(): {
 } {
     return {
         extent: {
-            width: notchInsLengthX,
-            height: notchInsLengthY,
+            width: notchInsLengthX - 4 * strokeWidth,
+            height: strokeWidth + notchInsLengthY - strokeWidth,
         },
         coords: {
-            x: 0,
-            y: 0,
+            x:
+                strokeWidth +
+                (_hasNotchArg ? notchArgLengthX : 0) +
+                cornerRadius +
+                notchInsOffsetX +
+                strokeWidth,
+            y: _getBBoxBrick().extent.height,
         },
     };
 }

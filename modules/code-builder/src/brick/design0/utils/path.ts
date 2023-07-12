@@ -393,12 +393,17 @@ function _getBBoxNotchInsTop(): {
 } {
     return {
         extent: {
-            width: notchInsLengthX,
+            width: notchInsLengthX - 2 * strokeWidth,
             height: notchInsLengthY,
         },
         coords: {
-            x: 0,
-            y: 0,
+            x:
+                strokeWidth +
+                (_hasNotchArg ? notchArgLengthX : 0) +
+                cornerRadius +
+                notchInsOffsetX +
+                strokeWidth,
+            y: strokeWidth + notchInsLengthY - strokeWidth,
         },
     };
 }

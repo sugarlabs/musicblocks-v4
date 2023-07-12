@@ -372,12 +372,12 @@ function _getBBoxNotchArg(): {
 } {
     return {
         extent: {
-            width: notchArgLengthX,
-            height: notchArgLengthY - 2,
+            width: _hasNotchArg ? notchArgLengthX : 0,
+            height: _hasNotchArg ? strokeWidth + 8 + strokeWidth : 0,
         },
         coords: {
             x: 0,
-            y: 0,
+            y: _hasNotchArg ? 6 : 0,
         },
     };
 }
@@ -560,6 +560,7 @@ export function generatePath(
     };
 
     if (print) console.log(results);
+    console.log(results.path);
 
     return results;
 }

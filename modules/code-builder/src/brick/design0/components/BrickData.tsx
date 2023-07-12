@@ -8,10 +8,11 @@ export default function (props: { instance: IBrickData }): JSX.Element {
 
   useEffect(() => {
     const labelWidth = label.current?.getBBox();
-    const width = (labelWidth?.width as number) + 20;
+    const padding = 15;
+    const width = (labelWidth?.width as number) + padding;
     instance.labelWidth = width;
     setSvgString(instance.SVGpaths[0]);
-  }, []);
+  }, [instance]);
 
   return (
     <g transform={`scale(${instance.scale})`}>
@@ -28,8 +29,8 @@ export default function (props: { instance: IBrickData }): JSX.Element {
       />
       <text
         ref={label}
-        x="5%"
-        y="8%"
+        x="15px"
+        y="11px"
         dominantBaseline="middle"
         style={{
           fontSize: '0.8em',

@@ -482,17 +482,20 @@ function _getBBoxArgs(): {
     extent: { width: number; height: number };
     coords: { x: number; y: number }[];
 } {
+    const offsetX = strokeWidth + notchArgLengthX + _innerLengthX - notchArgLengthX + strokeWidth;
+    const firstOffsetY = strokeWidth + cornerRadius + 1 + strokeWidth;
+
     return {
         extent: {
             width: notchArgLengthX,
-            height: notchArgLengthY,
+            height: 10 - 2 * strokeWidth,
         },
-        coords: [
-            {
-                x: 0,
-                y: 0,
-            },
-        ],
+        coords: _argsLengthY.map((_, index) => {
+            return {
+                x: offsetX,
+                y: firstOffsetY + index * notchArgLengthY,
+            };
+        }),
     };
 }
 
@@ -588,7 +591,6 @@ export function generatePath(
     };
 
     if (print) console.log(results);
-    console.log(results.path);
 
     return results;
 }

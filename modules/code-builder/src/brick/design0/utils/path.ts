@@ -443,14 +443,32 @@ function _getBBoxNotchInsNestTop(): {
     extent: { width: number; height: number };
     coords: { x: number; y: number };
 } {
+    const argSectionLengthYMin = cornerRadius * 2 + notchArgLengthY;
+    const argsLength = _argsLengthY
+        .map((sectionLengthY) => Math.max(argSectionLengthYMin, sectionLengthY))
+        .reduce((a, b) => a + b, 0);
+
+    const offsetY =
+        strokeWidth +
+        (argsLength !== 0 ? argsLength : 2 * cornerRadius + notchArgLengthY) +
+        strokeWidth;
+
     return {
         extent: {
-            width: notchInsLengthX,
+            width: notchInsLengthX - 2 * strokeWidth,
             height: notchInsLengthY,
         },
         coords: {
-            x: 0,
-            y: 0,
+            x:
+                strokeWidth +
+                (_hasNotchArg ? notchArgLengthX : 0) +
+                cornerRadius +
+                notchInsOffsetX +
+                notchInsLengthX +
+                4 * strokeWidth -
+                strokeWidth,
+
+            y: offsetY,
         },
     };
 }

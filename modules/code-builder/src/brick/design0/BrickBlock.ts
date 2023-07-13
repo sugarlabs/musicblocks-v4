@@ -67,12 +67,7 @@ export default class BrickBlock extends BrickModelBlock {
         return result;
     }
 
-    public get SVGpaths(): string[] {
-        let result: string[] = [];
-
-        const path = this._pathResults.path;
-        result.push(path);
-
-        return result;
+    public get SVGpath(): string {
+        return this._pathResults.path;
     }
 }

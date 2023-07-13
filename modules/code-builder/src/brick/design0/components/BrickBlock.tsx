@@ -8,7 +8,7 @@ export default function (props: { instance: IBrickBlock }): JSX.Element {
   return (
     <g transform={`scale(${instance.scale})`}>
       <path
-        d={instance.SVGpaths[0]}
+        d={instance.SVGpath}
         style={{
           fill: instance.colorBg as string,
           fillOpacity: 1,

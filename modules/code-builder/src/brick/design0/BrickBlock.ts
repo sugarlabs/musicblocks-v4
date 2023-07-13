@@ -34,7 +34,7 @@ export default class BrickBlock extends BrickModelBlock {
         connectBelow: boolean;
     }) {
         super(params);
-        const argsLength = Object.keys(this._args).length;
+        const argsKeys = Object.keys(this._args);
         this._pathResults = generatePath({
             hasNest: true,
             hasNotchArg: true,
@@ -43,7 +43,7 @@ export default class BrickBlock extends BrickModelBlock {
             scale: this._scale,
             nestLengthY: 30,
             innerLengthX: 100,
-            argHeights: Array.from({ length: argsLength }, () => 17),
+            argHeights: Array.from({ length: argsKeys.length }, () => 17),
         });
     }
 
@@ -51,13 +51,17 @@ export default class BrickBlock extends BrickModelBlock {
         return this._pathResults.bBoxBrick.extent;
     }
 
-    public get argsCoords(): Record<string, TBrickCoords> {
+    public get bBoxArgs(): Record<string, { extent: TBrickExtent; coords: TBrickCoords }> {
         const argsKeys = Object.keys(this._args);
-        const result: Record<string, TBrickCoords> = {};
+        const result: Record<string, { extent: TBrickExtent; coords: TBrickCoords }> = {};
+
         argsKeys.forEach((key, index) => {
+            result[key] = { extent: { width: 0, height: 0 }, coords: { x: 0, y: 0 } };
             const argX = this._pathResults.bBoxArgs.coords[index].x;
             const argY = this._pathResults.bBoxArgs.coords[index].y;
-            result[key] = { x: argX, y: argY };
+
+            result[key].extent = this._pathResults.bBoxArgs.extent;
+            result[key].coords = { x: argX, y: argY };
         });
 
         return result;

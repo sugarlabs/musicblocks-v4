@@ -38,6 +38,8 @@ const _state = new Proxy(_stateObj, {
 
 /** Default synth **/
 const _defaultSynth = new Tone.Synth().toDestination();
+/** Poly synth **/
+const _polySynth = new Tone.PolySynth().toDestination();
 
 // -- private functions ----------------------------------------------------------------------------
 
@@ -206,3 +208,5 @@ export class ElementResetNotesPlayed extends ElementStatement {
         _state.notesPlayed = 0;
     }
 }
+
+export { _state, _defaultSynth, _polySynth }

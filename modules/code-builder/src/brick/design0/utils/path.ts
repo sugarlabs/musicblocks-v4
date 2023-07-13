@@ -592,7 +592,7 @@ export function generatePath(
         bBoxArgs: _getBBoxArgs(),
     };
 
-    if (print) console.log(results);
+    if (print || import.meta.env.DEV) console.log(results);
 
     return results;
 }

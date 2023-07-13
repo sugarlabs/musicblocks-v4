@@ -9,19 +9,6 @@ export default {
 
 // -------------------------------------------------------------------------------------------------
 
-export const NoArgs: Story = {
-    args: {
-        Component: CBrickExpression,
-        prototype: MBrickExpression,
-        label: 'Expression',
-        args: [],
-        colorBg: 'yellow',
-        colorFg: 'black',
-        outline: 'red',
-        scale: 1,
-    },
-};
-
 export const WithArgs: Story = {
     args: {
         Component: CBrickExpression,

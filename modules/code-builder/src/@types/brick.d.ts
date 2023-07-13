@@ -84,9 +84,9 @@ export interface IBrickArgs {
  */
 export interface IBrickArgsState {
     /** map of argument ID to corresponding bounding box dimensions */
-    get argsExtent(): Record<string, IBrickExtent>;
+    get argsExtent(): Record<string, TBrickExtent>;
     /** map of argument ID to co-ordinates of the argument connections relative to the brick */
-    get argsCoords(): Record<string, IBrickCoords>;
+    get argsCoords(): Record<string, TBrickCoords>;
 }
 
 /**
@@ -111,7 +111,7 @@ export interface IBrick extends IBrickStyle {
     /** whether brick is highlighted */
     highlighted: boolean;
     /** bounding box dimensions of the brick */
-    get extent(): IBrickExtent;
+    get extent(): TBrickExtent;
 
     /** SVG string for the brick based on defining properties and current state */
     get SVGpaths(): string[];
@@ -176,7 +176,7 @@ export interface IBrickStatement extends IBrickInstruction {
 export interface IBrickBlock extends IBrickInstruction {
     // state
     /** combined bounding box of the instructions nested within the brick */
-    get nestExtent(): IBrickExtent;
+    get nestExtent(): TBrickExtent;
     /** whether brick nesting is hidden */
     collapsed: boolean;
 }

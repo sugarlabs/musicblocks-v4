@@ -116,8 +116,8 @@ export interface IBrick extends IBrickStyle {
     // states
     /** whether brick is highlighted */
     highlighted: boolean;
-    /** bounding box dimensions of the brick */
-    get extent(): TBrickExtent;
+    /** Bounding box dimensions and coords of the brick */
+    get bBoxBrick(): { extent: TBrickExtent; coords: TBrickCoords };
 
     /** SVG string for the brick based on defining properties and current state */
     get SVGpaths(): string[];

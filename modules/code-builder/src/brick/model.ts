@@ -155,8 +155,6 @@ abstract class BrickModelInstruction extends BrickModel implements IBrickInstruc
     protected _connectAbove: boolean;
     protected _connectBelow: boolean;
 
-    public argsExtent: Record<string, TBrickExtent> = {};
-
     constructor(params: {
         // intrinsic
         name: string;
@@ -205,7 +203,10 @@ abstract class BrickModelInstruction extends BrickModel implements IBrickInstruc
         return this._connectBelow;
     }
 
-    public abstract get argsCoords(): Record<string, TBrickCoords>;
+    public abstract get bBoxArgs(): {
+        extent: Record<string, TBrickExtent>;
+        coords: Record<string, TBrickCoords>;
+    };
 }
 
 // -- public classes -------------------------------------------------------------------------------
@@ -270,8 +271,6 @@ export abstract class BrickModelExpression extends BrickModelArgument implements
         }
     >;
 
-    public argsExtent: Record<string, TBrickExtent> = {};
-
     constructor(params: {
         // intrinsic
         name: string;
@@ -308,7 +307,10 @@ export abstract class BrickModelExpression extends BrickModelArgument implements
         return this._args;
     }
 
-    public abstract get argsCoords(): Record<string, TBrickCoords>;
+    public abstract get bBoxArgs(): {
+        extent: Record<string, TBrickExtent>;
+        coords: Record<string, TBrickCoords>;
+    };
 }
 
 /**

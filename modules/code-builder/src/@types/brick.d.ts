@@ -83,10 +83,13 @@ export interface IBrickArgs {
  * State properties associated with bricks that can take arguments.
  */
 export interface IBrickArgsState {
-    /** map of argument ID to corresponding bounding box dimensions */
-    get argsExtent(): Record<string, TBrickExtent>;
-    /** map of argument ID to co-ordinates of the argument connections relative to the brick */
-    get argsCoords(): Record<string, TBrickCoords>;
+    /** map of argument ID to to corresponding extent and coords */
+    get bBoxArgs(): {
+        /** map of argument ID to corresponding bounding box dimensions */
+        extent: Record<string, TBrickExtent>;
+        /** map of argument ID to co-ordinates of the argument connections relative to the brick */
+        coords: Record<string, TBrickCoords>;
+    };
 }
 
 /**

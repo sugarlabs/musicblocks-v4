@@ -47,8 +47,8 @@ export default class BrickBlock extends BrickModelBlock {
         });
     }
 
-    public get extent(): TBrickExtent {
-        return this._pathResults.bBoxBrick.extent;
+    public get bBoxBrick(): { extent: TBrickExtent; coords: TBrickCoords } {
+        return this._pathResults.bBoxBrick;
     }
 
     public get bBoxArgs(): Record<string, { extent: TBrickExtent; coords: TBrickCoords }> {

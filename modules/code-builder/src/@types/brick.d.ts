@@ -120,7 +120,7 @@ export interface IBrick extends IBrickStyle {
     get bBoxBrick(): { extent: TBrickExtent; coords: TBrickCoords };
 
     /** SVG string for the brick based on defining properties and current state */
-    get SVGpaths(): string[];
+    get SVGpath(): string;
 }
 
 /**

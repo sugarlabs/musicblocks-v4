@@ -1,8 +1,12 @@
+import type { JSX } from 'react';
 import type { IBrickBlock } from '@/@types/brick';
 
 // -------------------------------------------------------------------------------------------------
 
-export default function (props: { instance: IBrickBlock }): JSX.Element {
+export default function (props: {
+  instance: IBrickBlock;
+  visualIndicators?: JSX.Element;
+}): JSX.Element {
   const { instance } = props;
 
   return (
@@ -18,6 +22,7 @@ export default function (props: { instance: IBrickBlock }): JSX.Element {
           strokeOpacity: 1,
         }}
       />
+      {props.visualIndicators}
     </g>
   );
 }

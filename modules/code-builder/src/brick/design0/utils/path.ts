@@ -495,7 +495,9 @@ function _getBBoxArgs(): {
         coords: _argsLengthY.map((_, index) => {
             return {
                 x: offsetX,
-                y: firstOffsetY + (index === 0 ? 0 : argsLength[index - 1]),
+                y:
+                    firstOffsetY +
+                    (index === 0 ? 0 : argsLength.slice(0, index).reduce((a, b) => a + b, 0)),
             };
         }),
     };

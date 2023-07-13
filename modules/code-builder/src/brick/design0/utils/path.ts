@@ -403,7 +403,7 @@ function _getBBoxNotchInsTop(): {
                 cornerRadius +
                 notchInsOffsetX +
                 strokeWidth,
-            y: strokeWidth + notchInsLengthY - strokeWidth,
+            y: 0,
         },
     };
 }
@@ -419,7 +419,7 @@ function _getBBoxNotchInsBot(): {
 } {
     return {
         extent: {
-            width: notchInsLengthX - 4 * strokeWidth,
+            width: notchInsLengthX - 2 * strokeWidth,
             height: strokeWidth + notchInsLengthY - strokeWidth,
         },
         coords: {
@@ -464,10 +464,8 @@ function _getBBoxNotchInsNestTop(): {
                 (_hasNotchArg ? notchArgLengthX : 0) +
                 cornerRadius +
                 notchInsOffsetX +
-                notchInsLengthX +
-                4 * strokeWidth -
+                notchInsLengthX -
                 strokeWidth,
-
             y: offsetY,
         },
     };
@@ -484,6 +482,10 @@ function _getBBoxArgs(): {
 } {
     const offsetX = strokeWidth + notchArgLengthX + _innerLengthX - notchArgLengthX + strokeWidth;
     const firstOffsetY = strokeWidth + cornerRadius + 1 + strokeWidth;
+    const argSectionLengthYMin = cornerRadius * 2 + notchArgLengthY;
+    const argsLength = _argsLengthY.map((sectionLengthY) =>
+        Math.max(argSectionLengthYMin, sectionLengthY),
+    );
 
     return {
         extent: {
@@ -493,7 +495,7 @@ function _getBBoxArgs(): {
         coords: _argsLengthY.map((_, index) => {
             return {
                 x: offsetX,
-                y: firstOffsetY + index * notchArgLengthY,
+                y: firstOffsetY + (index === 0 ? 0 : argsLength[index - 1]),
             };
         }),
     };

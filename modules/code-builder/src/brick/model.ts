@@ -203,10 +203,7 @@ abstract class BrickModelInstruction extends BrickModel implements IBrickInstruc
         return this._connectBelow;
     }
 
-    public abstract get bBoxArgs(): {
-        extent: Record<string, TBrickExtent>;
-        coords: Record<string, TBrickCoords>;
-    };
+    public abstract get bBoxArgs(): Record<string, { extent: TBrickExtent; coords: TBrickCoords }>;
 }
 
 // -- public classes -------------------------------------------------------------------------------
@@ -307,10 +304,7 @@ export abstract class BrickModelExpression extends BrickModelArgument implements
         return this._args;
     }
 
-    public abstract get bBoxArgs(): {
-        extent: Record<string, TBrickExtent>;
-        coords: Record<string, TBrickCoords>;
-    };
+    public abstract get bBoxArgs(): Record<string, { extent: TBrickExtent; coords: TBrickCoords }>;
 }
 
 /**

@@ -5,7 +5,7 @@ import BrickWrapper from './BrickWrapper';
 // -------------------------------------------------------------------------------------------------
 
 export default function (props: {
-  Component: (props: { instance: IBrickBlock }) => JSX.Element;
+  Component: (props: { instance: IBrickBlock; visualIndicators?: JSX.Element }) => JSX.Element;
   prototype: new (params: {
     name: string;
     label: string;
@@ -52,9 +52,39 @@ export default function (props: {
     name: '',
   });
 
+  const VisualIndicators = () => (
+    <>
+      {/* Overall Bounding Box of the Brick */}
+      {/* <rect
+        x={instance.bBoxBrick.coords.x}
+        y={instance.bBoxBrick.coords.y}
+        height={instance.bBoxBrick.extent.height}
+        width={instance.bBoxBrick.extent.width}
+        fill="green"
+        opacity={0.2}
+      /> */}
+
+      {Object.keys(instance.bBoxArgs).map((name, i) => {
+        const arg = instance.bBoxArgs[name];
+
+        return (
+          <rect
+            key={i}
+            x={arg.coords.x}
+            y={arg.coords.y}
+            height={arg.extent.height}
+            width={arg.extent.width}
+            fill="green"
+            opacity={0.8}
+          />
+        );
+      })}
+    </>
+  );
+
   return (
     <BrickWrapper>
-      <Component instance={instance} />
+      <Component instance={instance} visualIndicators={<VisualIndicators />} />
     </BrickWrapper>
   );
 }

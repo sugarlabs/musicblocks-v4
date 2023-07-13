@@ -10,6 +10,8 @@ import { generatePath } from './utils/path';
  * Final class that defines a block brick.
  */
 export default class BrickBlock extends BrickModelBlock {
+    readonly _pathResults: ReturnType<typeof generatePath>;
+
     constructor(params: {
         // intrinsic
         name: string;
@@ -32,21 +34,8 @@ export default class BrickBlock extends BrickModelBlock {
         connectBelow: boolean;
     }) {
         super(params);
-    }
-
-    public get extent(): TBrickExtent {
-        return { width: 0, height: 0 };
-    }
-
-    public get argsCoords(): Record<string, TBrickCoords> {
-        return {};
-    }
-
-    public get SVGpaths(): string[] {
         const argsLength = Object.keys(this._args).length;
-        let result: string[] = [];
-
-        const path = generatePath({
+        this._pathResults = generatePath({
             hasNest: true,
             hasNotchArg: true,
             hasNotchInsTop: this._connectAbove,
@@ -55,8 +44,29 @@ export default class BrickBlock extends BrickModelBlock {
             nestLengthY: 30,
             innerLengthX: 100,
             argHeights: Array.from({ length: argsLength }, () => 17),
-        }).path;
+        });
+    }
 
+    public get extent(): TBrickExtent {
+        return this._pathResults.bBoxBrick.extent;
+    }
+
+    public get argsCoords(): Record<string, TBrickCoords> {
+        const argsKeys = Object.keys(this._args);
+        const result: Record<string, TBrickCoords> = {};
+        argsKeys.forEach((key, index) => {
+            const argX = this._pathResults.bBoxArgs.coords[index].x;
+            const argY = this._pathResults.bBoxArgs.coords[index].y;
+            result[key] = { x: argX, y: argY };
+        });
+
+        return result;
+    }
+
+    public get SVGpaths(): string[] {
+        let result: string[] = [];
+
+        const path = this._pathResults.path;
         result.push(path);
 
         return result;

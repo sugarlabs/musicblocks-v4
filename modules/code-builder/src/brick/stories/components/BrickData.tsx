@@ -42,14 +42,14 @@ export default function (props: {
   const VisualIndicators = () => (
     <>
       {/* Overall Bounding Box of the Brick */}
-      {/* <rect
+      <rect
         x={instance.bBoxBrick.coords.x}
         y={instance.bBoxBrick.coords.y}
         height={instance.bBoxBrick.extent.height}
         width={instance.bBoxBrick.extent.width}
-        fill="green"
-        opacity={0.2}
-      /> */}
+        fill="black"
+        opacity={0.25}
+      />
 
       {/* Left notch bounding box */}
       <rect

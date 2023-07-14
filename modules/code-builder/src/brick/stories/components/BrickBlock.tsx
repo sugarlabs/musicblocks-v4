@@ -90,6 +90,16 @@ export default function (props: {
         fill="green"
         opacity={0.8}
       />
+
+      {/* Top instruction notch bounding box */}
+      <rect
+        x={instance.bBoxNotchInsTop.coords.x}
+        y={instance.bBoxNotchInsTop.coords.y}
+        height={instance.bBoxNotchInsTop.extent.height}
+        width={instance.bBoxNotchInsTop.extent.width}
+        fill="green"
+        opacity={0.9}
+      />
     </>
   );
 

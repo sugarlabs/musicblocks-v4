@@ -480,7 +480,12 @@ function _getBBoxArgs(): {
     extent: { width: number; height: number };
     coords: { x: number; y: number }[];
 } {
-    const offsetX = strokeWidth + notchArgLengthX + _innerLengthX - notchArgLengthX + strokeWidth;
+    const offsetX =
+        strokeWidth +
+        (_hasNotchArg ? notchArgLengthX : 0) +
+        _innerLengthX -
+        notchArgLengthX +
+        strokeWidth;
     const firstOffsetY = strokeWidth + cornerRadius + 1 + strokeWidth;
     const argSectionLengthYMin = cornerRadius * 2 + notchArgLengthY;
     const argsLength = _argsLengthY.map((sectionLengthY) =>

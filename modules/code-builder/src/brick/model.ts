@@ -340,6 +340,8 @@ export abstract class BrickModelStatement extends BrickModelInstruction implemen
     }) {
         super({ ...params, type: 'statement' });
     }
+
+    public abstract get bBoxNotchInsTop(): { extent: TBrickExtent; coords: TBrickCoords };
 }
 
 /**
@@ -376,4 +378,6 @@ export abstract class BrickModelBlock extends BrickModelInstruction implements I
     }
 
     public abstract get bBoxNotchArg(): { extent: TBrickExtent; coords: TBrickCoords };
+
+    public abstract get bBoxNotchInsTop(): { extent: TBrickExtent; coords: TBrickCoords };
 }

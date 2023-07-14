@@ -97,14 +97,28 @@ export interface IBrickArgsState {
 
 /**
  * @interface
- * State properties associated with bricks that have notch.
+ * State properties associated with bricks that have left notch.
  */
 export interface IBrickNotchState {
-    /** Map of argument ID to corresponding extent and coords */
+    /** Bounding box dimensions and coords of the left notch */
     get bBoxNotchArg(): {
-        /** Bounding box dimensions of the notch */
+        /** Bounding box dimensions of the left notch */
         extent: TBrickExtent;
-        /** Co-ordinates of the notch relative to the brick */
+        /** Co-ordinates of the left notch relative to the brick */
+        coords: TBrickCoords;
+    };
+}
+
+/**
+ * @interface
+ * State properties associated with bricks that have top instruction notch.
+ */
+export interface IBrickNotchInsTopState {
+    /** Bounding box dimensions and coords of the top instruction notch */
+    get bBoxNotchInsTop(): {
+        /** Bounding box dimensions of the top instruction notch */
+        extent: TBrickExtent;
+        /** Co-ordinates of the top instruction notch relative to the brick */
         coords: TBrickCoords;
     };
 }
@@ -189,7 +203,7 @@ export interface IBrickExpression
  * Type definition of a statement brick.
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface IBrickStatement extends IBrickInstruction {
+export interface IBrickStatement extends IBrickInstruction, IBrickNotchInsTopState {
     // reserving spot for future-proofing
 }
 
@@ -197,7 +211,7 @@ export interface IBrickStatement extends IBrickInstruction {
  * @interface
  * Type definition of a block brick.
  */
-export interface IBrickBlock extends IBrickInstruction, IBrickNotchState {
+export interface IBrickBlock extends IBrickInstruction, IBrickNotchState, IBrickNotchInsTopState {
     // state
     /** combined bounding box of the instructions nested within the brick */
     get nestExtent(): TBrickExtent;

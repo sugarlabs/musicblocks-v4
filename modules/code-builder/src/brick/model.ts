@@ -251,6 +251,8 @@ export abstract class BrickModelData extends BrickModelArgument implements IBric
     public get input(): 'boolean' | 'number' | 'string' | 'options' | undefined {
         return this._input;
     }
+
+    public abstract get bBoxNotchArg(): { extent: TBrickExtent; coords: TBrickCoords };
 }
 
 /**
@@ -305,6 +307,8 @@ export abstract class BrickModelExpression extends BrickModelArgument implements
     }
 
     public abstract get bBoxArgs(): Record<string, { extent: TBrickExtent; coords: TBrickCoords }>;
+
+    public abstract get bBoxNotchArg(): { extent: TBrickExtent; coords: TBrickCoords };
 }
 
 /**
@@ -370,4 +374,6 @@ export abstract class BrickModelBlock extends BrickModelInstruction implements I
     }) {
         super({ ...params, type: 'block' });
     }
+
+    public abstract get bBoxNotchArg(): { extent: TBrickExtent; coords: TBrickCoords };
 }

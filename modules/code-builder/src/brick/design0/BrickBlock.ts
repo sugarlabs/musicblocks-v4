@@ -47,6 +47,10 @@ export default class BrickBlock extends BrickModelBlock {
         });
     }
 
+    public get SVGpath(): string {
+        return this._pathResults.path;
+    }
+
     public get bBoxBrick(): { extent: TBrickExtent; coords: TBrickCoords } {
         return this._pathResults.bBoxBrick;
     }
@@ -67,7 +71,7 @@ export default class BrickBlock extends BrickModelBlock {
         return result;
     }
 
-    public get SVGpath(): string {
-        return this._pathResults.path;
+    public get bBoxNotchArg(): { extent: TBrickExtent; coords: TBrickCoords } {
+        return this._pathResults.bBoxNotchArg!;
     }
 }

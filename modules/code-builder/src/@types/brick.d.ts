@@ -139,6 +139,20 @@ export interface IBrickNotchInsBotState {
 
 /**
  * @interface
+ * State properties associated with bricks that have nesting.
+ */
+export interface IBrickNotchInsNestTopState {
+    /** Bounding box dimensions and coords of the top instruction notch of the nesting */
+    get bBoxNotchInsNestTop(): {
+        /** Bounding box dimensions of the top instruction notch of the nesting */
+        extent: TBrickExtent;
+        /** Co-ordinates of the top instruction notch of the nesting relative to the brick */
+        coords: TBrickCoords;
+    };
+}
+
+/**
+ * @interface
  * Type definition of a generic brick (any type).
  */
 export interface IBrick extends IBrickStyle {
@@ -232,7 +246,8 @@ export interface IBrickBlock
     extends IBrickInstruction,
         IBrickNotchState,
         IBrickNotchInsTopState,
-        IBrickNotchInsBotState {
+        IBrickNotchInsBotState,
+        IBrickNotchInsNestTopState {
     // state
     /** combined bounding box of the instructions nested within the brick */
     get nestExtent(): TBrickExtent;

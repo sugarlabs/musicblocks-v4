@@ -384,4 +384,6 @@ export abstract class BrickModelBlock extends BrickModelInstruction implements I
     public abstract get bBoxNotchInsTop(): { extent: TBrickExtent; coords: TBrickCoords };
 
     public abstract get bBoxNotchInsBot(): { extent: TBrickExtent; coords: TBrickCoords };
+
+    public abstract get bBoxNotchInsNestTop(): { extent: TBrickExtent; coords: TBrickCoords };
 }

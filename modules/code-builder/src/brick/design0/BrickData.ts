@@ -1,4 +1,4 @@
-import type { TBrickArgDataType, TBrickColor, TBrickExtent } from '@/@types/brick';
+import type { TBrickArgDataType, TBrickColor, TBrickCoords, TBrickExtent } from '@/@types/brick';
 
 import { BrickModelData } from '../model';
 import { generatePath } from './utils/path';
@@ -10,6 +10,8 @@ import { generatePath } from './utils/path';
  * Final class that defines a data brick.
  */
 export default class BrickData extends BrickModelData {
+    readonly _pathResults: ReturnType<typeof generatePath>;
+
     constructor(params: {
         // intrinsic
         name: string;
@@ -26,16 +28,7 @@ export default class BrickData extends BrickModelData {
         scale: number;
     }) {
         super(params);
-    }
-
-    public get extent(): TBrickExtent {
-        return { width: 0, height: 0 };
-    }
-
-    public get SVGpaths(): string[] {
-        let result: string[] = [];
-
-        const path = generatePath({
+        this._pathResults = generatePath({
             hasNest: false,
             hasNotchArg: true,
             hasNotchInsTop: false,
@@ -43,10 +36,18 @@ export default class BrickData extends BrickModelData {
             scale: this._scale,
             innerLengthX: 100,
             argHeights: [],
-        }).path;
+        });
+    }
 
-        result.push(path);
+    public get SVGpath(): string {
+        return this._pathResults.path;
+    }
 
-        return result;
+    public get bBoxBrick(): { extent: TBrickExtent; coords: TBrickCoords } {
+        return this._pathResults.bBoxBrick;
+    }
+
+    public get bBoxNotchArg(): { extent: TBrickExtent; coords: TBrickCoords } {
+        return this._pathResults.bBoxNotchArg!;
     }
 }

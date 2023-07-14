@@ -110,6 +110,16 @@ export default function (props: {
         fill="green"
         opacity={0.9}
       />
+
+      {/* Top instruction notch inside nesting bounding box */}
+      <rect
+        x={instance.bBoxNotchInsNestTop.coords.x}
+        y={instance.bBoxNotchInsNestTop.coords.y}
+        height={instance.bBoxNotchInsNestTop.extent.height}
+        width={instance.bBoxNotchInsNestTop.extent.width}
+        fill="green"
+        opacity={0.9}
+      />
     </>
   );
 

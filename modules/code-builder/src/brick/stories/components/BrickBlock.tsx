@@ -1,6 +1,6 @@
-import type { IBrickBlock, TBrickArgDataType, TBrickColor } from '@/@types/brick';
-
 import BrickWrapper from './BrickWrapper';
+import type { JSX } from 'react';
+import type { IBrickBlock, TBrickArgDataType, TBrickColor } from '@/@types/brick';
 
 // -------------------------------------------------------------------------------------------------
 

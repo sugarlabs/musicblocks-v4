@@ -1,8 +1,12 @@
+import type { JSX } from 'react';
 import type { IBrickExpression } from '@/@types/brick';
 
 // -------------------------------------------------------------------------------------------------
 
-export default function (props: { instance: IBrickExpression }): JSX.Element {
+export default function (props: {
+  instance: IBrickExpression;
+  visualIndicators?: JSX.Element;
+}): JSX.Element {
   const { instance } = props;
 
   return (
@@ -18,6 +22,7 @@ export default function (props: { instance: IBrickExpression }): JSX.Element {
           strokeOpacity: 1,
         }}
       />
+      {props.visualIndicators}
     </g>
   );
 }

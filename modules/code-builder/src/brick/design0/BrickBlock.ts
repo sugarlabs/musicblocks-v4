@@ -78,4 +78,8 @@ export default class BrickBlock extends BrickModelBlock {
     public get bBoxNotchInsTop(): { extent: TBrickExtent; coords: TBrickCoords } {
         return this._pathResults.bBoxNotchInsTop!;
     }
+
+    public get bBoxNotchInsBot(): { extent: TBrickExtent; coords: TBrickCoords } {
+        return this._pathResults.bBoxNotchInsBot!;
+    }
 }

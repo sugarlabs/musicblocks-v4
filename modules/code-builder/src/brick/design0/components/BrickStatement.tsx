@@ -3,10 +3,7 @@ import type { IBrickStatement } from '@/@types/brick';
 
 // -------------------------------------------------------------------------------------------------
 
-export default function (props: {
-  instance: IBrickStatement;
-  visualIndicators?: JSX.Element;
-}): JSX.Element {
+export default function (props: { instance: IBrickStatement }): JSX.Element {
   const { instance } = props;
 
   return (
@@ -22,7 +19,6 @@ export default function (props: {
           strokeOpacity: 1,
         }}
       />
-      {props.visualIndicators}
     </g>
   );
 }

@@ -135,6 +135,8 @@ abstract class BrickModelArgument extends BrickModel implements IBrickArgument {
     public get dataType(): TBrickArgDataType {
         return this._dataType;
     }
+
+    public abstract get bBoxNotchArg(): { extent: TBrickExtent; coords: TBrickCoords };
 }
 
 /**
@@ -203,6 +205,10 @@ abstract class BrickModelInstruction extends BrickModel implements IBrickInstruc
         return this._connectBelow;
     }
 
+    public abstract get bBoxNotchInsTop(): { extent: TBrickExtent; coords: TBrickCoords };
+
+    public abstract get bBoxNotchInsBot(): { extent: TBrickExtent; coords: TBrickCoords };
+
     public abstract get bBoxArgs(): Record<string, { extent: TBrickExtent; coords: TBrickCoords }>;
 }
 
@@ -251,8 +257,6 @@ export abstract class BrickModelData extends BrickModelArgument implements IBric
     public get input(): 'boolean' | 'number' | 'string' | 'options' | undefined {
         return this._input;
     }
-
-    public abstract get bBoxNotchArg(): { extent: TBrickExtent; coords: TBrickCoords };
 }
 
 /**
@@ -307,8 +311,6 @@ export abstract class BrickModelExpression extends BrickModelArgument implements
     }
 
     public abstract get bBoxArgs(): Record<string, { extent: TBrickExtent; coords: TBrickCoords }>;
-
-    public abstract get bBoxNotchArg(): { extent: TBrickExtent; coords: TBrickCoords };
 }
 
 /**
@@ -340,10 +342,6 @@ export abstract class BrickModelStatement extends BrickModelInstruction implemen
     }) {
         super({ ...params, type: 'statement' });
     }
-
-    public abstract get bBoxNotchInsTop(): { extent: TBrickExtent; coords: TBrickCoords };
-
-    public abstract get bBoxNotchInsBot(): { extent: TBrickExtent; coords: TBrickCoords };
 }
 
 /**
@@ -378,12 +376,6 @@ export abstract class BrickModelBlock extends BrickModelInstruction implements I
     }) {
         super({ ...params, type: 'block' });
     }
-
-    public abstract get bBoxNotchArg(): { extent: TBrickExtent; coords: TBrickCoords };
-
-    public abstract get bBoxNotchInsTop(): { extent: TBrickExtent; coords: TBrickCoords };
-
-    public abstract get bBoxNotchInsBot(): { extent: TBrickExtent; coords: TBrickCoords };
 
     public abstract get bBoxNotchInsNestTop(): { extent: TBrickExtent; coords: TBrickCoords };
 }

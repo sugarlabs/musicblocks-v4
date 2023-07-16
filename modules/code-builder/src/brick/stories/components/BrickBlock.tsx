@@ -81,16 +81,6 @@ export default function (props: {
         );
       })}
 
-      {/* Left notch bounding box */}
-      <rect
-        x={instance.bBoxNotchArg.coords.x}
-        y={instance.bBoxNotchArg.coords.y}
-        height={instance.bBoxNotchArg.extent.height}
-        width={instance.bBoxNotchArg.extent.width}
-        fill="green"
-        opacity={0.8}
-      />
-
       {/* Top instruction notch bounding box */}
       <rect
         x={instance.bBoxNotchInsTop.coords.x}

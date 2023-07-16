@@ -1,10 +1,7 @@
 import type { JSX } from 'react';
 import type { IBrickData } from '@/@types/brick';
 
-export default function (props: {
-  instance: IBrickData;
-  visualIndicators?: JSX.Element;
-}): JSX.Element {
+export default function (props: { instance: IBrickData }): JSX.Element {
   const { instance } = props;
 
   return (
@@ -20,7 +17,6 @@ export default function (props: {
           strokeOpacity: 1,
         }}
       />
-      {props.visualIndicators}
     </g>
   );
 }

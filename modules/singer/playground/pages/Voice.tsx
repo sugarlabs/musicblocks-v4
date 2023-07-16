@@ -1,11 +1,26 @@
 import { Voice } from '@/core/voice';
 import SynthUtils from '@/core/synthUtils';
-import loaders from '@sugarlabs/mb4-assets/src/loaders';
 import * as Tone from 'tone';
-import { importAssets } from '@sugarlabs/mb4-assets';
 import { _state, noteValueToSeconds, _defaultSynth, _polySynth } from '@/singer';
 
-function _getSynth(synthType: String) {
+import { injected } from '@/index';
+
+(async () => {
+  const { importAssets, getAsset } = await import('@sugarlabs/mb4-assets');
+  const assetManifest = (await import('@sugarlabs/mb4-assets')).default;
+  await importAssets(
+    Object.entries(assetManifest).map(([identifier, manifest]) => ({ identifier, manifest })),
+    () => undefined,
+  );
+
+  injected.assets = {
+    'audio.guitar': getAsset('audio.guitar')!,
+    'audio.piano': getAsset('audio.piano')!,
+    'audio.snare': getAsset('audio.snare')!,
+  };
+})();
+
+function _getSynth(synthType: string) {
   switch (synthType) {
     case 'polysynth':
       return _polySynth;
@@ -13,9 +28,9 @@ function _getSynth(synthType: String) {
   return _defaultSynth;
 }
 
-async function playSynth(synthType: String) {
+async function playSynth(synthType: string) {
   await Tone.start();
-  var synth = _getSynth(synthType);
+  const synth = _getSynth(synthType);
   _state.notesPlayed = 0;
   console.log('playing c4 using', synthType);
   const now = Tone.now();
@@ -25,7 +40,7 @@ async function playSynth(synthType: String) {
 }
 
 async function voice() {
-  var synth = new SynthUtils();
+  const synth = new SynthUtils();
   // const myVoice = new Voice('myvoice', synth);
   // myVoice.playNote('c4', 1 / 4, 'piano');
   synth.trigger(['c4'], 4, 'piano', 3);
@@ -38,14 +53,30 @@ async function voice() {
 }
 
 export default function (): JSX.Element {
-
-    return (
-      <div>
-        <h1>Voice Component</h1>
-        <button onClick={async () => {await playSynth('default');}}>Default Synth</button>
-        <button onClick={async () => {await playSynth('polysynth');}}>PolySynth</button>
-        <button onClick={async () => {await voice();}}>Voice Sample Synth</button>
-      </div>
-    );
+  return (
+    <div>
+      <h1>Voice Component</h1>
+      <button
+        onClick={async () => {
+          await playSynth('default');
+        }}
+      >
+        Default Synth
+      </button>
+      <button
+        onClick={async () => {
+          await playSynth('polysynth');
+        }}
+      >
+        PolySynth
+      </button>
+      <button
+        onClick={async () => {
+          await voice();
+        }}
+      >
+        Voice Sample Synth
+      </button>
+    </div>
+  );
 }
-

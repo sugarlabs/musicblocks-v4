@@ -37,7 +37,7 @@ export default class BrickBlock extends BrickModelBlock {
         const argsKeys = Object.keys(this._args);
         this._pathResults = generatePath({
             hasNest: true,
-            hasNotchArg: true,
+            hasNotchArg: false,
             hasNotchInsTop: this._connectAbove,
             hasNotchInsBot: this._connectBelow,
             scale: this._scale,

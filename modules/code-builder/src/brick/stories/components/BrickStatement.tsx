@@ -105,7 +105,8 @@ export default function (props: {
 
   return (
     <BrickWrapper>
-      <Component instance={instance} visualIndicators={<VisualIndicators />} />
+      <Component instance={instance} />
+      <VisualIndicators />
     </BrickWrapper>
   );
 }

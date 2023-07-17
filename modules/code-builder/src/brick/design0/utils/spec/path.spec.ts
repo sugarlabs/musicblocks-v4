@@ -376,20 +376,154 @@ describe('Code Builder: Brick > Design 0 > Utility: Path', () => {
     });
 
     describe('Bounding Box Calculation', () => {
-        it.todo('evaluates brick bounding box for brick with no argument notch');
+        it('evaluates brick bounding box for brick with no argument notch', () => {
+            const { bBoxBrick } = generatePath({
+                hasNest: false,
+                hasNotchArg: false,
+                hasNotchInsTop: true,
+                hasNotchInsBot: true,
+                scale: 1,
+                innerLengthX: 100,
+                argHeights: [],
+            });
+            expect(bBoxBrick.extent.height).toBe(21);
+            expect(bBoxBrick.extent.width).toBe(101);
+            expect(bBoxBrick.coords.x).toBe(0);
+            expect(bBoxBrick.coords.y).toBe(0);
+        });
 
-        it.todo('evaluates brick bounding box for brick with argument notch');
+        it('evaluates brick bounding box for brick with argument notch', () => {
+            const { bBoxBrick } = generatePath({
+                hasNest: false,
+                hasNotchArg: true,
+                hasNotchInsTop: false,
+                hasNotchInsBot: false,
+                scale: 1,
+                innerLengthX: 100,
+                argHeights: [],
+            });
+            expect(bBoxBrick.extent.height).toBe(21);
+            expect(bBoxBrick.extent.width).toBe(101);
+            expect(bBoxBrick.coords.x).toBe(8);
+            expect(bBoxBrick.coords.y).toBe(0);
+        });
 
-        it.todo('evaluates argument notch bounding box for brick');
+        it('evaluates argument notch bounding box for brick', () => {
+            const { bBoxNotchArg } = generatePath({
+                hasNest: false,
+                hasNotchArg: true,
+                hasNotchInsTop: false,
+                hasNotchInsBot: false,
+                scale: 1,
+                innerLengthX: 100,
+                argHeights: [],
+            });
+            expect(bBoxNotchArg?.extent.height).toBe(9);
+            expect(bBoxNotchArg?.extent.width).toBe(8);
+            expect(bBoxNotchArg?.coords.x).toBe(0);
+            expect(bBoxNotchArg?.coords.y).toBe(6);
+        });
 
-        it.todo('evaluates top instruction notch bounding box');
+        it('evaluates top instruction notch bounding box', () => {
+            const { bBoxNotchInsTop } = generatePath({
+                hasNest: false,
+                hasNotchArg: false,
+                hasNotchInsTop: true,
+                hasNotchInsBot: true,
+                scale: 1,
+                innerLengthX: 100,
+                argHeights: [],
+            });
+            expect(bBoxNotchInsTop?.extent.height).toBe(2);
+            expect(bBoxNotchInsTop?.extent.width).toBe(9);
+            expect(bBoxNotchInsTop?.coords.x).toBe(9);
+            expect(bBoxNotchInsTop?.coords.y).toBe(0);
+        });
 
-        it.todo('evaluates bottom instruction notch bounding box for non-nesting brick');
+        it('evaluates bottom instruction notch bounding box for non-nesting brick', () => {
+            const { bBoxNotchInsBot } = generatePath({
+                hasNest: false,
+                hasNotchArg: false,
+                hasNotchInsTop: true,
+                hasNotchInsBot: true,
+                scale: 1,
+                innerLengthX: 100,
+                argHeights: [],
+            });
+            expect(bBoxNotchInsBot?.extent.height).toBe(2);
+            expect(bBoxNotchInsBot?.extent.width).toBe(9);
+            expect(bBoxNotchInsBot?.coords.x).toBe(9);
+            expect(bBoxNotchInsBot?.coords.y).toBe(21);
+        });
 
-        it.todo('evaluates bottom instruction notch bounding box for nesting brick');
+        it('evaluates bottom instruction notch bounding box for nesting brick', () => {
+            const { bBoxNotchInsBot } = generatePath({
+                hasNest: true,
+                hasNotchArg: false,
+                hasNotchInsTop: true,
+                hasNotchInsBot: true,
+                scale: 1,
+                nestLengthY: 30,
+                innerLengthX: 100,
+                argHeights: [],
+            });
+            expect(bBoxNotchInsBot?.extent.height).toBe(2);
+            expect(bBoxNotchInsBot?.extent.width).toBe(9);
+            expect(bBoxNotchInsBot?.coords.x).toBe(9);
+            expect(bBoxNotchInsBot?.coords.y).toBe(73);
+        });
 
-        it.todo('evaluates inner top instruction notch bounding box for nesting brick');
+        it('evaluates inner top instruction notch bounding box for nesting brick', () => {
+            const { bBoxNotchInsNestTop } = generatePath({
+                hasNest: true,
+                hasNotchArg: false,
+                hasNotchInsTop: true,
+                hasNotchInsBot: true,
+                scale: 1,
+                nestLengthY: 30,
+                innerLengthX: 100,
+                argHeights: [],
+            });
+            expect(bBoxNotchInsNestTop?.extent.height).toBe(2);
+            expect(bBoxNotchInsNestTop?.extent.width).toBe(9);
+            expect(bBoxNotchInsNestTop?.coords.x).toBe(18);
+            expect(bBoxNotchInsNestTop?.coords.y).toBe(21);
+        });
 
-        it.todo('evaluates bounding boxes for arguments');
+        it('evaluates inner top instruction notch bounding box for nesting brick', () => {
+            const { bBoxNotchInsNestTop } = generatePath({
+                hasNest: true,
+                hasNotchArg: false,
+                hasNotchInsTop: true,
+                hasNotchInsBot: true,
+                scale: 1,
+                nestLengthY: 30,
+                innerLengthX: 100,
+                argHeights: [],
+            });
+            expect(bBoxNotchInsNestTop?.extent.height).toBe(2);
+            expect(bBoxNotchInsNestTop?.extent.width).toBe(9);
+            expect(bBoxNotchInsNestTop?.coords.x).toBe(18);
+            expect(bBoxNotchInsNestTop?.coords.y).toBe(21);
+        });
+
+        it('evaluates bounding boxes for arguments', () => {
+            const { bBoxArgs } = generatePath({
+                hasNest: false,
+                hasNotchArg: false,
+                hasNotchInsTop: true,
+                hasNotchInsBot: true,
+                scale: 1,
+                innerLengthX: 100,
+                argHeights: [17, 30, 40],
+            });
+            expect(bBoxArgs.extent.height).toBe(9);
+            expect(bBoxArgs.extent.width).toBe(8);
+            expect(bBoxArgs.coords).toStrictEqual([
+                { x: 93, y: 6 },
+                { x: 93, y: 26 },
+                { x: 93, y: 56 },
+            ]);
+        });
     });
 });

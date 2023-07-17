@@ -6,26 +6,21 @@ import { useEffect, useRef, useState } from 'react';
 export default function (props: { instance: IBrickStatement }): JSX.Element {
   const { instance } = props;
   const [svgString, setSvgString] = useState<string>('');
+  const label = useRef<SVGTextElement>(null);
   const [argLabels, setArgLabels] = useState<string[]>([]);
-  const labelRef = useRef<SVGTextElement>(null);
-  const argsRef = useRef<SVGGElement>(null);
 
   useEffect(() => {
-    const labelWidth = labelRef.current?.getBBox();
+    const labelWidth = label.current?.getBBox();
     const args = instance.args;
+    let argMaxWidth = 0;
     for (let arg in args) {
       setArgLabels((argLabels) => [...argLabels, args[arg].label]);
+      argMaxWidth = Math.max(argMaxWidth, args[arg].label.length);
     }
-    const padding = 60;
-    const width = (labelWidth?.width as number) + padding;
+    const width = (labelWidth?.width as number) + argMaxWidth * 12.8 + 40;
     instance.labelWidth = width;
-  }, [instance]);
-
-  useEffect(() => {
-    const argsWidth = argsRef.current?.getBBox();
-    instance.labelWidth += argsWidth?.width as number;
     setSvgString(instance.SVGpaths[0]);
-  }, [argLabels, instance]);
+  }, []);
 
   return (
     <g transform={`scale(${instance.scale})`}>
@@ -41,7 +36,7 @@ export default function (props: { instance: IBrickStatement }): JSX.Element {
         }}
       />
       <text
-        ref={labelRef}
+        ref={label}
         x="8%"
         y="8%"
         dominantBaseline="middle"
@@ -51,21 +46,19 @@ export default function (props: { instance: IBrickStatement }): JSX.Element {
       >
         {instance.label}
       </text>
-      <g ref={argsRef}>
-        {argLabels.map((argLabel, index) => (
-          <text
-            key={index}
-            x="30%"
-            y={`${index == 0 ? 8 : 5 * index + (index + 1) * 8}%`}
-            dominantBaseline="middle"
-            style={{
-              fontSize: '0.8em',
-            }}
-          >
-            {argLabel}
-          </text>
-        ))}
-      </g>
+      {argLabels.map((argLabel, index) => (
+        <text
+          key={index}
+          x={`${(label.current?.getBBox().width as number) - 18}%`}
+          y="8%"
+          dominantBaseline="middle"
+          style={{
+            fontSize: '0.8em',
+          }}
+        >
+          {argLabel}
+        </text>
+      ))}
     </g>
   );
 }

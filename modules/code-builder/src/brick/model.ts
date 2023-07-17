@@ -34,8 +34,6 @@ abstract class BrickModel implements IBrick {
     protected _outline: TBrickColor;
     protected _scale: number;
 
-    public labelWidth = 0;
-
     public highlighted = false;
 
     constructor(params: {

@@ -51,7 +51,7 @@ export default class BrickExpression extends BrickModelExpression {
             hasNotchInsTop: false,
             hasNotchInsBot: false,
             scale: this._scale,
-            innerLengthX: this.labelWidth,
+            innerLengthX: 100,
             argHeights: Array.from({ length: argsLength }, () => 17),
         }).path;
 

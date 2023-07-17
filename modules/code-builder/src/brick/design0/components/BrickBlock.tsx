@@ -16,18 +16,14 @@ export default function (props: { instance: IBrickBlock }): JSX.Element {
     for (let arg in args) {
       setArgLabels((argLabels) => [...argLabels, args[arg].label]);
     }
-    const width = labelWidth?.width as number;
+    const padding = 60;
+    const width = (labelWidth?.width as number) + padding;
     instance.labelWidth = width;
   }, [instance]);
 
   useEffect(() => {
-    let argsWidth = argsRef.current?.getBBox().width;
-    if (argsWidth && argsWidth > 0) {
-      argsWidth += 15;
-    } else {
-      argsWidth = 40;
-    }
-    instance.labelWidth += argsWidth as number;
+    const argsWidth = argsRef.current?.getBBox();
+    instance.labelWidth += argsWidth?.width as number;
     setSvgString(instance.SVGpaths[0]);
   }, [argLabels, instance]);
 
@@ -46,8 +42,8 @@ export default function (props: { instance: IBrickBlock }): JSX.Element {
       />
       <text
         ref={labelRef}
-        x="37px"
-        y="11px"
+        x="12%"
+        y="8%"
         dominantBaseline="middle"
         style={{
           fontSize: '0.8em',

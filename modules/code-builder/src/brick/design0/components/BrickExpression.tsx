@@ -1,13 +1,17 @@
 import type { JSX } from 'react';
-import type { IBrickExpression } from '@/@types/brick';
+import type { IBrickExpression, TBrickCoords } from '@/@types/brick';
 
 // -------------------------------------------------------------------------------------------------
 
-export default function (props: { instance: IBrickExpression }): JSX.Element {
-  const { instance } = props;
-
+export default function ({
+  instance,
+  coords = { x: 0, y: 0 },
+}: {
+  instance: IBrickExpression;
+  coords?: TBrickCoords;
+}): JSX.Element {
   return (
-    <g transform={`scale(${instance.scale})`}>
+    <g transform={`translate(${coords?.x},${coords?.y}) scale(${instance.scale})`}>
       <path
         d={instance.SVGpath}
         style={{

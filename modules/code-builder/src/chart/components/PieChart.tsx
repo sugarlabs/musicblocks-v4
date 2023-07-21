@@ -27,24 +27,28 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 const PieChart: React.FC<PieChartProps> = (props) => {
   console.log(props);
   return (
-    <>
-      <PIE width={400} height={400}>
-        <Pie
-          data={data}
-          cx="50%"
-          cy="50%"
-          labelLine={false}
-          label={renderCustomizedLabel}
-          outerRadius={80}
-          fill="#8884d8"
-          dataKey="value"
-        >
-          {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-          ))}
-        </Pie>
-      </PIE>
-    </>
+    <PIE width={400} height={400}>
+      {[...new Array(props.config.levels)].map((level, index) => {
+        return (
+          <Pie
+            data={data}
+            key={index}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            label={renderCustomizedLabel}
+            innerRadius={index === 0 ? 0 : index * 40}
+            outerRadius={index === 0 ? 40 : index * 40}
+            fill={`${props.config.backgroundColor}`}
+            dataKey="value"
+          >
+            {data.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+        );
+      })}
+    </PIE>
   );
 };
 

@@ -107,10 +107,11 @@ export default class SynthUtils implements ISynthUtils {
         }
 
         const _pitch = this.samples[sampleName]['centerNote'];
+
         this.samplerSynths.set(
             sampleName,
             new Tone.Sampler({
-                _pitch: this.samples[sampleName]['data'],
+                [_pitch]: this.samples[sampleName]['data'],
             }),
         );
     }
@@ -232,12 +233,12 @@ export default class SynthUtils implements ISynthUtils {
     ) {
         const now = Tone.now();
 
-        if (instrumentName in this.builtinSynths) {
+        if (this.builtinSynths.has(instrumentName)) {
             const synth = this.getBuiltinSynth(instrumentName);
             if (synth !== undefined) {
                 synth.triggerAttackRelease(pitches, noteValueInSeconds, now + offset);
             }
-        } else if (instrumentName in this.samplerSynths) {
+        } else if (this.samplerSynths.has(instrumentName)) {
             const synth = this.samplerSynths.get(instrumentName);
             if (synth !== undefined) {
                 Tone.loaded().then(() => {
@@ -252,7 +253,7 @@ export default class SynthUtils implements ISynthUtils {
                     }
                 });
             }
-        } else if (instrumentName in this.playerSynths) {
+        } else if (this.playerSynths.has(instrumentName)) {
             const synth = this.playerSynths.get(instrumentName);
             if (synth !== undefined) {
                 Tone.loaded().then(() => {

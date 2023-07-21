@@ -446,6 +446,7 @@ export class Voice implements IVoice {
         }
 
         if (this._synthUtils !== null) {
+            console.log('calling synthUtils trigger function');
             this._synthUtils.trigger(
                 pitches,
                 noteValue,
@@ -475,6 +476,8 @@ export class Voice implements IVoice {
      * @throws {InvalidArgumentError}
      */
     public playNote(pitch: string | number, noteValue: number, instrumentName: string) {
+        console.log('calling voice playNote function');
         this.playNotes([pitch], noteValue, instrumentName, 0, true);
     }
 }
+

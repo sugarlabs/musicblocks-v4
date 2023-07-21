@@ -1,11 +1,12 @@
 import { Voice } from '@/core/voice';
 import SynthUtils from '@/core/synthUtils';
+import {setupSynthUtils} from '@/core/synthUtils';
 import * as Tone from 'tone';
 import { _state, noteValueToSeconds, _defaultSynth, _polySynth } from '@/singer';
 
 import { injected } from '@/index';
 
-(async () => {
+await (async () => {
   const { importAssets, getAsset } = await import('@sugarlabs/mb4-assets');
   const assetManifest = (await import('@sugarlabs/mb4-assets')).default;
   await importAssets(
@@ -41,15 +42,10 @@ async function playSynth(synthType: string) {
 
 async function voice() {
   const synth = new SynthUtils();
-  // const myVoice = new Voice('myvoice', synth);
-  // myVoice.playNote('c4', 1 / 4, 'piano');
-  synth.trigger(['c4'], 4, 'piano', 3);
-
-  // _state.notesPlayed = 0;
-  // const now = Tone.now();
-  // let offset = noteValueToSeconds(_state.notesPlayed);
-  // synth.trigger(['c4', 'd4'], 4, 'electronic synth', now + offset);
-  // _state.notesPlayed += 4;
+  const myVoice = new Voice('myvoice', synth);
+  myVoice.playNote('c4', 1 / 4, 'electronic synth');
+  await setupSynthUtils();
+  // synth.trigger(['c4', 'e4', 'g4'], 1, 'electronic synth', 0);
 }
 
 export default function (): JSX.Element {

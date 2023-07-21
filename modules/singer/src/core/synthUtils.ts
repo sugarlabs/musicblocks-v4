@@ -125,10 +125,17 @@ export default class SynthUtils implements ISynthUtils {
      * @throws {InvalidArgumentError}
      */
     public getBuiltinSynth(instrumentName: string): Tone.PolySynth | undefined {
-        if (instrumentName in this.builtinSynths) {
-            return this.builtinSynths.get(instrumentName);
+
+        for (let i of this.builtinSynths.keys()) {
+            if (i == instrumentName) {
+                return this.builtinSynths.get(instrumentName);
+            }
         }
         throw new InvalidArgumentError('cannot find builtin synth');
+        // if (instrumentName in this.builtinSynths) {
+        //     return this.builtinSynths.get(instrumentName);
+        // }
+        // throw new InvalidArgumentError('cannot find builtin synth');
     }
     /**
      * @remarks
@@ -248,7 +255,7 @@ export default class SynthUtils implements ISynthUtils {
                         synth.triggerAttackRelease(
                             this.samples[instrumentName]['centerNote'],
                             noteValueInSeconds,
-                            now + offset,
+                            now,
                         );
                     }
                 });

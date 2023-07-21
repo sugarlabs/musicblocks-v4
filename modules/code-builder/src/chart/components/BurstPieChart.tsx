@@ -1,15 +1,7 @@
 import React from 'react';
+import { BurstPieChartProps } from '@/@types/chart';
 
-type Props = {
-  config: {
-    innerCircleVisible: boolean;
-    levels: number;
-    colors: string[];
-    backgroundColor: string;
-  };
-};
-
-const BurstPieChart: React.FC<Props> = (props) => {
+const BurstPieChart: React.FC<BurstPieChartProps> = (props) => {
   console.log(props);
   return <div>BurstPieChart</div>;
 };

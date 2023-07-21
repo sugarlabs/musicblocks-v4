@@ -17,6 +17,11 @@ export default {
 
 export const PieChartStory: Story = {
   args: {
-    radius: 100,
+    config: {
+      innerCircleVisible: true,
+      levels: 3,
+      colors: ['#ff0000', '#00ff00', '#0000ff'],
+      backgroundColor: '#ffffff',
+    },
   },
 };

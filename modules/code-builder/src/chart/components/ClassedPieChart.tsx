@@ -1,15 +1,7 @@
 import React from 'react';
+import { ClassedPieChartProps } from '@/@types/chart';
 
-type Props = {
-  config: {
-    innerCircleVisible: boolean;
-    levels: number;
-    colors: string[];
-    backgroundColor: string;
-  };
-};
-
-const ClassedPieChart: React.FC<Props> = (props) => {
+const ClassedPieChart: React.FC<ClassedPieChartProps> = (props) => {
   console.log(props);
   return <div>ClassedPieChart</div>;
 };

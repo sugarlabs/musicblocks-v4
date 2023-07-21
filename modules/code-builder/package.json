@@ -16,6 +16,7 @@
     "react-dom": "~18.x"
   },
   "dependencies": {
-    "@sugarlabs/musicblocks-v4-lib": "^0.2.0"
+    "@sugarlabs/musicblocks-v4-lib": "^0.2.0",
+    "recharts": "^2.7.2"
   }
 }

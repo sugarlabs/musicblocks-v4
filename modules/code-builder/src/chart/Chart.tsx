@@ -2,22 +2,7 @@ import React from 'react';
 import BurstPieChart from './components/BurstPieChart';
 import ClassedPieChart from './components/ClassedPieChart';
 import PieChart from './components/PieChart';
-
-type ChartType = 'burst' | 'classed' | 'pie';
-
-interface ChartConfig {
-  type: ChartType;
-  innerCircleVisible: boolean;
-  levels: number;
-  colors: string[];
-  backgroundColor: string;
-  // data:
-}
-
-export interface ChartProps {
-  chartConfig: ChartConfig;
-}
-type config = Omit<ChartConfig, 'type'>;
+import { ChartProps, config } from '@/@types/chart';
 
 const Chart: React.FC<ChartProps> = (props) => {
   const { chartConfig } = props;

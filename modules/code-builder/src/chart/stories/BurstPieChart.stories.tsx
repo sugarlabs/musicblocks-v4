@@ -11,12 +11,17 @@ const MetaData: Meta<typeof BurstPieChart> = {
 type Story = StoryObj<typeof BurstPieChart>;
 
 export default {
-  title: 'Chart',
+  title: 'BurstPieChart',
   ...MetaData,
 };
 
 export const BurstPieChartStory: Story = {
   args: {
-    radius: 100,
+    config: {
+      innerCircleVisible: true,
+      levels: 3,
+      colors: ['#ff0000', '#00ff00', '#0000ff'],
+      backgroundColor: '#ffffff',
+    },
   },
 };

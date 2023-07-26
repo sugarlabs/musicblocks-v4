@@ -2,49 +2,101 @@ import { PieChartProps } from '@/@types/chart';
 import React from 'react';
 import { Cell, PieChart as PIE, Pie } from 'recharts';
 
-const data = [
-  { name: 'Group A', value: 400 },
-  { name: 'Group B', value: 300 },
-  { name: 'Group C', value: 300 },
-  { name: 'Group D', value: 200 },
-];
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
-const RADIAN = Math.PI / 180;
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-  return (
-    <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
-      {`${(percent * 100).toFixed(0)}%`}
-    </text>
-  );
-};
-
 const PieChart: React.FC<PieChartProps> = (props) => {
-  console.log(props);
+  const { config } = props;
+
+  const RADIAN = Math.PI / 180;
+  const renderCustomizedLabel = ({
+    cx,
+    cy,
+    midAngle,
+    innerRadius,
+    outerRadius,
+    percent,
+    index,
+    level,
+  }) => {
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="white"
+        textAnchor={x > cx ? 'start' : 'end'}
+        dominantBaseline="central"
+      >
+        {`${config.data[level][index].name}`}
+      </text>
+    );
+  };
+
+  const handleclick = (level: number, index: number) => {
+    console.log(level, index);
+    config.handler(config.data[level][index].name);
+  };
   return (
-    <PIE width={400} height={400}>
-      {[...new Array(props.config.levels)].map((level, index) => {
+    <PIE
+      width={400}
+      height={400}
+      style={{
+        outline: 'none',
+      }}
+    >
+      {config.innerCircleVisible === true ? (
+        <Pie
+          data={[{ name: 'X', value: 1 }]}
+          cx="50%"
+          cy="50%"
+          innerRadius={0}
+          outerRadius={30}
+          fill={`${config.backgroundColor}`}
+          labelLine={false}
+          dataKey="value"
+          isAnimationActive={false}
+          style={{
+            outline: 'none',
+          }}
+        >
+          <Cell
+            key={`cell-0`}
+            fill={'#f8f8'}
+            style={{
+              outline: 'none',
+            }}
+            onClick={config.handleClose}
+          />
+        </Pie>
+      ) : null}
+      {config.data.map((levelData, ind) => {
         return (
           <Pie
-            data={data}
-            key={index}
+            data={levelData}
+            key={ind}
             cx="50%"
             cy="50%"
             labelLine={false}
-            label={renderCustomizedLabel}
-            innerRadius={index === 0 ? 0 : index * 40}
-            outerRadius={index === 0 ? 40 : index * 40}
-            fill={`${props.config.backgroundColor}`}
+            label={(p) => renderCustomizedLabel({ ...p, level: ind })}
+            innerRadius={config.innerCircleVisible ? ind * 50 + 30 : ind * 50}
+            outerRadius={config.innerCircleVisible ? ind * 50 + 50 + 30 : ind * 50 + 50}
+            fill={`${config.backgroundColor}`}
             dataKey="value"
             isAnimationActive={false}
+            style={{
+              outline: 'none',
+            }}
           >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            {levelData.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={levelData[index].colors[index % levelData[index].colors.length]}
+                style={{
+                  outline: 'none',
+                }}
+                onClick={() => handleclick(ind, index)}
+              />
             ))}
           </Pie>
         );

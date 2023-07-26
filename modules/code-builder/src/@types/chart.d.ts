@@ -15,10 +15,10 @@ export interface ChartProps {
     chartConfig: ChartConfig;
 }
 
-type burstChartType = {
+type burstChartDataType = {
     name: string;
     value: number;
-    subData?: burstChartType[];
+    subData?: burstChartDataType[];
 };
 
 export type BurstPieChartProps = {
@@ -26,7 +26,7 @@ export type BurstPieChartProps = {
         dataColors: string[];
         subDataColors: string[];
         backgroundColor: string;
-        data: burstChartType[];
+        data: burstChartDataType[];
         handler: (name: string) => void;
     };
 };
@@ -40,11 +40,18 @@ export type ClassedPieChartProps = {
     };
 };
 
+type pieChartDataType = {
+    name: string;
+    value: number;
+    colors: string[];
+};
+
 export type PieChartProps = {
     config: {
         innerCircleVisible: boolean;
-        levels: number;
-        colors: string[];
         backgroundColor: string;
+        data: pieChartDataType[][];
+        handler: (name: string) => void;
+        handleClose?: () => void;
     };
 };

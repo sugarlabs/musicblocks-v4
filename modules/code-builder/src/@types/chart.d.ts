@@ -15,12 +15,19 @@ export interface ChartProps {
     chartConfig: ChartConfig;
 }
 
+type burstChartType = {
+    name: string;
+    value: number;
+    subData?: burstChartType[];
+};
+
 export type BurstPieChartProps = {
     config: {
-        innerCircleVisible: boolean;
-        levels: number;
-        colors: string[];
+        dataColors: string[];
+        subDataColors: string[];
         backgroundColor: string;
+        data: burstChartType[];
+        handler: (name: string) => void;
     };
 };
 

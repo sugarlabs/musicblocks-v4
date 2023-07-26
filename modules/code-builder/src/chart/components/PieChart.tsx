@@ -41,6 +41,7 @@ const PieChart: React.FC<PieChartProps> = (props) => {
             outerRadius={index === 0 ? 40 : index * 40}
             fill={`${props.config.backgroundColor}`}
             dataKey="value"
+            isAnimationActive={false}
           >
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

@@ -146,8 +146,13 @@ export default class SynthUtils implements ISynthUtils {
      * @throws {InvalidArgumentError}
      */
     public getSamplerSynth(instrumentName: string): Tone.Sampler | undefined {
-        if (instrumentName in this.samplerSynths) {
-            return this.samplerSynths.get(instrumentName);
+        // if (instrumentName in this.samplerSynths) {
+        //     return this.samplerSynths.get(instrumentName);
+        // }
+        for (let i of this.samplerSynths.keys()) {
+            if (i == instrumentName) {
+                return this.samplerSynths.get(instrumentName);
+            }
         }
         throw new InvalidArgumentError('cannot find sampler');
     }
@@ -246,7 +251,7 @@ export default class SynthUtils implements ISynthUtils {
                 synth.triggerAttackRelease(pitches, noteValueInSeconds, now + offset);
             }
         } else if (this.samplerSynths.has(instrumentName)) {
-            const synth = this.samplerSynths.get(instrumentName);
+            const synth = this.getSamplerSynth(instrumentName);
             if (synth !== undefined) {
                 Tone.loaded().then(() => {
                     if (this.samples[instrumentName]['tonal']) {

@@ -44,8 +44,8 @@ async function voice() {
   const synth = new SynthUtils();
   await setupSynthUtils();
   const myVoice = new Voice('myvoice', synth);
-  myVoice.playNote('c4', 1 / 4, 'piano');
-  // synth.trigger(['c4', 'e4', 'g4'], 1, 'electronic synth', 0);
+  // myVoice.playNote('c4', 1 / 4, 'piano');
+  synth.trigger(['c4', 'e4', 'g4'], 1, 'guitar', 0);
 }
 
 export default function (): JSX.Element {

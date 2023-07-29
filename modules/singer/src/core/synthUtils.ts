@@ -251,7 +251,7 @@ export default class SynthUtils implements ISynthUtils {
                 synth.triggerAttackRelease(pitches, noteValueInSeconds, now + offset);
             }
         } else if (this.samplerSynths.has(instrumentName)) {
-            const synth = this.getSamplerSynth(instrumentName);
+            const synth = this.getSamplerSynth(instrumentName)?.toDestination();
             if (synth !== undefined) {
                 Tone.loaded().then(() => {
                     if (this.samples[instrumentName]['tonal']) {

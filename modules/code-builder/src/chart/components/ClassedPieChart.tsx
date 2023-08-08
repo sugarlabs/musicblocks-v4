@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ClassedPieChartProps } from '@/@types/chart';
 import { Cell, PieChart as PIE, Pie } from 'recharts';
+import ScrollWheelHandler from 'react-scroll-wheel-handler';
 
 const l1data = [
   { name: 'A', value: 5 },
@@ -44,23 +45,116 @@ const SUBSUBDATACOLORS = [
   '#FF3042',
 ];
 
-const RADIAN = Math.PI / 180;
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-  return (
-    <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
-      {`${l1data[index].name}`}
-    </text>
-  );
-};
-
 const ClassedPieChart: React.FC<ClassedPieChartProps> = (props) => {
   const { config } = props;
 
-  console.log(config);
+  const RADIAN = Math.PI / 180;
+  const renderCustomizedLabell1 = ({
+    cx = 0,
+    cy = 0,
+    midAngle = 0,
+    innerRadius = 0,
+    outerRadius = 0,
+    percent = 0,
+    index = 0,
+  }) => {
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="white"
+        textAnchor="middle"
+        transform={`rotate(${-midAngle}, ${x}, ${y})`}
+        dominantBaseline="central"
+      >
+        {`${l1data[index].name}`}
+      </text>
+    );
+  };
+
+  const renderCustomizedLabell2 = ({
+    cx = 0,
+    cy = 0,
+    midAngle = 0,
+    innerRadius = 0,
+    outerRadius = 0,
+    percent = 0,
+    index = 0,
+  }) => {
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="white"
+        textAnchor="middle"
+        transform={`rotate(${-midAngle}, ${x}, ${y})`}
+        dominantBaseline="central"
+      >
+        {`${l2data[index].name}`}
+      </text>
+    );
+  };
+
+  const renderCustomizedLabell3 = ({
+    cx = 0,
+    cy = 0,
+    midAngle = 0,
+    innerRadius = 0,
+    outerRadius = 0,
+    percent = 0,
+    index = 0,
+  }) => {
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="white"
+        textAnchor="middle"
+        transform={`rotate(${-midAngle}, ${x}, ${y})`}
+        dominantBaseline="central"
+      >
+        {`${l3data[index].name}`}
+      </text>
+    );
+  };
+
+  const [rotationAngle, setRotationAngle] = useState(0);
+
+  const handleScroll = (scrollDelta: number) => {
+    console.log(scrollDelta);
+    const rotationSpeed = 20;
+    setRotationAngle((prevAngle) => prevAngle + scrollDelta * rotationSpeed);
+  };
+  const [activeSlice, setActiveSlice] = useState<{
+    name: string;
+    start: number;
+    end: number;
+  }>({
+    name: '',
+    start: 0,
+    end: 0,
+  });
+
+  const handlePieMouseEnter = (e: any) => {
+    const activeData = {
+      name: e.name,
+      start: e.startAngle,
+      end: e.endAngle,
+    };
+    setActiveSlice(activeData);
+  };
 
   const handleDataClick = (index: number): void => {
     console.log(index);
@@ -72,13 +166,39 @@ const ClassedPieChart: React.FC<ClassedPieChartProps> = (props) => {
   };
   return (
     <PIE width={400} height={400} style={{ outline: 'none' }}>
+      {config.innerCircleVisible === true ? (
+        <Pie
+          data={[{ name: 'X', value: 1 }]}
+          cx="50%"
+          cy="50%"
+          innerRadius={0}
+          outerRadius={30}
+          fill={`${config.backgroundColor}`}
+          labelLine={false}
+          dataKey="value"
+          isAnimationActive={false}
+          style={{
+            outline: 'none',
+          }}
+        >
+          <Cell
+            key={`cell-0`}
+            fill={'#f8f8'}
+            style={{
+              outline: 'none',
+            }}
+            // onClick={config.handleClose}
+          />
+        </Pie>
+      ) : null}
       <Pie
         data={l1data}
         cx="50%"
         cy="50%"
         labelLine={false}
-        label={renderCustomizedLabel}
-        outerRadius={60}
+        label={renderCustomizedLabell1}
+        innerRadius={config.innerCircleVisible === true ? 30 : 0}
+        outerRadius={config.innerCircleVisible === true ? 60 : 30}
         fill="#8884d8"
         dataKey="value"
         isAnimationActive={false}
@@ -99,8 +219,10 @@ const ClassedPieChart: React.FC<ClassedPieChartProps> = (props) => {
         data={l2data}
         cx={'50%'}
         cy={'50%'}
-        innerRadius={60}
-        outerRadius={100}
+        labelLine={false}
+        label={renderCustomizedLabell2}
+        innerRadius={config.innerCircleVisible === true ? 60 : 90}
+        outerRadius={config.innerCircleVisible === true ? 100 : 130}
         isAnimationActive={false}
       >
         {l2data.map((entry, index) => (
@@ -118,8 +240,10 @@ const ClassedPieChart: React.FC<ClassedPieChartProps> = (props) => {
         data={l3data}
         cx={'50%'}
         cy={'50%'}
-        innerRadius={100}
-        outerRadius={140}
+        labelLine={false}
+        label={renderCustomizedLabell3}
+        innerRadius={config.innerCircleVisible === true ? 100 : 130}
+        outerRadius={config.innerCircleVisible === true ? 130 : 160}
         isAnimationActive={false}
       >
         {l2data.map((entry, index) => (

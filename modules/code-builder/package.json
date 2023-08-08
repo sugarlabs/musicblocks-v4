@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@sugarlabs/musicblocks-v4-lib": "^0.2.0",
+    "react-scroll-wheel-handler": "^2.2.0",
     "recharts": "^2.7.2"
   }
 }

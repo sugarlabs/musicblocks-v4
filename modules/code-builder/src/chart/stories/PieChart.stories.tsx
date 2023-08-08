@@ -22,18 +22,22 @@ export const PieChartStory: Story = {
       backgroundColor: '#ffffff',
       data: [
         [
-          { name: 'A', value: 400, colors: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'] },
-          { name: 'B', value: 300, colors: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'] },
-          { name: 'C', value: 300, colors: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'] },
+          { name: 'A', value: 1, colors: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'] },
+          { name: 'B', value: 1, colors: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'] },
+          { name: 'C', value: 1, colors: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'] },
+          { name: 'I', value: 1, colors: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'] },
         ],
         [
-          { name: 'D', value: 400, colors: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'] },
-          { name: 'E', value: 300, colors: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'] },
-          { name: 'F', value: 200, colors: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'] },
+          { name: 'D', value: 1, colors: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'] },
+          { name: 'E', value: 1, colors: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'] },
+          { name: 'F', value: 1, colors: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'] },
+          { name: 'J', value: 1, colors: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'] },
         ],
         [
-          { name: 'G', value: 400, colors: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'] },
-          { name: 'H', value: 200, colors: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'] },
+          { name: 'G', value: 1, colors: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'] },
+          { name: 'H', value: 1, colors: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'] },
+          { name: 'K', value: 1, colors: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'] },
+          { name: 'L', value: 1, colors: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'] },
         ],
       ],
       handler: (name) => {

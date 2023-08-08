@@ -1,20 +1,21 @@
 import { PieChartProps } from '@/@types/chart';
-import React from 'react';
+import React, { useState } from 'react';
 import { Cell, PieChart as PIE, Pie } from 'recharts';
+import ScrollWheelHandler from 'react-scroll-wheel-handler';
 
 const PieChart: React.FC<PieChartProps> = (props) => {
   const { config } = props;
 
   const RADIAN = Math.PI / 180;
   const renderCustomizedLabel = ({
-    cx,
-    cy,
-    midAngle,
-    innerRadius,
-    outerRadius,
-    percent,
-    index,
-    level,
+    cx = 0,
+    cy = 0,
+    midAngle = 0,
+    innerRadius = 0,
+    outerRadius = 0,
+    percent = 0,
+    index = 0,
+    level = 0,
   }) => {
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -25,12 +26,39 @@ const PieChart: React.FC<PieChartProps> = (props) => {
         x={x}
         y={y}
         fill="white"
-        textAnchor={x > cx ? 'start' : 'end'}
+        textAnchor="middle"
+        transform={`rotate(${-midAngle}, ${x}, ${y})`}
         dominantBaseline="central"
       >
         {`${config.data[level][index].name}`}
       </text>
     );
+  };
+
+  const [rotationAngle, setRotationAngle] = useState(0);
+
+  const handleScroll = (scrollDelta: number) => {
+    console.log(scrollDelta);
+    const rotationSpeed = 20;
+    setRotationAngle((prevAngle) => prevAngle + scrollDelta * rotationSpeed);
+  };
+  const [activeSlice, setActiveSlice] = useState<{
+    name: string;
+    start: number;
+    end: number;
+  }>({
+    name: '',
+    start: 0,
+    end: 0,
+  });
+
+  const handlePieMouseEnter = (e: any) => {
+    const activeData = {
+      name: e.name,
+      start: e.startAngle,
+      end: e.endAngle,
+    };
+    setActiveSlice(activeData);
   };
 
   const handleclick = (level: number, index: number) => {

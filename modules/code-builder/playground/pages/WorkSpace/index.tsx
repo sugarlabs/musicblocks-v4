@@ -9,23 +9,43 @@ import {
   ModelBrickStatement,
 } from '@/brick';
 import { WORKSPACES_DATA } from './data';
-import type { TBrickCoords, TBrickType } from '@/@types/brick';
 import type { Brick } from './data';
 
-function getBrick(
-  type: TBrickType,
-  instance: ModelBrickBlock | ModelBrickData | ModelBrickExpression | ModelBrickStatement,
-  coords: TBrickCoords,
-) {
-  switch (type) {
+function getBrick(brickData: Brick) {
+  switch (brickData.type) {
     case 'data':
-      return <BrickData instance={instance as ModelBrickData} coords={coords} />;
+      return (
+        <BrickData
+          id={brickData.id}
+          instance={brickData.instance as ModelBrickData}
+          coords={brickData.coords}
+        />
+      );
     case 'expression':
-      return <BrickExpression instance={instance as ModelBrickExpression} coords={coords} />;
+      return (
+        <BrickExpression
+          id={brickData.id}
+          instance={brickData.instance as ModelBrickExpression}
+          coords={brickData.coords}
+        />
+      );
     case 'statement':
-      return <BrickStatement instance={instance as ModelBrickStatement} coords={coords} />;
+      return (
+        <BrickStatement
+          id={brickData.id}
+          instance={brickData.instance as ModelBrickStatement}
+          coords={brickData.coords}
+        />
+      );
     case 'block':
-      return <BrickBlock instance={instance as ModelBrickBlock} coords={coords} />;
+      return (
+        <BrickBlock
+          id={brickData.id}
+          brickData={brickData}
+          instance={brickData.instance as ModelBrickBlock}
+          coords={brickData.coords}
+        />
+      );
     default:
       return <></>;
   }
@@ -34,7 +54,7 @@ function getBrick(
 function RenderBricks({ brickData }: { brickData: Brick }) {
   return (
     <>
-      {getBrick(brickData.type, brickData.instance, brickData.coords)}
+      {getBrick(brickData)}
       {brickData.children &&
         brickData.children?.length > 0 &&
         brickData.children.map((child) => <RenderBricks key={child.id} brickData={child} />)}
@@ -44,14 +64,15 @@ function RenderBricks({ brickData }: { brickData: Brick }) {
 
 function WorkSpace() {
   return (
-    <div>
+    <div style={{ padding: '20px 50px' }}>
       {WORKSPACES_DATA.map((workspace) => (
         <svg
           version="1.1"
           xmlns="http://www.w3.org/2000/svg"
           key={workspace.id}
-          height="500px"
-          width="500px"
+          height="700px"
+          width="800px"
+          style={{ border: '2px solid black' }}
         >
           {workspace.data.map((brick) => {
             return <RenderBricks key={brick.id} brickData={brick} />;

@@ -17,6 +17,8 @@ export type Brick = {
     id: string;
     type: TBrickType;
     instance: InstanceMap[TBrickType];
+    surroundingBricks: { above: string; below: string };
+    childBricks: string[];
     coords: TBrickCoords;
     children?: Brick[];
 };
@@ -45,6 +47,8 @@ export const WORKSPACES_DATA: { id: string; data: Brick[] }[] = [
                     name: '',
                     nestLengthY: 125,
                 }),
+                surroundingBricks: { above: '', below: '' },
+                childBricks: ['2', '3', '4', '5', '6'],
                 coords: { x: 50, y: 50 },
                 children: [
                     {
@@ -76,6 +80,8 @@ export const WORKSPACES_DATA: { id: string; data: Brick[] }[] = [
                             connectBelow: true,
                             name: '',
                         }),
+                        surroundingBricks: { above: '1', below: '3' },
+                        childBricks: [],
                         coords: { x: 68, y: 92 },
                     },
                     {
@@ -107,6 +113,8 @@ export const WORKSPACES_DATA: { id: string; data: Brick[] }[] = [
                             connectBelow: true,
                             name: '',
                         }),
+                        surroundingBricks: { above: '2', below: '4' },
+                        childBricks: [],
                         coords: { x: 68, y: 134 },
                     },
                     {
@@ -139,6 +147,8 @@ export const WORKSPACES_DATA: { id: string; data: Brick[] }[] = [
                             name: '',
                             nestLengthY: 17,
                         }),
+                        surroundingBricks: { above: '3', below: '6' },
+                        childBricks: ['5'],
                         coords: { x: 68, y: 176 },
                         children: [
                             {
@@ -171,6 +181,8 @@ export const WORKSPACES_DATA: { id: string; data: Brick[] }[] = [
                                     connectBelow: true,
                                     name: '',
                                 }),
+                                surroundingBricks: { above: '', below: '' },
+                                childBricks: [],
                                 coords: { x: 86, y: 218 },
                             },
                         ],
@@ -204,6 +216,8 @@ export const WORKSPACES_DATA: { id: string; data: Brick[] }[] = [
                             connectBelow: true,
                             name: '',
                         }),
+                        surroundingBricks: { above: '4', below: '' },
+                        childBricks: [],
                         coords: { x: 68, y: 302 },
                     },
                 ],

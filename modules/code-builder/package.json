@@ -16,6 +16,8 @@
     "react-dom": "~18.x"
   },
   "dependencies": {
-    "@sugarlabs/musicblocks-v4-lib": "^0.2.0"
+    "@sugarlabs/musicblocks-v4-lib": "^0.2.0",
+    "react-aria": "^3.26.0",
+    "zustand": "^4.3.9"
   }
 }

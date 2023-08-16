@@ -1,0 +1,53 @@
+.tab {
+  border: solid 1px #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+  padding: 6px 12px;
+  margin: 5px;
+}
+
+.palleteContainer {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid black;
+  border-radius: 5px;
+  padding: 7px;
+  margin: 5px;
+  background-color: #fff;
+  height: 100%;
+}
+
+.search {
+  flex: 1;
+  margin: 5px;
+  padding: 5px;
+  border: solid 1px #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+  color: '#686868';
+}
+
+.tabContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.searchContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.blocksContainer {
+  margin-top: 5px;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: scroll;
+  row-gap: 10px;
+}

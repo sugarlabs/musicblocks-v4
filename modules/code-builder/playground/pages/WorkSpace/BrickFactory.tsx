@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { useMove } from 'react-aria';
 import { BrickBlock, BrickData, BrickExpression, BrickStatement } from '@/brick';
 import { useBricksCoords } from './BricksCoordsStore';
+import { WORKSPACES_DATA } from './data';
 import type { Brick } from './data';
+import { getBelowBricksIds } from './utils';
 
 const BrickFactory = ({ brickData }: { brickData: Brick }) => {
   const CONTAINER_SIZE_X = 800;
@@ -35,14 +37,14 @@ const BrickFactory = ({ brickData }: { brickData: Brick }) => {
         });
       });
 
-      const belowBrickId = brickData.surroundingBricks.below;
-      if (belowBrickId) {
+      const belowBrickIds = getBelowBricksIds(WORKSPACES_DATA[0].data, brickData.id);
+      belowBrickIds.forEach((belowBrickId) => {
         const belowBrickCoords = getCoords(belowBrickId)!;
         setCoords(belowBrickId, {
           x: belowBrickCoords.x + e.deltaX,
           y: belowBrickCoords.y + e.deltaY,
         });
-      }
+      });
 
       // Normally, we want to allow the user to continue
       // dragging outside the box such that they need to

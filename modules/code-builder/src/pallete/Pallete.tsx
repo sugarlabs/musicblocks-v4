@@ -1,12 +1,12 @@
 import { TBrickArgDataType } from '@/@types/brick';
 import { PalleteProps, Tab } from '@/@types/pallete';
 import { BrickStatement, ModelBrickStatement } from '@/brick';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import withDraggable from './DragHoc';
 import './pallete.scss';
 
 const Pallete = (PalleteProps: PalleteProps) => {
-  const { config } = PalleteProps;
+  const { config, reset } = PalleteProps;
   const [search, setSearch] = useState('');
   const [selectedTab, setSelectedTab] = useState<Tab>('flow');
   const [data, setData] = useState(config.data);
@@ -36,26 +36,29 @@ const Pallete = (PalleteProps: PalleteProps) => {
 
   const DragBrick = withDraggable(BrickStatement);
 
-  const ResetPallete = () => {
-    setSearch('');
-    setSelectedTab('flow');
-    setData(config.data);
-  };
-
   const searchBlocks = (search: string) => {
     if (search === '') {
-      ResetPallete();
+      setSearch('');
+      setSelectedTab('flow');
+      setData(config.data);
       return;
     }
     const newData = data.filter((block) => {
       return block;
     });
-    console.log(newData);
     setData([]);
   };
 
+  useEffect(() => {
+    if (reset) {
+      setSearch('');
+      setSelectedTab('flow');
+      setData(config.data);
+    }
+  }, [reset]);
+
   return (
-    <div className="palleteContainer">
+    <div className="palleteContainer" id="Pallete">
       <span>Pallete</span>
       <div className="tabContainer">
         <button

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 const withDraggable = (Component: React.FC<any>) => (props: any) => {
   const [isDragging, setIsDragging] = useState(false);
@@ -57,15 +57,14 @@ const withDraggable = (Component: React.FC<any>) => (props: any) => {
       onMouseDown={handleMouseDown}
       transform={`translate(${position.x}, ${position.y})`}
       style={{
-        // width: '100px',
-        // height: '100px',
+        width: svgRef.current?.children[0].getBoundingClientRect().width,
+        height: svgRef.current?.children[0].getBoundingClientRect().height,
         position: 'absolute',
         overflow: 'hidden',
-        border: '1px solid black',
         zIndex: 100,
       }}
     >
-      <Component {...props} x={position.x} y={position.y} />
+      <Component {...props} />
     </svg>
   );
 };

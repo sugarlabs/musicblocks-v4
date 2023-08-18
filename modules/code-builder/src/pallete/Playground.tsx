@@ -1,11 +1,13 @@
+import { TBrickArgDataType } from '@/@types/brick';
+import { BrickStatement, ModelBrickStatement } from '@/brick';
 import { useState } from 'react';
 import Canvas from './Canvas';
-import Pallete from './Pallete';
-import { BrickStatement, ModelBrickStatement } from '@/brick';
-import { TBrickArgDataType } from '@/@types/brick';
 import withDraggable from './DragHoc';
+import Pallete from './Pallete';
 
 const Playground = () => {
+  const [reset, setReset] = useState(false);
+
   const [elements, setElements] = useState<JSX.Element[]>([]);
   const instance = new ModelBrickStatement({
     label: 'Statement',
@@ -31,8 +33,7 @@ const Playground = () => {
     name: '',
   });
 
-  const handleElementDrop = (type: string, x: number, y: number) => {
-    console.log(type, x, y);
+  const handleElementDrop = () => {
     const DragBrick = withDraggable(BrickStatement);
     const newElement = <DragBrick instance={instance} />;
     setElements([...elements, newElement]);
@@ -60,6 +61,7 @@ const Playground = () => {
           config={{
             data: [],
           }}
+          reset={reset}
         />
       </div>
       <div
@@ -69,7 +71,7 @@ const Playground = () => {
           width: '65%',
         }}
       >
-        <Canvas onDrop={handleElementDrop}>{elements}</Canvas>
+        <Canvas>{elements}</Canvas>
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ import withDraggable from './DragHoc';
 import './pallete.scss';
 
 const Pallete = (PalleteProps: PalleteProps) => {
-  const { config, reset } = PalleteProps;
+  const { config, reset, onBrickDrop } = PalleteProps;
   const [search, setSearch] = useState('');
   const [selectedTab, setSelectedTab] = useState<Tab>('flow');
   const [data, setData] = useState(config.data);
@@ -103,7 +103,7 @@ const Pallete = (PalleteProps: PalleteProps) => {
         />
       </div>
       <div className="blocksContainer">
-        <DragBrick instance={instance} />
+        <DragBrick instance={instance} onCanvasDrop={onBrickDrop} />
       </div>
     </div>
   );

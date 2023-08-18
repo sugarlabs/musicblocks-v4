@@ -33,10 +33,12 @@ const Playground = () => {
     name: '',
   });
 
-  const handleElementDrop = () => {
+  const handleBrickDrop = () => {
+    console.log('handleBrickDrop');
     const DragBrick = withDraggable(BrickStatement);
     const newElement = <DragBrick instance={instance} />;
     setElements([...elements, newElement]);
+    setReset(true);
   };
 
   return (
@@ -61,6 +63,7 @@ const Playground = () => {
           config={{
             data: [],
           }}
+          onBrickDrop={handleBrickDrop}
           reset={reset}
         />
       </div>

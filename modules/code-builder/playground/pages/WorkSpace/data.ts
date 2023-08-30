@@ -1,16 +1,19 @@
-import {
-    ModelBrickBlock,
-    ModelBrickData,
-    ModelBrickExpression,
-    ModelBrickStatement,
-} from '@/brick';
-import type { TBrickType, TBrickCoords, TBrickArgDataType } from '@/@types/brick';
+import { ModelBrickBlock, ModelBrickStatement } from '@/brick';
+import type {
+    TBrickType,
+    TBrickCoords,
+    TBrickArgDataType,
+    IBrickData,
+    IBrickExpression,
+    IBrickStatement,
+    IBrickBlock,
+} from '@/@types/brick';
 
 type InstanceMap = {
-    data: ModelBrickData;
-    expression: ModelBrickExpression;
-    statement: ModelBrickStatement;
-    block: ModelBrickBlock;
+    data: IBrickData;
+    expression: IBrickExpression;
+    statement: IBrickStatement;
+    block: IBrickBlock;
 };
 
 export type Brick = {

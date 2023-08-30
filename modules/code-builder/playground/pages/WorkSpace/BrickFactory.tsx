@@ -29,7 +29,6 @@ const BrickFactory = ({ brickData }: { brickData: Brick }) => {
       setCoords(brickData.id, { x: clampX(newX), y: clampY(newY) });
 
       brickData.childBricks.forEach((childBrick) => {
-        console.log(childBrick);
         const childBrickCoords = getCoords(childBrick)!;
         setCoords(childBrick, {
           x: childBrickCoords.x + e.deltaX,
@@ -69,41 +68,118 @@ const BrickFactory = ({ brickData }: { brickData: Brick }) => {
     },
   });
 
-  switch (brickData.type) {
-    case 'data':
-      return (
-        <BrickData brickData={brickData} moveProps={moveProps} coords={brickCoords} color={color} />
-      );
-    case 'expression':
-      return (
-        <BrickExpression
-          brickData={brickData}
-          moveProps={moveProps}
-          coords={brickCoords}
-          color={color}
+  const VisualIndicators = () => (
+    <>
+      {/* Right args bounding box */}
+      {'bBoxArgs' in brickData.instance && (
+        <>
+          {Object.keys(brickData.instance.bBoxArgs).map((name, i) => {
+            if ('bBoxArgs' in brickData.instance) {
+              const arg = brickData.instance.bBoxArgs[name];
+
+              return (
+                <rect
+                  key={i}
+                  x={brickCoords.x + arg?.coords.x}
+                  y={brickCoords.y + arg?.coords.y}
+                  height={arg?.extent.height}
+                  width={arg?.extent.width}
+                  fill="green"
+                  opacity={0.8}
+                />
+              );
+            }
+          })}
+        </>
+      )}
+
+      {/* Top instruction notch bounding box */}
+      {'bBoxNotchInsTop' in brickData.instance && (
+        <rect
+          x={brickCoords.x + brickData.instance.bBoxNotchInsTop?.coords.x}
+          y={brickCoords.y + brickData.instance.bBoxNotchInsTop?.coords.y}
+          height={brickData.instance.bBoxNotchInsTop?.extent.height}
+          width={brickData.instance.bBoxNotchInsTop?.extent.width}
+          fill="green"
+          opacity={0.9}
         />
-      );
-    case 'statement':
-      return (
-        <BrickStatement
-          brickData={brickData}
-          moveProps={moveProps}
-          coords={brickCoords}
-          color={color}
+      )}
+
+      {/* Bottom instruction notch bounding box */}
+      {'bBoxNotchInsBot' in brickData.instance && (
+        <rect
+          x={brickCoords.x + brickData.instance.bBoxNotchInsBot?.coords.x}
+          y={brickCoords.y + brickData.instance.bBoxNotchInsBot?.coords.y}
+          height={brickData.instance.bBoxNotchInsBot?.extent.height}
+          width={brickData.instance.bBoxNotchInsBot?.extent.width}
+          fill="green"
+          opacity={0.9}
         />
-      );
-    case 'block':
-      return (
-        <BrickBlock
-          brickData={brickData}
-          moveProps={moveProps}
-          coords={brickCoords}
-          color={color}
+      )}
+
+      {/* Top instruction notch inside nesting bounding box */}
+      {'bBoxNotchInsNestTop' in brickData.instance && (
+        <rect
+          x={brickCoords.x + brickData.instance.bBoxNotchInsNestTop?.coords.x}
+          y={brickCoords.y + brickData.instance.bBoxNotchInsNestTop?.coords.y}
+          height={brickData.instance.bBoxNotchInsNestTop?.extent.height}
+          width={brickData.instance.bBoxNotchInsNestTop?.extent.width}
+          fill="green"
+          opacity={0.9}
         />
-      );
-    default:
-      return <></>;
-  }
+      )}
+    </>
+  );
+
+  const getBrick = () => {
+    switch (brickData.type) {
+      case 'data':
+        return (
+          <BrickData
+            brickData={brickData}
+            moveProps={moveProps}
+            coords={brickCoords}
+            color={color}
+          />
+        );
+      case 'expression':
+        return (
+          <BrickExpression
+            brickData={brickData}
+            moveProps={moveProps}
+            coords={brickCoords}
+            color={color}
+          />
+        );
+      case 'statement':
+        return (
+          <BrickStatement
+            brickData={brickData}
+            moveProps={moveProps}
+            coords={brickCoords}
+            color={color}
+          />
+        );
+      case 'block':
+        return (
+          <BrickBlock
+            brickData={brickData}
+            moveProps={moveProps}
+            coords={brickCoords}
+            color={color}
+          />
+        );
+      default:
+        return <></>;
+    }
+  };
+
+  return (
+    <>
+      <VisualIndicators />
+      {/* {getBrick()} */}
+    </>
+  );
 };
 
 export default BrickFactory;

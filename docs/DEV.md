@@ -145,6 +145,14 @@ Learn
 
 Add your _PAT_ to `.npmrc` using
 
+If you are using windows (don't surround //npm.pkg.github.com.... with " ")
+
+```bash
+echo //npm.pkg.github.com/:_authToken=[YOUR_GITHUB_PERSONAL_ACCESS_TOKEN] >> ~/.npmrc
+```
+
+For Linux distribution and Mac
+
 ```bash
 echo "//npm.pkg.github.com/:_authToken=[YOUR_GITHUB_PERSONAL_ACCESS_TOKEN]" >> ~/.npmrc
 ```

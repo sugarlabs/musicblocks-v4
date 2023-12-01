@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import DOMPurify from 'dompurify';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
@@ -17,7 +18,8 @@ export default function (props: {
 
   useEffect(() => {
     const _wrapper = wrapper.current! as HTMLDivElement;
-    _wrapper.innerHTML = props.content;
+    const sanitizedContent = DOMPurify.sanitize(props.content);
+    _wrapper.innerHTML = sanitizedContent;
   });
 
   // ---------------------------------------------------------------------------

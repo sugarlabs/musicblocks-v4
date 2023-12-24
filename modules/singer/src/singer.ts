@@ -23,7 +23,7 @@ const currentpitch = new CurrentPitch(testKeySignature, new Temperament(), 1, 4)
 const _stateObj = { ..._defaultSynthStateValues };
 
 /** Proxy to the synth state parameters. */
-export const _state = new Proxy(_stateObj, {
+const _state = new Proxy(_stateObj, {
     set: (_, key, value) => {
         if (key === 'beatsPerMinute') {
             _stateObj.beatsPerMinute = value;
@@ -37,8 +37,7 @@ export const _state = new Proxy(_stateObj, {
 });
 
 /** Default synth **/
-export const _defaultSynth = new Tone.Synth().toDestination();
-export const _polySynth = new Tone.PolySynth().toDestination();
+const _defaultSynth = new Tone.Synth().toDestination();
 
 // -- private functions ----------------------------------------------------------------------------
 

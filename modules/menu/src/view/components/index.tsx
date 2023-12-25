@@ -16,6 +16,9 @@ export function Menu(props: TPropsMenu): JSX.Element {
     <>
       <>
         <label className={`menu-btn ${!props.injected.flags.uploadFile ? 'menu-btn-hidden' : ''}`}>
+          <p className="menu-btn-label">
+            <span>{'Export Project'}</span>
+          </p>
           <div className="menu-btn-img">
             <SImage asset={props.injected.assets['image.icon.uploadFile']} />
           </div>
@@ -52,6 +55,9 @@ export function Menu(props: TPropsMenu): JSX.Element {
         </button>
 
         <label className={`menu-btn ${!props.injected.flags.loadProject ? 'menu-btn-hidden' : ''}`}>
+          <p className="menu-btn-label">
+            <span>{'Import Project'}</span>
+          </p>
           <div className="menu-btn-img">
             <SImage asset={props.injected.assets['image.icon.loadProject']} />
           </div>

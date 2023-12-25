@@ -1,7 +1,7 @@
 import { Voice } from '@/core/voice';
 import SynthUtils from '@/core/synthUtils';
 import * as Tone from 'tone';
-import { _state, noteValueToSeconds, _defaultSynth, _polySynth } from '@/singer';
+import { state, noteValueToSeconds, defaultSynth, polySynth } from '@/singer';
 import { setupSynthUtils } from '@/core/synthUtils';
 import { injected } from '@/index';
 
@@ -18,26 +18,25 @@ await (async () => {
     'audio.piano': getAsset('audio.piano')!,
     'audio.snare': getAsset('audio.snare')!,
   };
-
 })();
 
 function _getSynth(synthType: string) {
   switch (synthType) {
     case 'polysynth':
-      return _polySynth;
+      return polySynth;
   }
-  return _defaultSynth;
+  return defaultSynth;
 }
 
 async function playSynth(synthType: string) {
   await Tone.start();
   const synth = _getSynth(synthType);
-  _state.notesPlayed = 0;
+  state.notesPlayed = 0;
   console.log('playing c4 using', synthType);
   const now = Tone.now();
-  let offset = noteValueToSeconds(_state.notesPlayed);
+  let offset = noteValueToSeconds(state.notesPlayed);
   synth.triggerAttackRelease('c4', '4n', now + offset);
-  _state.notesPlayed += 4;
+  state.notesPlayed += 4;
 }
 
 async function voice() {
@@ -60,7 +59,6 @@ async function voice() {
   //     sampler.triggerAttackRelease(["C4", "E4", "G4"], 4, 2);
   //   }
   // }).toDestination();
-
 
   // _state.notesPlayed = 0;
   // const now = Tone.now();

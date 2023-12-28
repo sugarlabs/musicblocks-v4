@@ -10,6 +10,14 @@ const _defaultSynthStateValues = {
     beatsPerMinute: 90,
 };
 
+/** Default state parameter values of a poly synth. */
+const _polySynthStateValues = {
+    notesPlayed: 0,
+    beat: 1 / 4,
+    beatsPerMinute: 90,
+    voices: [],
+};
+
 import KeySignature from './core/keySignature';
 import CurrentPitch from './core/currentPitch';
 import Temperament from './core/temperament';
@@ -20,7 +28,7 @@ const testKeySignature = new KeySignature('major', 'd');
 const currentpitch = new CurrentPitch(testKeySignature, new Temperament(), 1, 4);
 
 /** Synth state parameters. */
-const _stateObj = { ..._defaultSynthStateValues };
+const _stateObj = { ..._defaultSynthStateValues, ..._polySynthStateValues };
 
 /** Proxy to the synth state parameters. */
 export const _state = new Proxy(_stateObj, {
@@ -38,6 +46,9 @@ export const _state = new Proxy(_stateObj, {
 
 /** Default synth **/
 export const _defaultSynth = new Tone.Synth().toDestination();
+
+/** Poly synth */
+export const _polySynth = new Tone.PolySynth().toDestination();
 
 // -- private functions ----------------------------------------------------------------------------
 

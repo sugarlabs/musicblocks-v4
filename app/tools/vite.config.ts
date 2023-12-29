@@ -92,6 +92,42 @@ export default defineConfig({
                 'lib.i18n': resolve('../lib/i18n/index.ts'),
                 'lib.view': resolve('../lib/view/index.ts'),
             },
+            plugins: [
+                {
+                    name: 'custom-sw-plugin',
+                    generateBundle(options, bundle) {
+                        const swCode = `
+                        import { precacheAndRoute } from 'workbox-precaching';
+                        
+                        precacheAndRoute([
+                            '/build-53e87ed8.svg',
+                            '/close-444dc9a6.svg',
+                            '/code-74870b2e.svg',
+                            '/build-53e87ed8.svg',
+                            '/close-444dc9a6.svg',
+                            '/code-74870b2e.svg',
+                            '/exportDrawing-aee43b5d.svg',
+                            '/help-a0383ce2.svg',
+                            '/logo-3080f493.png',
+                            '/mouse-46cf41ce.svg',
+                            '/pin-8515e01d.svg',
+                            '/reset-a8de2102.svg',
+                            '/run-123f2282.svg',
+                            '/saveProjectHTML-e442bff6.svg',
+                            '/startRecording-5dec9e0d.svg',
+                            '/stop-aa193098.svg',
+                            '/stopRecording-48f9a011.svg',
+                            '/unpin-427cfcc6.svg'
+                        ]);`;
+                        
+                        this.emitFile({
+                            type: 'asset',
+                            fileName: 'sw.js',
+                            source: swCode,
+                        });
+                    },
+                },
+            ]
         },
     },
 });

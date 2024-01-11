@@ -175,7 +175,7 @@ After you are set-up, the steps you take depend on what you want to do:
         npm run serve
         ```
 
-    Visit `localhost:5173` in a browser to view the web page served.
+        Visit `localhost:5173` in a browser to view the web page served.
 
     - For generating a generic production build, run:
 

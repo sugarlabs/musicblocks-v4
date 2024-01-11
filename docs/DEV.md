@@ -1,11 +1,11 @@
 # Developer Guide
 
-## Setup Development Environment
+## Setup up the Development Environment
 
-### Without Docker
+### 1. Without Docker
 
 This is a _**TypeScript**_ project that uses _**React**_. You'll just need
-_[**Node.js**](https://nodejs.org/en) v16_ and _**npm**_ installed on your development machine.
+_[**Node.js**](https://nodejs.org/en) v16_ or higher and _**npm**_ installed on your development machine.
 Although, this is sufficient to run, build, and test the project as a whole, you might need some
 extra tools for other development tasks.
 
@@ -14,7 +14,7 @@ _**ts-node**_ (_Node.js executable for TypeScript_) to manually execute `.ts` sc
 you'll need an _HTTP_ server like _**http-server**_ (_a HTTP server program_), if you want to serve
 files manually.
 
-Once _**npm**_ is installed, to install the above, run
+1. After setting up npm, install the above with:
 
 ```bash
 npm i -g http-server
@@ -24,13 +24,13 @@ npm i -g ts-node
 
 _**Note:**_ Users on _Linux_ and _MacOS_ are required to add a `sudo` before these commands.
 
-Check installation using
+2. Verify the installation with:
 
 ```bash
 node -v && npm -v && tsc -v && ts-node -v && http-server -v
 ```
 
-Output should look like
+Output should look like:
 
 ```bash
 v16.14.0
@@ -40,13 +40,19 @@ v10.6.0
 v14.1.0
 ```
 
-### With Docker
+3. Clone the repo using:
+
+```bash
+git clone https://github.com/sugarlabs/musicblocks-v4.git
+```
+
+### 2. With Docker
 
 This project development tools have been containerized using [**docker**](https://www.docker.com/).
 Therefore, to use an execution sandbox, it requires **docker** to be installed on the development
 machine.
 
-1. Setup _docker_.
+1. Setup _docker_:
 
     - For _Linux_, [install _Docker Engine_](https://docs.docker.com/engine/install/). You'll also
     need to [install _Docker Compose_](https://docs.docker.com/compose/install/).
@@ -55,8 +61,8 @@ machine.
 
 2. Open a terminal and navigate to working directory (where the source code will reside).
 
-3. _Git Clone_ (additional [installation](https://git-scm.com/downloads) of _Git_ required on
-Windows) this repository using
+3. _Clone_ (additional [installation](https://git-scm.com/downloads) of _Git_ required on
+Windows) this repository using:
 
     ```bash
     git clone https://github.com/sugarlabs/musicblocks-v4.git
@@ -68,19 +74,19 @@ Windows) this repository using
     [built initial development image](https://github.com/sugarlabs/musicblocks-v4/pkgs/container/musicblocks/16217005?tag=4-dev)
     has been published to
     [_Sugar Labs GitHub Container Registry_ (_GHCR_)](https://github.com/orgs/sugarlabs/packages?ecosystem=container),
-    which can be pulled directly, so you don't have to build it again. Pull using
+    which can be pulled directly, so you don't have to build it again. Pull using:
 
     ```bash
     docker pull ghcr.io/sugarlabs/musicblocks:4-dev
     ```
 
-    Nagivate inside the project directory and launch the _docker network_ using
+    Nagivate inside the project directory and launch the _docker network_ using:
 
     ```bash
     docker-compose up -d
     ```
 
-    or (for _Docker v1.28_ and above)
+    or (for _Docker v1.28_ and above):
 
     ```bash
     docker compose up -d
@@ -91,7 +97,7 @@ Windows) this repository using
     locally, it'll not be rebuilt. To force a rebuild from the `Dockerfile` before launching the
     _docker network_, add the `--build` flag.
 
-5. In a second terminal, run
+5. In a second terminal, run:
 
     ```bash
     docker attach musicblocks-4-dev
@@ -102,13 +108,13 @@ Windows) this repository using
 
 6. _**Node.js**_ (_Node.js Runtime_), _**npm**_ (_Node.js Package Manager_), _**tsc**_ (_TypeScript
     Compiler_), _**ts-node**_ (_Node.js executable for TypeScript_), and _**http-server**_ (_a HTTP
-    server program_) should be installed. Check using
+    server program_) should be installed. Check using:
 
     ```bash
     node -v && npm -v && tsc -v && ts-node -v && http-server -v
     ```
 
-    Output should look like
+    Output should look like this:
 
     ```bash
     v16.14.0
@@ -118,7 +124,7 @@ Windows) this repository using
     v14.1.0
     ```
 
-7. To shut down the _docker network_, run (in the terminal where you ran `docker-compose up -d` or
+7. To shut down the _docker network_, run (in the same terminal where you ran `docker-compose up -d` or
 `docker compose up -d`)
 
     ```bash
@@ -130,104 +136,104 @@ Windows) this repository using
     ```bash
     docker compose down
     ```
-
-## Commands
+## Adding your Personal Access Token (PAT)
 
 **Note: This repository uses `sugarlabs/musicblocks-v4-lib` as an _npm_ package which is published to
 the _GitHub npm Registry_ of Sugar Labs. Before you install the dependencies you need to make sure that
 your _GitHub Personal Access Token_ (_PAT_) is stored in your local system's _npm_ configuration file
 `.npmrc`.**
 
-**Note: Be sure to request permission for ```read: packages```**
-
 Learn
 [how to create a _PAT_](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-token).
 
-Add your _PAT_ to `.npmrc` using
+**Note: Ensure to mark the checkbox labeled ```read: packages```**
+
+Add your _PAT_ to `.npmrc` using:
 
 ```bash
 echo "//npm.pkg.github.com/:_authToken=[YOUR_GITHUB_PERSONAL_ACCESS_TOKEN]" >> ~/.npmrc
 ```
+## Run a development server and test suites
+
+
 
 After you are set-up, the steps you take depend on what you want to do:
 
-- **Run a development server and test suites**
 
-    1. To install all the dependencies (in `package.json`), run
+
+1. To install the dependencies (in `package.json`), run:
+
+    ```bash
+    npm ci
+    ```
+
+2. Run _React scripts_.
+
+    - For unoptimized development serving, run:
 
         ```bash
-        npm ci
+        npm run serve
         ```
 
-    2. Run _React scripts_.
+    Visit `localhost:5173` in a browser to view the web page served.
 
-        - For unoptimized development serving, run
+    - For generating a generic production build, run:
 
-            ```bash
-            npm run serve
-            ```
+        ```bash
+        npm run build
+        ```
 
-            Visit `localhost:5173` in a browser to view the web page served.
+    - For generating a production build under the subdirectory `/musicblocks-v4/`, run:
 
-        - For generating a generic production build, run
+        ```bash
+        npm run build:gh
+        ```
 
-            ```bash
-            npm run build
-            ```
+    - For serving the last production build (`dist` folder), run:
 
-        - For generating a production build under the subdirectory `/musicblocks-v4/`, run
+        ```bash
+        npm run preview
+        ```
 
-            ```bash
-            npm run build:gh
-            ```
+        Visit `localhost:4173` in a browser to view the web page served.
 
-        - For serving the last production build (`dist` folder), run
+     - For running unit tests, run:
 
-            ```bash
-            npm run preview
-            ```
+        ```bash
+        npm run test:unit
+        ```
 
-            Visit `localhost:4173` in a browser to view the web page served.
+    - For running E2E tests, run:
 
-        - For running unit tests, run
+        ```bash
+        ## In 1 terminal
+        npm run build
+        npm run preview
+        ## In another terminal
+        npm run test:e2e
+        ```
 
-            ```bash
-            npm run test:unit
-            ```
+_**Note:**_ If you're running using _Docker Desktop_ on _Windows_ or _Mac_, you might experience longer execution times for these scripts. This happens due to cross-file-system communication. Duration varies across machines; duration primarily depends on hard drive read/write speed.
 
-        - For running E2E tests, run
-
-            ```bash
-            ## In 1 terminal
-            npm run build
-            npm run preview
-            ## In another terminal
-            npm run test:e2e
-            ```
-
-        _**Note:**_ If you're running using _Docker Desktop_ on _Windows_ or _Mac_, you might experience
-        longer execution times for these scripts. This happens due to cross-file-system communication.
-        Duration varies across machines; duration primarily depends on hard drive read/write speed.
-
-- **Miscellaneous commands**
+## Miscellaneous commands
 
   _**Note:**_ This requires _**Node.js**_ (_Node.js Runtime_), _**tsc**_ (_TypeScript Compiler_), and
   _**ts-node**_ (_Node.js executable for TypeScript_) to be installed. If you are using _Docker_, they'll
   be pre-installed in the container.
 
-  - To launch the _Node.js runtime_, run
+  - To launch the _Node.js runtime_, run:
 
     ```bash
     node
     ```
 
-  - To run a _JavaScript_ file, say `file.js`, run
+  - To run a _JavaScript_ file, say `file.js`, run:
 
     ```bash
     node file.js
     ```
 
-  - To transpile a _TypeScipt_ file, say `file.ts`, to _JavaScript_, run
+  - To transpile a _TypeScipt_ file, say `file.ts`, to _JavaScript_, run:
 
     ```bash
     tsc file.ts
@@ -235,7 +241,7 @@ After you are set-up, the steps you take depend on what you want to do:
 
     This transpilation produces `file.js`.
 
-  - To run a _TypeScript_ file directly, say `file.ts`, run
+  - To run a _TypeScript_ file directly, say `file.ts`, run:
 
     ```bash
     ts-node file.ts
@@ -258,10 +264,3 @@ _keyboard shortcuts_, etc.
 _**Visual Studio Code**_ (_**VSCode**_) is currently the most-popular code editor for reasons like
 being _lightweight_, _cleaner_, large marketplace of _extensions_, integrated _source control_
 features, _debugger_, _remote explorer_ support, _regular expression_ based find/replace, etc.
-
-In fact, a workspace configuration file for _vscode_`.vscode/settings.json` has already been added.
-Recommended extensions for this project are `Babel JavaScript`, `Docker`, `ESLint`, `Git Graph`,
-`GitLens`, `markdownlint`, `Prettier`, `SCSS IntelliSense`, and `SVG`.
-
-All that, however, shouldn't necessarily stop you from using _**Emacs**_, _**Nano**_, or _**Vim**_,
-if that's your poison :D. Happy coding!

@@ -1,6 +1,6 @@
 # Developer Guide
 
-## Setup up the Development Environment
+## Setup the Development Environment
 
 ### 1. Without Docker
 

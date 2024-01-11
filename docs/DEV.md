@@ -213,7 +213,7 @@ After you are set-up, the steps you take depend on what you want to do:
         npm run test:e2e
         ```
 
-_**Note:**_ If you're running using _Docker Desktop_ on _Windows_ or _Mac_, you might experience longer execution times for these scripts. This happens due to cross-file-system communication. Duration varies across machines; duration primarily depends on hard drive read/write speed.
+    _**Note:**_ If you're running using _Docker Desktop_ on _Windows_ or _Mac_, you might experience longer execution times       for these scripts. This happens due to cross-file-system communication. Duration varies across machines; duration             primarily depends on hard drive read/write speed.
 
 ## Miscellaneous commands
 

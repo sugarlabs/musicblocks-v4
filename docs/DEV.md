@@ -136,7 +136,7 @@ Windows) this repository using:
     ```bash
     docker compose down
     ```
-## Adding your Personal Access Token (PAT)
+## Personal Access Token (PAT)
 
 **Note: This repository uses `sugarlabs/musicblocks-v4-lib` as an _npm_ package which is published to
 the _GitHub npm Registry_ of Sugar Labs. Before you install the dependencies you need to make sure that

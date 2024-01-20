@@ -50,4 +50,5 @@ of ideas (Sugar Labs is a meritocracy).
 See [**full contributing guide**](./docs/CONTRIBUTING.md).
 
 ## Beginner's guide
-See [**Beginner's guide**](./docs/BEGINNERS_GUIDE.md)
+
+See [Beginner's guide](./docs/BEGINNERS_GUIDE.md)

@@ -270,10 +270,9 @@ async function init(config?: IAppConfig) {
         // Generate serialized list of component identifiers
         componentsOrdered = serializeComponentDependencies(
             componentDefinitionEntries
-                .map<[TComponentId, TComponentId[]]>(([id, { dependencies }]) => [
-                    id,
-                    [...new Set([...dependencies.optional, ...dependencies.required])],
-                ])
+                .map<
+                    [TComponentId, TComponentId[]]
+                >(([id, {dependencies }]) => ([id,[...new Set([...dependencies.optional, ...dependencies.required])]]))
                 .map(([id, dependencies]) => ({ id, dependencies })),
         );
 

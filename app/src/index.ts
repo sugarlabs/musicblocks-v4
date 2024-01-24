@@ -272,7 +272,7 @@ async function init(config?: IAppConfig) {
             componentDefinitionEntries
                 .map<
                     [TComponentId, TComponentId[]]
-                >(([id, {dependencies }]) => ([id,[...new Set([...dependencies.optional, ...dependencies.required])]]))
+                >(([id, { dependencies }]) => [id, [...new Set([...dependencies.optional, ...dependencies.required])]])
                 .map(([id, dependencies]) => ({ id, dependencies })),
         );
 

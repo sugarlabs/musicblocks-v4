@@ -23,7 +23,7 @@ const currentpitch = new CurrentPitch(testKeySignature, new Temperament(), 1, 4)
 const _stateObj = { ..._defaultSynthStateValues };
 
 /** Proxy to the synth state parameters. */
-const _state = new Proxy(_stateObj, {
+export const state = new Proxy(_stateObj, {
     set: (_, key, value) => {
         if (key === 'beatsPerMinute') {
             _stateObj.beatsPerMinute = value;
@@ -37,7 +37,8 @@ const _state = new Proxy(_stateObj, {
 });
 
 /** Default synth **/
-const _defaultSynth = new Tone.Synth().toDestination();
+export const defaultSynth = new Tone.Synth().toDestination();
+export const polySynth = new Tone.PolySynth().toDestination();
 
 // -- private functions ----------------------------------------------------------------------------
 
@@ -46,7 +47,7 @@ const _defaultSynth = new Tone.Synth().toDestination();
  * @param noteValue - 1/4, 1/8 etc.
  **/
 export function noteValueToSeconds(noteValue: number): number {
-    return (60 / _state.beatsPerMinute) * (noteValue / _state.beat);
+    return (60 / state.beatsPerMinute) * (noteValue / state.beat);
 }
 
 // -- public functions -----------------------------------------------------------------------------
@@ -78,20 +79,20 @@ export class ElementTestSynth extends ElementStatement {
         if ((params['mode'] as number) === 1) {
             for (let modalPitch = 1; modalPitch <= testKeySignature.modeLength + 1; modalPitch++) {
                 const now = Tone.now();
-                const offset = noteValueToSeconds(_state.notesPlayed);
+                const offset = noteValueToSeconds(state.notesPlayed);
                 const noteTup = testKeySignature.modalPitchToLetter(modalPitch - 1);
                 let octave = currentpitch.octave;
                 const fullNote = noteTup[0] + (octave + noteTup[1]);
-                _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset);
+                defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset);
                 console.log('noteTup', noteTup, 'fullNote', fullNote);
                 octave += noteTup[1];
                 console.log('octave', octave);
-                _state.notesPlayed += 1 / 8;
+                state.notesPlayed += 1 / 8;
             }
         } else if ((params['mode'] as number) === 2) {
             for (let i = 0; i < 8; i++) {
                 const now = Tone.now();
-                const offset = noteValueToSeconds(_state.notesPlayed);
+                const offset = noteValueToSeconds(state.notesPlayed);
                 let note = testKeySignature.modalPitchToLetter(
                     parseInt(
                         testKeySignature.genericNoteNameConvertToType(
@@ -101,9 +102,9 @@ export class ElementTestSynth extends ElementStatement {
                     ) - 1,
                 );
                 const fullNote = note[0] + currentpitch.octave;
-                _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset);
+                defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset);
                 console.log('fullNote:', fullNote, 'noteTup:', note);
-                _state.notesPlayed += 1 / 8;
+                state.notesPlayed += 1 / 8;
                 currentpitch.applyScalarTransposition(1);
             }
         }
@@ -127,12 +128,12 @@ export class ElementPlayNote extends ElementStatement {
         const duration = params['duration'] as number;
         const now = Tone.now();
         const noteValue = duration + 'n'; //making the duration a string
-        const offset = noteValueToSeconds(_state.notesPlayed);
+        const offset = noteValueToSeconds(state.notesPlayed);
         const noteTup = testKeySignature.modalPitchToLetter((params['pitch'] as number) - 1); //getting the note from a list in keySignature.ts
         const fullNote = noteTup[0] + /*params['octave'] as number*/ (4 + noteTup[1]); //adding the octave (in this case 4) to the note
-        _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset); //playing the note
+        defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset); //playing the note
         console.log('noteTup', noteTup, 'fullNote', fullNote); //printing out the note
-        _state.notesPlayed += 1 / duration;
+        state.notesPlayed += 1 / duration;
     }
 }
 
@@ -143,7 +144,7 @@ export class PlayGenericNoteName extends ElementStatement {
 
     onVisit(params: { [key: string]: TData }): void {
         const now = Tone.now();
-        const offset = noteValueToSeconds(_state.notesPlayed);
+        const offset = noteValueToSeconds(state.notesPlayed);
 
         const note = params['name'] as string;
         const octave = currentpitch.octave;
@@ -154,8 +155,8 @@ export class PlayGenericNoteName extends ElementStatement {
         ); //converts generic note to letter note, ie. n0 -----> d
         let fullNote = full[0] + (octave + full[1]);
         console.log(fullNote);
-        _defaultSynth.triggerAttackRelease(fullNote, '4n', now + offset); //playing the note
-        _state.notesPlayed += 1 / 4;
+        defaultSynth.triggerAttackRelease(fullNote, '4n', now + offset); //playing the note
+        state.notesPlayed += 1 / 4;
     }
 }
 
@@ -169,7 +170,7 @@ export class PlayInterval extends ElementStatement {
 
         for (let i = 0; i < 2; i++) {
             const now = Tone.now();
-            let offset = noteValueToSeconds(_state.notesPlayed);
+            let offset = noteValueToSeconds(state.notesPlayed);
 
             let note = testKeySignature.modalPitchToLetter(
                 parseInt(
@@ -181,9 +182,9 @@ export class PlayInterval extends ElementStatement {
             );
 
             console.log(note[0] + currentpitch.octave);
-            _defaultSynth.triggerAttackRelease(note[0] + currentpitch.octave, '8n', now + offset);
+            defaultSynth.triggerAttackRelease(note[0] + currentpitch.octave, '8n', now + offset);
 
-            _state.notesPlayed += 1 / 8;
+            state.notesPlayed += 1 / 8;
             currentpitch.applyScalarTransposition(max);
         }
         currentpitch._genericName = 'n1'; //resets
@@ -203,6 +204,6 @@ export class ElementResetNotesPlayed extends ElementStatement {
      * Resets notesPlayed counter to 0
      */
     onVisit(): void {
-        _state.notesPlayed = 0;
+        state.notesPlayed = 0;
     }
 }

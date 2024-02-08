@@ -252,8 +252,8 @@ export function buildProgram(code: string): Promise<boolean> {
                         typeof codeArgument === 'boolean'
                             ? 'value-boolean'
                             : typeof codeArgument === 'number'
-                            ? 'value-number'
-                            : 'value-string',
+                              ? 'value-number'
+                              : 'value-string',
                     value: codeArgument.toString(),
                 };
             }

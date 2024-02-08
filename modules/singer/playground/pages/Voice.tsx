@@ -1,7 +1,7 @@
 import { Voice } from '@/core/voice';
 import SynthUtils from '@/core/synthUtils';
 import * as Tone from 'tone';
-import { _state, noteValueToSeconds, _defaultSynth, _polySynth } from '@/singer';
+import { _state, noteValueToSeconds, _defaultSynth, /*_polySynth*/ } from '@/singer';
 import { setupSynthUtils } from '@/core/synthUtils';
 import { injected } from '@/index';
 

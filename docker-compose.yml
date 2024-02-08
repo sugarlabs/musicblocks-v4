@@ -7,7 +7,7 @@ services:
     build: ./
     image: ghcr.io/sugarlabs/musicblocks:4-dev
     env_file:
-      - ./env/development.env
+      - ./app/env/.env.development
     ports:
       - '5173:5173' # development server
       - '4173:4173' # production preview server

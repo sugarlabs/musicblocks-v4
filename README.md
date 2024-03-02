@@ -48,3 +48,7 @@ issue number in the pull request, but not the commit message. These practices al
 of ideas (Sugar Labs is a meritocracy).
 
 See [**full contributing guide**](./docs/CONTRIBUTING.md).
+
+## Beginner's guide
+
+See [Beginner's guide](./docs/BEGINNERS_GUIDE.md)

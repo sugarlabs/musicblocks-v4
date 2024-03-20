@@ -101,9 +101,9 @@ abstract class BrickModel implements IBrick {
         return this._scale;
     }
 
-    public abstract get extent(): TBrickExtent;
+    public abstract get bBoxBrick(): { extent: TBrickExtent; coords: TBrickCoords };
 
-    public abstract get SVGpaths(): string[];
+    public abstract get SVGpath(): string;
 }
 
 /**
@@ -135,6 +135,8 @@ abstract class BrickModelArgument extends BrickModel implements IBrickArgument {
     public get dataType(): TBrickArgDataType {
         return this._dataType;
     }
+
+    public abstract get bBoxNotchArg(): { extent: TBrickExtent; coords: TBrickCoords };
 }
 
 /**
@@ -154,8 +156,6 @@ abstract class BrickModelInstruction extends BrickModel implements IBrickInstruc
 
     protected _connectAbove: boolean;
     protected _connectBelow: boolean;
-
-    public argsExtent: Record<string, TBrickExtent> = {};
 
     constructor(params: {
         // intrinsic
@@ -205,7 +205,11 @@ abstract class BrickModelInstruction extends BrickModel implements IBrickInstruc
         return this._connectBelow;
     }
 
-    public abstract get argsCoords(): Record<string, TBrickCoords>;
+    public abstract get bBoxNotchInsTop(): { extent: TBrickExtent; coords: TBrickCoords };
+
+    public abstract get bBoxNotchInsBot(): { extent: TBrickExtent; coords: TBrickCoords };
+
+    public abstract get bBoxArgs(): Record<string, { extent: TBrickExtent; coords: TBrickCoords }>;
 }
 
 // -- public classes -------------------------------------------------------------------------------
@@ -270,8 +274,6 @@ export abstract class BrickModelExpression extends BrickModelArgument implements
         }
     >;
 
-    public argsExtent: Record<string, TBrickExtent> = {};
-
     constructor(params: {
         // intrinsic
         name: string;
@@ -308,7 +310,7 @@ export abstract class BrickModelExpression extends BrickModelArgument implements
         return this._args;
     }
 
-    public abstract get argsCoords(): Record<string, TBrickCoords>;
+    public abstract get bBoxArgs(): Record<string, { extent: TBrickExtent; coords: TBrickCoords }>;
 }
 
 /**
@@ -374,4 +376,6 @@ export abstract class BrickModelBlock extends BrickModelInstruction implements I
     }) {
         super({ ...params, type: 'block' });
     }
+
+    public abstract get bBoxNotchInsNestTop(): { extent: TBrickExtent; coords: TBrickCoords };
 }

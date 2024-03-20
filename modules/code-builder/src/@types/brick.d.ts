@@ -83,10 +83,16 @@ export interface IBrickArgs {
  * State properties associated with bricks that can take arguments.
  */
 export interface IBrickArgsState {
-    /** map of argument ID to corresponding bounding box dimensions */
-    get argsExtent(): Record<string, IBrickExtent>;
-    /** map of argument ID to co-ordinates of the argument connections relative to the brick */
-    get argsCoords(): Record<string, IBrickCoords>;
+    /** Map of argument ID to corresponding extent and coords */
+    get bBoxArgs(): Record<
+        string,
+        {
+            /** Bounding box dimensions */
+            extent: TBrickExtent;
+            /** Co-ordinates of the argument connections relative to the brick */
+            coords: TBrickCoords;
+        }
+    >;
 }
 
 /**
@@ -110,11 +116,11 @@ export interface IBrick extends IBrickStyle {
     // states
     /** whether brick is highlighted */
     highlighted: boolean;
-    /** bounding box dimensions of the brick */
-    get extent(): IBrickExtent;
+    /** Bounding box dimensions and coords of the brick */
+    get bBoxBrick(): { extent: TBrickExtent; coords: TBrickCoords };
 
     /** SVG string for the brick based on defining properties and current state */
-    get SVGpaths(): string[];
+    get SVGpath(): string;
 }
 
 /**
@@ -124,6 +130,14 @@ export interface IBrick extends IBrickStyle {
 export interface IBrickArgument extends IBrick {
     /** data type returned by an argument brick */
     get dataType(): TBrickArgDataType;
+
+    /** Bounding box dimensions and coords of the left notch */
+    get bBoxNotchArg(): {
+        /** Bounding box dimensions of the left notch */
+        extent: TBrickExtent;
+        /** Co-ordinates of the left notch relative to the brick */
+        coords: TBrickCoords;
+    };
 }
 
 /**
@@ -136,6 +150,22 @@ export interface IBrickInstruction extends IBrick, IBrickArgs, IBrickArgsState {
     get connectAbove(): boolean;
     /** is connection allowed below the brick */
     get connectBelow(): boolean;
+
+    /** Bounding box dimensions and coords of the top instruction notch */
+    get bBoxNotchInsTop(): {
+        /** Bounding box dimensions of the top instruction notch */
+        extent: TBrickExtent;
+        /** Co-ordinates of the top instruction notch relative to the brick */
+        coords: TBrickCoords;
+    };
+
+    /** Bounding box dimensions and coords of the bottom instruction notch */
+    get bBoxNotchInsBot(): {
+        /** Bounding box dimensions of the bottom instruction notch */
+        extent: TBrickExtent;
+        /** Co-ordinates of the bottom instruction notch relative to the brick */
+        coords: TBrickCoords;
+    };
 }
 
 /**
@@ -173,10 +203,18 @@ export interface IBrickStatement extends IBrickInstruction {
  * @interface
  * Type definition of a block brick.
  */
-export interface IBrickBlock extends IBrickInstruction {
+export interface IBrickBlock extends IBrickInstruction, IBrickNotchInsNestTopState {
     // state
     /** combined bounding box of the instructions nested within the brick */
-    get nestExtent(): IBrickExtent;
+    get nestExtent(): TBrickExtent;
     /** whether brick nesting is hidden */
     collapsed: boolean;
+
+    /** Bounding box dimensions and coords of the top instruction notch of the nesting */
+    get bBoxNotchInsNestTop(): {
+        /** Bounding box dimensions of the top instruction notch of the nesting */
+        extent: TBrickExtent;
+        /** Co-ordinates of the top instruction notch of the nesting relative to the brick */
+        coords: TBrickCoords;
+    };
 }

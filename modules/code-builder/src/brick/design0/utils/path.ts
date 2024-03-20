@@ -1,6 +1,7 @@
 // == constants ====================================================================================
 
 const cornerRadius = 4;
+const strokeWidth = 0.5;
 
 const notchInsOffsetX = 4;
 const notchInsLengthX = 10;
@@ -334,13 +335,27 @@ function _getBBoxBrick(): {
     extent: { width: number; height: number };
     coords: { x: number; y: number };
 } {
+    const argSectionLengthYMin = cornerRadius * 2 + notchArgLengthY;
+    const argsLength = _argsLengthY
+        .map((sectionLengthY) => Math.max(argSectionLengthYMin, sectionLengthY))
+        .reduce((a, b) => a + b, 0);
+
+    let height =
+        strokeWidth +
+        (argsLength !== 0 ? argsLength : 2 * cornerRadius + notchArgLengthY) +
+        strokeWidth;
+
+    if (_hasNest) {
+        height += _nestLengthY + strokeWidth * 4 + 2 * cornerRadius + notchArgLengthY;
+    }
+
     return {
         extent: {
-            width: _innerLengthX,
-            height: _argsLengthY.reduce((a, b) => a + b, 0),
+            width: strokeWidth + _innerLengthX + strokeWidth,
+            height: height,
         },
         coords: {
-            x: 0,
+            x: _hasNotchArg ? notchArgLengthX : 0,
             y: 0,
         },
     };
@@ -357,12 +372,12 @@ function _getBBoxNotchArg(): {
 } {
     return {
         extent: {
-            width: notchArgLengthX,
-            height: notchArgLengthY - 2,
+            width: _hasNotchArg ? notchArgLengthX : 0,
+            height: _hasNotchArg ? strokeWidth + 8 + strokeWidth : 0,
         },
         coords: {
             x: 0,
-            y: 0,
+            y: _hasNotchArg ? 6 : 0,
         },
     };
 }
@@ -378,11 +393,16 @@ function _getBBoxNotchInsTop(): {
 } {
     return {
         extent: {
-            width: notchInsLengthX,
+            width: notchInsLengthX - 2 * strokeWidth,
             height: notchInsLengthY,
         },
         coords: {
-            x: 0,
+            x:
+                strokeWidth +
+                (_hasNotchArg ? notchArgLengthX : 0) +
+                cornerRadius +
+                notchInsOffsetX +
+                strokeWidth,
             y: 0,
         },
     };
@@ -399,12 +419,17 @@ function _getBBoxNotchInsBot(): {
 } {
     return {
         extent: {
-            width: notchInsLengthX,
-            height: notchInsLengthY,
+            width: notchInsLengthX - 2 * strokeWidth,
+            height: strokeWidth + notchInsLengthY - strokeWidth,
         },
         coords: {
-            x: 0,
-            y: 0,
+            x:
+                strokeWidth +
+                (_hasNotchArg ? notchArgLengthX : 0) +
+                cornerRadius +
+                notchInsOffsetX +
+                strokeWidth,
+            y: _getBBoxBrick().extent.height,
         },
     };
 }
@@ -418,14 +443,30 @@ function _getBBoxNotchInsNestTop(): {
     extent: { width: number; height: number };
     coords: { x: number; y: number };
 } {
+    const argSectionLengthYMin = cornerRadius * 2 + notchArgLengthY;
+    const argsLength = _argsLengthY
+        .map((sectionLengthY) => Math.max(argSectionLengthYMin, sectionLengthY))
+        .reduce((a, b) => a + b, 0);
+
+    const offsetY =
+        strokeWidth +
+        (argsLength !== 0 ? argsLength : 2 * cornerRadius + notchArgLengthY) +
+        strokeWidth;
+
     return {
         extent: {
-            width: notchInsLengthX,
+            width: notchInsLengthX - 2 * strokeWidth,
             height: notchInsLengthY,
         },
         coords: {
-            x: 0,
-            y: 0,
+            x:
+                strokeWidth +
+                (_hasNotchArg ? notchArgLengthX : 0) +
+                cornerRadius +
+                notchInsOffsetX +
+                notchInsLengthX -
+                strokeWidth,
+            y: offsetY,
         },
     };
 }
@@ -439,17 +480,31 @@ function _getBBoxArgs(): {
     extent: { width: number; height: number };
     coords: { x: number; y: number }[];
 } {
+    const offsetX =
+        strokeWidth +
+        (_hasNotchArg ? notchArgLengthX : 0) +
+        _innerLengthX -
+        notchArgLengthX +
+        strokeWidth;
+    const firstOffsetY = strokeWidth + cornerRadius + 1 + strokeWidth;
+    const argSectionLengthYMin = cornerRadius * 2 + notchArgLengthY;
+    const argsLength = _argsLengthY.map((sectionLengthY) =>
+        Math.max(argSectionLengthYMin, sectionLengthY),
+    );
+
     return {
         extent: {
             width: notchArgLengthX,
-            height: notchArgLengthY,
+            height: 10 - 2 * strokeWidth,
         },
-        coords: [
-            {
-                x: 0,
-                y: 0,
-            },
-        ],
+        coords: _argsLengthY.map((_, index) => {
+            return {
+                x: offsetX,
+                y:
+                    firstOffsetY +
+                    (index === 0 ? 0 : argsLength.slice(0, index).reduce((a, b) => a + b, 0)),
+            };
+        }),
     };
 }
 

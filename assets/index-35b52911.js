@@ -1,0 +1,2 @@
+function o(t,n){const e=document.createElement(t==="container"?"div":"button");return document.getElementById(`toolbar-${n}`).appendChild(e),e.classList.add("toolbar-cluster-item"),t==="button"&&e.classList.add("toolbar-cluster-item-btn"),e}function r(){const t=document.createElement("div");return document.getElementById("workspace").appendChild(t),t}function c(t){return t.location==="toolbar"?o(t.type,t.position):r()}export{c};
+//# sourceMappingURL=index-35b52911.js.map

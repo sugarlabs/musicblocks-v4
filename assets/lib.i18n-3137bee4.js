@@ -1,0 +1,2 @@
+import{_,a}from"./dynamic-import-helper-e113e409.js";let n={},r={};async function s(i="en"){r=(await _(()=>import("./lang.en-a09fe94b.js"),[])).default,n=i==="en"?{...r}:(await a(Object.assign({"../lang/en.ts":()=>_(()=>import("./lang.en-a09fe94b.js"),[]),"../lang/es.ts":()=>_(()=>import("./lang.es-5dc320b5.js"),[])}),`../lang/${i}.ts`)).default}function o(i){return Object.fromEntries(i.map(t=>[t,t in n?n[t]:t in r?r[t]:t]))}export{o as getStrings,s as importStrings};
+//# sourceMappingURL=lib.i18n-3137bee4.js.map

@@ -1,0 +1,2 @@
+import{a as c,F as s,j as n,b as a}from"./index-b95677c8.js";function g(e){const t=e.asset.type;return c(s,{children:[t==="image/svg+xml"&&n(i,{content:e.asset.data}),t.startsWith("image")&&t!=="image/svg+xml"&&n(o,{content:e.asset.data})]})}function i(e){const t=a.useRef(null);return a.useEffect(()=>{const r=t.current;r.innerHTML=e.content}),n(s,{children:n("div",{className:"l-image l-image-vector",ref:t})})}function o(e){return n(s,{children:n("img",{className:"l-image l-image-raster",src:e.content})})}export{g as S};
+//# sourceMappingURL=index-096c861c.js.map

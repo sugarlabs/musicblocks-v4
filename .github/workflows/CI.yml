@@ -18,16 +18,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js 16.x
+      - name: Setup Node.js 18x
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
 
       - name: Install dependencies
         run: |
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
           npm ci
-          npx lerna bootstrap
           rm -rf .npmrc
 
       - name: Run Typescript
@@ -44,16 +43,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js 16.x
+      - name: Setup Node.js 18.x
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
 
       - name: Install dependencies
         run: |
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
           npm ci
-          npx lerna bootstrap
           rm -rf .npmrc
 
       - name: Build for Production
@@ -70,10 +68,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js 16.x
+      - name: Setup Node.js 18.x
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
 
       # - name: Install Cypress dependencies
       #   run: sudo apt update && sudo apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
@@ -82,7 +80,6 @@ jobs:
         run: |
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
           npm ci
-          npx lerna bootstrap
           rm -rf .npmrc
 
       - name: Run Unit Tests

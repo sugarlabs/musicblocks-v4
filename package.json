@@ -50,7 +50,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.1",
     "http-server": "^14.1.1",
-    "lerna": "^6.6.2",
+    "lerna": "^8.1.2",
     "markdownlint": "^0.27.0",
     "markdownlint-cli": "^0.33.0",
     "nyc": "^15.1.0",

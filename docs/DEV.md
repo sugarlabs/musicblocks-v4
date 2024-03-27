@@ -138,7 +138,7 @@ the _GitHub npm Registry_ of Sugar Labs. Before you install the dependencies you
 your _GitHub Personal Access Token_ (_PAT_) is stored in your local system's _npm_ configuration file
 `.npmrc`.**
 
-**Note: Be sure to request permission for ```read: packages```**
+**Note: Here you have to generate the `classic Tokens` and must give the `read: packages` permission**
 
 Learn
 [how to create a _PAT_](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-token).
@@ -148,6 +148,8 @@ Add your _PAT_ to `.npmrc` using
 ```bash
 echo "//npm.pkg.github.com/:_authToken=[YOUR_GITHUB_PERSONAL_ACCESS_TOKEN]" >> ~/.npmrc
 ```
+
+**Note: "[]" also shouldn't be in your command after pasting your PAT**
 
 After you are set-up, the steps you take depend on what you want to do:
 

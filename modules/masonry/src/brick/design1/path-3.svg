@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 438 104">
+  <g>
+    <path fill="aliceblue" stroke="royalblue" stroke-width="2" stroke-linejoin="round" d="
+      M 167 17
+      c 0 -10 2 -12 12 -12
+      h 56
+      c 10 0 12 2 12 12
+      v 8
+      c 0 10 -2 12 -12 12
+      h -56
+      c -10 0 -12 -2 -12 -12
+      Z
+    " />
+
+    <path fill="aliceblue" stroke="royalblue" stroke-width="2" stroke-linejoin="round" d="
+      M 331 17
+      c 0 -10 2 -12 12 -12
+      h 56
+      c 10 0 12 2 12 12
+      v 8
+      c 0 10 -2 12 -12 12
+      h -56
+      c -10 0 -12 -2 -12 -12
+      Z
+    " />
+
+    <path fill="blueviolet" stroke="coral" stroke-width="2" stroke-linejoin="round" d="
+      M 1 9
+      c 0 -5 3 -8 8 -8
+      h 10
+      l 8.586 7.414
+      q 0.6486 0.586 1.414 0.586
+      h 30
+      q 0.7654 0 1.414 -0.586
+      l 8.586 -7.414
+      h 88
+      c 6 0 8 2 8 8
+      v 16
+      c 0 11 3 14 14 14
+      h 56
+      c 11 0 14 -3 14 -14
+      v -8
+      c 0 -6 2 -8 8 -8
+      h 64
+      c 6 0 8 2 8 8
+      v 8
+      c 0 11 3 14 14 14
+      h 56
+      c 11 0 14 -3 14 -14
+      v -8
+      c -0 -6 2 -8 8 -8
+      h 8
+      c 6 0 8 2 8 8
+      v 16
+      v 2
+      c 0 5 -3 8 -8 8
+      h -8
+      h -8
+      h -84
+      h -8
+      h -64
+      h -8
+      h -84
+      h -8
+      h -88
+      q -0.7654 0 -1.414 0.586
+      l -8.586 7.414
+      h -30
+      l -8.586 -7.414
+      q -0.6486 -0.586 -1.414 -0.586
+      h -10
+      c -5 0 -8 -3 -8 -8
+      Z
+    " />
+  </g>
+
+  <g>
+    <path fill="aliceblue" stroke="royalblue" stroke-width="2" stroke-linejoin="round" d="
+      M 167 61
+      c 0 -10 2 -12 12 -12
+      h 56
+      c 10 0 12 2 12 12
+      v 8
+      c 0 10 -2 12 -12 12
+      h -56
+      c -10 0 -12 -2 -12 -12
+      Z
+    " />
+
+    <path fill="aliceblue" stroke="royalblue" stroke-width="2" stroke-linejoin="round" d="
+      M 331 61
+      c 0 -10 2 -12 12 -12
+      h 56
+      c 10 0 12 2 12 12
+      v 8
+      c 0 10 -2 12 -12 12
+      h -56
+      c -10 0 -12 -2 -12 -12
+      Z
+    " />
+
+    <path fill="blueviolet" stroke="burlywood" stroke-width="2" stroke-linejoin="round" d="
+      M 1 53
+      c 0 -5 3 -8 8 -8
+      h 10
+      l 8.586 7.414
+      q 0.6486 0.586 1.414 0.586
+      h 30
+      q 0.7654 0 1.414 -0.586
+      l 8.586 -7.414
+      h 88
+      c 6 0 8 2 8 8
+      v 16
+      c 0 11 3 14 14 14
+      h 56
+      c 11 0 14 -3 14 -14
+      v -8
+      c 0 -6 2 -8 8 -8
+      h 64
+      c 6 0 8 2 8 8
+      v 8
+      c 0 11 3 14 14 14
+      h 56
+      c 11 0 14 -3 14 -14
+      v -8
+      c -0 -6 2 -8 8 -8
+      h 8
+      c 6 0 8 2 8 8
+      v 16
+      v 2
+      c 0 5 -3 8 -8 8
+      h -8
+      h -8
+      h -84
+      h -8
+      h -64
+      h -8
+      h -84
+      h -8
+      h -88
+      q -0.7654 0 -1.414 0.586
+      l -8.586 7.414
+      h -30
+      l -8.586 -7.414
+      q -0.6486 -0.586 -1.414 -0.586
+      h -10
+      c -5 0 -8 -3 -8 -8
+      Z
+    " />
+  </g>
+</svg>

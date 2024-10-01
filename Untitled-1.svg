@@ -1,0 +1,209 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 303 128" width="303" height="128">
+  <path d="
+      M 0.5 4.5
+      a 4 4 90 0 1 4 -4
+      h 4
+      v 2 h 10 v -2
+      h 73.5
+      h 4.5
+      a 4 4 90 0 1 4 4
+      v 0
+      v 4 h -4 v -3 h -4 v 10 h 4 v -3 h 4 v 4
+      v 21
+      v 4
+      v 1
+      v 4
+      v 4 h -4 v -3 h -4 v 10 h 4 v -3 h 4 v 4
+      v 0
+      v 0
+      a 4 4 90 0 1 -4 4
+      h -4.5
+      h -64.5
+      h -1
+      v 2
+      h -8
+      v -2
+      h -1
+      h -4
+      a 5 5 90 0 0 -5 5
+      v 37
+      a 5 5 90 0 0 5 5
+      h 4
+      v 2
+      h 10
+      v -2
+      h 69
+      a 4 4 90 0 1 4 4
+      v 4
+      a 4 4 90 0 1 -4 4
+      h -78
+      h -1
+      v 2
+      h -8
+      v -2
+      h -1
+      h -4
+      a 4 4 90 0 1 -4 -4
+      v -4
+      v -4
+      v -5
+      v -37
+      v -5
+      v -4
+      v -54
+      Z
+    " fill="#55efc4" stroke="#218c74" stroke-width="1" />
+
+  <path d="
+      M 101.5 4.5
+      a 4 4 90 0 1 4 -4
+      h 4
+      h 10
+      h 73.5
+      h 4.5
+      a 4 4 90 0 1 4 4
+      v 0
+      v 4 h -4 v -3 h -4 v 10 h 4 v -3 h 4 v 4
+      v 4
+      v 1
+      v 4
+      v 0
+      v 4 h -4 v -3 h -4 v 10 h 4 v -3 h 4 v 4
+      a 4 4 90 0 1 -4 4
+      h -4.5
+      h -73.5
+      h -10
+      h -4
+      a 4 4 90 0 1 -4 -4
+      v -21
+      v -5 h -6 v 3 h -2 v -8 h 2 v 3 h 6 v -5
+      Z
+    " fill="#ff6b81" stroke="#eb2f06" stroke-width="1" />
+
+  <path d="
+      M 202.5 4.5
+      a 4 4 90 0 1 4 -4
+      h 4
+      h 10
+      h 78
+      a 4 4 90 0 1 4 4
+      v 12
+      a 4 4 90 0 1 -4 4
+      h -78
+      h -10
+      h -4
+      a 4 4 90 0 1 -4 -4
+      v 0
+      v -5 h -6 v 3 h -2 v -8 h 2 v 3 h 6 v -5
+      Z
+    " fill="#55efc4" stroke="#218c74" stroke-width="1" />
+
+  <path d="
+      M 202.5 25.5
+      a 4 4 90 0 1 4 -4
+      h 4
+      h 10
+      h 78
+      a 4 4 90 0 1 4 4
+      v 12
+      a 4 4 90 0 1 -4 4
+      h -78
+      h -10
+      h -4
+      a 4 4 90 0 1 -4 -4
+      v 0
+      v -5 h -6 v 3 h -2 v -8 h 2 v 3 h 6 v -5
+      Z
+    " fill="#55efc4" stroke="#218c74" stroke-width="1" />
+
+  <path d="
+      M 101.5 46.5
+      a 4 4 90 0 1 4 -4
+      h 4
+      h 10
+      h 78
+      a 4 4 90 0 1 4 4
+      v 12
+      a 4 4 90 0 1 -4 4
+      h -78
+      h -10
+      h -4
+      a 4 4 90 0 1 -4 -4
+      v 0
+      v -5 h -6 v 3 h -2 v -8 h 2 v 3 h 6 v -5
+      Z
+    " fill="#ff6b81" stroke="#eb2f06" stroke-width="1" />
+
+  <path d="
+      M 9.5 67.5
+      a 4 4 90 0 1 4 -4
+      h 4
+      v 2
+      h 10
+      v -2
+      h 69
+      a 4 4 90 0 1 4 4
+      v 12
+      a 4 4 90 0 1 -4 4
+      h -69
+      h -1
+      v 2
+      h -8
+      v -2
+      h -1
+      h -4
+      a 4 4 90 0 1 -4 -4
+      v 0
+      v -12
+      Z
+    " fill="#ff6b81" stroke="#eb2f06" stroke-width="1" />
+
+  <path d="
+      M 9.5 88.5
+      a 4 4 90 0 1 4 -4
+      h 4
+      v 2
+      h 10
+      v -2
+      h 64.5
+      h 4.5
+      a 4 4 90 0 1 4 4
+      v 0
+      v 4 h -4 v -3 h -4 v 10 h 4 v -3 h 4 v 4
+      v 4
+      a 4 4 90 0 1 -4 4
+      h -4.5
+      h -64.5
+      h -1
+      v 2
+      h -8
+      v -2
+      h -1
+      h -4
+      a 4 4 90 0 1 -4 -4
+      v -4
+      v -12
+      Z
+    " fill="#ff6b81" stroke="#eb2f06" stroke-width="1" />
+
+  <path d="
+      M 101.5 88.5
+      a 4 4 90 0 1 4 -4
+      h 4
+      h 10
+      h 73.5
+      h 4.5
+      a 4 4 90 0 1 4 4
+      v 4 h -4 v -3 h -4 v 10 h 4 v -3 h 4 v 4
+      v 4
+      a 4 4 90 0 1 -4 4
+      h -4.5
+      h -73.5
+      h -10
+      h -4
+      a 4 4 90 0 1 -4 -4
+      v -4
+      v -5 h -6 v 3 h -2 v -8 h 2 v 3 h 6 v -5
+      Z
+    " fill="#74b9ff" stroke="#00f" stroke-width="1" />
+</svg>

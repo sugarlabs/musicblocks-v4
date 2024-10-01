@@ -1,0 +1,411 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="310" height="237" viewBox="0 0 620 474">
+  <g>
+    <path fill="aliceblue" stroke="royalblue" stroke-width="2" stroke-linejoin="round" d="
+      M 1 17
+      c 0 -12 4 -16 16 -16
+      h 62
+      c 12 0 16 4 16 16
+      v 14
+      c 0 12 -4 16 -16 16
+      h -62
+      c -12 0 -16 -4 -16 -16
+      Z
+    " />
+  </g>
+
+  <g>
+    <path fill="aliceblue" stroke="royalblue" stroke-width="2" stroke-linejoin="round" d="
+      M 27 81
+      c 0 -12 4 -16 16 -16
+      h 62
+      c 12 0 16 4 16 16
+      v 14
+      c 0 12 -4 16 -16 16
+      h -62
+      c -12 0 -16 -4 -16 -16
+      Z
+    " />
+
+    <path fill="aliceblue" stroke="royalblue" stroke-width="2" stroke-linejoin="round" d="
+      M 167 81
+      c 0 -12 4 -16 16 -16
+      h 62
+      c 12 0 16 4 16 16
+      v 14
+      c 0 12 -4 16 -16 16
+      h -62
+      c -12 0 -16 -4 -16 -16
+      Z
+    " />
+
+    <path fill="pink" stroke="hotpink" stroke-width="2" stroke-linejoin="round" d="
+      M 1 81
+      c 0 -9 3 -12 12 -12
+      c 9 0 12 3 12 12
+      v 14
+      c 0 13 5 18 18 18
+      h 62
+      c 13 0 18 -5 18 -18
+      v -14
+      c 0 -9 3 -12 12 -12
+      h 18
+      c 9 0 12 3 12 12
+      v 14
+      c 0 13 5 18 18 18
+      h 62
+      c 13 0 18 -5 18 -18
+      v -14
+      c 0 -9 3 -12 12 -12
+      c 9 0 12 3 12 12
+      v 14
+      v 8
+      c 0 12 -4 16 -16 16
+      h -8
+      h -98
+      h -12
+      h -18
+      h -12
+      h -98
+      h -8
+      c -12 0 -16 -4 -16 -16
+      Z
+    " />
+  </g>
+
+  <g>
+    <path fill="aliceblue" stroke="royalblue" stroke-width="2" stroke-linejoin="round" d="
+      M 131 161
+      c 0 -14 6 -20 20 -20
+      h 54
+      c 14 0 20 6 20 20
+      v 6
+      c 0 14 -6 20 -20 20
+      h -54
+      c -14 0 -20 -6 -20 -20
+      Z
+    " />
+
+    <path fill="lightgreen" stroke="darkolivegreen" stroke-width="2" stroke-linejoin="round" d="
+      M 1 149
+      c 0 -9 3 -12 12 -12
+      h 10
+      l 8.586 7.414
+      q 0.6486 0.586 1.414 0.586
+      q 0.7654 0 1.414 -0.586
+      l 8.586 -7.414
+      h 74
+      c 9 0 12 3 12 12
+      v 12
+      v 6
+      c 0 15 7 22 22 22
+      h 54
+      c 15 0 22 -7 22 -22
+      v -6
+      c 0 -9 3 -12 12 -12
+      h 12
+      c 9 0 12 3 12 12
+      v 14
+      v 12
+      c 0 9 -3 12 -12 12
+      h -12
+      h -12
+      h -98
+      h -12
+      h -66
+      q -0.7654 0 -1.414 0.586
+      l -8.586 7.414
+      l -8.586 -7.414
+      q -0.6486 -0.586 -1.414 -0.586
+      h -10
+      c -10 0 -14 4 -14 14
+      v 214
+      c 0 10 4 14 14 14
+      h 10
+      l 8.586 7.414
+      q 0.6486 0.586 1.414 0.586
+      q 0.7654 0 1.414 -0.586
+      l 8.586 -7.414
+      h 12
+      c 9 0 12 3 12 12
+      c 0 9 -3 12 -12 12
+      h -12
+      q -0.7654 0 -1.414 0.586
+      l -8.586 7.414
+      l -8.586 -7.414
+      q -0.6486 -0.586 -1.414 -0.586
+      h -18
+      c -9 0 -12 -3 -12 -12
+      Z
+    " />
+  </g>
+
+  <g>
+    <path fill="lightgreen" stroke="darkolivegreen" stroke-width="2" stroke-linejoin="round" d="
+      M 9 213
+      c 0 -9 3 -12 12 -12
+      h 10
+      l 8.586 7.414
+      q 0.6486 0.586 1.414 0.586
+      q 0.7654 0 1.414 -0.586
+      l 8.586 -7.414
+      h 72
+      c 9 0 12 3 12 12
+      v 14
+      v 12
+      c 0 9 -3 12 -12 12
+      h -72
+      q -0.7654 0 -1.414 0.586
+      l -8.586 7.414
+      l -8.586 -7.414
+      q -0.6486 -0.586 -1.414 -0.586
+      h -10
+      c -9 0 -12 -3 -12 -12
+      Z
+    " />
+  </g>
+
+  <g>
+    <path fill="aliceblue" stroke="royalblue" stroke-width="2" stroke-linejoin="round" d="
+      M 139 273
+      c 0 -12 4 -16 16 -16
+      h 62
+      c 12 0 16 4 16 16
+      v 14
+      c 0 12 -4 16 -16 16
+      h -62
+      c -12 0 -16 -4 -16 -16
+      Z
+    " />
+
+    <path fill="lightgreen" stroke="darkolivegreen" stroke-width="2" stroke-linejoin="round" d="
+      M 9 265
+      c 0 -9 3 -12 12 -12
+      h 10
+      l 8.586 7.414
+      q 0.6486 0.586 1.414 0.586
+      q 0.7654 0 1.414 -0.586
+      l 8.586 -7.414
+      h 74
+      c 9 0 12 3 12 12
+      v 8
+      v 14
+      c 0 13 5 18 18 18
+      h 62
+      c 13 0 18 -5 18 -18
+      v -14
+      c 0 -9 3 -12 12 -12
+      h 12
+      c 9 0 12 3 12 12
+      v 14
+      v 12
+      c 0 9 -3 12 -12 12
+      h -12
+      h -12
+      h -98
+      h -12
+      h -74
+      q -0.7654 0 -1.414 0.586
+      l -8.586 7.414
+      l -8.586 -7.414
+      q -0.6486 -0.586 -1.414 -0.586
+      h -10
+      c -9 0 -12 -3 -12 -12
+      Z
+    " />
+  </g>
+
+  <g>
+    <path fill="aliceblue" stroke="royalblue" stroke-width="2" stroke-linejoin="round" d="
+      M 139 333
+      c 0 -12 4 -16 16 -16
+      h 62
+      c 12 0 16 4 16 16
+      v 14
+      c 0 12 -4 16 -16 16
+      h -62
+      c -12 0 -16 -4 -16 -16
+      Z
+    " />
+
+    <path fill="aliceblue" stroke="royalblue" stroke-width="2" stroke-linejoin="round" d="
+      M 295 333
+      c 0 -12 4 -16 16 -16
+      h 62
+      c 12 0 16 4 16 16
+      v 14
+      c 0 12 -4 16 -16 16
+      h -62
+      c -12 0 -16 -4 -16 -16
+      Z
+    " />
+
+    <path fill="lightgreen" stroke="darkolivegreen" stroke-width="2" stroke-linejoin="round" d="
+      M 9 325
+      c 0 -9 3 -12 12 -12
+      h 10
+      l 8.586 7.414
+      q 0.6486 0.586 1.414 0.586
+      q 0.7654 0 1.414 -0.586
+      l 8.586 -7.414
+      h 74
+      c 9 0 12 3 12 12
+      v 8
+      v 14
+      c 0 13 5 18 18 18
+      h 62
+      c 13 0 18 -5 18 -18
+      v -14
+      c 0 -9 3 -12 12 -12
+      h 34
+      c 9 0 12 3 12 12
+      v 14
+      c 0 13 5 18 18 18
+      h 62
+      c 13 0 18 -5 18 -18
+      v -14
+      c 0 -9 3 -12 12 -12
+      h 12
+      c 9 0 12 3 12 12
+      v 14
+      v 12
+      c 0 9 -3 12 -12 12
+      h -12
+      h -12
+      h -98
+      h -12
+      h -34
+      h -12
+      h -98
+      h -12
+      h -74
+      q -0.7654 0 -1.414 0.586
+      l -8.586 7.414
+      l -8.586 -7.414
+      q -0.6486 -0.586 -1.414 -0.586
+      h -10
+      c -9 0 -12 -3 -12 -12
+      Z
+    " />
+  </g>
+
+  <g>
+    <path fill="aliceblue" stroke="royalblue" stroke-width="2" stroke-linejoin="round" d="
+      M 139 393
+      c 0 -12 4 -16 16 -16
+      h 62
+      c 12 0 16 4 16 16
+      v 14
+      c 0 12 -4 16 -16 16
+      h -62
+      c -12 0 -16 -4 -16 -16
+      Z
+    " />
+
+    <g>
+      <path fill="aliceblue" stroke="royalblue" stroke-width="2" stroke-linejoin="round" d="
+        M 321 393
+        c 0 -12 4 -16 16 -16
+        h 62
+        c 12 0 16 4 16 16
+        v 14
+        c 0 12 -4 16 -16 16
+        h -62
+        c -12 0 -16 -4 -16 -16
+        Z
+      " />
+
+      <path fill="aliceblue" stroke="royalblue" stroke-width="2" stroke-linejoin="round" d="
+        M 461 393
+        c 0 -12 4 -16 16 -16
+        h 62
+        c 12 0 16 4 16 16
+        v 14
+        c 0 12 -4 16 -16 16
+        h -62
+        c -12 0 -16 -4 -16 -16
+        Z
+      " />
+
+      <path fill="pink" stroke="hotpink" stroke-width="2" stroke-linejoin="round" d="
+        M 295 393
+        c 0 -9 3 -12 12 -12
+        c 9 0 12 3 12 12
+        v 14
+        c 0 13 5 18 18 18
+        h 62
+        c 13 0 18 -5 18 -18
+        v -14
+        c 0 -9 3 -12 12 -12
+        h 18
+        c 9 0 12 3 12 12
+        v 14
+        c 0 13 5 18 18 18
+        h 62
+        c 13 0 18 -5 18 -18
+        v -14
+        c 0 -9 3 -12 12 -12
+        c 9 0 12 3 12 12
+        v 14
+        v 8
+        c 0 12 -4 16 -16 16
+        h -8
+        h -98
+        h -12
+        h -18
+        h -12
+        h -98
+        h -8
+        c -12 0 -16 -4 -16 -16
+        Z
+      " />
+    </g>
+
+    <path fill="lightgreen" stroke="darkolivegreen" stroke-width="2" stroke-linejoin="round" d="
+      M 9 385
+      c 0 -9 3 -12 12 -12
+      h 10
+      l 8.586 7.414
+      q 0.6486 0.586 1.414 0.586
+      q 0.7654 0 1.414 -0.586
+      l 8.586 -7.414
+      h 74
+      c 9 0 12 3 12 12
+      v 8
+      v 14
+      c 0 13 5 18 18 18
+      h 62
+      c 13 0 18 -5 18 -18
+      v -14
+      c 0 -9 3 -12 12 -12
+      h 34
+      c 9 0 12 3 12 12
+      v 22
+      c 0 13 5 18 18 18
+      h 254
+      c 13 0 18 -5 18 -18
+      v -14
+      c 0 -9 3 -12 12 -12
+      h 12
+      c 9 0 12 3 12 12
+      v 14
+      v 12
+      c 0 9 -3 12 -12 12
+      h -12
+      h -12
+      h -290
+      h -12
+      h -34
+      h -12
+      h -98
+      h -12
+      h -74
+      q -0.7654 0 -1.414 0.586
+      l -8.586 7.414
+      l -8.586 -7.414
+      q -0.6486 -0.586 -1.414 -0.586
+      h -10
+      c -9 0 -12 -3 -12 -12
+      Z
+    " />
+  </g>
+</svg>

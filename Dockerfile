@@ -1,19 +1,25 @@
-# base from official Node (Alpine LTS) image
+# Base from official Node (Alpine LTS) image
 FROM node:lts-alpine
 
-# install simple http server for serving static content
+# Install system dependencies for native modules and Python distutils
+RUN apk update && apk add --no-cache \
+    build-base \
+    python3 \
+    py3-setuptools
+
+# Install simple http server for serving static content
 RUN npm install -g http-server
 
-# install typescript compiler
+# Install TypeScript compiler
 RUN npm install -g typescript
 
-# install ts-node (to run/debug .ts files without manual transpiling)
+# Install ts-node (to run/debug .ts files without manual transpiling)
 RUN npm install -g ts-node
 
-# set /app as working directory (in development mode for mounting source code)
+# Set /app as working directory (in development mode for mounting source code)
 WORKDIR /app
 
-# override default CMD for image ("node"): launch the shell
+# Override default CMD for image ("node"): launch the shell
 CMD sh
 
 # Listen on ports

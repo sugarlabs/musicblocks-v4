@@ -9,36 +9,77 @@ _[**Node.js**](https://nodejs.org/en) v16_ and _**npm**_ installed on your devel
 Although, this is sufficient to run, build, and test the project as a whole, you might need some
 extra tools for other development tasks.
 
+_**Note:**_ For Windows users, ensure PowerShell’s execution policy allows running scripts by
+setting it to `RemoteSigned` if necessary: `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser`. If
+ you run into issues, please refer to [this page](https://stackoverflow.com/questions/4037939/powershell-says-execution-of-scripts-is-disabled-on-this-system).
+
 You'll need _**tsc**_ (_TypeScript Compiler_) to manually compile `.ts` files. You'll need
 _**ts-node**_ (_Node.js executable for TypeScript_) to manually execute `.ts` scripts directly. Finally,
 you'll need an _HTTP_ server like _**http-server**_ (_a HTTP server program_), if you want to serve
 files manually.
 
-Once _**npm**_ is installed, to install the above, run
+### Installation Steps
 
-```bash
-npm i -g http-server
-npm i -g typescript
-npm i -g ts-node
-```
+#### Install Prequisites
 
-_**Note:**_ Users on _Linux_ and _MacOS_ are required to add a `sudo` before these commands.
+1. **Install Required Global Packages**
 
-Check installation using
+    Run the following commands:
 
-```bash
-node -v && npm -v && tsc -v && ts-node -v && http-server -v
-```
+    ```bash
+    npm i -g http-server
+    npm i -g typescript
+    npm i -g ts-node
+    ```
 
-Output should look like
+    _**Note:**_ Users on _Linux_ and _MacOS_ are required to add a `sudo` before these commands.
 
-```bash
-v16.14.0
-8.3.1
-Version 4.6.2
-v10.6.0
-v14.1.0
-```
+    ```bash
+    sudo npm i -g typescript ts-node http-server
+    ```
+
+    These global packages are _not required by the app_ but serve as extra utilities.
+
+2. **Verify Installation**
+
+    Ensure all tools are installed correctly by running:
+
+    ```bash
+    node -v && npm -v && tsc -v && ts-node -v && http-server -v
+    ```
+
+    _**Note:**_  For _Windows OS_, this works only in **PowerShell 7+ (Core)**, not in Windows PowerShell
+    (v5.1 or earlier). To check your powershell version, run `$PSVersionTable` in the integrated terminal.
+    If outdated (below 7.0), run `winget install --id Microsoft.Powershell --source winget` to update.
+    If `winget` is unavailable, download the latest `.msi` installer from the official
+    [PowerShell GitHub releases](https://github.com/PowerShell/PowerShell/releases)
+    based on your system architecture.
+
+    Expected output (versions may vary slightly):
+
+    ```bash
+    v16.14.0
+    8.3.1
+    Version 4.6.2
+    v10.6.0
+    v14.1.0
+    ```
+
+#### Getting the code
+
+1. Fork this repository
+
+2. Clone your forked copy of Music Blocks (v4) for _HTTPS_ on your local machine:
+
+    ```bash
+    git clone https://github.com/<your_user_name>/musicblocks-v4.git
+    ```
+
+3. Navigate to the cloned repository:
+
+    ```bash
+    cd musicblocks-v4
+    ```
 
 ### With Docker
 

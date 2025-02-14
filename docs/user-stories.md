@@ -19,10 +19,10 @@
 1. Run a program. (visible only when program not running)  
    (a button to run the program)  
 
-2. Pausing a running Program (vice versa)  
+2. Pausing a running Program (visible only when program not running)  
    (a button for running the program)  
 
-3. Stop a running Program (vice versa)  
+3. Stop a running Program (visible only when program not running)  
    (a button for stopping a running program)  
 
 4. Run one thread of a program slowly  

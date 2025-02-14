@@ -39,8 +39,9 @@ This document outlines the features to be implemented in Music Blocks v4 (MBv4).
 - The brick list will be categorized by function.
 - Hovering over bricks will highlight them with different colors.
 - Some arguments will have labels, while others will not.
+- Horizontal Scrolling feature can be enabled as default for MusicBlocks-v4.
 
-### Defining Features and Implementation Strategy
+#### Defining Features and Implementation Strategy
 
 - A comprehensive feature list will be compiled from a user perspective.
 - This list will be referred to as "Stories," detailing various user interactions.

@@ -28,7 +28,7 @@ The following sections provide a **detailed list of functional requirements** an
 16. Delete bricks from the workspace.
 17. Implement undo functionality.
 18. Allow abstraction of program sections through action bricks.
-19. Save programs to cloud storage.
+19. Save projects to cloud storage.
 20. Save artwork files.
 21. Export music as sheet music.
 22. Categorize and color-code bricks for better usability.
@@ -40,7 +40,8 @@ The following sections provide a **detailed list of functional requirements** an
 28. Support the addition of plugins and extensions.
 29. Stop currently running programs.
 30. Toggle fullscreen mode.
-31. Merge multiple programs into one.
+31. Merge multiple projects into one.
+32. Enable Horizontal Scrolling feature by default.
 
 ### Clustered Groups
 

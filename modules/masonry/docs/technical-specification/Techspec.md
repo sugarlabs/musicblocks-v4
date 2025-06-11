@@ -9,7 +9,7 @@
   - **Sections**:
     - **Attributes**: name, icon, color
     - **Bricks**:
-      - **Attributes**: id, name, description, thumbnail, BBox
+      - **Attributes**: ID, name, description, thumbnail, BBox
 
 ### Search
 

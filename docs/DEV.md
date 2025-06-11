@@ -244,7 +244,7 @@ After you are set-up, the steps you take depend on what you want to do:
 ## Editor
 
 _All code is just plain text, so it doesn't really matter what you use to edit them._ However,
-using modern, feature-rich IDEs/text-editors like [_**Atom**_](https://github.blog/2022-06-08-sunsetting-atom/),
+using modern, feature-rich IDEs/text-editors like [_**Atom**_](https://github.blog/news-insights/product-news/sunsetting-atom/),
 [_**Brackets**_](https://brackets.io), [_**WebStorm**_](https://www.jetbrains.com/webstorm/),
 [_**Sublime Text**_](https://www.sublimetext.com/),
 [_**Visual Studio Code**_](https://code.visualstudio.com/), etc. makes life way easier. These come

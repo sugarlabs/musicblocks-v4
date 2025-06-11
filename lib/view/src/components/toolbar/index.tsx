@@ -23,8 +23,8 @@ export default function (): JSX.Element {
   const btnUnpinRef = useRef(null);
 
   useEffect(() => {
-    btnPinRef.current!;
-    btnUnpinRef.current!;
+    // btnPinRef.current!;
+    // btnUnpinRef.current!;
 
     const loadSVG = (element: HTMLButtonElement, svgSrc: string) => {
       fetch(svgSrc)

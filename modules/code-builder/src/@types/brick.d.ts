@@ -195,6 +195,7 @@ export interface IBrickExpression extends IBrickArgument, IBrickArgs, IBrickArgs
  * Type definition of a statement brick.
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface IBrickStatement extends IBrickInstruction {
     // reserving spot for future-proofing
 }

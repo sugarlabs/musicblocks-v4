@@ -87,6 +87,7 @@
     "modules/menu",
     "modules/painter",
     "modules/singer",
+    "modules/masonry",
     "app"
   ],
   "dependencies": {

@@ -1,5 +1,7 @@
 {
-  "editor.rulers": [100],
+  "editor.rulers": [
+    100
+  ],
   "editor.renderWhitespace": "boundary",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "javascript.updateImportsOnFileMove.enabled": "always",
@@ -25,7 +27,7 @@
     "editor.suggest.snippetsPreventQuickSuggestions": false,
     "editor.suggestSelection": "first",
     "editor.tabCompletion": "onlySnippets",
-    "editor.wordBasedSuggestions": false
+    "editor.wordBasedSuggestions": "off"
   },
   "[markdown]": {
     "editor.wordWrap": "on",

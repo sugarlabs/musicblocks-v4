@@ -1,3 +1,5 @@
+import type { PluginOption } from 'vite';
+
 import path from 'path';
 
 import { defineConfig } from 'vite';
@@ -56,13 +58,13 @@ export default defineConfig({
             emitFile: true,
             gzipSize: true,
             filename: 'stats.html',
-        }),
+        }) as PluginOption,
         // this emits bundle data as JSON (required for bundle assessment)
         visualizer({
             emitFile: true,
             gzipSize: true,
             template: 'raw-data',
-        }),
+        }) as PluginOption,
     ],
 
     resolve: {

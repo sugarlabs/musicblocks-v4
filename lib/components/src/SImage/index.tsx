@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import type { TAsset } from '#/@types/assets';
 
 // -- ui items -------------------------------------------------------------------------------------

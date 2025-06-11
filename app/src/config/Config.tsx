@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import type { IAppConfig } from '#/@types/app';
 import type { IComponentDefinitionExtended, TComponentId } from '#/@types/components';
 
@@ -65,50 +66,50 @@ export default function (props: {
             id: componentId,
             name,
             desc,
-          } as {
+          }) as {
             id: TComponentId;
             name: string;
             desc: string;
-          }),
+          },
       )
       .map(
         (data) =>
           ({
             ...data,
             active: _isActive(data.id),
-          } as {
+          }) as {
             id: TComponentId;
             name: string;
             desc: string;
             active: boolean;
-          }),
+          },
       )
       .map(
         (data) =>
           ({
             ...data,
             elements: _getElements(data.id),
-          } as {
+          }) as {
             id: TComponentId;
             name: string;
             desc: string;
             active: boolean;
             elements: Record<string, boolean> | null;
-          }),
+          },
       )
       .map(
         (data) =>
           ({
             ...data,
             flags: _getFlags(data.id),
-          } as {
+          }) as {
             id: TComponentId;
             name: string;
             desc: string;
             active: boolean;
             elements: Record<string, boolean> | null;
             flags: Record<string, boolean> | null;
-          }),
+          },
       )
       .map((data) => [data.id, data]),
   );

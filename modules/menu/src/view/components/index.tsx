@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import type { Root } from 'react-dom/client';
 import type { TPropsMenu } from '#/@types/components/menu';
 

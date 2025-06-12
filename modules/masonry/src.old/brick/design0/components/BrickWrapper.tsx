@@ -15,7 +15,7 @@ import type {
   TBrickRenderPropsExpression,
   TBrickRenderPropsStatement,
   TCoords,
-} from '@/@types/brick';
+} from 'src.old/@types/brick';
 
 type TBrickWrapperProps =
   | { type: 'block'; params: TBrickRenderPropsBlock; coords?: TCoords }

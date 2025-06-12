@@ -15,7 +15,7 @@ import type {
     TColor,
     TCoords,
     TExtent,
-} from '@/@types/brick';
+} from 'src.old/@types/brick';
 
 /**
  * @abstract

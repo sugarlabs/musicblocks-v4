@@ -1,16 +1,15 @@
 import BrickWrapper from './BrickWrapper';
 import type { JSX } from 'react';
-import type { IBrickExpression, TBrickArgDataType, TBrickColor } from '@/@types/brick';
+import type { IBrickStatement, TBrickArgDataType, TBrickColor } from 'src.old/@types/brick';
 
 // -------------------------------------------------------------------------------------------------
 
 export default function (props: {
-  Component: (props: { instance: IBrickExpression; visualIndicators?: JSX.Element }) => JSX.Element;
+  Component: (props: { instance: IBrickStatement; visualIndicators?: JSX.Element }) => JSX.Element;
   prototype: new (params: {
     name: string;
     label: string;
     glyph: string;
-    dataType: TBrickArgDataType;
     args: Record<
       string,
       {
@@ -23,7 +22,9 @@ export default function (props: {
     colorFg: TBrickColor;
     outline: TBrickColor;
     scale: number;
-  }) => IBrickExpression;
+    connectAbove: boolean;
+    connectBelow: boolean;
+  }) => IBrickStatement;
   label: string;
   args: string[];
   colorBg: string;
@@ -46,7 +47,8 @@ export default function (props: {
     outline,
     scale,
     glyph: '',
-    dataType: 'any',
+    connectAbove: true,
+    connectBelow: true,
     name: '',
   });
 
@@ -79,14 +81,24 @@ export default function (props: {
         );
       })}
 
-      {/* Left notch bounding box */}
+      {/* Top instruction notch bounding box */}
       <rect
-        x={instance.bBoxNotchArg.coords.x}
-        y={instance.bBoxNotchArg.coords.y}
-        height={instance.bBoxNotchArg.extent.height}
-        width={instance.bBoxNotchArg.extent.width}
+        x={instance.bBoxNotchInsTop.coords.x}
+        y={instance.bBoxNotchInsTop.coords.y}
+        height={instance.bBoxNotchInsTop.extent.height}
+        width={instance.bBoxNotchInsTop.extent.width}
         fill="green"
-        opacity={0.8}
+        opacity={0.9}
+      />
+
+      {/* Bottom instruction notch bounding box */}
+      <rect
+        x={instance.bBoxNotchInsBot.coords.x}
+        y={instance.bBoxNotchInsBot.coords.y}
+        height={instance.bBoxNotchInsBot.extent.height}
+        width={instance.bBoxNotchInsBot.extent.width}
+        fill="green"
+        opacity={0.9}
       />
     </>
   );

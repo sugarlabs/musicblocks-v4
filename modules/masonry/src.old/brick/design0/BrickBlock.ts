@@ -1,4 +1,4 @@
-import type { TBrickRenderPropsBlock, TColor, TCoords, TExtent } from '@/@types/brick';
+import type { TBrickRenderPropsBlock, TColor, TCoords, TExtent } from 'src.old/@types/brick';
 import { BrickModelBlock } from '../model';
 import { generatePath } from '../utils/path';
 

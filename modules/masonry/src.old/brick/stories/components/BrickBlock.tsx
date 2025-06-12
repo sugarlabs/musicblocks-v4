@@ -1,5 +1,5 @@
 import type { JSX } from 'react';
-import type { IBrickBlock, TBrickRenderPropsBlock, TColor } from '@/@types/brick';
+import type { IBrickBlock, TBrickRenderPropsBlock, TColor } from 'src.old/@types/brick';
 
 import BrickWrapper from './BrickWrapper';
 

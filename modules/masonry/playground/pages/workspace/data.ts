@@ -3,8 +3,8 @@ import {
     ModelBrickData,
     ModelBrickExpression,
     ModelBrickStatement,
-} from '@/brick';
-import type { TBrickType, TBrickCoords, TBrickArgDataType } from '@/@types/brick';
+} from 'src.old/brick';
+import type { TBrickType, TBrickCoords, TBrickArgDataType } from 'src.old/@types/brick';
 
 export type InstanceMap = {
     data: ModelBrickData;

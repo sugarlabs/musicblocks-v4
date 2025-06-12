@@ -1,5 +1,5 @@
 import React from 'react';
-import type { TBrickRenderPropsBlock } from '@/@types/brick';
+import type { TBrickRenderPropsBlock } from 'src.old/@types/brick';
 
 const BrickBlock: React.FC<TBrickRenderPropsBlock> = ({
   path,

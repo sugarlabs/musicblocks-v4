@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import type { IAppConfig } from '#/@types/app';
 import type { IComponentDefinitionExtended, TComponentId } from '#/@types/components';
 

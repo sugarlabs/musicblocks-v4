@@ -64,10 +64,13 @@ const BrickWrapper: React.FC<TBrickWrapperProps> = ({ type, params, coords }) =>
         name: params.label,
         label: params.label,
         glyph: params.glyph || '',
-        args: params.labelArgs.reduce((acc, label, index) => {
-          acc[`arg${index}`] = { label, dataType: 'unknown', meta: {} };
-          return acc;
-        }, {} as Record<string, { label: string; dataType: string; meta: unknown }>),
+        args: params.labelArgs.reduce(
+          (acc, label, index) => {
+            acc[`arg${index}`] = { label, dataType: 'unknown', meta: {} };
+            return acc;
+          },
+          {} as Record<string, { label: string; dataType: string; meta: unknown }>,
+        ),
         colorBg: params.colorBg,
         colorFg: params.colorFg,
         colorBgHighlight: params.colorBg,
@@ -82,10 +85,13 @@ const BrickWrapper: React.FC<TBrickWrapperProps> = ({ type, params, coords }) =>
         name: params.label,
         label: params.label,
         glyph: params.glyph || '',
-        args: params.labelArgs.reduce((acc, label, index) => {
-          acc[`arg${index}`] = { label, dataType: 'unknown', meta: {} };
-          return acc;
-        }, {} as Record<string, { label: string; dataType: string; meta: unknown }>),
+        args: params.labelArgs.reduce(
+          (acc, label, index) => {
+            acc[`arg${index}`] = { label, dataType: 'unknown', meta: {} };
+            return acc;
+          },
+          {} as Record<string, { label: string; dataType: string; meta: unknown }>,
+        ),
         colorBg: params.colorBg,
         colorFg: params.colorFg,
         colorBgHighlight: params.colorBg,

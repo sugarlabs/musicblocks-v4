@@ -1,3 +1,5 @@
+import type { JSX } from 'react';
+
 import { Voice } from '@/core/voice';
 import SynthUtils from '@/core/synthUtils';
 import * as Tone from 'tone';

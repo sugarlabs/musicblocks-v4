@@ -195,7 +195,7 @@ After you are set-up, the steps you take depend on what you want to do:
             npm run test:unit
             ```
 
-        - For running E2E tests, run
+        - For running end-to-end tests, run
 
             ```bash
             ## In 1 terminal
@@ -255,13 +255,13 @@ Some (non-exhaustive) benefits of using these are _syntax highlighting_,
 _warning/error annotations_, _formatting_, _auto-refactoring_, tons of customizable
 _keyboard shortcuts_, etc.
 
-_**Visual Studio Code**_ (_**VSCode**_) is currently the most-popular code editor for reasons like
-being _lightweight_, _cleaner_, large marketplace of _extensions_, integrated _source control_
+_**Visual Studio Code**_ (_**Visual Studio Code**_) is currently the most-popular code editor for
+reasons like being _lightweight_, _cleaner_, large marketplace of _extensions_, integrated _source control_
 features, _debugger_, _remote explorer_ support, _regular expression_ based find/replace, etc.
 
-In fact, a workspace configuration file for _vscode_`.vscode/settings.json` has already been added.
-Recommended extensions for this project are `Babel JavaScript`, `Docker`, `ESLint`, `Git Graph`,
-`GitLens`, `markdownlint`, `Prettier`, `SCSS IntelliSense`, and `SVG`.
+In fact, a workspace configuration file for _Visual Studio Code_`.vscode/settings.json` has already
+been added. Recommended extensions for this project are `Babel JavaScript`, `Docker`, `ESLint`,
+`Git Graph`, `GitLens`, `markdownlint`, `Prettier`, `SCSS IntelliSense`, and `SVG`.
 
 All that, however, shouldn't necessarily stop you from using _**Emacs**_, _**Nano**_, or _**Vim**_,
 if that's your poison :D. Happy coding!

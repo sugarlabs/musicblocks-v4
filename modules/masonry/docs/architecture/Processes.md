@@ -40,7 +40,7 @@
    - Input: Brick Selection
    - Output: Selected Brick Properties to Workspace
    (How this works is, The palette will have a loaded list of SVGs. When you drag one from palette on
-   to the workspace, the brick will be created on the workspace whos id matches to the one in brick)
+   to the workspace, the brick will be created on the workspace whos ID matches to the one in brick)
 
 ### Workspace
 

@@ -132,6 +132,7 @@ export interface IBrick {
  * Type definition of a generic argument brick (data or expression type).
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface IBrickArgument extends IBrick {
     // reserving spot for future-proofing
 }

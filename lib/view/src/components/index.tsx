@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import type { Root } from 'react-dom/client';
 
 import { flushSync } from 'react-dom';

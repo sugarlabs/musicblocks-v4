@@ -1,3 +1,5 @@
+import type { JSX } from 'react';
+
 import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 

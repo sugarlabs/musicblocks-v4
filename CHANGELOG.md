@@ -2,7 +2,7 @@
 
 ## 4.1.0 [2022-03-05]
 
-- Updates README text.
+- Updates readme text.
 - Adds the feature to author programs in the _Editor_ using _YAML_.
 - Updates vulnerable dependent package `url-parse` version.
 

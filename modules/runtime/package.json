@@ -1,0 +1,13 @@
+{
+  "name": "@sugarlabs/mb4-module-runtime",
+  "version": "4.2.0",
+  "description": "Execution Runtime for Music Blocks programs",
+  "private": "true",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "vitest --passWithNoTests",
+    "coverage": "vitest run --coverage --passWithNoTests",
+    "check": "tsc",
+    "lint": "eslint src"
+  }
+}

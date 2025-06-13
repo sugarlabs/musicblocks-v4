@@ -89,6 +89,8 @@
     "modules/painter",
     "modules/singer",
     "modules/masonry",
+    "modules/program",
+    "modules/runtime",
     "app"
   ],
   "dependencies": {

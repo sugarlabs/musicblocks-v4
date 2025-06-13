@@ -5,6 +5,7 @@
     ],
     "compilerOptions": {
         "baseUrl": ".",
+        "types": [],
         "paths": {
             "@/*": [
                 "./src/*",

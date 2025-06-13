@@ -1,0 +1,38 @@
+export type TNodeType =
+  | "Program"
+  | "ThreadFunctionDeclaration"
+  | "CustomFunctionDeclaration"
+  | "Block"
+  | "VariableDeclarationStatement"
+  | "VariableAssignmentStatement"
+  | "FunctionCallStatement"
+  | "JumpStatement"
+  | "ModifyingContextStatement"
+  | "DeclarativeContextStatement"
+  | "BranchStatement"
+  | "MatchStatement"
+  | "IterationLoopStatement"
+  | "ConditionLoopStatement"
+  | "SequenceAlterStatement"
+  | "NumericLiteralExpression"
+  | "StringLiteralExpression"
+  | "BooleanLiteralExpression"
+  | "UnaryOperatorExpression"
+  | "BinaryOperatorExpression"
+  | "FunctionCallExpression"
+  | "MemberExpression"
+  | "ArrayExpression"
+  | "DictExpression"
+  | "IdentifierExpression";
+
+export type TUnaryOperator = "sqrt" | "abs" | "not";
+export type TBinaryOperator =
+  | "add"
+  | "subtract"
+  | "multiply"
+  | "divide"
+  | "lessThan"
+  | "greaterThan"
+  | "equal"
+  | "and"
+  | "or";

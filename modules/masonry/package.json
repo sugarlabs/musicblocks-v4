@@ -5,8 +5,8 @@
   "private": "true",
   "main": "src/index.ts",
   "scripts": {
-    "test": "vitest",
-    "coverage": "vitest run --coverage",
+    "test": "vitest --passWithNoTests",
+    "coverage": "vitest run --coverage --passWithNoTests",
     "lint": "eslint src",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",

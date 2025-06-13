@@ -6,7 +6,7 @@ import {
     getBrickFromWarehouse,
     deleteBrickFromWarehouse,
 } from './brickFactory';
-import type { TColor } from '@/@types/brick';
+import type { TColor } from 'src.old/@types/brick';
 
 // Mock color data for testing
 const mockColor: TColor = '#FFFFFF';

@@ -1,0 +1,9 @@
+{
+  "filters": {
+    "comments": true
+  },
+  "rules": {
+    "no-dead-link": true,
+    "terminology": true
+  }
+}

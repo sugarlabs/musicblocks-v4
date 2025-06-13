@@ -1,5 +1,5 @@
 import React from 'react';
-import type { TBrickRenderPropsData, TCoords } from '@/@types/brick';
+import type { TBrickRenderPropsData, TCoords } from 'src.old/@types/brick';
 
 interface BrickDataProps {
   instance: TBrickRenderPropsData;

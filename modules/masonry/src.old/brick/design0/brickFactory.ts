@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { TColor } from '@/@types/brick';
+import type { TColor } from 'src.old/@types/brick';
 import BrickStatement from './BrickStatement';
 import BrickExpression from './BrickExpression';
 import BrickData from './BrickData';

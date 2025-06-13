@@ -1,40 +1,51 @@
 import BrickWrapper from './BrickWrapper';
 import type { JSX } from 'react';
-import type { IBrickData, TBrickArgDataType, TBrickColor } from '@/@types/brick';
+import type { IBrickExpression, TBrickArgDataType, TBrickColor } from 'src.old/@types/brick';
 
 // -------------------------------------------------------------------------------------------------
 
 export default function (props: {
-  Component: (props: { instance: IBrickData; visualIndicators?: JSX.Element }) => JSX.Element;
+  Component: (props: { instance: IBrickExpression; visualIndicators?: JSX.Element }) => JSX.Element;
   prototype: new (params: {
     name: string;
     label: string;
     glyph: string;
     dataType: TBrickArgDataType;
-    dynamic: boolean;
-    value?: boolean | number | string;
-    input?: 'boolean' | 'number' | 'string' | 'options';
+    args: Record<
+      string,
+      {
+        label: string;
+        dataType: TBrickArgDataType;
+        meta: unknown;
+      }
+    >;
     colorBg: TBrickColor;
     colorFg: TBrickColor;
     outline: TBrickColor;
     scale: number;
-  }) => IBrickData;
+  }) => IBrickExpression;
   label: string;
+  args: string[];
   colorBg: string;
   colorFg: string;
   outline: string;
   scale: number;
 }): JSX.Element {
-  const { Component, prototype, label, colorBg, colorFg, outline, scale } = props;
+  const { Component, prototype, label, args, colorBg, colorFg, outline, scale } = props;
 
   const instance = new prototype({
     label,
+    args: Object.fromEntries(
+      args.map<[string, { label: string; dataType: TBrickArgDataType; meta: unknown }]>((name) => [
+        name,
+        { label: name, dataType: 'any', meta: undefined },
+      ]),
+    ),
     colorBg,
     colorFg,
     outline,
     scale,
     glyph: '',
-    dynamic: false,
     dataType: 'any',
     name: '',
   });
@@ -50,6 +61,23 @@ export default function (props: {
         fill="black"
         opacity={0.25}
       />
+
+      {/* Right args bounding box */}
+      {Object.keys(instance.bBoxArgs).map((name, i) => {
+        const arg = instance.bBoxArgs[name];
+
+        return (
+          <rect
+            key={i}
+            x={arg.coords.x}
+            y={arg.coords.y}
+            height={arg.extent.height}
+            width={arg.extent.width}
+            fill="green"
+            opacity={0.8}
+          />
+        );
+      })}
 
       {/* Left notch bounding box */}
       <rect

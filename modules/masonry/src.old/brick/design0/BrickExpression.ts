@@ -1,12 +1,12 @@
-import type { TBrickRenderPropsStatement, TColor, TCoords, TExtent } from '@/@types/brick';
-import { BrickModelStatement } from '../model';
+import type { TBrickRenderPropsExpression, TColor, TCoords, TExtent } from 'src.old/@types/brick';
+import { BrickModelExpression } from '../model';
 import { generatePath } from '../utils/path';
 
 /**
  * @class
- * Final class that defines a statement brick.
+ * Final class that defines an expression brick.
  */
-export default class BrickStatement extends BrickModelStatement {
+export default class BrickExpression extends BrickModelExpression {
     readonly _pathResults: ReturnType<typeof generatePath>;
 
     private _boundingBoxArgs: Record<string, TExtent> = {};
@@ -15,27 +15,24 @@ export default class BrickStatement extends BrickModelStatement {
         uuid: string;
         name: string;
         label: string;
-        glyph: string;
-        args: { id: string; label: string }[];
+        glyph?: string;
         colorBg: TColor;
         colorFg: TColor;
         colorBgHighlight: TColor;
         colorFgHighlight: TColor;
         outline: TColor;
-        scale: number;
-        connectAbove: boolean;
-        connectBelow: boolean;
+        args: { id: string; label: string }[];
     }) {
         super(params);
 
         this._pathResults = generatePath({
             hasNest: false,
-            hasNotchArg: false,
-            hasNotchInsTop: params.connectAbove,
-            hasNotchInsBot: params.connectBelow,
+            hasNotchArg: true,
+            hasNotchInsTop: false,
+            hasNotchInsBot: false,
             scale: this._scale,
             innerLengthX: 100,
-            argHeights: Array.from({ length: params.args.length }, () => 17),
+            argHeights: Array.from({ length: this._args.length }, () => 17),
         });
     }
 
@@ -46,18 +43,11 @@ export default class BrickStatement extends BrickModelStatement {
         };
     }
 
-    public get connPointsFixed(): Record<
-        'insTop' | 'insBottom',
-        { extent: TExtent; coords: TCoords }
-    > {
+    public get connPointsFixed(): Record<'argOutgoing', { extent: TExtent; coords: TCoords }> {
         return {
-            insTop: {
-                extent: this._pathResults.bBoxNotchInsTop!.extent,
-                coords: this._pathResults.bBoxNotchInsTop!.coords,
-            },
-            insBottom: {
-                extent: this._pathResults.bBoxNotchInsBot!.extent,
-                coords: this._pathResults.bBoxNotchInsBot!.coords,
+            argOutgoing: {
+                extent: this._pathResults.bBoxNotchArg!.extent,
+                coords: this._pathResults.bBoxNotchArg!.coords,
             },
         };
     }
@@ -75,7 +65,7 @@ export default class BrickStatement extends BrickModelStatement {
         return results;
     }
 
-    public get renderProps(): TBrickRenderPropsStatement {
+    public get renderProps(): TBrickRenderPropsExpression {
         return {
             path: this._pathResults.path,
             label: this._label,
@@ -91,14 +81,6 @@ export default class BrickStatement extends BrickModelStatement {
 
     public setBoundingBoxArg(id: string, extent: TExtent): void {
         this._boundingBoxArgs[id] = extent;
-    }
-
-    public setConnectAbove(connectAbove: boolean): void {
-        this._connectAbove = connectAbove;
-    }
-
-    public setConnectBelow(connectBelow: boolean): void {
-        this._connectBelow = connectBelow;
     }
 
     public setHighlighted(highlighted: boolean): void {

@@ -1,0 +1,13 @@
+{
+  "name": "@sugarlabs/mb4-module-program",
+  "version": "4.2.0",
+  "description": "Handles internal representation of Music Blocks programs/ASTs",
+  "private": "true",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "vitest --passWithNoTests",
+    "coverage": "vitest run --coverage --passWithNoTests",
+    "check": "tsc",
+    "lint": "eslint src"
+  }
+}

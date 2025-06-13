@@ -1,12 +1,12 @@
 import React from 'react';
-import type { TBrickRenderPropsStatement, TCoords } from '@/@types/brick';
+import type { TBrickRenderPropsExpression, TCoords } from 'src.old/@types/brick';
 
-interface BrickStatementProps {
-  instance: TBrickRenderPropsStatement;
+interface BrickExpressionProps {
+  instance: TBrickRenderPropsExpression;
   coords?: TCoords;
 }
 
-const BrickStatement: React.FC<BrickStatementProps> = ({ instance, coords = { x: 0, y: 0 } }) => {
+const BrickExpression: React.FC<BrickExpressionProps> = ({ instance, coords = { x: 0, y: 0 } }) => {
   return (
     <g transform={`translate(${coords.x},${coords.y}) scale(${instance.scale})`}>
       <path
@@ -52,4 +52,4 @@ const BrickStatement: React.FC<BrickStatementProps> = ({ instance, coords = { x:
   );
 };
 
-export default BrickStatement;
+export default BrickExpression;

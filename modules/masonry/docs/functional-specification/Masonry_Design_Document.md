@@ -59,7 +59,9 @@
     related to bricks from the palette, stack of bricks, and other related components of the
     project, aimed at improving their functionality and effectiveness.
 
-    [Screencast from 13-05-24 12:15:30 PM IST.webm](https://github-production-user-asset-6210df.s3.amazonaws.com/143683619/329949219-ae9df412-8b3a-4930-8635-ad89da828ba9.webm?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250612%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250612T001431Z&X-Amz-Expires=300&X-Amz-Signature=0acf3b637286f6a81da475839896e128e174d88cbb82d3218d6f4a0e74df00e0&X-Amz-SignedHeaders=host)
+    <!-- textlint-disable -->
+    [Screencast from 13-05-24 12:15:30 PM IST.webm](https://github.com/Karan-Palan/musicblocks-v4/assets/143683619/ae9df412-8b3a-4930-8635-ad89da828ba9)
+    <!-- textlint-enable -->
 
 10. **References**
 

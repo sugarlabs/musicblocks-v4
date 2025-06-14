@@ -1,7 +1,7 @@
-import { DictExpression as DictExpressionAbstract, Expression } from "../../abstracts";
+import { DictExpression as DictExpressionAbstract, Expression } from '../../abstracts';
 
 export class DictExpression extends DictExpressionAbstract {
-  constructor(entries: { key: Expression; value: Expression }[]) {
-    super(entries);
-  }
+    constructor(entries: { key: Expression; value: Expression }[]) {
+        super(entries);
+    }
 }

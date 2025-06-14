@@ -1,7 +1,7 @@
-import { IdentifierExpression as IdentifierExpressionAbstract } from "../../abstracts";
+import { IdentifierExpression as IdentifierExpressionAbstract } from '../../abstracts';
 
 export class IdentifierExpression extends IdentifierExpressionAbstract {
-  constructor(name: string) {
-    super(name);
-  }
+    constructor(name: string) {
+        super(name);
+    }
 }

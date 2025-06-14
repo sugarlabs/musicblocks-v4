@@ -1,7 +1,7 @@
-import { ASTNodeBase, Program } from "../abstracts";
+import { ASTNodeBase, Program } from '../abstracts';
 
 export class ProgramDeclaration extends Program {
-  constructor(body: ASTNodeBase[]) {
-    super(body);
-  }
+    constructor(body: ASTNodeBase[]) {
+        super(body);
+    }
 }

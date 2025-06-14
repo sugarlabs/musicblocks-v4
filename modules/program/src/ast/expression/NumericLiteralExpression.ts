@@ -1,7 +1,7 @@
-import { LiteralExpression } from "../../abstracts";
+import { LiteralExpression } from '../../abstracts';
 
 export class NumericLiteralExpression extends LiteralExpression {
-  constructor(value: number) {
-    super("NumericLiteralExpression", value);
-  }
+    constructor(value: number) {
+        super('NumericLiteralExpression', value);
+    }
 }

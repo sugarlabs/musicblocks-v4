@@ -1,7 +1,7 @@
-import { LiteralExpression } from "../../abstracts";
+import { LiteralExpression } from '../../abstracts';
 
 export class BooleanLiteralExpression extends LiteralExpression {
-  constructor(value: boolean) {
-    super("BooleanLiteralExpression", value);
-  }
+    constructor(value: boolean) {
+        super('BooleanLiteralExpression', value);
+    }
 }

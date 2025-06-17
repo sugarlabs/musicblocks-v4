@@ -1,4 +1,5 @@
 type TBBox = { w: number; h: number };
+export type TInputUnion = TInputType1 | TInputType2 | TInputType3;
 
 // Type definitions for input configurations
 type TInputCommon = {

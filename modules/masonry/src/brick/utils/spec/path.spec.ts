@@ -1,4 +1,5 @@
 import { generatePath } from '../path';
+import type { TInputUnion } from '../path';
 
 describe('Masonry: Brick > Path Generation', () => {
     const testCases = [
@@ -118,7 +119,7 @@ describe('Masonry: Brick > Path Generation', () => {
 
     testCases.forEach(({ name, input }) => {
         it(`generates path correctly: ${name}`, () => {
-            const result = generatePath(input as any);
+            const result = generatePath(input as TInputUnion);
             expect(typeof result.path).toBe('string');
             expect(result.path.length).toBeGreaterThan(0);
         });

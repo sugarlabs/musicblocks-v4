@@ -391,7 +391,8 @@ export function generatePath(config: TInputType1 | TInputType2 | TInputType3): {
         rightVertical: rightVertical,
     });
 
+    const segments = [...top, ...right, ...bottom, ...left];
     return {
-        path: [...top, ...right, ...bottom, ...left].join(' '),
+        path: ['M 0,0', ...segments].join(' '),
     };
 }

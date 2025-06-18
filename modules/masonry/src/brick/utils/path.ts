@@ -393,7 +393,78 @@ export function generatePath(config: TInputType1 | TInputType2 | TInputType3): {
     });
 
     const segments = [...top, ...right, ...bottom, ...left];
+
     return {
         path: ['M 0,0', ...segments].join(' '),
+    };
+}
+
+
+// function to calculate the bounding box values 
+export function getBoundingBox(config: TInputUnion): TBBox {
+    const {
+        strokeWidth,
+        bBoxLabel,
+        bBoxArgs,
+        type,
+    } = config;
+
+    const hasArgs = bBoxArgs.length > 0;
+    const labelWidth = Math.max(MIN_LABEL_WIDTH, bBoxLabel.w);
+
+    // Match variableTopWidth logic from _generateTop
+    const variableTopWidth =
+        strokeWidth / 2 +
+        labelWidth +
+        strokeWidth / 2 -
+        CORNER_RADIUS -
+        WIDTH_NOTCH_TOP -
+        OFFSET_NOTCH_TOP -
+        CORNER_RADIUS;
+
+    // Base width as per _generateTop and _generateBottom logic
+    const baseWidth =
+        CORNER_RADIUS + OFFSET_NOTCH_TOP + WIDTH_NOTCH_TOP + variableTopWidth;
+
+    const width = hasArgs
+        ? baseWidth + OFFSET_NOTCH_RIGHT + CORNER_RADIUS + strokeWidth/2
+        : baseWidth + CORNER_RADIUS +strokeWidth/2;
+
+    // Get rightVertical from _generateRight
+    const { vertical: rightVertical } = _generateRight({
+        hasArgs,
+        strokeWidth,
+        bBoxLabel,
+        bBoxArgs,
+    });
+
+    let height = rightVertical + CORNER_RADIUS + (type !== 'type3' ? strokeWidth/2 : 0);
+
+    if (type === 'type3') {
+        const {
+            bBoxNesting,
+            secondaryLabel,
+        } = config as TInputType3;
+
+        // Reuse nested path logic
+        let nestingHeight = bBoxNesting.reduce((sum, box) => sum + box.h, 0);
+        nestingHeight = Math.max(nestingHeight, MIN_NESTED_HEIGHT);
+
+        const labelHeight = Math.max(MIN_LABEL_HEIGHT, bBoxLabel.h);
+        const labelAreaHeight = secondaryLabel
+            ? strokeWidth / 2 + labelHeight + strokeWidth / 2 - CORNER_RADIUS * 2
+            : 4;
+
+        const nestedTotal = OUTER_CORNER_RADIUS + 
+            (nestingHeight - (strokeWidth / 2 + OUTER_CORNER_RADIUS * 2 + strokeWidth / 2)) +
+            OUTER_CORNER_RADIUS + CORNER_RADIUS +
+            labelAreaHeight + CORNER_RADIUS;
+
+        height += nestedTotal;
+    }
+
+    return {
+        w: width,
+        h: height,
     };
 }

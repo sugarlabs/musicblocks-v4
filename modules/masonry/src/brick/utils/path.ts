@@ -191,7 +191,7 @@ function _generateLeft(config: {
     hasNotch: boolean;
     strokeWidth: number;
     rightVertical: number;
-}): string[] {
+}): { path: string[]; leftEdge: number } {
     const { type, hasNotch, rightVertical } = config;
 
     const path: string[] = [];
@@ -210,7 +210,7 @@ function _generateLeft(config: {
         path.push(`v -${leftEdge.toFixed(2)}`);
     }
 
-    return path;
+    return { path, leftEdge };
 }
 
 // function to generate the nested path for type3 bricks
@@ -344,6 +344,7 @@ function _generateBottom(config: {
 // function to generate the path based on the configuration
 function generatePath(config: TInputType1 | TInputType2 | TInputType3): {
     path: string;
+    leftEdge: number;
 } {
     const hasNotchTop = config.type !== 'type2' && config.hasNotchAbove;
 
@@ -385,17 +386,21 @@ function generatePath(config: TInputType1 | TInputType2 | TInputType3): {
         bBoxNesting: bBoxNesting,
     });
 
-    const left = _generateLeft({
+    const leftResult = _generateLeft({
         type: config.type,
         hasNotch: true,
         strokeWidth: config.strokeWidth,
-        rightVertical: rightVertical,
+        rightVertical,
     });
+
+    const left = leftResult.path;
+    const leftEdge = leftResult.leftEdge;
 
     const segments = [...top, ...right, ...bottom, ...left];
 
     return {
         path: ['M 0,0', ...segments].join(' '),
+        leftEdge: leftEdge,
     };
 }
 
@@ -578,16 +583,43 @@ function getLeftCentroid(config: TInputUnion, boundingBox: TBBox): TCentroid | u
 }
 
 
+function getConnectionPoints(
+  config: TInputUnion,
+  boundingBox: TBBox,
+  leftEdge: number
+): {
+  top?: TCentroid;
+  right: TCentroid[];
+  bottom?: TCentroid;
+  left?: TCentroid;
+} {
+  return {
+    top: getTopCentroid(config),
+    right: getRightCentroids(config, boundingBox),
+    bottom: getBottomCentroid(config, boundingBox, leftEdge),
+    left: getLeftCentroid(config, boundingBox),
+  };
+}
+
+
 // single export function to return brick data
 export function generateBrickData(config: TInputType1 | TInputType2 | TInputType3): {
     path: string;
     boundingBox: TBBox;
+    connectionPoints: {
+        top?: TCentroid;
+        right: TCentroid[];
+        bottom?: TCentroid;
+        left?: TCentroid;
+    };
 } {
-    const {path}  = generatePath(config);
+    const { path, leftEdge } = generatePath(config);
     const boundingBox = getBoundingBox(config);
+    const connectionPoints = getConnectionPoints(config, boundingBox, leftEdge);
 
     return {
         path,
         boundingBox,
+        connectionPoints,
     };
 }

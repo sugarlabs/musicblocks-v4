@@ -341,7 +341,7 @@ function _generateBottom(config: {
 
 // -----------------------------------------------------------
 
-// Main function to generate the path based on the configuration
+// function to generate the path based on the configuration
 function generatePath(config: TInputType1 | TInputType2 | TInputType3): {
     path: string;
 } {
@@ -469,6 +469,43 @@ function getBoundingBox(config: TInputUnion): TBBox {
     };
 }
 
+// functions to calculate coordinates of the connection points
+
+type TCentroid = { x: number; y: number };
+
+// Centroid calculation for Top Notch
+function getTopCentroid(config: TInputUnion): TCentroid | undefined {
+  if (config.type === 'type2' || !config.hasNotchAbove) return undefined;
+
+  return {
+    x: CORNER_RADIUS + OFFSET_NOTCH_TOP + WIDTH_NOTCH_TOP / 2,
+    y: 1,
+  };
+}
+
+
+// Centroid calculation for Bottom Notch
+function getBottomCentroid(
+  config: TInputUnion,
+  boundingBox: TBBox,
+  leftEdge: number
+): TCentroid | undefined {
+  if (config.type === 'type2' || !config.hasNotchBelow) return undefined;
+
+  if (config.type !== 'type3') {
+    return {
+      x: CORNER_RADIUS + OFFSET_NOTCH_BOTTOM + WIDTH_NOTCH_BOTTOM / 2,
+      y: 1,
+    };
+  }
+
+  return {
+    x:
+      CORNER_RADIUS + OFFSET_NOTCH_TOP + WIDTH_NOTCH_TOP/2 +
+      OFFSET_NOTCH_BOTTOM + WIDTH_NOTCH_BOTTOM / 2, //used the logic for top notch centroid
+    y: CORNER_RADIUS + leftEdge + CORNER_RADIUS + 1,
+  };
+}
 
 // single export function to return brick data
 export function generateBrickData(config: TInputType1 | TInputType2 | TInputType3): {

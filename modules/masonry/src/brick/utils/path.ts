@@ -507,6 +507,77 @@ function getBottomCentroid(
   };
 }
 
+
+// Calculate centroids for right connector notch
+function getRightCentroids(config: TInputUnion, boundingBox: TBBox): TCentroid[] {
+  const { bBoxArgs, bBoxLabel, strokeWidth } = config;
+
+  // No argument = no right notches
+  if (!bBoxArgs.length) return [];
+
+  const centroids: TCentroid[] = [];
+
+  const labelHeight = Math.max(MIN_LABEL_HEIGHT, bBoxLabel.h);
+  const requiredMinimum = strokeWidth / 2 + labelHeight + strokeWidth / 2;
+  const argHeightsSum = bBoxArgs.reduce((sum, arg) => sum + arg.h, 0);
+
+  const extra = Math.max(0, requiredMinimum - argHeightsSum);
+
+  let verticalOffset = CORNER_RADIUS; // top-right corner arc
+
+  for (let i = 0; i < bBoxArgs.length; i++) {
+    const extraPerArg = extra / bBoxArgs.length;
+    const argBox = bBoxArgs[i];
+
+    // v4, v-3, v10, v-3, v4 = total 12
+    const fixedNotchHeight = 12;
+
+    const variableLength = Math.max(
+      0,
+      argBox.h + extraPerArg -
+        (
+          strokeWidth / 2 +
+          CORNER_RADIUS +
+          HEIGHT_NOTCH_RIGHT +
+          CORNER_RADIUS +
+          strokeWidth / 2 +
+          CORNER_RADIUS + strokeWidth + CORNER_RADIUS 
+        )
+    );
+
+    // Centroid placed in the middle of v10
+    const centroidY = verticalOffset + 6;
+
+    centroids.push({
+      x: boundingBox.w - 6, // notch is 12 wide, so center is at 6 from right edge
+      y: centroidY,
+    });
+
+    verticalOffset += fixedNotchHeight; // 12 units fixed
+
+    if (variableLength > 0) {
+      verticalOffset += variableLength;
+    }
+
+    if (i < bBoxArgs.length - 1) {
+      verticalOffset += CORNER_RADIUS + strokeWidth + CORNER_RADIUS; // 4 + 2 + 4 = 10 units
+    }
+  }
+
+  return centroids;
+}
+
+// Calculate centroid for left connector notch 
+function getLeftCentroid(config: TInputUnion, boundingBox: TBBox): TCentroid | undefined {
+  if (config.type !== 'type2') return undefined;
+
+  return {
+    x: -7, // notch is made of h -6, h -2 → center = -7
+    y: CORNER_RADIUS + CONN_NOTCH_WIDTH / 2, 
+  };
+}
+
+
 // single export function to return brick data
 export function generateBrickData(config: TInputType1 | TInputType2 | TInputType3): {
     path: string;

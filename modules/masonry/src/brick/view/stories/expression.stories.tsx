@@ -1,80 +1,62 @@
-// src/brick/view/components/expression.stories.tsx
-import React from 'react';
-import { Meta, StoryFn } from '@storybook/react';
-import ExpressionBrickView from '../components/expression';
-import type { TColor, TExtent, TVisualState } from '../../@types/brick';
+// src/masonry/view/ExpressionBrickView.stories.tsx
 
-export default {
+import React from 'react';
+import type { Meta, StoryObj, Decorator } from '@storybook/react';
+import { ExpressionBrickView } from '../components/expression';
+import type { TBrickRenderPropsExpression } from '../../@types/brick';
+
+const centerDecorator: Decorator<TBrickRenderPropsExpression> = (Story) => (
+  <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+    <Story />
+  </div>
+);
+
+const meta: Meta<TBrickRenderPropsExpression> = {
   title: 'Bricks/ExpressionBrick',
   component: ExpressionBrickView,
+  decorators: [centerDecorator],
   argTypes: {
-    // Core appearance controls
+    // exposed controls
+    label: { control: 'text' },
     colorBg: { control: 'color' },
     colorFg: { control: 'color' },
     strokeColor: { control: 'color' },
-    label: { control: 'text' },
-    value: { control: 'text' },
-
-    // State controls
-    visualState: {
-      control: {
-        type: 'select',
-        options: ['default', 'hovered', 'selected', 'executing', 'unconnected', 'dragged'],
-      },
-    },
-    isValueSelectOpen: { control: 'boolean' },
-    isVisible: { control: 'boolean' },
-
-    // Layout & interaction
+    strokeWidth: { control: { type: 'number', min: 0, max: 10, step: 1 } },
     scale: { control: { type: 'number', min: 0.1, max: 3, step: 0.1 } },
-    x: { control: 'number' },
-    y: { control: 'number' },
-    onClick: { action: 'clicked' },
+    shadow: { control: 'boolean' },
+    tooltip: { control: 'text' },
+    value: { control: 'text' },
+    isValueSelectOpen: { control: 'boolean' },
+
+    // hide plumbing props
+    labelType: { table: { disable: true } },
+    bboxArgs: { table: { disable: true } },
+    isActionMenuOpen: { table: { disable: true } },
+    isVisible: { table: { disable: true } },
   },
-} as Meta<typeof ExpressionBrickView>;
-
-type Props = React.ComponentProps<typeof ExpressionBrickView>;
-
-const Template: StoryFn<Props> = (args) => <ExpressionBrickView {...args} />;
-
-export const Default = Template.bind({});
-Default.args = {
-  uuid: 'expr-1',
-  name: 'expr-1',
-  label: 'x + y',
-  labelType: 'text',
-  colorBg: '#EEE',
-  colorFg: '#222',
-  strokeColor: '#444',
-  shadow: false,
-  scale: 1,
-  tooltip: 'An expression brick',
-  value: 42,
-  isValueSelectOpen: false,
-  bboxArgs: [],
-  x: 0,
-  y: 0,
-  visualState: 'default',
-  isVisible: true,
 };
 
-export const Hovered = Template.bind({});
-Hovered.args = { ...Default.args, visualState: 'hovered' };
+export default meta;
+type Story = StoryObj<TBrickRenderPropsExpression>;
 
-export const Selected = Template.bind({});
-Selected.args = { ...Default.args, visualState: 'selected' };
-
-export const Executing = Template.bind({});
-Executing.args = { ...Default.args, visualState: 'executing' };
-
-export const Unconnected = Template.bind({});
-Unconnected.args = { ...Default.args, visualState: 'unconnected' };
-
-export const Dragged = Template.bind({});
-Dragged.args = { ...Default.args, visualState: 'dragged' };
-
-export const ValuePickerOpen = Template.bind({});
-ValuePickerOpen.args = {
-  ...Default.args,
-  isValueSelectOpen: true,
+/**
+ * Default story: a plain expression brick with no value-select open.
+ */
+export const Default: Story = {
+  args: {
+    label: 'doSomething',
+    labelType: 'text',
+    colorBg: '#aad3df', // hex instead of HSL
+    colorFg: '#000000', // hex instead of RGB tuple
+    strokeColor: '#000000', // hex
+    strokeWidth: 1,
+    scale: 1,
+    shadow: true,
+    tooltip: 'An expression brick',
+    bboxArgs: [], // no argument slots
+    isActionMenuOpen: false,
+    isVisible: true,
+    value: '',
+    isValueSelectOpen: false,
+  },
 };

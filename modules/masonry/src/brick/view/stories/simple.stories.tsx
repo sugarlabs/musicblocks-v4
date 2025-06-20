@@ -1,144 +1,61 @@
-// src/brick/view/components/simple.stories.tsx
+// src/masonry/view/SimpleBrickView.stories.tsx
 
 import React from 'react';
 import type { Meta, StoryFn } from '@storybook/react';
-import SimpleBrickView from '../components/simple';
-import type { TColor, TExtent, TVisualState } from '../../@types/brick';
-
-const VISUAL_STATES = [
-  'default',
-  'hovered',
-  'selected',
-  'executing',
-  'unconnected',
-  'dragged',
-] as TVisualState[];
-
-const centerDecorator = (Story: any) => (
-  <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
-    <Story />
-  </div>
-);
+import { SimpleBrickView } from '../components/simple';
+import type { TBrickRenderPropsSimple } from '../../@types/brick';
 
 export default {
   title: 'Bricks/SimpleBrick',
   component: SimpleBrickView,
-  decorators: [centerDecorator],
-
+  decorators: [
+    (Story) => (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+        <Story />
+      </div>
+    ),
+  ],
   argTypes: {
-    // hide plumbing
-    uuid: { table: { disable: true } },
-    name: { table: { disable: true } },
-    x: { table: { disable: true } },
-    y: { table: { disable: true } },
-    onClick: { table: { disable: true } },
-
-    // now _enable_ bboxArgs as editable JSON
-    bboxArgs: {
-      name: 'Arg Bounding Boxes',
-      description: 'Array of argument-slot extents, e.g. [{ w: 20, h: 10 }, { w: 15, h: 8 }]',
-      control: 'object',
-    },
-
-    // shared props
+    // Core appearance
     label: { control: 'text' },
     labelType: {
-      control: 'select',
-      options: ['text', 'glyph', 'icon', 'thumbnail'],
+      control: { type: 'select', options: ['text', 'glyph', 'icon', 'thumbnail'] },
     },
     colorBg: { control: 'color' },
     colorFg: { control: 'color' },
     strokeColor: { control: 'color' },
+    strokeWidth: { control: { type: 'number', min: 1, max: 10, step: 1 } },
+    scale: { control: { type: 'number', min: 0.5, max: 3, step: 0.1 } },
     shadow: { control: 'boolean' },
-    scale: { control: { type: 'number', min: 0.1, max: 3, step: 0.1 } },
     tooltip: { control: 'text' },
 
-    // visual state
-    visualState: {
-      name: 'Visual State',
-      control: { type: 'select', options: VISUAL_STATES },
-    },
+    // Layout
+    bboxArgs: { control: 'object' },
+    isActionMenuOpen: { control: 'boolean' },
+    isVisible: { control: 'boolean' },
 
-    // boolean flags
-    isActionMenuOpen: {
-      name: 'Action Menu Open',
-      control: 'boolean',
-    },
-    isVisible: {
-      name: 'Visible',
-      control: 'boolean',
-    },
-    topNotch: {
-      name: 'Top Notch',
-      control: 'boolean',
-    },
-    bottomNotch: {
-      name: 'Bottom Notch',
-      control: 'boolean',
-    },
+    // Simple-specific
+    topNotch: { control: 'boolean' },
+    bottomNotch: { control: 'boolean' },
   },
 } as Meta<typeof SimpleBrickView>;
 
-type Props = React.ComponentProps<typeof SimpleBrickView>;
+const Template: StoryFn<TBrickRenderPropsSimple> = (args) => <SimpleBrickView {...args} />;
 
-const baseArgs: Props = {
-  uuid: 'simple-1',
-  name: 'simple-1',
-  label: 'Simple Brick',
+export const Default = Template.bind({});
+Default.args = {
+  label: 'doSomething',
   labelType: 'text',
-  colorBg: '#FFEB3B' as TColor,
-  colorFg: '#000' as TColor,
-  strokeColor: '#333' as TColor,
-  shadow: false,
+  colorBg: '#aad3df', // hex instead of HSL tuple
+  colorFg: '#000000', // hex instead of RGB tuple
+  strokeColor: '#000000', // hex
+  strokeWidth: 1,
   scale: 1,
-  tooltip: 'This is a simple brick',
-  // you can now tweak these in the Playground
-  topNotch: false,
-  bottomNotch: false,
-  bboxArgs: [] as TExtent[],
-  x: 0,
-  y: 0,
-  visualState: 'default',
+  shadow: true,
+  tooltip: 'A simple statement brick',
+  bboxArgs: [],
   isActionMenuOpen: false,
   isVisible: true,
-};
-
-const Template: StoryFn<Props> = (args) => <SimpleBrickView {...args} />;
-
-// ── Playground ────────────────────────────────────────────
-export const Playground = Template.bind({});
-Playground.storyName = 'Playground';
-Playground.args = { ...baseArgs };
-// No `parameters.controls.include` here, so all enabled controls show up — including bboxArgs
-
-// ── Visual States ─────────────────────────────────────────
-export const VisualStates = Template.bind({});
-VisualStates.storyName = 'Visual States';
-VisualStates.args = { ...baseArgs };
-VisualStates.parameters = {
-  controls: { include: ['visualState'] },
-};
-
-// ── Notch Variants ────────────────────────────────────────
-export const NotchVariants = Template.bind({});
-NotchVariants.storyName = 'Notch Variants';
-NotchVariants.args = { ...baseArgs };
-NotchVariants.parameters = {
-  controls: { include: ['topNotch', 'bottomNotch'] },
-};
-
-// ── Action Menu ───────────────────────────────────────────
-export const ActionMenu = Template.bind({});
-ActionMenu.storyName = 'Action Menu';
-ActionMenu.args = { ...baseArgs };
-ActionMenu.parameters = {
-  controls: { include: ['isActionMenuOpen'] },
-};
-
-// ── Visibility ────────────────────────────────────────────
-export const Visibility = Template.bind({});
-Visibility.storyName = 'Visibility';
-Visibility.args = { ...baseArgs };
-Visibility.parameters = {
-  controls: { include: ['isVisible'] },
+  topNotch: true,
+  bottomNotch: true,
 };

@@ -1,166 +1,141 @@
-import React from 'react';
-import ExpressionBrick from '../../model/expression';
-import type { IBrickExpression, TColor, TExtent, TVisualState } from '../../@types/brick';
+// src/masonry/view/ExpressionBrickView.tsx
 
-function toCssColor(color: TColor): string {
+import React, { useState, useEffect } from 'react';
+import type { TBrickRenderPropsExpression } from '../../@types/brick';
+import { generatePath, getBoundingBox } from '../../utils/path';
+
+const FONT_HEIGHT = 16;
+
+// Breathing-room padding on each side
+const PADDING = {
+  top: 4,
+  right: 8,
+  bottom: 4,
+  left: 8,
+};
+
+/** Convert our TColor into a CSS color string */
+function toCssColor(color: string | ['rgb' | 'hsl', number, number, number]) {
   if (typeof color === 'string') return color;
   const [mode, a, b, c] = color;
   return mode === 'rgb' ? `rgb(${a},${b},${c})` : `hsl(${a},${b}%,${c}%)`;
 }
 
-const STYLE_OVERRIDES: Record<
-  TVisualState,
-  Partial<{
-    fill: string;
-    stroke: string;
-    strokeWidth: number;
-    filter: string;
-    animation: string;
-  }>
-> = {
-  default: {},
-  hovered: { filter: 'drop-shadow(1px 1px 2px rgba(0,0,0,0.2))' },
-  selected: { stroke: '#50E3C2', fill: '#E6FFFA', strokeWidth: 2 },
-  executing: { stroke: '#F8E71C', animation: 'pulse 1s infinite' },
-  unconnected: { stroke: '#888', fill: '#DDD', filter: 'grayscale(80%)' },
-  dragged: { filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))' },
-};
+/**
+ * Measure a single-line label’s true pixel width, ascent & descent,
+ * then return total height = ascent + descent, plus an 8px horizontal buffer.
+ */
+function measureLabel(label: string, fontSize: number) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d')!;
+  ctx.font = `${fontSize}px sans-serif`;
 
-interface Props {
-  uuid: string;
-  name: string;
-  label: string;
-  labelType: 'text' | 'glyph' | 'icon' | 'thumbnail';
-  colorBg: TColor;
-  colorFg: TColor;
-  strokeColor: TColor;
-  shadow?: boolean;
-  scale?: number;
-  tooltip?: string;
-  value?: boolean | number | string;
-  isValueSelectOpen?: boolean;
-  bboxArgs: TExtent[];
-  x?: number;
-  y?: number;
-  visualState?: TVisualState;
-  isActionMenuOpen?: boolean;
-  isVisible?: boolean;
-  onClick?: () => void;
+  const m = ctx.measureText(label);
+  const ascent = m.actualBoundingBoxAscent ?? fontSize * 0.8;
+  const descent = m.actualBoundingBoxDescent ?? fontSize * 0.2;
+
+  return {
+    w: m.width + 8,
+    h: ascent + descent,
+    ascent,
+    descent,
+  };
 }
 
-export default function ExpressionBrickView({
-  uuid,
-  name,
-  label,
-  labelType,
-  colorBg,
-  colorFg,
-  strokeColor,
-  shadow = false,
-  scale = 1,
-  tooltip,
-  value,
-  isValueSelectOpen = false,
-  bboxArgs,
-  x = 0,
-  y = 0,
-  visualState = 'default',
-  isActionMenuOpen = false,
-  isVisible = true,
-  onClick,
-}: Props) {
-  const brick = React.useMemo(() => {
-    const b = new ExpressionBrick({
-      uuid,
-      name,
-      label,
-      labelType,
-      colorBg,
-      colorFg,
-      strokeColor,
-      shadow,
-      scale,
-      tooltip,
-      value,
-      isValueSelectOpen,
-      bboxArgs,
-    });
-    b.visualState = visualState;
-    b.isActionMenuOpen = isActionMenuOpen;
-    b.isVisible = isVisible;
-    return b;
-  }, [
-    uuid,
-    name,
+export const ExpressionBrickView: React.FC<TBrickRenderPropsExpression> = (props) => {
+  const {
     label,
     labelType,
     colorBg,
     colorFg,
     strokeColor,
-    shadow,
+    strokeWidth,
     scale,
+    shadow,
     tooltip,
-    value,
-    isValueSelectOpen,
     bboxArgs,
     visualState,
     isActionMenuOpen,
     isVisible,
-  ]);
+    // value, isValueSelectOpen, // if you need them later
+  } = props;
 
-  const p = brick.renderProps;
-  if (!p.isVisible) return null;
+  // ─── Hooks & measurements must run before any early return ─────────────────
 
-  const ov = STYLE_OVERRIDES[p.visualState] || {};
-  const final = {
-    ...p,
-    fill: ov.fill ?? (p.colorBg as string),
-    stroke: ov.stroke ?? (p.strokeColor as string),
-    strokeWidth: ov.strokeWidth ?? p.strokeWidth,
-    filter: ov.filter,
-    animation: ov.animation,
-  };
+  // 1️⃣ Measure the label
+  const { w: labelW, h: labelH, ascent } = measureLabel(label, FONT_HEIGHT);
+  const bBoxLabel = { w: labelW, h: labelH };
+
+  // 2️⃣ State to hold SVG path + bounding-box
+  const [shape, setShape] = useState<{ path: string; w: number; h: number }>(() => {
+    const cfg = {
+      type: 'type2' as const,
+      strokeWidth,
+      scaleFactor: scale,
+      bBoxLabel,
+      // match the key expected by path.ts
+      bBoxArgs: bboxArgs,
+    };
+    const { path } = generatePath(cfg);
+    const { w, h } = getBoundingBox(cfg);
+    return { path, w, h };
+  });
+
+  useEffect(() => {
+    const cfg = {
+      type: 'type2' as const,
+      strokeWidth,
+      scaleFactor: scale,
+      bBoxLabel,
+      bBoxArgs: bboxArgs,
+    };
+    const { path } = generatePath(cfg);
+    const { w, h } = getBoundingBox(cfg);
+    setShape({ path, w, h });
+  }, [label, strokeWidth, scale, bboxArgs]);
+
+  // ─── Now it’s safe to bail out if invisible ────────────────────────────────
+  if (!isVisible) return null;
+
+  // ─── Compute SVG size including padding ────────────────────────────────────
+  const svgWidth = shape.w + PADDING.left + PADDING.right;
+  const svgHeight = shape.h + PADDING.top + PADDING.bottom;
 
   return (
     <svg
-      width={brick.boundingBox.w + 16}
-      height={brick.boundingBox.h + 16}
-      viewBox={`-8 -8 ${brick.boundingBox.w + 16} ${brick.boundingBox.h + 16}`}
-      style={{ overflow: 'visible', background: 'transparent' }}
+      width={svgWidth}
+      height={svgHeight}
+      viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+      data-visual-state={visualState}
+      data-action-menu-open={isActionMenuOpen}
+      style={{ overflow: 'visible' }}
     >
-      <g
-        transform={`translate(${x},${y}) scale(${scale})`}
-        data-uuid={uuid}
-        onClick={onClick}
-        style={{ cursor: onClick ? 'pointer' : 'default', animation: final.animation }}
-      >
-        {tooltip && <title>{tooltip}</title>}
+      <g transform={`translate(${PADDING.left},${PADDING.top})`}>
+        {/* Brick background outline */}
         <path
-          d={final.path}
-          fill={final.fill}
-          stroke={final.stroke}
-          strokeWidth={final.strokeWidth}
-          style={{ filter: final.filter }}
+          d={shape.path}
+          fill={toCssColor(colorBg)}
+          stroke={toCssColor(strokeColor)}
+          strokeWidth={strokeWidth}
+          filter={shadow ? 'drop-shadow(0 2px 2px rgba(0,0,0,0.2))' : undefined}
         />
+
+        {/* Text label */}
         {labelType === 'text' && (
           <text
-            x={brick.boundingBox.w / 2}
-            y={brick.boundingBox.h / 2}
-            textAnchor="middle"
+            x={strokeWidth + 4}
+            y={ascent + strokeWidth / 2}
             fill={toCssColor(colorFg)}
-            fontSize={12}
-            style={{ dominantBaseline: 'central' }}
+            fontSize={FONT_HEIGHT}
+            style={{ userSelect: 'none', pointerEvents: 'none' }}
           >
             {label}
           </text>
         )}
-        {p.isValueSelectOpen && (
-          <polygon
-            points={`${brick.boundingBox.w - 12},4 ${brick.boundingBox.w - 4},4 ${brick.boundingBox.w - 8},10`}
-            fill={toCssColor(colorFg)}
-          />
-        )}
       </g>
+
+      {/* Accessibility tooltip */}
+      {tooltip && <title>{tooltip}</title>}
     </svg>
   );
-}
+};

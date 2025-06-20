@@ -1,176 +1,140 @@
-// src/brick/view/components/simple.tsx
+// src/masonry/view/SimpleBrickView.tsx
 
-import React from 'react';
-import SimpleBrick from '../../model/simple';
-import type { IBrickSimple, TColor, TExtent, TVisualState } from '../../@types/brick';
+import React, { useState, useEffect } from 'react';
+import type { TBrickRenderPropsSimple } from '../../@types/brick';
+import { generatePath, getBoundingBox } from '../../utils/path';
 
-function toCssColor(color: TColor): string {
+const FONT_HEIGHT = 16;
+
+// ←── Breath­ing-room padding ──────────────────────────────────
+const PADDING = {
+  top: 4, // px above the brick
+  right: 8, // px to the right of the brick
+  bottom: 4, // px below the brick
+  left: 8, // px to the left of the brick
+};
+// ────────────────────────────────────────────────────────────
+
+/** Convert our TColor into CSS */
+function toCssColor(color: string | ['rgb' | 'hsl', number, number, number]) {
   if (typeof color === 'string') return color;
   const [mode, a, b, c] = color;
   return mode === 'rgb' ? `rgb(${a},${b},${c})` : `hsl(${a},${b}%,${c}%)`;
 }
 
-// Optional: apply visual state effects
-const STYLE_OVERRIDES: Record<
-  TVisualState,
-  Partial<{
-    fill: string;
-    stroke: string;
-    strokeWidth: number;
-    filter: string;
-    animation: string;
-  }>
-> = {
-  default: {},
-  hovered: { filter: 'drop-shadow(1px 1px 2px rgba(0,0,0,0.2))' },
-  selected: { stroke: '#50E3C2', fill: '#E6FFFA', strokeWidth: 2 },
-  executing: { stroke: '#F8E71C', animation: 'pulse 1s infinite' },
-  unconnected: { stroke: '#888', fill: '#DDD', filter: 'grayscale(80%)' },
-  dragged: { filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))' },
-};
+/** Measure real text width + height + ascent/descent */
+function measureLabel(label: string, fontSize: number) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d')!;
+  ctx.font = `${fontSize}px sans-serif`;
+  const m = ctx.measureText(label);
+  const ascent = m.actualBoundingBoxAscent ?? fontSize * 0.8;
+  const descent = m.actualBoundingBoxDescent ?? fontSize * 0.2;
+  const height = ascent + descent;
 
-interface Props {
-  uuid: string;
-  name: string;
-  label: string;
-  labelType: 'text' | 'glyph' | 'icon' | 'thumbnail';
-  colorBg: TColor;
-  colorFg: TColor;
-  strokeColor: TColor;
-  shadow: boolean;
-  scale: number;
-  tooltip?: string;
-
-  topNotch: boolean;
-  bottomNotch: boolean;
-  bboxArgs: TExtent[];
-
-  visualState?: TVisualState;
-  isActionMenuOpen?: boolean;
-  isVisible?: boolean;
-
-  x?: number;
-  y?: number;
-  onClick?: () => void;
+  return {
+    w: m.width + 8, // You can keep or remove this 8px buffer
+    h: height,
+    ascent,
+    descent,
+  };
 }
 
-export default function SimpleBrickView({
-  uuid,
-  name,
-  label,
-  labelType,
-  colorBg,
-  colorFg,
-  strokeColor,
-  shadow,
-  scale,
-  tooltip,
-  topNotch,
-  bottomNotch,
-  bboxArgs,
-
-  visualState = 'default',
-  isActionMenuOpen = false,
-  isVisible = true,
-
-  x = 0,
-  y = 0,
-  onClick,
-}: Props) {
-  const brick = React.useMemo(() => {
-    const b = new SimpleBrick({
-      uuid,
-      name,
-      label,
-      labelType,
-      colorBg,
-      colorFg,
-      strokeColor,
-      shadow,
-      scale,
-      tooltip,
-      topNotch,
-      bottomNotch,
-      bboxArgs,
-      isHighlighted: false, // pass if needed
-    });
-
-    b.visualState = visualState;
-    b.isActionMenuOpen = isActionMenuOpen;
-    b.isVisible = isVisible;
-
-    return b;
-  }, [
-    uuid,
-    name,
+export const SimpleBrickView: React.FC<TBrickRenderPropsSimple> = (props) => {
+  const {
     label,
     labelType,
     colorBg,
     colorFg,
     strokeColor,
-    shadow,
+    strokeWidth,
     scale,
+    shadow,
     tooltip,
-    topNotch,
-    bottomNotch,
     bboxArgs,
     visualState,
     isActionMenuOpen,
     isVisible,
-  ]);
+    topNotch,
+    bottomNotch,
+  } = props;
 
-  const p = brick.renderProps;
-  if (!p.isVisible) return null;
+  // ─── Hooks must run unconditionally ────────────────────────────────────────────
 
-  const styleOverrides = STYLE_OVERRIDES[p.visualState] ?? {};
-  const final = {
-    ...p,
-    fill: styleOverrides.fill ?? toCssColor(p.colorBg),
-    stroke: styleOverrides.stroke ?? toCssColor(p.strokeColor),
-    strokeWidth: styleOverrides.strokeWidth ?? p.strokeWidth,
-    filter: styleOverrides.filter,
-    animation: styleOverrides.animation,
-  };
+  // label measurement (not a hook, so safe)
+  const { w: labelW, h: labelH, ascent } = measureLabel(label, FONT_HEIGHT);
+  const bBoxLabel = { w: labelW, h: labelH };
+
+  // your shape state
+  const [shape, setShape] = useState<{ path: string; w: number; h: number }>(() => {
+    const cfg = {
+      type: 'type1' as const,
+      strokeWidth,
+      scaleFactor: scale,
+      bBoxLabel,
+      bBoxArgs: bboxArgs,
+      hasNotchAbove: topNotch,
+      hasNotchBelow: bottomNotch,
+    };
+    const { path } = generatePath(cfg);
+    const { w, h } = getBoundingBox(cfg);
+    return { path, w, h };
+  });
+
+  useEffect(() => {
+    const cfg = {
+      type: 'type1' as const,
+      strokeWidth,
+      scaleFactor: scale,
+      bBoxLabel,
+      bBoxArgs: bboxArgs,
+      hasNotchAbove: topNotch,
+      hasNotchBelow: bottomNotch,
+    };
+    const { path } = generatePath(cfg);
+    const { w, h } = getBoundingBox(cfg);
+    setShape({ path, w, h });
+  }, [label, strokeWidth, scale, bboxArgs, topNotch, bottomNotch]);
+
+  // ─── Only now do we bail out if invisible ─────────────────────────────────────
+
+  if (!isVisible) return null;
+
+  // ─── and then the rest of your render ──────────────────────────────────────────
+
+  const svgWidth = shape.w + PADDING.left + PADDING.right;
+  const svgHeight = shape.h + PADDING.top + PADDING.bottom;
 
   return (
     <svg
-      width={brick.boundingBox.w + 16}
-      height={brick.boundingBox.h + 16}
-      viewBox={`-8 -8 ${brick.boundingBox.w + 16} ${brick.boundingBox.h + 16}`}
-      style={{ overflow: 'visible', background: 'transparent' }}
+      width={svgWidth}
+      height={svgHeight}
+      viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+      data-visual-state={visualState}
+      data-action-menu-open={isActionMenuOpen}
+      style={{ overflow: 'visible' }}
     >
-      <g
-        transform={`translate(${x},${y}) scale(${scale})`}
-        data-uuid={uuid}
-        onClick={onClick}
-        style={{
-          cursor: onClick ? 'pointer' : 'default',
-          animation: final.animation,
-        }}
-      >
-        {tooltip && <title>{tooltip}</title>}
-
+      <g transform={`translate(${PADDING.left},${PADDING.top})`}>
         <path
-          d={final.path}
-          fill={final.fill}
-          stroke={final.stroke}
-          strokeWidth={final.strokeWidth}
-          style={{ filter: final.filter }}
+          d={shape.path}
+          fill={toCssColor(colorBg)}
+          stroke={toCssColor(strokeColor)}
+          strokeWidth={strokeWidth}
+          filter={shadow ? 'drop-shadow(0 2px 2px rgba(0,0,0,0.2))' : undefined}
         />
-
         {labelType === 'text' && (
           <text
-            x={brick.boundingBox.w / 2}
-            y={brick.boundingBox.h / 2}
-            textAnchor="middle"
+            x={strokeWidth + 4}
+            y={ascent + strokeWidth / 2}
             fill={toCssColor(colorFg)}
-            fontSize={12}
-            style={{ dominantBaseline: 'central' }}
+            fontSize={FONT_HEIGHT}
+            style={{ userSelect: 'none', pointerEvents: 'none' }}
           >
             {label}
           </text>
         )}
       </g>
+      {tooltip && <title>{tooltip}</title>}
     </svg>
   );
-}
+};

@@ -1,193 +1,153 @@
-import React from 'react';
-import CompoundBrick from '../../model/compound';
-import type { TColor, TExtent, TVisualState } from '../../@types/brick';
+// src/masonry/view/CompoundBrickView.tsx
 
-function toCssColor(color: TColor): string {
+import React, { useState, useEffect } from 'react';
+import type { TBrickRenderPropsCompound } from '../../@types/brick';
+import { generatePath, getBoundingBox } from '../../utils/path';
+
+const FONT_HEIGHT = 16;
+
+// breathing-room padding on each side
+const PADDING = {
+  top: 4,
+  right: 8,
+  bottom: 4,
+  left: 8,
+};
+
+/** Convert our TColor into a CSS color string */
+function toCssColor(color: string | ['rgb' | 'hsl', number, number, number]) {
   if (typeof color === 'string') return color;
   const [mode, a, b, c] = color;
   return mode === 'rgb' ? `rgb(${a},${b},${c})` : `hsl(${a},${b}%,${c}%)`;
 }
 
-const STYLE_OVERRIDES: Record<
-  TVisualState,
-  Partial<{
-    fill: string;
-    stroke: string;
-    strokeWidth: number;
-    filter: string;
-    animation: string;
-  }>
-> = {
-  default: {},
-  hovered: { filter: 'drop-shadow(1px 1px 2px rgba(0,0,0,0.2))' },
-  selected: { stroke: '#50E3C2', fill: '#E6FFFA', strokeWidth: 2 },
-  executing: { stroke: '#F8E71C', animation: 'pulse 1s infinite' },
-  unconnected: {
-    stroke: '#888',
-    fill: '#DDD',
-    filter: 'grayscale(80%)',
-  },
-  dragged: { filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))' },
-};
+/**
+ * Measure a single-line label’s true pixel width, ascent & descent,
+ * then return total height = ascent + descent, plus an 8px horizontal buffer.
+ */
+function measureLabel(label: string, fontSize: number) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d')!;
+  ctx.font = `${fontSize}px sans-serif`;
 
-export interface CompoundBrickViewProps {
-  uuid: string;
-  name: string;
-  label: string;
-  labelType: 'text' | 'glyph' | 'icon' | 'thumbnail';
-  colorBg: TColor;
-  colorFg: TColor;
-  strokeColor: TColor;
-  shadow?: boolean;
-  isHighlighted?: boolean;
-  tooltip?: string;
-  scale?: number;
+  const m = ctx.measureText(label);
+  const ascent = m.actualBoundingBoxAscent ?? fontSize * 0.8;
+  const descent = m.actualBoundingBoxDescent ?? fontSize * 0.2;
+  const height = ascent + descent;
 
-  topNotch?: boolean;
-  bottomNotch?: boolean;
-  bboxArgs: TExtent[];
-  bboxNest: TExtent[];
-
-  visualState?: TVisualState;
-  isActionMenuOpen?: boolean;
-  isVisible?: boolean;
-  isFolded?: boolean;
-
-  x?: number;
-  y?: number;
-  onClick?: () => void;
+  return {
+    w: m.width + 8, // horizontal buffer
+    h: height,
+    ascent,
+    descent,
+  };
 }
 
-export default function CompoundBrickView({
-  uuid,
-  name,
-  label,
-  labelType,
-  colorBg,
-  colorFg,
-  strokeColor,
-  shadow = false,
-  isHighlighted = false,
-  tooltip,
-  scale = 1,
-
-  topNotch = false,
-  bottomNotch = false,
-  bboxArgs,
-  bboxNest,
-
-  visualState = 'default',
-  isActionMenuOpen = false,
-  isVisible = true,
-  isFolded = false,
-
-  x = 0,
-  y = 0,
-  onClick,
-}: CompoundBrickViewProps) {
-  const brick = React.useMemo(() => {
-    const b = new CompoundBrick({
-      uuid,
-      name,
-      label,
-      labelType,
-      colorBg,
-      colorFg,
-      strokeColor,
-      shadow,
-      isHighlighted,
-      tooltip,
-      scale,
-      topNotch,
-      bottomNotch,
-      bboxArgs,
-      bboxNest,
-    });
-
-    b.visualState = visualState;
-    b.isActionMenuOpen = isActionMenuOpen;
-    b.isVisible = isVisible;
-    b.isFolded = isFolded;
-
-    return b;
-  }, [
-    uuid,
-    name,
+export const CompoundBrickView: React.FC<TBrickRenderPropsCompound> = (props) => {
+  const {
     label,
     labelType,
     colorBg,
     colorFg,
     strokeColor,
-    shadow,
-    isHighlighted,
-    tooltip,
+    strokeWidth,
     scale,
-    topNotch,
-    bottomNotch,
+    shadow,
+    tooltip,
     bboxArgs,
-    bboxNest,
     visualState,
     isActionMenuOpen,
     isVisible,
+    topNotch,
+    bottomNotch,
+    bboxNest,
     isFolded,
-  ]);
+  } = props;
 
-  const p = brick.renderProps;
-  if (!p.isVisible) return null;
+  // ─── Hooks & measurements run before any early return ───────────────────────
 
-  const ov = STYLE_OVERRIDES[p.visualState] || {};
-  const final = {
-    ...p,
-    fill: ov.fill ?? toCssColor(p.colorBg),
-    stroke: ov.stroke ?? toCssColor(p.strokeColor),
-    strokeWidth: ov.strokeWidth ?? p.strokeWidth,
-    filter: ov.filter,
-    animation: ov.animation,
-  };
+  // 1️⃣ Measure the label
+  const { w: labelW, h: labelH, ascent } = measureLabel(label, FONT_HEIGHT);
+  const bBoxLabel = { w: labelW, h: labelH };
+  const bBoxNesting = bboxNest;
 
-  const { w, h } = brick.boundingBox;
+  // 2️⃣ State for path + bounding-box
+  const [shape, setShape] = useState<{ path: string; w: number; h: number }>(() => {
+    const cfg = {
+      type: 'type3' as const,
+      strokeWidth,
+      scaleFactor: scale,
+      bBoxLabel,
+      bBoxArgs: bboxArgs,
+      hasNotchAbove: topNotch,
+      hasNotchBelow: bottomNotch,
+      bBoxNesting,
+      secondaryLabel: !isFolded,
+    };
+    const { path } = generatePath(cfg);
+    const { w, h } = getBoundingBox(cfg);
+    return { path, w, h };
+  });
+
+  useEffect(() => {
+    const cfg = {
+      type: 'type3' as const,
+      strokeWidth,
+      scaleFactor: scale,
+      bBoxLabel,
+      bBoxArgs: bboxArgs,
+      hasNotchAbove: topNotch,
+      hasNotchBelow: bottomNotch,
+      bBoxNesting,
+      secondaryLabel: !isFolded,
+    };
+    const { path } = generatePath(cfg);
+    const { w, h } = getBoundingBox(cfg);
+    setShape({ path, w, h });
+  }, [label, strokeWidth, scale, bboxArgs, topNotch, bottomNotch, bboxNest, isFolded]);
+
+  // ─── Now it’s safe to bail out if invisible ────────────────────────────────
+  if (!isVisible) return null;
+
+  // ─── Compute SVG size including padding ────────────────────────────────────
+  const svgWidth = shape.w + PADDING.left + PADDING.right;
+  const svgHeight = shape.h + PADDING.top + PADDING.bottom;
 
   return (
     <svg
-      width={w + 16}
-      height={h + 16}
-      viewBox={`-8 -8 ${w + 16} ${h + 16}`}
-      style={{ overflow: 'visible', background: 'transparent' }}
+      width={svgWidth}
+      height={svgHeight}
+      viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+      data-visual-state={visualState}
+      data-action-menu-open={isActionMenuOpen}
+      style={{ overflow: 'visible' }}
     >
-      <g
-        transform={`translate(${x},${y}) scale(${scale})`}
-        data-uuid={uuid}
-        onClick={onClick}
-        style={{
-          cursor: onClick ? 'pointer' : 'default',
-          animation: final.animation,
-        }}
-      >
-        {tooltip && <title>{tooltip}</title>}
-
-        {/* main body path */}
+      <g transform={`translate(${PADDING.left},${PADDING.top})`}>
+        {/* Brick outline */}
         <path
-          d={final.path}
-          fill={final.fill}
-          stroke={final.stroke}
-          strokeWidth={final.strokeWidth}
-          style={{ filter: final.filter }}
+          d={shape.path}
+          fill={toCssColor(colorBg)}
+          stroke={toCssColor(strokeColor)}
+          strokeWidth={strokeWidth}
+          filter={shadow ? 'drop-shadow(0 2px 2px rgba(0,0,0,0.2))' : undefined}
         />
 
-        {/* label in center */}
+        {/* Text label */}
         {labelType === 'text' && (
           <text
-            x={w / 2}
-            y={h / 2}
-            dominantBaseline="middle"
-            textAnchor="middle"
+            x={strokeWidth + 4}
+            y={ascent + strokeWidth / 2}
             fill={toCssColor(colorFg)}
-            fontSize={14}
+            fontSize={FONT_HEIGHT}
+            style={{ userSelect: 'none', pointerEvents: 'none' }}
           >
             {label}
           </text>
         )}
+
+        {/* Tooltip */}
+        {tooltip && <title>{tooltip}</title>}
       </g>
     </svg>
   );
-}
+};

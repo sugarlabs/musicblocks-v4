@@ -1,4 +1,4 @@
-import { generatePath } from '../path';
+import { generateBrickData } from '../path';
 import type { TInputUnion } from '../path';
 
 describe('Masonry: Brick > Path Generation', () => {
@@ -118,10 +118,22 @@ describe('Masonry: Brick > Path Generation', () => {
     ];
 
     testCases.forEach(({ name, input }) => {
-        it(`generates path correctly: ${name}`, () => {
-            const result = generatePath(input as TInputUnion);
-            expect(typeof result.path).toBe('string');
-            expect(result.path.length).toBeGreaterThan(0);
+        it(`generates path and bounding box correctly: ${name}`, () => {
+            const { path, boundingBox } = generateBrickData(input as TInputUnion);
+
+            // Validate the path
+            expect(typeof path).toBe('string');
+            expect(path.length).toBeGreaterThan(0);
+
+            // Validate the bounding box
+            expect(typeof boundingBox).toBe('object');
+            expect(boundingBox).toHaveProperty('w');
+            expect(boundingBox).toHaveProperty('h');
+            expect(typeof boundingBox.w).toBe('number');
+            expect(typeof boundingBox.h).toBe('number');
+            expect(boundingBox.w).toBeGreaterThan(0);
+            expect(boundingBox.h).toBeGreaterThan(0);
         });
     });
+
 });

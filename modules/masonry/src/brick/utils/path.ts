@@ -342,7 +342,7 @@ function _generateBottom(config: {
 // -----------------------------------------------------------
 
 // Main function to generate the path based on the configuration
-export function generatePath(config: TInputType1 | TInputType2 | TInputType3): {
+function generatePath(config: TInputType1 | TInputType2 | TInputType3): {
     path: string;
 } {
     const hasNotchTop = config.type !== 'type2' && config.hasNotchAbove;
@@ -401,7 +401,7 @@ export function generatePath(config: TInputType1 | TInputType2 | TInputType3): {
 
 
 // function to calculate the bounding box values 
-export function getBoundingBox(config: TInputUnion): TBBox {
+function getBoundingBox(config: TInputUnion): TBBox {
     const {
         strokeWidth,
         bBoxLabel,
@@ -466,5 +466,20 @@ export function getBoundingBox(config: TInputUnion): TBBox {
     return {
         w: width,
         h: height,
+    };
+}
+
+
+// single export function to return brick data
+export function generateBrickData(config: TInputType1 | TInputType2 | TInputType3): {
+    path: string;
+    boundingBox: TBBox;
+} {
+    const {path}  = generatePath(config);
+    const boundingBox = getBoundingBox(config);
+
+    return {
+        path,
+        boundingBox,
     };
 }

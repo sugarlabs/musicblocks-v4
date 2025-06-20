@@ -1,5 +1,3 @@
-// src/masonry/view/ExpressionBrickView.stories.tsx
-
 import React from 'react';
 import type { Meta, StoryObj, Decorator } from '@storybook/react';
 import { ExpressionBrickView } from '../components/expression';
@@ -46,14 +44,14 @@ export const Default: Story = {
   args: {
     label: 'doSomething',
     labelType: 'text',
-    colorBg: '#aad3df', // hex instead of HSL
-    colorFg: '#000000', // hex instead of RGB tuple
-    strokeColor: '#000000', // hex
+    colorBg: '#aad3df',
+    colorFg: '#000000',
+    strokeColor: '#000000',
     strokeWidth: 1,
     scale: 1,
     shadow: true,
     tooltip: 'An expression brick',
-    bboxArgs: [], // no argument slots
+    bboxArgs: [],
     isActionMenuOpen: false,
     isVisible: true,
     value: '',

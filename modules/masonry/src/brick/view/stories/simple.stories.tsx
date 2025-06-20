@@ -1,5 +1,3 @@
-// src/masonry/view/SimpleBrickView.stories.tsx
-
 import React from 'react';
 import type { Meta, StoryFn } from '@storybook/react';
 import { SimpleBrickView } from '../components/simple';
@@ -46,9 +44,9 @@ export const Default = Template.bind({});
 Default.args = {
   label: 'doSomething',
   labelType: 'text',
-  colorBg: '#aad3df', // hex instead of HSL tuple
-  colorFg: '#000000', // hex instead of RGB tuple
-  strokeColor: '#000000', // hex
+  colorBg: '#aad3df',
+  colorFg: '#000000',
+  strokeColor: '#000000',
   strokeWidth: 1,
   scale: 1,
   shadow: true,

@@ -1,12 +1,9 @@
-// src/masonry/view/CompoundBrickView.tsx
-
 import React, { useState, useEffect } from 'react';
 import type { TBrickRenderPropsCompound } from '../../@types/brick';
 import { generatePath, getBoundingBox } from '../../utils/path';
 
 const FONT_HEIGHT = 16;
 
-// breathing-room padding on each side
 const PADDING = {
   top: 4,
   right: 8,
@@ -14,17 +11,12 @@ const PADDING = {
   left: 8,
 };
 
-/** Convert our TColor into a CSS color string */
 function toCssColor(color: string | ['rgb' | 'hsl', number, number, number]) {
   if (typeof color === 'string') return color;
   const [mode, a, b, c] = color;
   return mode === 'rgb' ? `rgb(${a},${b},${c})` : `hsl(${a},${b}%,${c}%)`;
 }
 
-/**
- * Measure a single-line label’s true pixel width, ascent & descent,
- * then return total height = ascent + descent, plus an 8px horizontal buffer.
- */
 function measureLabel(label: string, fontSize: number) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d')!;
@@ -36,7 +28,7 @@ function measureLabel(label: string, fontSize: number) {
   const height = ascent + descent;
 
   return {
-    w: m.width + 8, // horizontal buffer
+    w: m.width + 8,
     h: height,
     ascent,
     descent,
@@ -64,14 +56,10 @@ export const CompoundBrickView: React.FC<TBrickRenderPropsCompound> = (props) =>
     isFolded,
   } = props;
 
-  // ─── Hooks & measurements run before any early return ───────────────────────
-
-  // 1️⃣ Measure the label
   const { w: labelW, h: labelH, ascent } = measureLabel(label, FONT_HEIGHT);
   const bBoxLabel = { w: labelW, h: labelH };
   const bBoxNesting = bboxNest;
 
-  // 2️⃣ State for path + bounding-box
   const [shape, setShape] = useState<{ path: string; w: number; h: number }>(() => {
     const cfg = {
       type: 'type3' as const,
@@ -106,10 +94,8 @@ export const CompoundBrickView: React.FC<TBrickRenderPropsCompound> = (props) =>
     setShape({ path, w, h });
   }, [label, strokeWidth, scale, bboxArgs, topNotch, bottomNotch, bboxNest, isFolded]);
 
-  // ─── Now it’s safe to bail out if invisible ────────────────────────────────
   if (!isVisible) return null;
 
-  // ─── Compute SVG size including padding ────────────────────────────────────
   const svgWidth = shape.w + PADDING.left + PADDING.right;
   const svgHeight = shape.h + PADDING.top + PADDING.bottom;
 

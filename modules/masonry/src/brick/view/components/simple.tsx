@@ -1,28 +1,22 @@
-// src/masonry/view/SimpleBrickView.tsx
-
 import React, { useState, useEffect } from 'react';
 import type { TBrickRenderPropsSimple } from '../../@types/brick';
 import { generatePath, getBoundingBox } from '../../utils/path';
 
 const FONT_HEIGHT = 16;
 
-// ←── Breath­ing-room padding ──────────────────────────────────
 const PADDING = {
-  top: 4, // px above the brick
-  right: 8, // px to the right of the brick
-  bottom: 4, // px below the brick
-  left: 8, // px to the left of the brick
+  top: 4,
+  right: 8,
+  bottom: 4,
+  left: 8,
 };
-// ────────────────────────────────────────────────────────────
 
-/** Convert our TColor into CSS */
 function toCssColor(color: string | ['rgb' | 'hsl', number, number, number]) {
   if (typeof color === 'string') return color;
   const [mode, a, b, c] = color;
   return mode === 'rgb' ? `rgb(${a},${b},${c})` : `hsl(${a},${b}%,${c}%)`;
 }
 
-/** Measure real text width + height + ascent/descent */
 function measureLabel(label: string, fontSize: number) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d')!;
@@ -33,7 +27,7 @@ function measureLabel(label: string, fontSize: number) {
   const height = ascent + descent;
 
   return {
-    w: m.width + 8, // You can keep or remove this 8px buffer
+    w: m.width + 8,
     h: height,
     ascent,
     descent,
@@ -59,13 +53,9 @@ export const SimpleBrickView: React.FC<TBrickRenderPropsSimple> = (props) => {
     bottomNotch,
   } = props;
 
-  // ─── Hooks must run unconditionally ────────────────────────────────────────────
-
-  // label measurement (not a hook, so safe)
   const { w: labelW, h: labelH, ascent } = measureLabel(label, FONT_HEIGHT);
   const bBoxLabel = { w: labelW, h: labelH };
 
-  // your shape state
   const [shape, setShape] = useState<{ path: string; w: number; h: number }>(() => {
     const cfg = {
       type: 'type1' as const,
@@ -96,11 +86,7 @@ export const SimpleBrickView: React.FC<TBrickRenderPropsSimple> = (props) => {
     setShape({ path, w, h });
   }, [label, strokeWidth, scale, bboxArgs, topNotch, bottomNotch]);
 
-  // ─── Only now do we bail out if invisible ─────────────────────────────────────
-
   if (!isVisible) return null;
-
-  // ─── and then the rest of your render ──────────────────────────────────────────
 
   const svgWidth = shape.w + PADDING.left + PADDING.right;
   const svgHeight = shape.h + PADDING.top + PADDING.bottom;

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import type { TBrickRenderPropsSimple } from '../../@types/brick';
-import { generatePath, getBoundingBox } from '../../utils/path';
+import { generateBrickData } from '../../utils/path';
 
 const FONT_HEIGHT = 16;
 
@@ -53,8 +53,11 @@ export const SimpleBrickView: React.FC<TBrickRenderPropsSimple> = (props) => {
     bottomNotch,
   } = props;
 
-  const { w: labelW, h: labelH, ascent } = measureLabel(label, FONT_HEIGHT);
-  const bBoxLabel = { w: labelW, h: labelH };
+  // Memoize bBoxLabel to prevent unnecessary recalculations
+  const bBoxLabel = useMemo(() => {
+    const { w: labelW, h: labelH } = measureLabel(label, FONT_HEIGHT);
+    return { w: labelW, h: labelH };
+  }, [label]);
 
   const [shape, setShape] = useState<{ path: string; w: number; h: number }>(() => {
     const cfg = {
@@ -66,9 +69,8 @@ export const SimpleBrickView: React.FC<TBrickRenderPropsSimple> = (props) => {
       hasNotchAbove: topNotch,
       hasNotchBelow: bottomNotch,
     };
-    const { path } = generatePath(cfg);
-    const { w, h } = getBoundingBox(cfg);
-    return { path, w, h };
+    const brickData = generateBrickData(cfg);
+    return { path: brickData.path, w: brickData.boundingBox.w, h: brickData.boundingBox.h };
   });
 
   useEffect(() => {
@@ -81,10 +83,9 @@ export const SimpleBrickView: React.FC<TBrickRenderPropsSimple> = (props) => {
       hasNotchAbove: topNotch,
       hasNotchBelow: bottomNotch,
     };
-    const { path } = generatePath(cfg);
-    const { w, h } = getBoundingBox(cfg);
-    setShape({ path, w, h });
-  }, [label, strokeWidth, scale, bboxArgs, topNotch, bottomNotch]);
+    const brickData = generateBrickData(cfg);
+    setShape({ path: brickData.path, w: brickData.boundingBox.w, h: brickData.boundingBox.h });
+  }, [label, strokeWidth, scale, bboxArgs, topNotch, bottomNotch, bBoxLabel]);
 
   if (!isVisible) return null;
 
@@ -111,7 +112,7 @@ export const SimpleBrickView: React.FC<TBrickRenderPropsSimple> = (props) => {
         {labelType === 'text' && (
           <text
             x={strokeWidth + 4}
-            y={ascent + strokeWidth / 2}
+            y={bBoxLabel.h * 0.8 + strokeWidth / 2}
             fill={toCssColor(colorFg)}
             fontSize={FONT_HEIGHT}
             style={{ userSelect: 'none', pointerEvents: 'none' }}

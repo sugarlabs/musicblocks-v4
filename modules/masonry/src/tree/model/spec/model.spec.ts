@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import BrickTreeManager from './model';
-import { SimpleBrick, ExpressionBrick } from '../../brick/model/model';
-import CompoundBrick from '../../brick/model/model';
-import { IBrick } from '../../brick/@types/brick';
+import BrickTreeManager from '../model.js';
+import { SimpleBrick, ExpressionBrick } from '../../../brick/model/model';
+import CompoundBrick from '../../../brick/model/model';
+import { IBrick } from '../../../brick/@types/brick';
 
 describe('BrickTreeManager', () => {
     let treeManager: BrickTreeManager;

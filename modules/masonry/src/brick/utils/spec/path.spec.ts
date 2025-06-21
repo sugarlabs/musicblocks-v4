@@ -119,47 +119,45 @@ describe('Masonry: Brick > Path Generation', () => {
 
     testCases.forEach(({ name, input }) => {
         it(`generates path, bounding box, and connection points correctly: ${name}`, () => {
-        const { path, boundingBox, connectionPoints } = generateBrickData(input as TInputUnion);
+            const { path, boundingBox, connectionPoints } = generateBrickData(input as TInputUnion);
 
-        // Validate the path
-        expect(typeof path).toBe('string');
-        expect(path.length).toBeGreaterThan(0);
+            // Validate the path
+            expect(typeof path).toBe('string');
+            expect(path.length).toBeGreaterThan(0);
 
-        // Validate the bounding box
-        expect(typeof boundingBox).toBe('object');
-        expect(boundingBox).toHaveProperty('w');
-        expect(boundingBox).toHaveProperty('h');
-        expect(typeof boundingBox.w).toBe('number');
-        expect(typeof boundingBox.h).toBe('number');
-        expect(boundingBox.w).toBeGreaterThan(0);
-        expect(boundingBox.h).toBeGreaterThan(0);
+            // Validate the bounding box
+            expect(typeof boundingBox).toBe('object');
+            expect(boundingBox).toHaveProperty('w');
+            expect(boundingBox).toHaveProperty('h');
+            expect(typeof boundingBox.w).toBe('number');
+            expect(typeof boundingBox.h).toBe('number');
+            expect(boundingBox.w).toBeGreaterThan(0);
+            expect(boundingBox.h).toBeGreaterThan(0);
 
-        // Validate connection points
-        expect(connectionPoints).toHaveProperty('right');
-        expect(Array.isArray(connectionPoints.right)).toBe(true);
-        connectionPoints.right.forEach((pt) => {
-            expect(pt).toHaveProperty('x');
-            expect(pt).toHaveProperty('y');
-            expect(typeof pt.x).toBe('number');
-            expect(typeof pt.y).toBe('number');
+            // Validate connection points
+            expect(connectionPoints).toHaveProperty('right');
+            expect(Array.isArray(connectionPoints.right)).toBe(true);
+            connectionPoints.right.forEach((pt) => {
+                expect(pt).toHaveProperty('x');
+                expect(pt).toHaveProperty('y');
+                expect(typeof pt.x).toBe('number');
+                expect(typeof pt.y).toBe('number');
+            });
+
+            if (connectionPoints.left) {
+                expect(typeof connectionPoints.left.x).toBe('number');
+                expect(typeof connectionPoints.left.y).toBe('number');
+            }
+
+            if (connectionPoints.top) {
+                expect(typeof connectionPoints.top.x).toBe('number');
+                expect(typeof connectionPoints.top.y).toBe('number');
+            }
+
+            if (connectionPoints.bottom) {
+                expect(typeof connectionPoints.bottom.x).toBe('number');
+                expect(typeof connectionPoints.bottom.y).toBe('number');
+            }
         });
-
-        if (connectionPoints.left) {
-            expect(typeof connectionPoints.left.x).toBe('number');
-            expect(typeof connectionPoints.left.y).toBe('number');
-        }
-
-        if (connectionPoints.top) {
-            expect(typeof connectionPoints.top.x).toBe('number');
-            expect(typeof connectionPoints.top.y).toBe('number');
-        }
-
-        if (connectionPoints.bottom) {
-            expect(typeof connectionPoints.bottom.x).toBe('number');
-            expect(typeof connectionPoints.bottom.y).toBe('number');
-        }
     });
-
-    });
-
 });

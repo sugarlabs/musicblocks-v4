@@ -12,6 +12,9 @@ import type {
     IBrickCompound,
     TBrickRenderPropsCompound,
 } from '../@types/brick';
+import type { TConnectionPoints } from '../../tree/model/model';
+import { generateBrickData } from '../utils/path';
+import type { TInputUnion } from '../utils/path';
 
 export abstract class BrickModel implements IBrick {
     protected _uuid: string;
@@ -30,6 +33,8 @@ export abstract class BrickModel implements IBrick {
     protected _visualState: TVisualState = 'default';
     protected _isActionMenuOpen = false;
     protected _isVisible = true;
+    public connectionPoints: TConnectionPoints;
+    protected _boundingBox: TExtent = { w: 0, h: 0 };
 
     constructor(params: {
         uuid: string;
@@ -57,6 +62,7 @@ export abstract class BrickModel implements IBrick {
         this._shadow = params.shadow;
         this._tooltip = params.tooltip;
         this._bboxArgs = params.bboxArgs;
+        this.connectionPoints = { right: [] }; // Default init
     }
 
     // IBrick interface
@@ -91,6 +97,10 @@ export abstract class BrickModel implements IBrick {
         this._isVisible = value;
     }
 
+    public get boundingBox(): TExtent {
+        return this._boundingBox;
+    }
+
     protected getCommonRenderProps(): TBrickRenderProps {
         return {
             path: '',
@@ -110,9 +120,6 @@ export abstract class BrickModel implements IBrick {
         };
     }
 
-    /** Must compute the overall bounding box. */
-    public abstract get boundingBox(): TExtent;
-
     /** Must assemble the full render props for this brick. */
     public abstract get renderProps(): TBrickRenderProps;
 }
@@ -125,8 +132,6 @@ export class SimpleBrick extends BrickModel implements IBrickSimple {
     private _topNotch: boolean;
     private _bottomNotch: boolean;
 
-    private _boundingBox: TExtent = { w: 0, h: 0 };
-
     constructor(params: {
         uuid: string;
         name: string;
@@ -138,7 +143,6 @@ export class SimpleBrick extends BrickModel implements IBrickSimple {
         shadow: boolean;
         tooltip?: string;
         scale: number;
-
         bboxArgs: TExtent[];
         topNotch: boolean;
         bottomNotch: boolean;
@@ -160,6 +164,22 @@ export class SimpleBrick extends BrickModel implements IBrickSimple {
 
         this._topNotch = params.topNotch;
         this._bottomNotch = params.bottomNotch;
+        this.updateGeometry();
+    }
+
+    public updateGeometry() {
+        const config: TInputUnion = {
+            type: 'type1',
+            strokeWidth: this._strokeWidth,
+            scaleFactor: this._scale,
+            bBoxLabel: { w: this._label.length * 8, h: 20 },
+            bBoxArgs: this._bboxArgs,
+            hasNotchAbove: this._topNotch,
+            hasNotchBelow: this._bottomNotch,
+        };
+        const data = generateBrickData(config);
+        this.connectionPoints = data.connectionPoints;
+        this._boundingBox = data.boundingBox;
     }
 
     public get topNotch(): boolean {
@@ -168,13 +188,6 @@ export class SimpleBrick extends BrickModel implements IBrickSimple {
 
     public get bottomNotch(): boolean {
         return this._bottomNotch;
-    }
-
-    public get boundingBox(): TExtent {
-        return this._boundingBox;
-    }
-    public set boundingBox(box: TExtent) {
-        this._boundingBox = box;
     }
 
     public override get renderProps(): TBrickRenderPropsSimple {
@@ -193,8 +206,6 @@ export class SimpleBrick extends BrickModel implements IBrickSimple {
 export class ExpressionBrick extends BrickModel implements IBrickExpression {
     private _value?: boolean | number | string;
     private _isValueSelectOpen: boolean;
-
-    private _boundingBox: TExtent = { w: 0, h: 0 };
 
     constructor(params: {
         uuid: string;
@@ -227,7 +238,21 @@ export class ExpressionBrick extends BrickModel implements IBrickExpression {
         });
 
         this._value = params.value;
-        this._isValueSelectOpen = params.isValueSelectOpen ?? false;
+        this._isValueSelectOpen = params.isValueSelectOpen || false;
+        this.updateGeometry();
+    }
+
+    public updateGeometry() {
+        const config: TInputUnion = {
+            type: 'type2',
+            strokeWidth: this._strokeWidth,
+            scaleFactor: this._scale,
+            bBoxLabel: { w: this._label.length * 8, h: 20 },
+            bBoxArgs: this._bboxArgs,
+        };
+        const data = generateBrickData(config);
+        this.connectionPoints = data.connectionPoints;
+        this._boundingBox = data.boundingBox;
     }
 
     public get value(): boolean | number | string | undefined {
@@ -239,13 +264,6 @@ export class ExpressionBrick extends BrickModel implements IBrickExpression {
     }
     public set isValueSelectOpen(open: boolean) {
         this._isValueSelectOpen = open;
-    }
-
-    public get boundingBox(): TExtent {
-        return this._boundingBox;
-    }
-    public set boundingBox(box: TExtent) {
-        this._boundingBox = box;
     }
 
     public override get renderProps(): TBrickRenderPropsExpression {
@@ -267,8 +285,6 @@ export default class CompoundBrick extends BrickModel implements IBrickCompound 
     private _isFolded: boolean;
     private _bboxNest: TExtent[];
 
-    private _boundingBox: TExtent = { w: 0, h: 0 };
-
     constructor(params: {
         uuid: string;
         name: string;
@@ -280,13 +296,9 @@ export default class CompoundBrick extends BrickModel implements IBrickCompound 
         shadow: boolean;
         tooltip?: string;
         scale: number;
-
         bboxArgs: TExtent[];
-
         bboxNest: TExtent[];
-
         isFolded?: boolean;
-
         topNotch: boolean;
         bottomNotch: boolean;
     }) {
@@ -308,7 +320,25 @@ export default class CompoundBrick extends BrickModel implements IBrickCompound 
         this._topNotch = params.topNotch;
         this._bottomNotch = params.bottomNotch;
         this._bboxNest = params.bboxNest;
-        this._isFolded = params.isFolded ?? false;
+        this._isFolded = params.isFolded || false;
+        this.updateGeometry();
+    }
+
+    public updateGeometry() {
+        const config: TInputUnion = {
+            type: 'type3',
+            strokeWidth: this._strokeWidth,
+            scaleFactor: this._scale,
+            bBoxLabel: { w: this._label.length * 8, h: 20 },
+            bBoxArgs: this._bboxArgs,
+            hasNotchAbove: this._topNotch,
+            hasNotchBelow: this._bottomNotch,
+            bBoxNesting: this._bboxNest,
+            secondaryLabel: true,
+        };
+        const data = generateBrickData(config);
+        this.connectionPoints = data.connectionPoints;
+        this._boundingBox = data.boundingBox;
     }
 
     public get topNotch(): boolean {
@@ -332,13 +362,6 @@ export default class CompoundBrick extends BrickModel implements IBrickCompound 
 
     public setBoundingBoxNest(extents: TExtent[]): void {
         this._bboxNest = extents;
-    }
-
-    public get boundingBox(): TExtent {
-        return this._boundingBox;
-    }
-    public set boundingBox(box: TExtent) {
-        this._boundingBox = box;
     }
 
     public override get renderProps(): TBrickRenderPropsCompound {

@@ -6,7 +6,7 @@ const FONT_HEIGHT = 16;
 
 const PADDING = {
   top: 4,
-  right: 8,
+  right: 10,
   bottom: 4,
   left: 8,
 };
@@ -34,7 +34,18 @@ function measureLabel(label: string, fontSize: number) {
   };
 }
 
-export const SimpleBrickView: React.FC<TBrickRenderPropsSimple> = (props) => {
+type TConnectionPoints = {
+  top?: { x: number; y: number };
+  right: { x: number; y: number }[];
+  bottom?: { x: number; y: number };
+  left?: { x: number; y: number };
+};
+
+type PropsWithMetrics = TBrickRenderPropsSimple & {
+  RenderMetrics?: (bbox: { w: number; h: number }, connectionPoints: TConnectionPoints) => void;
+};
+
+export const SimpleBrickView: React.FC<PropsWithMetrics> = (props) => {
   const {
     label,
     labelType,
@@ -51,6 +62,7 @@ export const SimpleBrickView: React.FC<TBrickRenderPropsSimple> = (props) => {
     isVisible,
     topNotch,
     bottomNotch,
+    RenderMetrics,
   } = props;
 
   // Memoize bBoxLabel to prevent unnecessary recalculations
@@ -70,7 +82,11 @@ export const SimpleBrickView: React.FC<TBrickRenderPropsSimple> = (props) => {
       hasNotchBelow: bottomNotch,
     };
     const brickData = generateBrickData(cfg);
-    return { path: brickData.path, w: brickData.boundingBox.w, h: brickData.boundingBox.h };
+    return {
+      path: brickData.path,
+      w: brickData.boundingBox.w,
+      h: brickData.boundingBox.h,
+    };
   });
 
   useEffect(() => {
@@ -84,6 +100,9 @@ export const SimpleBrickView: React.FC<TBrickRenderPropsSimple> = (props) => {
       hasNotchBelow: bottomNotch,
     };
     const brickData = generateBrickData(cfg);
+    if (RenderMetrics) {
+      RenderMetrics(brickData.boundingBox, brickData.connectionPoints);
+    }
     setShape({ path: brickData.path, w: brickData.boundingBox.w, h: brickData.boundingBox.h });
   }, [label, strokeWidth, scale, bboxArgs, topNotch, bottomNotch, bBoxLabel]);
 

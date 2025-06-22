@@ -35,7 +35,18 @@ function measureLabel(label: string, fontSize: number) {
   };
 }
 
-export const CompoundBrickView: React.FC<TBrickRenderPropsCompound> = (props) => {
+type TConnectionPoints = {
+  top?: { x: number; y: number };
+  right: { x: number; y: number }[];
+  bottom?: { x: number; y: number };
+  left?: { x: number; y: number };
+};
+
+type PropsWithMetrics = TBrickRenderPropsCompound & {
+  RenderMetrics?: (bbox: { w: number; h: number }, connectionPoints: TConnectionPoints) => void;
+};
+
+export const CompoundBrickView: React.FC<PropsWithMetrics> = (props) => {
   const {
     label,
     labelType,
@@ -54,6 +65,7 @@ export const CompoundBrickView: React.FC<TBrickRenderPropsCompound> = (props) =>
     bottomNotch,
     bboxNest,
     isFolded,
+    RenderMetrics,
   } = props;
 
   // Memoize bBoxLabel to prevent unnecessary recalculations
@@ -77,7 +89,11 @@ export const CompoundBrickView: React.FC<TBrickRenderPropsCompound> = (props) =>
       secondaryLabel: !isFolded,
     };
     const brickData = generateBrickData(cfg);
-    return { path: brickData.path, w: brickData.boundingBox.w, h: brickData.boundingBox.h };
+    return {
+      path: brickData.path,
+      w: brickData.boundingBox.w,
+      h: brickData.boundingBox.h,
+    };
   });
 
   useEffect(() => {
@@ -93,6 +109,9 @@ export const CompoundBrickView: React.FC<TBrickRenderPropsCompound> = (props) =>
       secondaryLabel: !isFolded,
     };
     const brickData = generateBrickData(cfg);
+    if (RenderMetrics) {
+      RenderMetrics(brickData.boundingBox, brickData.connectionPoints);
+    }
     setShape({ path: brickData.path, w: brickData.boundingBox.w, h: brickData.boundingBox.h });
   }, [
     label,

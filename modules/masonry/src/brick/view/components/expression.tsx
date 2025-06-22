@@ -34,7 +34,18 @@ function measureLabel(label: string, fontSize: number) {
   };
 }
 
-export const ExpressionBrickView: React.FC<TBrickRenderPropsExpression> = (props) => {
+type TConnectionPoints = {
+  top?: { x: number; y: number };
+  right: { x: number; y: number }[];
+  bottom?: { x: number; y: number };
+  left?: { x: number; y: number };
+};
+
+type PropsWithMetrics = TBrickRenderPropsExpression & {
+  RenderMetrics?: (bbox: { w: number; h: number }, connectionPoints: TConnectionPoints) => void;
+};
+
+export const ExpressionBrickView: React.FC<PropsWithMetrics> = (props) => {
   const {
     label,
     labelType,
@@ -49,6 +60,7 @@ export const ExpressionBrickView: React.FC<TBrickRenderPropsExpression> = (props
     visualState,
     isActionMenuOpen,
     isVisible,
+    RenderMetrics,
     // value, isValueSelectOpen, // if needed later
   } = props;
 
@@ -67,7 +79,11 @@ export const ExpressionBrickView: React.FC<TBrickRenderPropsExpression> = (props
       bBoxArgs: bboxArgs,
     };
     const brickData = generateBrickData(cfg);
-    return { path: brickData.path, w: brickData.boundingBox.w, h: brickData.boundingBox.h };
+    return {
+      path: brickData.path,
+      w: brickData.boundingBox.w,
+      h: brickData.boundingBox.h,
+    };
   });
 
   useEffect(() => {
@@ -79,6 +95,9 @@ export const ExpressionBrickView: React.FC<TBrickRenderPropsExpression> = (props
       bBoxArgs: bboxArgs,
     };
     const brickData = generateBrickData(cfg);
+    if (RenderMetrics) {
+      RenderMetrics(brickData.boundingBox, brickData.connectionPoints);
+    }
     setShape({ path: brickData.path, w: brickData.boundingBox.w, h: brickData.boundingBox.h });
   }, [label, strokeWidth, scale, bboxArgs, bBoxLabel]);
 

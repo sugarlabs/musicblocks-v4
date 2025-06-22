@@ -1,6 +1,9 @@
 # Tower Parsing & Layout Algorithm
 
-This document describes a **stack-based post-order traversal** that computes each brick’s SVG path, bounding box, and notch‐connection points **after** all of its children have been measured. It handles arbitrarily deep nesting, distinguishes **expression** vs. **simple** vs. **compound** bricks, and avoids JavaScript call‐stack limits.
+This document describes a **stack-based post-order traversal** that computes each brick’s SVG path,
+bounding box, and notch‐connection points **after** all of its children have been measured. It
+handles arbitrarily deep nesting, distinguishes **expression** vs. **simple** vs. **compound**
+bricks, and avoids JavaScript call‐stack limits.
 
 ---
 
@@ -85,7 +88,8 @@ measureLabel(text, fontSize): { w: number; h: number; ascent: number; descent: n
      stack.push({ node: { uuid: rootUuid }, visited: false })
    ```
 
-   We mark `visited = false` on first encounter (“children not yet handled”) and will re-push the same node with `visited = true` (“ready to compute”) after its children.
+   We mark `visited = false` on first encounter (“children not yet handled”) and will re-push the
+same node with `visited = true` (“ready to compute”) after its children.
 
 2. **Process Frames Until Done**
 
@@ -146,7 +150,8 @@ measureLabel(text, fontSize): { w: number; h: number; ascent: number; descent: n
        metricsMap[currentNode.uuid] = { path, bbox, connectionPoints }
    ```
 
-   **Key invariant**: When a node’s frame is popped with `visited = true`, all of its children (and their entire subtrees) have already been computed and stored in `metricsMap`.
+   **Key invariant**: When a node’s frame is popped with `visited = true`, all of its children (and
+their entire subtrees) have already been computed and stored in `metricsMap`.
 
 3. **Completion**
 
@@ -156,16 +161,19 @@ measureLabel(text, fontSize): { w: number; h: number; ascent: number; descent: n
    - Dimensions (`bbox`)
    - Notch coordinates (`connectionPoints`)
 
-   You can now feed these into your React components or canvas renderer in a single, child‐first batch.
+   You can now feed these into your React components or canvas renderer in a single, child‐first
+batch.
 
 ---
 
 ## Why This Approach
 
-- **Post‐order traversal** ensures each statement/compound block sizes itself around fully measured plugged‐in bricks.
+- **Post‐order traversal** ensures each statement/compound block sizes itself around fully measured
+plugged‐in bricks.
 - **Explicit stack** avoids recursion limits—safe for arbitrary nesting depth.
 - **Type‐aware child selection** respects the two “directions” of plug‐ins:
   - Expression bricks never act as parents (no children).
   - Simple bricks only host expression‐slot arguments (and top/bottom chain).
   - Compound bricks first nest entire inner‐blocks, then expression args, then statement chaining.
-- **No extra bookkeeping**: the “two‐push visited‐flag” trick implicitly tracks when children are done without counters or complex state.
+- **No extra bookkeeping**: the “two‐push visited‐flag” trick implicitly tracks when children are
+done without counters or complex state.

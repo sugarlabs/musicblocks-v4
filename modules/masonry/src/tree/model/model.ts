@@ -1,7 +1,4 @@
-import { v4 as uuidv4 } from 'uuid';
-import type { IBrick, TBrickType } from '../../brick/@types/brick';
-import type { SimpleBrick, ExpressionBrick } from '../../brick/model/model';
-import type CompoundBrick from '../../brick/model/model';
+import type { IBrick } from '../../brick/@types/brick';
 
 // Point type
 export type TPoint = {

@@ -11,7 +11,6 @@ describe('BrickTreeManager', () => {
     let expressionBrick: IBrick;
     let expressionBrick2: IBrick;
     let compoundBrick: IBrick;
-    let simpleBrickNoNotch: IBrick;
 
     beforeEach(() => {
         treeManager = new BrickTreeManager();
@@ -87,21 +86,6 @@ describe('BrickTreeManager', () => {
             bboxNest: [],
             topNotch: true,
             bottomNotch: true,
-        });
-
-        simpleBrickNoNotch = new SimpleBrick({
-            uuid: 'no-notch',
-            name: 'No Notch',
-            label: 'nn',
-            labelType: 'text',
-            colorBg: 'grey',
-            colorFg: 'white',
-            strokeColor: 'black',
-            shadow: false,
-            scale: 1,
-            bboxArgs: [],
-            topNotch: true,
-            bottomNotch: false,
         });
     });
 
@@ -207,7 +191,7 @@ describe('BrickTreeManager', () => {
                 simpleBrick2.uuid,
                 compoundBrick.uuid,
                 simpleBrick2.connectionPoints.bottom!,
-                (compoundBrick as any).connectionPoints.top!,
+                (compoundBrick as IBrick).connectionPoints.top!,
                 'top-bottom',
             );
             expect(treeManager.getAllTrees()).toHaveLength(1);
@@ -229,7 +213,7 @@ describe('BrickTreeManager', () => {
                 simpleBrick2.uuid,
                 compoundBrick.uuid,
                 simpleBrick2.connectionPoints.bottom!,
-                (compoundBrick as any).connectionPoints.top!,
+                (compoundBrick as IBrick).connectionPoints.top!,
                 'top-bottom',
             );
 
@@ -253,7 +237,7 @@ describe('BrickTreeManager', () => {
                 simpleBrick1.uuid,
                 compoundBrick.uuid,
                 simpleBrick1.connectionPoints.bottom!,
-                (compoundBrick as any).connectionPoints.top!,
+                (compoundBrick as IBrick).connectionPoints.top!,
                 'top-bottom',
             );
             expect(result).toBeNull();

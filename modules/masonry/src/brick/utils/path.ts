@@ -55,7 +55,7 @@ function _generateNotchTop(): string[] {
 }
 
 // function for Bottom Notch generation
-function _generateNotchBottom(strokeWidth: number): string[] {
+function _generateNotchBottom(_strokeWidth: number): string[] {
     return [
         //,
         'h -1',
@@ -87,7 +87,7 @@ function _generateTop(config: {
     strokeWidth: number;
     bBoxLabel: TBBox;
 }): string[] {
-    const { type, hasNotch, strokeWidth, bBoxLabel, hasArgs } = config;
+    const { type: _type, hasNotch, strokeWidth, bBoxLabel, hasArgs } = config;
 
     // Corner Radius + Offset + Notch + Variable width + Corner Radius = Stroke Width/2 + LabelBounding Box width + Stroke Width/2
     if (hasArgs) {
@@ -192,25 +192,25 @@ function _generateLeft(config: {
     strokeWidth: number;
     rightVertical: number;
 }): { path: string[]; leftEdge: number } {
-    const { type, hasNotch, rightVertical } = config;
+    const { type: _type, hasNotch, rightVertical } = config;
 
     const path: string[] = [];
 
-    let leftEdge = rightVertical;
+    let _leftEdge = rightVertical;
     // For vertical leg — match exact vertical height from right
-    if (type === 'type2') {
-        leftEdge -= CONN_NOTCH_WIDTH + CORNER_RADIUS;
-        path.push(`v -${leftEdge}`);
+    if (_type === 'type2') {
+        _leftEdge -= CONN_NOTCH_WIDTH + CORNER_RADIUS;
+        path.push(`v -${_leftEdge}`);
 
         if (hasNotch) {
             path.push(..._generateNotchLeft());
         }
     } else {
-        leftEdge -= CORNER_RADIUS;
-        path.push(`v -${leftEdge.toFixed(2)}`);
+        _leftEdge -= CORNER_RADIUS;
+        path.push(`v -${_leftEdge.toFixed(2)}`);
     }
 
-    return { path, leftEdge };
+    return { path, leftEdge: _leftEdge };
 }
 
 // function to generate the nested path for type3 bricks
@@ -485,7 +485,7 @@ function getTopCentroid(config: TInputUnion): TCentroid | undefined {
 function getBottomCentroid(
     config: TInputUnion,
     boundingBox: TBBox,
-    leftEdge: number,
+    _leftEdge: number,
 ): TCentroid | undefined {
     if (config.type === 'type2' || !config.hasNotchBelow) return undefined;
 
@@ -568,7 +568,7 @@ function getRightCentroids(config: TInputUnion, boundingBox: TBBox): TCentroid[]
 }
 
 // Calculate centroid for left connector notch
-function getLeftCentroid(config: TInputUnion, boundingBox: TBBox): TCentroid | undefined {
+function getLeftCentroid(config: TInputUnion, _boundingBox: TBBox): TCentroid | undefined {
     if (config.type !== 'type2') return undefined;
 
     return {

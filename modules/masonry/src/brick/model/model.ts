@@ -12,7 +12,7 @@ import type {
     IBrickCompound,
     TBrickRenderPropsCompound,
 } from '../@types/brick';
-import type { TConnectionPoints } from '../../tree/model/model';
+import type { TConnectionPoints as TCP } from '../../tree/model/model';
 import { generateBrickData } from '../utils/path';
 import type { TInputUnion } from '../utils/path';
 
@@ -33,7 +33,8 @@ export abstract class BrickModel implements IBrick {
     protected _visualState: TVisualState = 'default';
     protected _isActionMenuOpen = false;
     protected _isVisible = true;
-    public connectionPoints: TConnectionPoints;
+
+    protected _connectionPoints: TCP = { right: [] };
     protected _boundingBox: TExtent = { w: 0, h: 0 };
 
     constructor(params: {
@@ -62,10 +63,11 @@ export abstract class BrickModel implements IBrick {
         this._shadow = params.shadow;
         this._tooltip = params.tooltip;
         this._bboxArgs = params.bboxArgs;
-        this.connectionPoints = { right: [] }; // Default init
+
+        this.boundingBox = { w: 0, h: 0 };
+        this.connectionPoints = { right: [] };
     }
 
-    // IBrick interface
     get uuid() {
         return this._uuid;
     }
@@ -100,6 +102,16 @@ export abstract class BrickModel implements IBrick {
     public get boundingBox(): TExtent {
         return this._boundingBox;
     }
+    public set boundingBox(box: TExtent) {
+        this._boundingBox = box;
+    }
+
+    public get connectionPoints(): TCP {
+        return this._connectionPoints;
+    }
+    public set connectionPoints(points: TCP) {
+        this._connectionPoints = points;
+    }
 
     protected getCommonRenderProps(): TBrickRenderProps {
         return {
@@ -126,7 +138,7 @@ export abstract class BrickModel implements IBrick {
 
 /**
  * @class
- * Final concrete class for Simple-statement bricks.,
+ * Final concrete class for Simple-statement bricks.
  */
 export class SimpleBrick extends BrickModel implements IBrickSimple {
     private _topNotch: boolean;
@@ -178,14 +190,15 @@ export class SimpleBrick extends BrickModel implements IBrickSimple {
             hasNotchBelow: this._bottomNotch,
         };
         const data = generateBrickData(config);
+
+        // use the public setters
         this.connectionPoints = data.connectionPoints;
-        this._boundingBox = data.boundingBox;
+        this.boundingBox = data.boundingBox;
     }
 
     public get topNotch(): boolean {
         return this._topNotch;
     }
-
     public get bottomNotch(): boolean {
         return this._bottomNotch;
     }
@@ -252,13 +265,12 @@ export class ExpressionBrick extends BrickModel implements IBrickExpression {
         };
         const data = generateBrickData(config);
         this.connectionPoints = data.connectionPoints;
-        this._boundingBox = data.boundingBox;
+        this.boundingBox = data.boundingBox;
     }
 
     public get value(): boolean | number | string | undefined {
         return this._value;
     }
-
     public get isValueSelectOpen(): boolean {
         return this._isValueSelectOpen;
     }
@@ -338,28 +350,24 @@ export default class CompoundBrick extends BrickModel implements IBrickCompound 
         };
         const data = generateBrickData(config);
         this.connectionPoints = data.connectionPoints;
-        this._boundingBox = data.boundingBox;
+        this.boundingBox = data.boundingBox;
     }
 
     public get topNotch(): boolean {
         return this._topNotch;
     }
-
     public get bottomNotch(): boolean {
         return this._bottomNotch;
     }
-
     public get bboxNest(): TExtent[] {
         return this._bboxNest;
     }
-
     public get isFolded(): boolean {
         return this._isFolded;
     }
     public set isFolded(v: boolean) {
         this._isFolded = v;
     }
-
     public setBoundingBoxNest(extents: TExtent[]): void {
         this._bboxNest = extents;
     }

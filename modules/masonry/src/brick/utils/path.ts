@@ -55,7 +55,7 @@ function _generateNotchTop(): string[] {
 }
 
 // function for Bottom Notch generation
-function _generateNotchBottom(strokeWidth: number): string[] {
+function _generateNotchBottom(_strokeWidth: number): string[] {
     return [
         //,
         'h -1',
@@ -87,7 +87,7 @@ function _generateTop(config: {
     strokeWidth: number;
     bBoxLabel: TBBox;
 }): string[] {
-    const { type, hasNotch, strokeWidth, bBoxLabel, hasArgs } = config;
+    const { type: _type, hasNotch, strokeWidth, bBoxLabel, hasArgs } = config;
 
     // Corner Radius + Offset + Notch + Variable width + Corner Radius = Stroke Width/2 + LabelBounding Box width + Stroke Width/2
     if (hasArgs) {
@@ -191,26 +191,26 @@ function _generateLeft(config: {
     hasNotch: boolean;
     strokeWidth: number;
     rightVertical: number;
-}): string[] {
-    const { type, hasNotch, rightVertical } = config;
+}): { path: string[]; leftEdge: number } {
+    const { type: _type, hasNotch, rightVertical } = config;
 
     const path: string[] = [];
 
-    let leftEdge = rightVertical;
+    let _leftEdge = rightVertical;
     // For vertical leg — match exact vertical height from right
-    if (type === 'type2') {
-        leftEdge -= CONN_NOTCH_WIDTH + CORNER_RADIUS;
-        path.push(`v -${leftEdge}`);
+    if (_type === 'type2') {
+        _leftEdge -= CONN_NOTCH_WIDTH + CORNER_RADIUS;
+        path.push(`v -${_leftEdge}`);
 
         if (hasNotch) {
             path.push(..._generateNotchLeft());
         }
     } else {
-        leftEdge -= CORNER_RADIUS;
-        path.push(`v -${leftEdge.toFixed(2)}`);
+        _leftEdge -= CORNER_RADIUS;
+        path.push(`v -${_leftEdge.toFixed(2)}`);
     }
 
-    return path;
+    return { path, leftEdge: _leftEdge };
 }
 
 // function to generate the nested path for type3 bricks
@@ -341,9 +341,10 @@ function _generateBottom(config: {
 
 // -----------------------------------------------------------
 
-// Main function to generate the path based on the configuration
-export function generatePath(config: TInputType1 | TInputType2 | TInputType3): {
+// function to generate the path based on the configuration
+function generatePath(config: TInputType1 | TInputType2 | TInputType3): {
     path: string;
+    leftEdge: number;
 } {
     const hasNotchTop = config.type !== 'type2' && config.hasNotchAbove;
 
@@ -385,29 +386,27 @@ export function generatePath(config: TInputType1 | TInputType2 | TInputType3): {
         bBoxNesting: bBoxNesting,
     });
 
-    const left = _generateLeft({
+    const leftResult = _generateLeft({
         type: config.type,
         hasNotch: true,
         strokeWidth: config.strokeWidth,
-        rightVertical: rightVertical,
+        rightVertical,
     });
+
+    const left = leftResult.path;
+    const leftEdge = leftResult.leftEdge;
 
     const segments = [...top, ...right, ...bottom, ...left];
 
     return {
         path: ['M 0,0', ...segments].join(' '),
+        leftEdge: leftEdge,
     };
 }
 
-
-// function to calculate the bounding box values 
-export function getBoundingBox(config: TInputUnion): TBBox {
-    const {
-        strokeWidth,
-        bBoxLabel,
-        bBoxArgs,
-        type,
-    } = config;
+// function to calculate the bounding box values
+function getBoundingBox(config: TInputUnion): TBBox {
+    const { strokeWidth, bBoxLabel, bBoxArgs, type } = config;
 
     const hasArgs = bBoxArgs.length > 0;
     const labelWidth = Math.max(MIN_LABEL_WIDTH, bBoxLabel.w);
@@ -423,12 +422,11 @@ export function getBoundingBox(config: TInputUnion): TBBox {
         CORNER_RADIUS;
 
     // Base width as per _generateTop and _generateBottom logic
-    const baseWidth =
-        CORNER_RADIUS + OFFSET_NOTCH_TOP + WIDTH_NOTCH_TOP + variableTopWidth;
+    const baseWidth = CORNER_RADIUS + OFFSET_NOTCH_TOP + WIDTH_NOTCH_TOP + variableTopWidth;
 
     const width = hasArgs
-        ? baseWidth + OFFSET_NOTCH_RIGHT + CORNER_RADIUS + strokeWidth/2
-        : baseWidth + CORNER_RADIUS +strokeWidth/2;
+        ? baseWidth + OFFSET_NOTCH_RIGHT + CORNER_RADIUS + strokeWidth / 2
+        : baseWidth + CORNER_RADIUS + strokeWidth / 2;
 
     // Get rightVertical from _generateRight
     const { vertical: rightVertical } = _generateRight({
@@ -438,13 +436,10 @@ export function getBoundingBox(config: TInputUnion): TBBox {
         bBoxArgs,
     });
 
-    let height = rightVertical + CORNER_RADIUS + (type !== 'type3' ? strokeWidth/2 : 0);
+    let height = rightVertical + CORNER_RADIUS + (type !== 'type3' ? strokeWidth / 2 : 0);
 
     if (type === 'type3') {
-        const {
-            bBoxNesting,
-            secondaryLabel,
-        } = config as TInputType3;
+        const { bBoxNesting, secondaryLabel } = config as TInputType3;
 
         // Reuse nested path logic
         let nestingHeight = bBoxNesting.reduce((sum, box) => sum + box.h, 0);
@@ -455,10 +450,13 @@ export function getBoundingBox(config: TInputUnion): TBBox {
             ? strokeWidth / 2 + labelHeight + strokeWidth / 2 - CORNER_RADIUS * 2
             : 4;
 
-        const nestedTotal = OUTER_CORNER_RADIUS + 
+        const nestedTotal =
+            OUTER_CORNER_RADIUS +
             (nestingHeight - (strokeWidth / 2 + OUTER_CORNER_RADIUS * 2 + strokeWidth / 2)) +
-            OUTER_CORNER_RADIUS + CORNER_RADIUS +
-            labelAreaHeight + CORNER_RADIUS;
+            OUTER_CORNER_RADIUS +
+            CORNER_RADIUS +
+            labelAreaHeight +
+            CORNER_RADIUS;
 
         height += nestedTotal;
     }
@@ -466,5 +464,155 @@ export function getBoundingBox(config: TInputUnion): TBBox {
     return {
         w: width,
         h: height,
+    };
+}
+
+// functions to calculate coordinates of the connection points
+
+type TCentroid = { x: number; y: number };
+
+// Centroid calculation for Top Notch
+function getTopCentroid(config: TInputUnion): TCentroid | undefined {
+    if (config.type === 'type2' || !config.hasNotchAbove) return undefined;
+
+    return {
+        x: CORNER_RADIUS + OFFSET_NOTCH_TOP + WIDTH_NOTCH_TOP / 2,
+        y: 1,
+    };
+}
+
+// Centroid calculation for Bottom Notch
+function getBottomCentroid(
+    config: TInputUnion,
+    boundingBox: TBBox,
+    _leftEdge: number,
+): TCentroid | undefined {
+    if (config.type === 'type2' || !config.hasNotchBelow) return undefined;
+
+    if (config.type !== 'type3') {
+        return {
+            x: CORNER_RADIUS + OFFSET_NOTCH_BOTTOM + WIDTH_NOTCH_BOTTOM / 2,
+            y: boundingBox.h - 1, // Place at the bottom edge
+        };
+    }
+
+    return {
+        x:
+            CORNER_RADIUS +
+            OFFSET_NOTCH_TOP +
+            WIDTH_NOTCH_TOP / 2 +
+            OFFSET_NOTCH_BOTTOM +
+            WIDTH_NOTCH_BOTTOM / 2, //used the logic for top notch centroid
+        y: boundingBox.h - 1, // Place at the bottom edge for type3 as well
+    };
+}
+
+// Calculate centroids for right connector notch
+function getRightCentroids(config: TInputUnion, boundingBox: TBBox): TCentroid[] {
+    const { bBoxArgs, bBoxLabel, strokeWidth } = config;
+
+    // No argument = no right notches
+    if (!bBoxArgs.length) return [];
+
+    const centroids: TCentroid[] = [];
+
+    const labelHeight = Math.max(MIN_LABEL_HEIGHT, bBoxLabel.h);
+    const requiredMinimum = strokeWidth / 2 + labelHeight + strokeWidth / 2;
+    const argHeightsSum = bBoxArgs.reduce((sum, arg) => sum + arg.h, 0);
+
+    const extra = Math.max(0, requiredMinimum - argHeightsSum);
+
+    let verticalOffset = CORNER_RADIUS; // top-right corner arc
+
+    for (let i = 0; i < bBoxArgs.length; i++) {
+        const extraPerArg = extra / bBoxArgs.length;
+        const argBox = bBoxArgs[i];
+
+        // v4, v-3, v10, v-3, v4 = total 12
+        const fixedNotchHeight = 12;
+
+        const variableLength = Math.max(
+            0,
+            argBox.h +
+                extraPerArg -
+                (strokeWidth / 2 +
+                    CORNER_RADIUS +
+                    HEIGHT_NOTCH_RIGHT +
+                    CORNER_RADIUS +
+                    strokeWidth / 2 +
+                    CORNER_RADIUS +
+                    strokeWidth +
+                    CORNER_RADIUS),
+        );
+
+        // Centroid placed in the middle of v10
+        const centroidY = verticalOffset + 6;
+
+        centroids.push({
+            x: boundingBox.w - 6, // notch is 12 wide, so center is at 6 from right edge
+            y: centroidY,
+        });
+
+        verticalOffset += fixedNotchHeight; // 12 units fixed
+
+        if (variableLength > 0) {
+            verticalOffset += variableLength;
+        }
+
+        if (i < bBoxArgs.length - 1) {
+            verticalOffset += CORNER_RADIUS + strokeWidth + CORNER_RADIUS; // 4 + 2 + 4 = 10 units
+        }
+    }
+
+    return centroids;
+}
+
+// Calculate centroid for left connector notch
+function getLeftCentroid(config: TInputUnion, _boundingBox: TBBox): TCentroid | undefined {
+    if (config.type !== 'type2') return undefined;
+
+    return {
+        x: -7, // notch is made of h -6, h -2 → center = -7
+        y: CORNER_RADIUS + CONN_NOTCH_WIDTH / 2,
+    };
+}
+
+function getConnectionPoints(
+    config: TInputUnion,
+    boundingBox: TBBox,
+    leftEdge: number,
+): {
+    top?: TCentroid;
+    right: TCentroid[];
+    bottom?: TCentroid;
+    left?: TCentroid;
+} {
+    return {
+        top: getTopCentroid(config),
+        right: getRightCentroids(config, boundingBox),
+        bottom: getBottomCentroid(config, boundingBox, leftEdge),
+        left: getLeftCentroid(config, boundingBox),
+    };
+}
+
+// single export function to return brick data
+export function generateBrickData(config: TInputType1 | TInputType2 | TInputType3): {
+    path: string;
+    boundingBox: TBBox;
+    connectionPoints: {
+        top?: TCentroid;
+        right: TCentroid[];
+        bottom?: TCentroid;
+        left?: TCentroid;
+    };
+} {
+    const { path, leftEdge } = generatePath(config);
+    const boundingBox = getBoundingBox(config);
+    const connectionPoints = getConnectionPoints(config, boundingBox, leftEdge);
+
+    return {
+        path,
+        boundingBox,
+        connectionPoints,
     };
 }

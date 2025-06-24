@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import type { TBrickRenderPropsCompound } from '../../@types/brick';
-import { generatePath, getBoundingBox } from '../../utils/path';
+import { generateBrickData } from '../../utils/path';
 
 const FONT_HEIGHT = 16;
 
@@ -35,7 +35,18 @@ function measureLabel(label: string, fontSize: number) {
   };
 }
 
-export const CompoundBrickView: React.FC<TBrickRenderPropsCompound> = (props) => {
+type TConnectionPoints = {
+  top?: { x: number; y: number };
+  right: { x: number; y: number }[];
+  bottom?: { x: number; y: number };
+  left?: { x: number; y: number };
+};
+
+type PropsWithMetrics = TBrickRenderPropsCompound & {
+  RenderMetrics?: (bbox: { w: number; h: number }, connectionPoints: TConnectionPoints) => void;
+};
+
+export const CompoundBrickView: React.FC<PropsWithMetrics> = (props) => {
   const {
     label,
     labelType,
@@ -54,10 +65,15 @@ export const CompoundBrickView: React.FC<TBrickRenderPropsCompound> = (props) =>
     bottomNotch,
     bboxNest,
     isFolded,
+    RenderMetrics,
   } = props;
 
-  const { w: labelW, h: labelH, ascent } = measureLabel(label, FONT_HEIGHT);
-  const bBoxLabel = { w: labelW, h: labelH };
+  // Memoize bBoxLabel to prevent unnecessary recalculations
+  const bBoxLabel = useMemo(() => {
+    const { w: labelW, h: labelH } = measureLabel(label, FONT_HEIGHT);
+    return { w: labelW, h: labelH };
+  }, [label]);
+
   const bBoxNesting = bboxNest;
 
   const [shape, setShape] = useState<{ path: string; w: number; h: number }>(() => {
@@ -72,9 +88,12 @@ export const CompoundBrickView: React.FC<TBrickRenderPropsCompound> = (props) =>
       bBoxNesting,
       secondaryLabel: !isFolded,
     };
-    const { path } = generatePath(cfg);
-    const { w, h } = getBoundingBox(cfg);
-    return { path, w, h };
+    const brickData = generateBrickData(cfg);
+    return {
+      path: brickData.path,
+      w: brickData.boundingBox.w,
+      h: brickData.boundingBox.h,
+    };
   });
 
   useEffect(() => {
@@ -89,10 +108,23 @@ export const CompoundBrickView: React.FC<TBrickRenderPropsCompound> = (props) =>
       bBoxNesting,
       secondaryLabel: !isFolded,
     };
-    const { path } = generatePath(cfg);
-    const { w, h } = getBoundingBox(cfg);
-    setShape({ path, w, h });
-  }, [label, strokeWidth, scale, bboxArgs, topNotch, bottomNotch, bboxNest, isFolded]);
+    const brickData = generateBrickData(cfg);
+    if (RenderMetrics) {
+      RenderMetrics(brickData.boundingBox, brickData.connectionPoints);
+    }
+    setShape({ path: brickData.path, w: brickData.boundingBox.w, h: brickData.boundingBox.h });
+  }, [
+    label,
+    strokeWidth,
+    scale,
+    bboxArgs,
+    topNotch,
+    bottomNotch,
+    bboxNest,
+    isFolded,
+    bBoxLabel,
+    bBoxNesting,
+  ]);
 
   if (!isVisible) return null;
 
@@ -122,7 +154,7 @@ export const CompoundBrickView: React.FC<TBrickRenderPropsCompound> = (props) =>
         {labelType === 'text' && (
           <text
             x={strokeWidth + 4}
-            y={ascent + strokeWidth / 2}
+            y={bBoxLabel.h * 0.8 + strokeWidth / 2}
             fill={toCssColor(colorFg)}
             fontSize={FONT_HEIGHT}
             style={{ userSelect: 'none', pointerEvents: 'none' }}

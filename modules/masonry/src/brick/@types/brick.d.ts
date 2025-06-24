@@ -65,6 +65,8 @@ export type TBrickRenderPropsCompound = TBrickRenderProps & {
     isFolded: boolean;
 };
 
+import { TConnectionPoints } from '../../tree/model/model';
+
 /**
  * @interface
  * Type definition of a brick (any type).
@@ -75,6 +77,7 @@ export interface IBrick {
     get type(): TBrickType;
     set scale(value: number);
     get boundingBox(): TExtent;
+    connectionPoints: TConnectionPoints;
 
     get visualState(): TVisualState;
     set visualState(value: TVisualState);

@@ -263,7 +263,7 @@ function _generateNestedPath(config: {
             `a ${CORNER_RADIUS} ${CORNER_RADIUS} 90 0 1 ${CORNER_RADIUS} ${CORNER_RADIUS}`,
             ...(hasSecondaryLabel ? [`v ${labelHeight}`] : ['v 4']),
             `a ${CORNER_RADIUS} ${CORNER_RADIUS} 90 0 1 -${CORNER_RADIUS} ${CORNER_RADIUS}`,
-            `h -${variableOuterWidth}`,
+            `h -${variableOuterWidth - 2*strokeWidth}`,
             ...(hasNotch ? _generateNotchBottom(strokeWidth) : [`h -${WIDTH_NOTCH_BOTTOM}`]),
             `h -${OFFSET_NOTCH_BOTTOM}`,
         ];

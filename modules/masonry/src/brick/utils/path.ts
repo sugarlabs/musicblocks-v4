@@ -139,7 +139,7 @@ function _generateRight(config: {
     if (hasArgs) {
         const requiredMinimum =
             strokeWidth / 2 + Math.max(MIN_LABEL_HEIGHT, bBoxLabel.h) + strokeWidth / 2;
-        const argHeightsSum = bBoxArgs.reduce((sum, arg) => sum + arg.h, 0);
+        const argHeightsSum = bBoxArgs.length > 0 ? bBoxArgs.reduce((sum, arg) => sum + arg.h, 0) : 0;
         const extra = Math.max(0, requiredMinimum - argHeightsSum);
 
         for (let i = 0; i < bBoxArgs.length; i++) {
@@ -399,7 +399,7 @@ function generatePath(config: TInputType1 | TInputType2 | TInputType3): {
     const segments = [...top, ...right, ...bottom, ...left];
 
     return {
-        path: ['M 0,0', ...segments].join(' '),
+        path: ['m 0,0', ...segments].join(' '),
         leftEdge: leftEdge,
     };
 }
@@ -433,7 +433,7 @@ function getBoundingBox(config: TInputUnion): TBBox {
         hasArgs,
         strokeWidth,
         bBoxLabel,
-        bBoxArgs,
+        bBoxArgs: bBoxArgs || [],
     });
 
     let height = rightVertical + CORNER_RADIUS + (type !== 'type3' ? strokeWidth / 2 : 0);
@@ -442,7 +442,8 @@ function getBoundingBox(config: TInputUnion): TBBox {
         const { bBoxNesting, secondaryLabel } = config as TInputType3;
 
         // Reuse nested path logic
-        let nestingHeight = bBoxNesting.reduce((sum, box) => sum + box.h, 0);
+        const bBoxNesting3 = bBoxNesting || [];
+        let nestingHeight = bBoxNesting3.length > 0 ? bBoxNesting3.reduce((sum: number, box: TBBox) => sum + box.h, 0) : 0;
         nestingHeight = Math.max(nestingHeight, MIN_NESTED_HEIGHT);
 
         const labelHeight = Math.max(MIN_LABEL_HEIGHT, bBoxLabel.h);
@@ -509,7 +510,7 @@ function getBottomCentroid(
 
 // Calculate centroids for right connector notch
 function getRightCentroids(config: TInputUnion, boundingBox: TBBox): TCentroid[] {
-    const { bBoxArgs, bBoxLabel, strokeWidth } = config;
+    const { bBoxArgs = [], bBoxLabel, strokeWidth } = config;
 
     // No argument = no right notches
     if (!bBoxArgs.length) return [];
@@ -518,7 +519,7 @@ function getRightCentroids(config: TInputUnion, boundingBox: TBBox): TCentroid[]
 
     const labelHeight = Math.max(MIN_LABEL_HEIGHT, bBoxLabel.h);
     const requiredMinimum = strokeWidth / 2 + labelHeight + strokeWidth / 2;
-    const argHeightsSum = bBoxArgs.reduce((sum, arg) => sum + arg.h, 0);
+    const argHeightsSum = bBoxArgs.length > 0 ? bBoxArgs.reduce((sum, arg) => sum + arg.h, 0) : 0;
 
     const extra = Math.max(0, requiredMinimum - argHeightsSum);
 
@@ -549,7 +550,7 @@ function getRightCentroids(config: TInputUnion, boundingBox: TBBox): TCentroid[]
         const centroidY = verticalOffset + 6;
 
         centroids.push({
-            x: boundingBox.w - 6, // notch is 12 wide, so center is at 6 from right edge
+            x: boundingBox.w - 5, // notch is 8 wide, so center is at 4 from right edge + strokewidth/2
             y: centroidY,
         });
 
@@ -604,15 +605,50 @@ export function generateBrickData(config: TInputType1 | TInputType2 | TInputType
         right: TCentroid[];
         bottom?: TCentroid;
         left?: TCentroid;
+        args?: { x: number; y: number }[];
+        nested?: { x: number; y: number };
     };
 } {
     const { path, leftEdge } = generatePath(config);
     const boundingBox = getBoundingBox(config);
     const connectionPoints = getConnectionPoints(config, boundingBox, leftEdge);
 
+    // Argument slot origins (for all types with args)
+    let args: { x: number; y: number }[] | undefined = undefined;
+    if (connectionPoints.right && connectionPoints.right.length > 0) {
+        args = connectionPoints.right.map((pt) => ({ x: pt.x, y: pt.y }));
+        // Calculate origin for the argument brick based on the connection coordinates 
+        args.forEach((pt) => {
+            pt.x = pt.x + OFFSET_NOTCH_RIGHT/2 + CORNER_RADIUS; // + strokewidth at the end
+            pt.y = pt.y - CORNER_RADIUS - HEIGHT_NOTCH_RIGHT/2;
+        });
+    }
+
+    //nesting height to calculate the nested origin, either here or use it from the getBoundingBox function
+    const bBoxNesting = (config as any).bBoxNesting || [];
+    let nestingHeight = bBoxNesting.length > 0 ? bBoxNesting.reduce((sum: number, box: TBBox) => sum + box.h, 0) : 0;
+    nestingHeight = Math.max(nestingHeight, MIN_NESTED_HEIGHT);
+
+    // Nested region origin (for type3/compound)
+    let nested: { x: number; y: number } | undefined = undefined;
+    if ((config as any).type === 'type3' && connectionPoints.bottom) {
+        nestingHeight += CORNER_RADIUS + 2;
+        nested = {
+            x: connectionPoints.bottom.x - WIDTH_NOTCH_BOTTOM / 2 - OFFSET_NOTCH_BOTTOM - CORNER_RADIUS - 2,//strokewidth,
+            y: connectionPoints.bottom.y - CORNER_RADIUS*2 - 4 - nestingHeight,
+        };
+    }
+
     return {
         path,
         boundingBox,
-        connectionPoints,
+        connectionPoints: {
+            top: connectionPoints.top,
+            right: connectionPoints.right,
+            bottom: connectionPoints.bottom,
+            left: connectionPoints.left,
+            args,
+            nested,
+        },
     };
 }

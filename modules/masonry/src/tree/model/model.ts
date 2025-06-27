@@ -1,4 +1,4 @@
-import type { IBrick } from '../../brick/@types/brick';
+import type { IBrick, TBrickType } from '../../brick/@types/brick';
 
 // Point type
 export type TPoint = {
@@ -21,6 +21,7 @@ export type TConnectionPoints = {
     bottom?: TConnectionPoint;
     left?: TConnectionPoint;
     nested?: TConnectionPoint;
+    args?: TConnectionPoint[];
 };
 
 // Connection types between bricks
@@ -36,11 +37,14 @@ export type TBrickConnection = {
 };
 
 // Tree node representing a brick in the tree
+// Update the TTreeNode type to include the missing properties
 export type TTreeNode = {
     brick: IBrick;
     position: TPoint;
     parent: TTreeNode | null;
     connectedNotches: Set<string>;
+    isNested?: boolean;  // Added: indicates if this brick is nested inside its parent
+    argIndex?: number;   // Added: indicates which argument slot this brick occupies
 };
 
 // Tree structure representing connected bricks
@@ -157,22 +161,24 @@ export default class BrickTreeManager {
 
         if (!fromBrickNode || !toBrickNode) return null;
 
-        // Validate that both bricks exist and can be connected
-        // The connection points represent the specific notches where bricks will connect
+        console.log(`Connection points - fromPoint:`, fromPoint, `toPoint:`, toPoint);
+        console.log(`From brick connection points:`, fromBrickNode.brick.connectionPoints);
+        console.log(`To brick connection points:`, toBrickNode.brick.connectionPoints);
 
         const fromNotchId = this.findNotchId(fromBrickNode.brick, fromPoint);
         const toNotchId = this.findNotchId(toBrickNode.brick, toPoint);
 
-        // Find the specific notch IDs for both bricks based on their connection points
-        // These IDs are used to track which notches are occupied
+        console.log(
+            `Connecting ${fromBrickId} to ${toBrickId}: fromNotchId=${fromNotchId}, toNotchId=${toNotchId}`,
+        );
 
         if (!fromNotchId || !toNotchId) {
             console.error('Could not determine notch IDs for connection');
             return null;
         }
 
-        // Check if the notches are already connected to other bricks
-        // A notch can only be connected to one other notch at a time
+        console.log(`From brick connected notches:`, Array.from(fromBrickNode.connectedNotches));
+        console.log(`To brick connected notches:`, Array.from(toBrickNode.connectedNotches));
 
         if (
             fromBrickNode.connectedNotches.has(fromNotchId) ||
@@ -182,7 +188,6 @@ export default class BrickTreeManager {
             return null;
         }
 
-        // Mark both notches as connected to prevent future connections
         fromBrickNode.connectedNotches.add(fromNotchId);
         toBrickNode.connectedNotches.add(toNotchId);
 
@@ -200,15 +205,15 @@ export default class BrickTreeManager {
         };
 
         if (fromTree.id === toTree.id) {
-            // Both bricks are already in the same tree, just add the new connection
             fromTree.connections.push(connection);
             this.updateParentChildRelationships(fromBrickId, toBrickId, connection.type);
+            console.log(`Added connection to existing tree ${fromTree.id}`);
             return fromTree.id;
         }
 
-        // Bricks are in different trees, merge them into a single tree
         const mergedTree = this.mergeTrees(fromTree, toTree, connection);
         this.updateParentChildRelationships(fromBrickId, toBrickId, connection.type);
+        console.log(`Merged trees into ${mergedTree.id}`);
         return mergedTree.id;
     }
 
@@ -259,8 +264,10 @@ export default class BrickTreeManager {
         const originalTree = this.findTreeByBrickId(brickId);
         if (!originalTree) return { removedConnections: [], newTreeIds: [] };
 
-        // Step 1: Collect all descendant nodes that will move with the disconnected brick
-        // This includes the brick itself and all its children (hierarchical behavior)
+        console.log(`Disconnecting brick ${brickId} from tree ${originalTree.id}`);
+        console.log(`Original tree connections:`, originalTree.connections);
+
+        // Collect all descendant nodes of the disconnected brick (including the brick itself)
         const nodesToMove = new Map<string, TTreeNode>();
         const stack: TTreeNode[] = [brickNode];
         const visited = new Set<string>([brickNode.brick.uuid]);
@@ -278,10 +285,10 @@ export default class BrickTreeManager {
             });
         }
 
-        // Step 2: Identify connections that need to be removed from the original tree
-        // Remove connections where:
-        // - Both nodes are moving to the new tree (internal connections)
-        // - One node is moving and the other stays (cross-tree connections)
+        console.log(`Nodes to move:`, Array.from(nodesToMove.keys()));
+
+        // Find all connections that need to be removed from the original tree
+        // This includes connections between nodes being moved and connections to/from external nodes
         const connectionsToRemove = originalTree.connections.filter((conn) => {
             const fromInNewTree = nodesToMove.has(conn.from);
             const toInNewTree = nodesToMove.has(conn.to);
@@ -293,21 +300,29 @@ export default class BrickTreeManager {
                 (fromInNewTree && !toInNewTree) ||
                 (!fromInNewTree && toInNewTree);
 
+            console.log(
+                `Connection ${conn.from} -> ${conn.to}: fromInNewTree=${fromInNewTree}, toInNewTree=${toInNewTree}, shouldRemove=${shouldRemove}`,
+            );
+
             return shouldRemove;
         });
 
+        console.log(`Connections to remove:`, connectionsToRemove);
+
         if (connectionsToRemove.length === 0) return { removedConnections: [], newTreeIds: [] };
 
-        // Step 3: Remove connections and nodes from the original tree
+        // Remove connections from original tree
         this.removeConnections(originalTree, connectionsToRemove);
+
+        // Remove nodes from original tree
         nodesToMove.forEach((node, brickId) => {
             originalTree.nodes.delete(brickId);
         });
 
-        // Step 4: Create a new tree with the disconnected brick as root
+        // Create new tree with the disconnected brick as root
         const newTree = this.createTree(brickNode.brick, brickNode.position);
 
-        // Step 5: Add all descendant nodes to the new tree
+        // Add all descendant nodes to the new tree
         nodesToMove.forEach((node, brickId) => {
             if (brickId !== brickNode.brick.uuid) {
                 // Don't add the root twice
@@ -315,13 +330,13 @@ export default class BrickTreeManager {
             }
         });
 
-        // Step 6: Move internal connections to the new tree
+        // Move connections between nodes in the new tree to the new tree
         const connectionsToMove = connectionsToRemove.filter(
             (conn) => nodesToMove.has(conn.from) && nodesToMove.has(conn.to),
         );
         newTree.connections = connectionsToMove;
 
-        // Step 7: Update parent relationships for the new tree
+        // Update parent relationships for the new tree
         // The disconnected brick becomes the root (no parent)
         brickNode.parent = null;
 
@@ -336,11 +351,12 @@ export default class BrickTreeManager {
             }
         });
 
-        // Step 8: Clean up original tree if it's empty
+        // Clean up original tree if it's empty
         if (originalTree.nodes.size === 0) {
             this.trees = this.trees.filter((t) => t.id !== originalTree.id);
         }
 
+        console.log(`Returning ${connectionsToRemove.length} removed connections`);
         return { removedConnections: connectionsToRemove, newTreeIds: [newTree.id] };
     }
 
@@ -481,5 +497,114 @@ export default class BrickTreeManager {
 
     private findTreeByBrickId(brickId: string): TTree | undefined {
         return this.trees.find((tree) => tree.nodes.has(brickId));
+    }
+
+    public addNestedBrick(
+        parentBrickId: string, 
+        childBrick: IBrick, 
+        position: TPoint
+    ): boolean {
+        const parentNode = this.getBrickNode(parentBrickId);
+        if (!parentNode) return false;
+
+        const tree = this.findTreeByBrickId(parentBrickId);
+        if (!tree) return false;
+
+        const childNode: TTreeNode = {
+            brick: childBrick,
+            position,
+            parent: parentNode,
+            connectedNotches: new Set(),
+            isNested: true, // Mark as nested
+        };
+
+        tree.nodes.set(childBrick.uuid, childNode);
+        return true;
+    }
+
+    /**
+     * Adds an argument brick to a parent brick at a specific argument index
+     */
+    public addArgumentBrick(
+        parentBrickId: string, 
+        childBrick: IBrick, 
+        position: TPoint,
+        argIndex: number
+    ): boolean {
+        const parentNode = this.getBrickNode(parentBrickId);
+        if (!parentNode) return false;
+
+        const tree = this.findTreeByBrickId(parentBrickId);
+        if (!tree) return false;
+
+        // Check if argument slot is available
+        if (!parentNode.brick.connectionPoints.args || 
+            argIndex >= parentNode.brick.connectionPoints.args.length) {
+            return false;
+        }
+
+        // Check if this argument slot is already occupied
+        const existingArgBrick = this.getArgumentBrick(parentBrickId, argIndex);
+        if (existingArgBrick) return false;
+
+        const childNode: TTreeNode = {
+            brick: childBrick,
+            position,
+            parent: parentNode,
+            connectedNotches: new Set(),
+            argIndex, // Mark with argument index
+        };
+
+        tree.nodes.set(childBrick.uuid, childNode);
+        return true;
+    }
+
+    /**
+     * Gets the brick occupying a specific argument slot
+     */
+    public getArgumentBrick(parentBrickId: string, argIndex: number): IBrick | null {
+        const tree = this.findTreeByBrickId(parentBrickId);
+        if (!tree) return null;
+
+        for (const [_, node] of tree.nodes) {
+            if (node.parent?.brick.uuid === parentBrickId && 
+                node.argIndex === argIndex) {
+                return node.brick;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets all nested children of a brick
+     */
+    public getNestedChildren(brickId: string): IBrick[] {
+        const children: IBrick[] = [];
+        for (const tree of this.trees) {
+            for (const node of tree.nodes.values()) {
+                if (node.parent?.brick.uuid === brickId && node.isNested) {
+                    children.push(node.brick);
+                }
+            }
+        }
+        return children;
+    }
+
+    /**
+     * Gets all argument children of a brick
+     */
+    public getArgumentChildren(brickId: string): Array<{ brick: IBrick; argIndex: number }> {
+        const children: Array<{ brick: IBrick; argIndex: number }> = [];
+        for (const tree of this.trees) {
+            for (const node of tree.nodes.values()) {
+                if (node.parent?.brick.uuid === brickId && 
+                    node.argIndex !== undefined && 
+                    !node.isNested) {
+                    children.push({ brick: node.brick, argIndex: node.argIndex });
+                }
+            }
+        }
+        // Sort by argument index
+        return children.sort((a, b) => a.argIndex - b.argIndex);
     }
 }

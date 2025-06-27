@@ -192,18 +192,6 @@ function RenderTreeNodeStack({
           const argOrigin = curr.brick.connectionPoints.args![argIndex];
           const childBB = bbMap.get(child.brick.uuid)!;
 
-          // Debug: Add red circle to show connection point
-          // elements.push(
-          //   <circle
-          //     key={`debug-arg-${child.brick.uuid}`}
-          //     cx={x + argOrigin.x}
-          //     cy={y + argOrigin.y}
-          //     r={3}
-          //     fill="red"
-          //     opacity={0.7}
-          //   />
-          // );
-
           stack.push({
             node: child,
             x: x + argOrigin.x, 

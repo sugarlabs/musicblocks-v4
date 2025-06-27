@@ -161,24 +161,13 @@ export default class BrickTreeManager {
 
         if (!fromBrickNode || !toBrickNode) return null;
 
-        console.log(`Connection points - fromPoint:`, fromPoint, `toPoint:`, toPoint);
-        console.log(`From brick connection points:`, fromBrickNode.brick.connectionPoints);
-        console.log(`To brick connection points:`, toBrickNode.brick.connectionPoints);
-
         const fromNotchId = this.findNotchId(fromBrickNode.brick, fromPoint);
         const toNotchId = this.findNotchId(toBrickNode.brick, toPoint);
-
-        console.log(
-            `Connecting ${fromBrickId} to ${toBrickId}: fromNotchId=${fromNotchId}, toNotchId=${toNotchId}`,
-        );
 
         if (!fromNotchId || !toNotchId) {
             console.error('Could not determine notch IDs for connection');
             return null;
         }
-
-        console.log(`From brick connected notches:`, Array.from(fromBrickNode.connectedNotches));
-        console.log(`To brick connected notches:`, Array.from(toBrickNode.connectedNotches));
 
         if (
             fromBrickNode.connectedNotches.has(fromNotchId) ||
@@ -207,13 +196,11 @@ export default class BrickTreeManager {
         if (fromTree.id === toTree.id) {
             fromTree.connections.push(connection);
             this.updateParentChildRelationships(fromBrickId, toBrickId, connection.type);
-            console.log(`Added connection to existing tree ${fromTree.id}`);
             return fromTree.id;
         }
 
         const mergedTree = this.mergeTrees(fromTree, toTree, connection);
         this.updateParentChildRelationships(fromBrickId, toBrickId, connection.type);
-        console.log(`Merged trees into ${mergedTree.id}`);
         return mergedTree.id;
     }
 
@@ -264,9 +251,6 @@ export default class BrickTreeManager {
         const originalTree = this.findTreeByBrickId(brickId);
         if (!originalTree) return { removedConnections: [], newTreeIds: [] };
 
-        console.log(`Disconnecting brick ${brickId} from tree ${originalTree.id}`);
-        console.log(`Original tree connections:`, originalTree.connections);
-
         // Collect all descendant nodes of the disconnected brick (including the brick itself)
         const nodesToMove = new Map<string, TTreeNode>();
         const stack: TTreeNode[] = [brickNode];
@@ -285,8 +269,6 @@ export default class BrickTreeManager {
             });
         }
 
-        console.log(`Nodes to move:`, Array.from(nodesToMove.keys()));
-
         // Find all connections that need to be removed from the original tree
         // This includes connections between nodes being moved and connections to/from external nodes
         const connectionsToRemove = originalTree.connections.filter((conn) => {
@@ -300,14 +282,8 @@ export default class BrickTreeManager {
                 (fromInNewTree && !toInNewTree) ||
                 (!fromInNewTree && toInNewTree);
 
-            console.log(
-                `Connection ${conn.from} -> ${conn.to}: fromInNewTree=${fromInNewTree}, toInNewTree=${toInNewTree}, shouldRemove=${shouldRemove}`,
-            );
-
             return shouldRemove;
         });
-
-        console.log(`Connections to remove:`, connectionsToRemove);
 
         if (connectionsToRemove.length === 0) return { removedConnections: [], newTreeIds: [] };
 
@@ -356,7 +332,6 @@ export default class BrickTreeManager {
             this.trees = this.trees.filter((t) => t.id !== originalTree.id);
         }
 
-        console.log(`Returning ${connectionsToRemove.length} removed connections`);
         return { removedConnections: connectionsToRemove, newTreeIds: [newTree.id] };
     }
 

@@ -37,7 +37,7 @@ type TBrickRenderProps = {
     colorBg: TColor;
     colorFg: TColor;
     strokeColor: TColor;
-    strokeWidth: number; //remove
+    strokeWidth: number;
     scale: number;
     shadow: boolean;
     tooltip?: string;

@@ -16,6 +16,28 @@ import type { TConnectionPoints as TCP } from '../../tree/model/model';
 import { generateBrickData } from '../utils/path';
 import type { TInputUnion } from '../utils/path';
 
+// Text measurement utility
+function measureTextWidth(text: string, fontSize: number = 16): number {
+    // Create a canvas element for text measurement
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d')!;
+    context.font = `${fontSize}px sans-serif`;
+    return context.measureText(text).width;
+}
+
+// Fallback for server-side rendering or when canvas is not available
+function estimateTextWidth(text: string): number {
+    return Math.max(text.length * 8, 40); // Minimum width of 40
+}
+
+function getLabelWidth(label: string): number {
+    try {
+        return measureTextWidth(label, 16) + 8; // Add 8px padding
+    } catch {
+        return estimateTextWidth(label);
+    }
+}
+
 export abstract class BrickModel implements IBrick {
     protected _uuid: string;
     protected _name: string;
@@ -134,6 +156,22 @@ export abstract class BrickModel implements IBrick {
 
     /** Must assemble the full render props for this brick. */
     public abstract get renderProps(): TBrickRenderProps;
+
+    /** Must update geometry when label or other properties change. */
+    public abstract updateGeometry(): void;
+
+    get label(): string {
+        return this._label;
+    }
+
+    set label(value: string) {
+        this._label = value;
+        this.updateGeometry();
+    }
+
+    get labelType(): 'text' | 'glyph' | 'icon' | 'thumbnail' {
+        return this._labelType;
+    }
 }
 
 /**
@@ -184,14 +222,12 @@ export class SimpleBrick extends BrickModel implements IBrickSimple {
             type: 'type1',
             strokeWidth: this._strokeWidth,
             scaleFactor: this._scale,
-            bBoxLabel: { w: this._label.length * 8, h: 20 },
+            bBoxLabel: { w: getLabelWidth(this._label), h: 20 },
             bBoxArgs: this._bboxArgs,
             hasNotchAbove: this._topNotch,
             hasNotchBelow: this._bottomNotch,
         };
         const data = generateBrickData(config);
-
-        // use the public setters
         this.connectionPoints = data.connectionPoints;
         this.boundingBox = data.boundingBox;
     }
@@ -260,7 +296,7 @@ export class ExpressionBrick extends BrickModel implements IBrickExpression {
             type: 'type2',
             strokeWidth: this._strokeWidth,
             scaleFactor: this._scale,
-            bBoxLabel: { w: this._label.length * 8, h: 20 },
+            bBoxLabel: { w: getLabelWidth(this._label), h: 20 },
             bBoxArgs: this._bboxArgs,
         };
         const data = generateBrickData(config);
@@ -341,7 +377,7 @@ export default class CompoundBrick extends BrickModel implements IBrickCompound 
             type: 'type3',
             strokeWidth: this._strokeWidth,
             scaleFactor: this._scale,
-            bBoxLabel: { w: this._label.length * 8, h: 20 },
+            bBoxLabel: { w: getLabelWidth(this._label), h: 20 },
             bBoxArgs: this._bboxArgs,
             hasNotchAbove: this._topNotch,
             hasNotchBelow: this._bottomNotch,
@@ -370,6 +406,30 @@ export default class CompoundBrick extends BrickModel implements IBrickCompound 
     }
     public setBoundingBoxNest(extents: TExtent[]): void {
         this._bboxNest = extents;
+    }
+
+    /**
+     * Recursively update bounding box and connection points to fit nested children.
+     * Call this after all children are attached, before rendering.
+     */
+    public updateLayoutWithChildren(nestedChildren: BrickModel[]): void {
+        // If there are nested children, calculate the total bounding box
+        if (nestedChildren && nestedChildren.length > 0) {
+            // Calculate the bounding box that fits all nested children
+            let minX = 0, minY = 0, maxX = 0, maxY = 0;
+            nestedChildren.forEach(child => {
+                const bbox = child.boundingBox;
+                // For simplicity, assume children are stacked vertically for now
+                maxY += bbox.h;
+                maxX = Math.max(maxX, bbox.w);
+            });
+            // Expand this brick's bboxNest to fit the children
+            this._bboxNest = [{ w: maxX, h: maxY }];
+        } else {
+            this._bboxNest = [];
+        }
+        // Update geometry with new bboxNest
+        this.updateGeometry();
     }
 
     public override get renderProps(): TBrickRenderPropsCompound {

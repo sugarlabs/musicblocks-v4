@@ -2,11 +2,11 @@ import React, { useMemo } from 'react';
 import type { JSX } from 'react';
 import type BrickTreeManager from '../model/model';
 import type { TTreeNode } from '../model/model';
-import type { IBrick } from '../../brick/@types/brick';
 import { SimpleBrickView } from '../../brick/view/components/simple';
 import { ExpressionBrickView } from '../../brick/view/components/expression';
 import { CompoundBrickView } from '../../brick/view/components/compound';
 import CompoundBrick from '../../brick/model/model';
+import type { BrickModel, SimpleBrick, ExpressionBrick } from '../../brick/model/model';
 
 // Extended TTreeNode to include missing properties
 interface ExtendedTreeNode extends TTreeNode {
@@ -19,11 +19,11 @@ function BrickNodeView({ node }: { node: ExtendedTreeNode }) {
   const { brick } = node;
   switch (brick.type) {
     case 'Simple':
-      return <SimpleBrickView {...(brick as any).renderProps} />;
+      return <SimpleBrickView {...(brick as SimpleBrick).renderProps} />;
     case 'Expression':
-      return <ExpressionBrickView {...(brick as any).renderProps} />;
+      return <ExpressionBrickView {...(brick as ExpressionBrick).renderProps} />;
     case 'Compound':
-      return <CompoundBrickView {...(brick as any).renderProps} />;
+      return <CompoundBrickView {...(brick as CompoundBrick).renderProps} />;
     default:
       return null;
   }
@@ -31,8 +31,8 @@ function BrickNodeView({ node }: { node: ExtendedTreeNode }) {
 
 // Helper function to get children of a node from the tree structure
 function getNodeChildren(
-  nodeId: string, 
-  allNodes: Map<string, ExtendedTreeNode>
+  nodeId: string,
+  allNodes: Map<string, ExtendedTreeNode>,
 ): {
   nested: ExtendedTreeNode[];
   args: ExtendedTreeNode[];
@@ -61,7 +61,9 @@ function getNodeChildren(
 }
 
 // Compute bounding boxes for all nodes (bottom-up)
-function computeBoundingBoxes(allNodes: Map<string, ExtendedTreeNode>): Map<string, { w: number; h: number }> {
+function computeBoundingBoxes(
+  allNodes: Map<string, ExtendedTreeNode>,
+): Map<string, { w: number; h: number }> {
   const bbMap = new Map<string, { w: number; h: number }>();
   const visited = new Set<string>();
 
@@ -73,7 +75,7 @@ function computeBoundingBoxes(allNodes: Map<string, ExtendedTreeNode>): Map<stri
     visited.add(node.brick.uuid);
 
     const children = getNodeChildren(node.brick.uuid, allNodes);
-    
+
     // Start with the brick's own bounding box
     let width = node.brick.boundingBox.w;
     let height = node.brick.boundingBox.h;
@@ -82,18 +84,18 @@ function computeBoundingBoxes(allNodes: Map<string, ExtendedTreeNode>): Map<stri
     if (children.nested.length > 0) {
       let nestedHeight = 0;
       let nestedWidth = 0;
-      
+
       children.nested.forEach((child) => {
-        const childBB = visit(child);
-        nestedHeight += childBB.h;
-        nestedWidth = Math.max(nestedWidth, childBB.w);
+        const _childBB = visit(child);
+        nestedHeight += _childBB.h;
+        nestedWidth = Math.max(nestedWidth, _childBB.w);
       });
 
       // Update the compound brick's layout with nested children
       if (node.brick instanceof CompoundBrick) {
-        const nestedBricks = children.nested.map(child => child.brick as import('../../brick/model/model').BrickModel);
+        const nestedBricks = children.nested.map((child) => child.brick as BrickModel);
         node.brick.updateLayoutWithChildren(nestedBricks);
-        
+
         // Recalculate the brick's bounding box after layout update
         width = node.brick.boundingBox.w;
         height = node.brick.boundingBox.h;
@@ -113,7 +115,7 @@ function computeBoundingBoxes(allNodes: Map<string, ExtendedTreeNode>): Map<stri
     if (children.stacked.length > 0) {
       let stackedHeight = 0;
       let stackedWidth = 0;
-      
+
       children.stacked.forEach((child) => {
         const childBB = visit(child);
         stackedHeight += childBB.h;
@@ -133,16 +135,16 @@ function computeBoundingBoxes(allNodes: Map<string, ExtendedTreeNode>): Map<stri
   // Find roots and process them
   const roots = Array.from(allNodes.values()).filter((n) => n.parent === null);
   roots.forEach(visit);
-  
+
   return bbMap;
 }
 
 // Render tree using iterative approach with correct positioning
-function RenderTreeNodeStack({ 
-  node, 
-  allNodes, 
-  bbMap, 
-  offset = { x: 0, y: 0 } 
+function RenderTreeNodeStack({
+  node,
+  allNodes,
+  bbMap,
+  offset = { x: 0, y: 0 },
 }: {
   node: ExtendedTreeNode;
   allNodes: Map<string, ExtendedTreeNode>;
@@ -162,25 +164,25 @@ function RenderTreeNodeStack({
     elements.push(
       <g key={curr.brick.uuid} transform={`translate(${x},${y})`}>
         <BrickNodeView node={curr} />
-      </g>
+      </g>,
     );
 
     // Handle nested children - positioned inside the current brick
     if (children.nested.length > 0 && curr.brick.connectionPoints.nested) {
       let nestedOffsetY = 0;
-      
+
       children.nested.forEach((child) => {
         const nestedX = x + curr.brick.connectionPoints.nested!.x;
         const nestedY = y + curr.brick.connectionPoints.nested!.y + nestedOffsetY;
-        
+
         stack.push({
           node: child,
           x: nestedX,
           y: nestedY,
         });
-        
-        const childBB = bbMap.get(child.brick.uuid)!;
-        nestedOffsetY += childBB.h;
+
+        const _childBB = bbMap.get(child.brick.uuid)!;
+        nestedOffsetY += _childBB.h;
       });
     }
 
@@ -190,14 +192,13 @@ function RenderTreeNodeStack({
         const argIndex = child.argIndex || 0;
         if (argIndex < curr.brick.connectionPoints.args!.length) {
           const argOrigin = curr.brick.connectionPoints.args![argIndex];
-          const childBB = bbMap.get(child.brick.uuid)!;
+          const _childBB2 = bbMap.get(child.brick.uuid)!;
 
           stack.push({
             node: child,
-            x: x + argOrigin.x, 
+            x: x + argOrigin.x,
             y: y + argOrigin.y,
           });
-
         }
       });
     }
@@ -205,16 +206,16 @@ function RenderTreeNodeStack({
     // Handle stacked children - positioned below the current brick
     if (children.stacked.length > 0) {
       let stackedOffsetY = y + curr.brick.boundingBox.h;
-      
+
       children.stacked.forEach((child) => {
-        stack.push({ 
-          node: child, 
-          x: x, 
-          y: stackedOffsetY 
+        stack.push({
+          node: child,
+          x: x,
+          y: stackedOffsetY,
         });
-        
-        const childBB = bbMap.get(child.brick.uuid)!;
-        stackedOffsetY += childBB.h;
+
+        const _childBB3 = bbMap.get(child.brick.uuid)!;
+        stackedOffsetY += _childBB3.h;
       });
     }
   }
@@ -223,7 +224,10 @@ function RenderTreeNodeStack({
 }
 
 // Helper function to recursively update layout for compound bricks
-function updateCompoundBrickLayouts(nodes: Map<string, ExtendedTreeNode>, node?: ExtendedTreeNode): void {
+function updateCompoundBrickLayouts(
+  nodes: Map<string, ExtendedTreeNode>,
+  node?: ExtendedTreeNode,
+): void {
   // If node is not provided, start from all root nodes
   if (!node) {
     for (const n of nodes.values()) {
@@ -235,10 +239,10 @@ function updateCompoundBrickLayouts(nodes: Map<string, ExtendedTreeNode>, node?:
   if (node.brick instanceof CompoundBrick) {
     const children = getNodeChildren(node.brick.uuid, nodes);
     if (children.nested.length > 0) {
-      const nestedBricks = children.nested.map(child => child.brick as import('../../brick/model/model').BrickModel);
+      const nestedBricks = children.nested.map((child) => child.brick as BrickModel);
       node.brick.updateLayoutWithChildren(nestedBricks);
       // Recursively update only the nested children
-      children.nested.forEach(child => {
+      children.nested.forEach((child) => {
         updateCompoundBrickLayouts(nodes, child);
       });
     }

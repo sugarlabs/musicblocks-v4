@@ -124,6 +124,7 @@ export const CompoundBrickView: React.FC<PropsWithMetrics> = (props) => {
     isFolded,
     bBoxLabel,
     bBoxNesting,
+    RenderMetrics,
   ]);
 
   if (!isVisible) return null;

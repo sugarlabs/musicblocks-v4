@@ -139,7 +139,8 @@ function _generateRight(config: {
     if (hasArgs) {
         const requiredMinimum =
             strokeWidth / 2 + Math.max(MIN_LABEL_HEIGHT, bBoxLabel.h) + strokeWidth / 2;
-        const argHeightsSum = bBoxArgs.length > 0 ? bBoxArgs.reduce((sum, arg) => sum + arg.h, 0) : 0;
+        const argHeightsSum =
+            bBoxArgs.length > 0 ? bBoxArgs.reduce((sum, arg) => sum + arg.h, 0) : 0;
         const extra = Math.max(0, requiredMinimum - argHeightsSum);
 
         for (let i = 0; i < bBoxArgs.length; i++) {
@@ -263,7 +264,7 @@ function _generateNestedPath(config: {
             `a ${CORNER_RADIUS} ${CORNER_RADIUS} 90 0 1 ${CORNER_RADIUS} ${CORNER_RADIUS}`,
             ...(hasSecondaryLabel ? [`v ${labelHeight}`] : ['v 4']),
             `a ${CORNER_RADIUS} ${CORNER_RADIUS} 90 0 1 -${CORNER_RADIUS} ${CORNER_RADIUS}`,
-            `h -${variableOuterWidth - 2*strokeWidth}`,
+            `h -${variableOuterWidth - 2 * strokeWidth}`,
             ...(hasNotch ? _generateNotchBottom(strokeWidth) : [`h -${WIDTH_NOTCH_BOTTOM}`]),
             `h -${OFFSET_NOTCH_BOTTOM}`,
         ];
@@ -443,7 +444,10 @@ function getBoundingBox(config: TInputUnion): TBBox {
 
         // Reuse nested path logic
         const bBoxNesting3 = bBoxNesting || [];
-        let nestingHeight = bBoxNesting3.length > 0 ? bBoxNesting3.reduce((sum: number, box: TBBox) => sum + box.h, 0) : 0;
+        let nestingHeight =
+            bBoxNesting3.length > 0
+                ? bBoxNesting3.reduce((sum: number, box: TBBox) => sum + box.h, 0)
+                : 0;
         nestingHeight = Math.max(nestingHeight, MIN_NESTED_HEIGHT);
 
         const labelHeight = Math.max(MIN_LABEL_HEIGHT, bBoxLabel.h);
@@ -617,25 +621,33 @@ export function generateBrickData(config: TInputType1 | TInputType2 | TInputType
     let args: { x: number; y: number }[] | undefined = undefined;
     if (connectionPoints.right && connectionPoints.right.length > 0) {
         args = connectionPoints.right.map((pt) => ({ x: pt.x, y: pt.y }));
-        // Calculate origin for the argument brick based on the connection coordinates 
+        // Calculate origin for the argument brick based on the connection coordinates
         args.forEach((pt) => {
-            pt.x = pt.x + OFFSET_NOTCH_RIGHT/2 + CORNER_RADIUS; // + strokewidth at the end
-            pt.y = pt.y - CORNER_RADIUS - HEIGHT_NOTCH_RIGHT/2;
+            pt.x = pt.x + OFFSET_NOTCH_RIGHT / 2 + CORNER_RADIUS; // + strokewidth at the end
+            pt.y = pt.y - CORNER_RADIUS - HEIGHT_NOTCH_RIGHT / 2;
         });
     }
 
     //nesting height to calculate the nested origin, either here or use it from the getBoundingBox function
-    const bBoxNesting = (config as any).bBoxNesting || [];
-    let nestingHeight = bBoxNesting.length > 0 ? bBoxNesting.reduce((sum: number, box: TBBox) => sum + box.h, 0) : 0;
+    const bBoxNesting = 'bBoxNesting' in config ? config.bBoxNesting : [];
+    let nestingHeight =
+        bBoxNesting.length > 0
+            ? bBoxNesting.reduce((sum: number, box: TBBox) => sum + box.h, 0)
+            : 0;
     nestingHeight = Math.max(nestingHeight, MIN_NESTED_HEIGHT);
 
     // Nested region origin (for type3/compound)
     let nested: { x: number; y: number } | undefined = undefined;
-    if ((config as any).type === 'type3' && connectionPoints.bottom) {
+    if (config.type === 'type3' && connectionPoints.bottom) {
         nestingHeight += CORNER_RADIUS + 2;
         nested = {
-            x: connectionPoints.bottom.x - WIDTH_NOTCH_BOTTOM / 2 - OFFSET_NOTCH_BOTTOM - CORNER_RADIUS - 2,//strokewidth,
-            y: connectionPoints.bottom.y - CORNER_RADIUS*2 - 4 - nestingHeight,
+            x:
+                connectionPoints.bottom.x -
+                WIDTH_NOTCH_BOTTOM / 2 -
+                OFFSET_NOTCH_BOTTOM -
+                CORNER_RADIUS -
+                2, //strokewidth,
+            y: connectionPoints.bottom.y - CORNER_RADIUS * 2 - 4 - nestingHeight,
         };
     }
 

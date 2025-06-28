@@ -99,7 +99,7 @@ export const ExpressionBrickView: React.FC<PropsWithMetrics> = (props) => {
       RenderMetrics(brickData.boundingBox, brickData.connectionPoints);
     }
     setShape({ path: brickData.path, w: brickData.boundingBox.w, h: brickData.boundingBox.h });
-  }, [label, strokeWidth, scale, bboxArgs, bBoxLabel]);
+  }, [label, strokeWidth, scale, bboxArgs, bBoxLabel, RenderMetrics]);
 
   if (!isVisible) return null;
 

@@ -1,4 +1,4 @@
-import type { IBrick, TBrickType } from '../../brick/@types/brick';
+import type { IBrick } from '../../brick/@types/brick';
 
 // Point type
 export type TPoint = {
@@ -43,8 +43,8 @@ export type TTreeNode = {
     position: TPoint;
     parent: TTreeNode | null;
     connectedNotches: Set<string>;
-    isNested?: boolean;  // Added: indicates if this brick is nested inside its parent
-    argIndex?: number;   // Added: indicates which argument slot this brick occupies
+    isNested?: boolean; // Added: indicates if this brick is nested inside its parent
+    argIndex?: number; // Added: indicates which argument slot this brick occupies
 };
 
 // Tree structure representing connected bricks
@@ -474,11 +474,7 @@ export default class BrickTreeManager {
         return this.trees.find((tree) => tree.nodes.has(brickId));
     }
 
-    public addNestedBrick(
-        parentBrickId: string, 
-        childBrick: IBrick, 
-        position: TPoint
-    ): boolean {
+    public addNestedBrick(parentBrickId: string, childBrick: IBrick, position: TPoint): boolean {
         const parentNode = this.getBrickNode(parentBrickId);
         if (!parentNode) return false;
 
@@ -501,10 +497,10 @@ export default class BrickTreeManager {
      * Adds an argument brick to a parent brick at a specific argument index
      */
     public addArgumentBrick(
-        parentBrickId: string, 
-        childBrick: IBrick, 
+        parentBrickId: string,
+        childBrick: IBrick,
         position: TPoint,
-        argIndex: number
+        argIndex: number,
     ): boolean {
         const parentNode = this.getBrickNode(parentBrickId);
         if (!parentNode) return false;
@@ -513,8 +509,10 @@ export default class BrickTreeManager {
         if (!tree) return false;
 
         // Check if argument slot is available
-        if (!parentNode.brick.connectionPoints.args || 
-            argIndex >= parentNode.brick.connectionPoints.args.length) {
+        if (
+            !parentNode.brick.connectionPoints.args ||
+            argIndex >= parentNode.brick.connectionPoints.args.length
+        ) {
             return false;
         }
 
@@ -542,8 +540,7 @@ export default class BrickTreeManager {
         if (!tree) return null;
 
         for (const [_, node] of tree.nodes) {
-            if (node.parent?.brick.uuid === parentBrickId && 
-                node.argIndex === argIndex) {
+            if (node.parent?.brick.uuid === parentBrickId && node.argIndex === argIndex) {
                 return node.brick;
             }
         }
@@ -572,9 +569,11 @@ export default class BrickTreeManager {
         const children: Array<{ brick: IBrick; argIndex: number }> = [];
         for (const tree of this.trees) {
             for (const node of tree.nodes.values()) {
-                if (node.parent?.brick.uuid === brickId && 
-                    node.argIndex !== undefined && 
-                    !node.isNested) {
+                if (
+                    node.parent?.brick.uuid === brickId &&
+                    node.argIndex !== undefined &&
+                    !node.isNested
+                ) {
                     children.push({ brick: node.brick, argIndex: node.argIndex });
                 }
             }

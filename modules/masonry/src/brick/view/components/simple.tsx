@@ -104,7 +104,7 @@ export const SimpleBrickView: React.FC<PropsWithMetrics> = (props) => {
       RenderMetrics(brickData.boundingBox, brickData.connectionPoints);
     }
     setShape({ path: brickData.path, w: brickData.boundingBox.w, h: brickData.boundingBox.h });
-  }, [label, strokeWidth, scale, bboxArgs, topNotch, bottomNotch, bBoxLabel]);
+  }, [label, strokeWidth, scale, bboxArgs, topNotch, bottomNotch, bBoxLabel, RenderMetrics]);
 
   if (!isVisible) return null;
 

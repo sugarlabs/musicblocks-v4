@@ -416,8 +416,11 @@ export default class CompoundBrick extends BrickModel implements IBrickCompound 
         // If there are nested children, calculate the total bounding box
         if (nestedChildren && nestedChildren.length > 0) {
             // Calculate the bounding box that fits all nested children
-            let minX = 0, minY = 0, maxX = 0, maxY = 0;
-            nestedChildren.forEach(child => {
+            let _minX = 0,
+                _minY = 0,
+                maxX = 0,
+                maxY = 0;
+            nestedChildren.forEach((child) => {
                 const bbox = child.boundingBox;
                 // For simplicity, assume children are stacked vertically for now
                 maxY += bbox.h;

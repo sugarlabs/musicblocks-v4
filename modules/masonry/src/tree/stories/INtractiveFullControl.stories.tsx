@@ -50,11 +50,7 @@ const FullControlTree: React.FC<FullControlProps> = ({
   }
 
   // Recursive compound brick builder with insertion
-  const buildNestedCompound = (
-    parentUuid: string,
-    depth: number,
-    label: string
-  ) => {
+  const buildNestedCompound = (parentUuid: string, depth: number, label: string) => {
     const compound = createCompoundBrick({ label });
 
     // Add to parent first
@@ -121,7 +117,7 @@ const meta: Meta<typeof FullControlTree> = {
     rootType: 'Compound',
     numArgs: 2,
     numNested: 2,
-    nestingDepth: 2, 
+    nestingDepth: 2,
     stackCount: 1,
     nestedBrickTypes: ['Compound', 'Simple'],
   },
@@ -141,22 +137,22 @@ export const TestArgumentPositioning: Story = {
     stackCount: 0,
     nestedBrickTypes: [],
   },
-  render: (args) => {
+  render: (_args) => {
     resetFactoryCounter();
     const treeManager = new BrickTreeManager();
 
     // Test with different label lengths
-    const shortLabel = createCompoundBrick({ 
-      label: 'Short', 
-      bboxArgs: Array(3).fill({ w: 60, h: 20 }) 
+    const shortLabel = createCompoundBrick({
+      label: 'Short',
+      bboxArgs: Array(3).fill({ w: 60, h: 20 }),
     });
-    const longLabel = createCompoundBrick({ 
-      label: 'Very Long Label That Should Push Args Further Right', 
-      bboxArgs: Array(3).fill({ w: 60, h: 20 }) 
+    const longLabel = createCompoundBrick({
+      label: 'Very Long Label That Should Push Args Further Right',
+      bboxArgs: Array(3).fill({ w: 60, h: 20 }),
     });
 
-    const tree1 = treeManager.createTree(shortLabel, { x: 100, y: 50 });
-    const tree2 = treeManager.createTree(longLabel, { x: 100, y: 200 });
+    const _tree1 = treeManager.createTree(shortLabel, { x: 100, y: 50 });
+    const _tree2 = treeManager.createTree(longLabel, { x: 100, y: 200 });
 
     // Add argument bricks to both
     for (let i = 0; i < 3; i++) {
@@ -167,5 +163,5 @@ export const TestArgumentPositioning: Story = {
     }
 
     return <TreeView treeManager={treeManager} />;
-  }
+  },
 };

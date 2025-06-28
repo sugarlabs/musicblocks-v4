@@ -53,12 +53,15 @@ export const ArgumentBricks: Story = {
     resetFactoryCounter();
     const treeManager = new BrickTreeManager();
     const root = createSimpleBrick({
-      label: "My Simple",
-      bboxArgs: [{ w: 60, h: 40 }, { w: 60, h: 20 }],
+      label: 'My Simple',
+      bboxArgs: [
+        { w: 60, h: 40 },
+        { w: 60, h: 20 },
+      ],
     });
 
-    const arg1 = createExpressionBrick({ label: "Expr A" , bboxArgs: [{ w: 60, h: 40 }],});
-    const arg2 = createExpressionBrick({ label: "Expr B" , bboxArgs: [{ w: 60, h: 20 }],});
+    const arg1 = createExpressionBrick({ label: 'Expr A', bboxArgs: [{ w: 60, h: 40 }] });
+    const arg2 = createExpressionBrick({ label: 'Expr B', bboxArgs: [{ w: 60, h: 20 }] });
 
     treeManager.createTree(root, { x: 100, y: 100 });
     treeManager.addArgumentBrick(root.uuid, arg1, { x: 0, y: 0 }, 0);
@@ -75,7 +78,7 @@ export const CompoundWithNested: Story = {
     const treeManager = new BrickTreeManager();
 
     const compound = createCompoundBrick({
-      label: "Compound with Nested",
+      label: 'Compound with Nested',
       bboxArgs: [{ w: 80, h: 40 }],
     });
 
@@ -97,12 +100,15 @@ export const FullCompositeTree: Story = {
     const treeManager = new BrickTreeManager();
 
     const compound = createCompoundBrick({
-      label: "Full Composite box with args",
-      bboxArgs: [{ w: 100, h: 50 }, { w: 120, h: 70 }],
+      label: 'Full Composite box with args',
+      bboxArgs: [
+        { w: 100, h: 50 },
+        { w: 120, h: 70 },
+      ],
     });
 
-    const arg1 = createExpressionBrick({ label: "Expr 1" , bboxArgs: [{ w: 100, h: 50 }],});
-    const arg2 = createExpressionBrick({ label: "Expr 2" , bboxArgs: [{ w: 120, h: 70 }],});
+    const arg1 = createExpressionBrick({ label: 'Expr 1', bboxArgs: [{ w: 100, h: 50 }] });
+    const arg2 = createExpressionBrick({ label: 'Expr 2', bboxArgs: [{ w: 120, h: 70 }] });
     const nested = createSimpleBrick();
     const stacked = createSimpleBrick();
 
@@ -115,4 +121,3 @@ export const FullCompositeTree: Story = {
     return <TreeView treeManager={treeManager} />;
   },
 };
-

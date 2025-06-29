@@ -1,146 +1,46 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React from 'react';
 import type { TBrickRenderPropsExpression } from '../../@types/brick';
-import { generateBrickData } from '../../utils/path';
-
-const FONT_HEIGHT = 16;
-
-const PADDING = {
-  top: 4,
-  right: 8,
-  bottom: 4,
-  left: 8,
-};
-
-function toCssColor(color: string | ['rgb' | 'hsl', number, number, number]) {
-  if (typeof color === 'string') return color;
-  const [mode, a, b, c] = color;
-  return mode === 'rgb' ? `rgb(${a},${b},${c})` : `hsl(${a},${b}%,${c}%)`;
-}
-
-function measureLabel(label: string, fontSize: number) {
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d')!;
-  ctx.font = `${fontSize}px sans-serif`;
-
-  const m = ctx.measureText(label);
-  const ascent = m.actualBoundingBoxAscent ?? fontSize * 0.8;
-  const descent = m.actualBoundingBoxDescent ?? fontSize * 0.2;
-
-  return {
-    w: m.width + 8,
-    h: ascent + descent,
-    ascent,
-    descent,
-  };
-}
-
-type TConnectionPoints = {
-  top?: { x: number; y: number };
-  right: { x: number; y: number }[];
-  bottom?: { x: number; y: number };
-  left?: { x: number; y: number };
-};
+import { BrickWrapper } from './BrickWrapper';
+import type { TConnectionPoints } from '../utils/common';
 
 type PropsWithMetrics = TBrickRenderPropsExpression & {
   RenderMetrics?: (bbox: { w: number; h: number }, connectionPoints: TConnectionPoints) => void;
 };
 
 export const ExpressionBrickView: React.FC<PropsWithMetrics> = (props) => {
-  const {
-    label,
-    labelType,
-    colorBg,
-    colorFg,
-    strokeColor,
+  const { value, isValueSelectOpen, strokeWidth, scale, bboxArgs, ...commonProps } = props;
+
+  const getBrickConfig = (bBoxLabel: { w: number; h: number }) => ({
+    type: 'type2' as const,
     strokeWidth,
-    scale,
-    shadow,
-    tooltip,
-    bboxArgs,
-    visualState,
-    isActionMenuOpen,
-    isVisible,
-    RenderMetrics,
-    // value, isValueSelectOpen, // if needed later
-  } = props;
-
-  // Memoize bBoxLabel to prevent unnecessary recalculations
-  const bBoxLabel = useMemo(() => {
-    const { w: labelW, h: labelH } = measureLabel(label, FONT_HEIGHT);
-    return { w: labelW, h: labelH };
-  }, [label]);
-
-  const [shape, setShape] = useState<{ path: string; w: number; h: number }>(() => {
-    const cfg = {
-      type: 'type2' as const,
-      strokeWidth,
-      scaleFactor: scale,
-      bBoxLabel,
-      bBoxArgs: bboxArgs,
-    };
-    const brickData = generateBrickData(cfg);
-    return {
-      path: brickData.path,
-      w: brickData.boundingBox.w,
-      h: brickData.boundingBox.h,
-    };
+    scaleFactor: scale,
+    bBoxLabel,
+    bBoxArgs: bboxArgs,
   });
 
-  useEffect(() => {
-    const cfg = {
-      type: 'type2' as const,
-      strokeWidth,
-      scaleFactor: scale,
-      bBoxLabel,
-      bBoxArgs: bboxArgs,
-    };
-    const brickData = generateBrickData(cfg);
-    if (RenderMetrics) {
-      RenderMetrics(brickData.boundingBox, brickData.connectionPoints);
-    }
-    setShape({ path: brickData.path, w: brickData.boundingBox.w, h: brickData.boundingBox.h });
-  }, [label, strokeWidth, scale, bboxArgs, bBoxLabel, RenderMetrics]);
-
-  if (!isVisible) return null;
-
-  const svgWidth = shape.w + PADDING.left + PADDING.right;
-  const svgHeight = shape.h + PADDING.top + PADDING.bottom;
-
   return (
-    <svg
-      width={svgWidth}
-      height={svgHeight}
-      viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-      data-visual-state={visualState}
-      data-action-menu-open={isActionMenuOpen}
-      style={{ overflow: 'visible' }}
+    <BrickWrapper
+      {...commonProps}
+      strokeWidth={strokeWidth}
+      scale={scale}
+      bboxArgs={bboxArgs}
+      getBrickConfig={getBrickConfig}
     >
-      <g transform={`translate(${PADDING.left},${PADDING.top})`}>
-        {/* Brick background outline */}
-        <path
-          d={shape.path}
-          fill={toCssColor(colorBg)}
-          stroke={toCssColor(strokeColor)}
-          strokeWidth={strokeWidth}
-          filter={shadow ? 'drop-shadow(0 2px 2px rgba(0,0,0,0.2))' : undefined}
-        />
-
-        {/* Text label */}
-        {labelType === 'text' && (
-          <text
-            x={strokeWidth + 4}
-            y={bBoxLabel.h * 0.8 + strokeWidth / 2}
-            fill={toCssColor(colorFg)}
-            fontSize={FONT_HEIGHT}
-            style={{ userSelect: 'none', pointerEvents: 'none' }}
-          >
-            {label}
-          </text>
-        )}
-      </g>
-
-      {/* Accessibility tooltip */}
-      {tooltip && <title>{tooltip}</title>}
-    </svg>
+      {/* Expression-specific content */}
+      {value !== undefined && (
+        <text
+          x={strokeWidth + 60}
+          y={16 * 0.8 + strokeWidth / 2}
+          fill="rgba(0,0,0,0.6)"
+          fontSize={12}
+          style={{ userSelect: 'none', pointerEvents: 'none' }}
+        >
+          {String(value)}
+        </text>
+      )}
+      {isValueSelectOpen && (
+        <circle cx={strokeWidth + 80} cy={10} r={3} fill="orange" opacity={0.8} />
+      )}
+    </BrickWrapper>
   );
 };

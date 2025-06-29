@@ -1,5 +1,3 @@
-// TreeView.stories.tsx
-import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import TreeView from '../view/TreeView';
 import BrickTreeManager from '../model/model';

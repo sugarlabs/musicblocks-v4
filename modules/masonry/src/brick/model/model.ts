@@ -15,28 +15,7 @@ import type {
 import type { TConnectionPoints as TCP } from '../../tree/model/model';
 import { generateBrickData } from '../utils/path';
 import type { TInputUnion } from '../utils/path';
-
-// Text measurement utility
-function measureTextWidth(text: string, fontSize: number = 16): number {
-    // Create a canvas element for text measurement
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d')!;
-    context.font = `${fontSize}px sans-serif`;
-    return context.measureText(text).width;
-}
-
-// Fallback for server-side rendering or when canvas is not available
-function estimateTextWidth(text: string): number {
-    return Math.max(text.length * 8, 40); // Minimum width of 40
-}
-
-function getLabelWidth(label: string): number {
-    try {
-        return measureTextWidth(label, 16) + 8; // Add 8px padding
-    } catch {
-        return estimateTextWidth(label);
-    }
-}
+import { getLabelWidth } from '../utils/textMeasurement';
 
 export abstract class BrickModel implements IBrick {
     protected _uuid: string;

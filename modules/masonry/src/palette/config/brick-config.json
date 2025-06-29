@@ -1,0 +1,2355 @@
+[
+  {
+    "id": "rhythm_note",
+    "category": "rhythm",
+    "label": "note",
+    "type": "compound",
+    "color": "#FF8700",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "rhythm_note_value_sol4",
+    "category": "rhythm",
+    "label": "note value sol4",
+    "type": "compound",
+    "color": "#FF8700",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "rhythm_note_value_g4",
+    "category": "rhythm",
+    "label": "note value G4",
+    "type": "compound",
+    "color": "#FF8700",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "rhythm_note_value_plus1",
+    "category": "rhythm",
+    "label": "note value +1",
+    "type": "compound",
+    "color": "#FF8700",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "rhythm_note_value_scale_degree",
+    "category": "rhythm",
+    "label": "note value scale degree",
+    "type": "compound",
+    "color": "#FF8700",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "rhythm_note_value_7",
+    "category": "rhythm",
+    "label": "note value 7",
+    "type": "compound",
+    "color": "#FF8700",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "rhythm_note_value_392_hertz",
+    "category": "rhythm",
+    "label": "note value 392 hertz",
+    "type": "compound",
+    "color": "#FF8700",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "rhythm_note_value_drum",
+    "category": "rhythm",
+    "label": "note value drum",
+    "type": "compound",
+    "color": "#FF8700",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "rhythm_dot",
+    "category": "rhythm",
+    "label": "dot",
+    "type": "compound",
+    "color": "#FF8700",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "rhythm_tie",
+    "category": "rhythm",
+    "label": "tie",
+    "type": "compound",
+    "color": "#FF8700",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "rhythm_multiply_note_value",
+    "category": "rhythm",
+    "label": "multiply note value",
+    "type": "compound",
+    "color": "#FF8700",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "rhythm_skip_notes",
+    "category": "rhythm",
+    "label": "skip notes",
+    "type": "compound",
+    "color": "#FF8700",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "rhythm_milliseconds",
+    "category": "rhythm",
+    "label": "milliseconds",
+    "type": "compound",
+    "color": "#FF8700",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "rhythm_note_value",
+    "category": "rhythm",
+    "label": "note value",
+    "type": "expression",
+    "color": "#FF8700",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "rhythm_note_value_simple",
+    "category": "rhythm",
+    "label": "note value",
+    "type": "simple",
+    "color": "#FF8700",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "rhythm_swing",
+    "category": "rhythm",
+    "label": "swing",
+    "type": "compound",
+    "color": "#FF8700",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "meter_meter",
+    "category": "meter",
+    "label": "meter",
+    "type": "simple",
+    "color": "#FE994F",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "meter_beats_per_minute",
+    "category": "meter",
+    "label": "beats per minute",
+    "type": "simple",
+    "color": "#FE994F",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "meter_master_beats_per_minute",
+    "category": "meter",
+    "label": "master beats per minute",
+    "type": "simple",
+    "color": "#FE994F",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "meter_on_strong_beat",
+    "category": "meter",
+    "label": "on strong beat",
+    "type": "simple",
+    "color": "#FE994F",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "meter_pickup",
+    "category": "meter",
+    "label": "pickup",
+    "type": "simple",
+    "color": "#FE994F",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "meter_on_every_note_do",
+    "category": "meter",
+    "label": "on every note do",
+    "type": "simple",
+    "color": "#FE994F",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "meter_on_every_beat_do",
+    "category": "meter",
+    "label": "on every beat do",
+    "type": "simple",
+    "color": "#FE994F",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "meter_on_weak_beat_do",
+    "category": "meter",
+    "label": "on weak beat do",
+    "type": "simple",
+    "color": "#FE994F",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "meter_notes_played",
+    "category": "meter",
+    "label": "notes played",
+    "type": "simple",
+    "color": "#FE994F",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "meter_note_counter",
+    "category": "meter",
+    "label": "note counter",
+    "type": "compound",
+    "color": "#FE994F",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "meter_sum_note_values",
+    "category": "meter",
+    "label": "sum note values",
+    "type": "compound",
+    "color": "#FE994F",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "meter_no_clock_override",
+    "category": "meter",
+    "label": "no clock override",
+    "type": "compound",
+    "color": "#FE994F",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "meter_semi_tone_transpose",
+    "category": "meter",
+    "label": "semi tone transpose",
+    "type": "compound",
+    "color": "#FE994F",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "meter_transpose_by_ratio",
+    "category": "meter",
+    "label": "transpose by ratio",
+    "type": "compound",
+    "color": "#FE994F",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "meter_current_meter",
+    "category": "meter",
+    "label": "current meter",
+    "type": "expression",
+    "color": "#FE994F",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "meter_beat_factor",
+    "category": "meter",
+    "label": "beat factor",
+    "type": "expression",
+    "color": "#FE994F",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "meter_beats_per_minute_expr",
+    "category": "meter",
+    "label": "beats per minute",
+    "type": "expression",
+    "color": "#FE994F",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "meter_measure_count",
+    "category": "meter",
+    "label": "measure count",
+    "type": "expression",
+    "color": "#FE994F",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "meter_beat_count",
+    "category": "meter",
+    "label": "beat count",
+    "type": "expression",
+    "color": "#FE994F",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "meter_whole_notes_played",
+    "category": "meter",
+    "label": "whole notes played",
+    "type": "expression",
+    "color": "#FE994F",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "pitch_sol",
+    "category": "pitch",
+    "label": "sol",
+    "type": "expression",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "pitch_g",
+    "category": "pitch",
+    "label": "G",
+    "type": "expression",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "pitch_sargam",
+    "category": "pitch",
+    "label": "sargam",
+    "type": "expression",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "pitch_scale_degree",
+    "category": "pitch",
+    "label": "scale degree",
+    "type": "expression",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "pitch_one_of",
+    "category": "pitch",
+    "label": "one of",
+    "type": "expression",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "pitch_accidental",
+    "category": "pitch",
+    "label": "accidental",
+    "type": "expression",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "pitch_current_pitch",
+    "category": "pitch",
+    "label": "current pitch",
+    "type": "expression",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "pitch_scalar_change_in_pitch",
+    "category": "pitch",
+    "label": "scalar change in pitch",
+    "type": "expression",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "pitch_change_in_pitch",
+    "category": "pitch",
+    "label": "change in pitch",
+    "type": "expression",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "pitch_scalar_step_up",
+    "category": "pitch",
+    "label": "scalar step up",
+    "type": "expression",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "pitch_scalar_step_down",
+    "category": "pitch",
+    "label": "scalar step down",
+    "type": "expression",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "pitch_midi",
+    "category": "pitch",
+    "label": "MIDI",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_50_cents",
+    "category": "pitch",
+    "label": "50 cents",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_octave",
+    "category": "pitch",
+    "label": "octave",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_down_sixth",
+    "category": "pitch",
+    "label": "down sixth",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_down_third",
+    "category": "pitch",
+    "label": "down third",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_unison",
+    "category": "pitch",
+    "label": "unison",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_first",
+    "category": "pitch",
+    "label": "first",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_second",
+    "category": "pitch",
+    "label": "second",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_third",
+    "category": "pitch",
+    "label": "third",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_fourth",
+    "category": "pitch",
+    "label": "fourth",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_fifth",
+    "category": "pitch",
+    "label": "fifth",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_sixth",
+    "category": "pitch",
+    "label": "sixth",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_seventh",
+    "category": "pitch",
+    "label": "seventh",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_g4",
+    "category": "pitch",
+    "label": "pitch G4",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_pitch",
+    "category": "pitch",
+    "label": "pitch",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_nth_modal_pitch",
+    "category": "pitch",
+    "label": "nth modal pitch",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_set_pitch_number_offset",
+    "category": "pitch",
+    "label": "set pitch number offset",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_number_offset",
+    "category": "pitch",
+    "label": "number offset",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_scalar_step",
+    "category": "pitch",
+    "label": "scalar step(+/-)",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_number",
+    "category": "pitch",
+    "label": "pitch number",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_hertz",
+    "category": "pitch",
+    "label": "hertz",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_register",
+    "category": "pitch",
+    "label": "register",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pitch_converter",
+    "category": "pitch",
+    "label": "pitch converter",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "pitch_y_to_pitch",
+    "category": "pitch",
+    "label": "y to pitch",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "pitch_number_to_octave",
+    "category": "pitch",
+    "label": "number to octave",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "pitch_number_to_pitch",
+    "category": "pitch",
+    "label": "number to pitch",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "pitch_sharp",
+    "category": "pitch",
+    "label": "sharp#",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "pitch_flat",
+    "category": "pitch",
+    "label": "flat",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "pitch_accidental_override",
+    "category": "pitch",
+    "label": "accidental override",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "pitch_semi_tone_transpose",
+    "category": "pitch",
+    "label": "semi tone transpose",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "pitch_transpose_by_ratio",
+    "category": "pitch",
+    "label": "transpose by ratio",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "pitch_invert",
+    "category": "pitch",
+    "label": "invert",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 3,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "intervals_current_key",
+    "category": "intervals",
+    "label": "current key",
+    "type": "expression",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "intervals_current_mode",
+    "category": "intervals",
+    "label": "current mode",
+    "type": "expression",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "intervals_mode_length",
+    "category": "intervals",
+    "label": "mode length",
+    "type": "expression",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "intervals_current_interval",
+    "category": "intervals",
+    "label": "current interval",
+    "type": "expression",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "intervals_interval_number",
+    "category": "intervals",
+    "label": "interval number",
+    "type": "expression",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "intervals_interval_name",
+    "category": "intervals",
+    "label": "interval name",
+    "type": "expression",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "intervals_movable_do",
+    "category": "intervals",
+    "label": "movable do",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "intervals_doubly",
+    "category": "intervals",
+    "label": "doubly",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "intervals_major_3",
+    "category": "intervals",
+    "label": "major 3",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "intervals_set_key",
+    "category": "intervals",
+    "label": "set key",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "intervals_set_temperament",
+    "category": "intervals",
+    "label": "set temperament",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 3,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "intervals_define_mode",
+    "category": "intervals",
+    "label": "define mode",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "intervals_scalar_interval",
+    "category": "intervals",
+    "label": "scalar interval(+/-)",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "intervals_semi_tone_interval",
+    "category": "intervals",
+    "label": "semi-tone interval(+/-)",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "intervals_ratio_interval",
+    "category": "intervals",
+    "label": "ratio interval",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "intervals_chord",
+    "category": "intervals",
+    "label": "chord",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "intervals_arpeggio",
+    "category": "intervals",
+    "label": "arpeggio",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "intervals_scalar_interval_measure",
+    "category": "intervals",
+    "label": "scalar interval measure",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "intervals_semi_tone_interval_measure",
+    "category": "intervals",
+    "label": "semi-tone interval measure",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "tone_voice_name",
+    "category": "tone",
+    "label": "voice name",
+    "type": "expression",
+    "color": "#3DDCDD",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "tone_set_default_instrument",
+    "category": "tone",
+    "label": "set default instrument",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "tone_partial",
+    "category": "tone",
+    "label": "partial",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "tone_fm_synth",
+    "category": "tone",
+    "label": "FM synth",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "tone_am_synth",
+    "category": "tone",
+    "label": "AM synth",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "tone_duo_synth",
+    "category": "tone",
+    "label": "duo synth",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "tone_sample",
+    "category": "tone",
+    "label": "sample",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 3,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "tone_weighted_partials",
+    "category": "tone",
+    "label": "weighted partials",
+    "type": "compound",
+    "color": "#3DDCDD",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "tone_distortion",
+    "category": "tone",
+    "label": "distortion",
+    "type": "compound",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "tone_harmonic",
+    "category": "tone",
+    "label": "harmonic",
+    "type": "compound",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "tone_set_instrument",
+    "category": "tone",
+    "label": "set instrument",
+    "type": "compound",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "tone_tremolo",
+    "category": "tone",
+    "label": "tremolo",
+    "type": "compound",
+    "color": "#3DDCDD",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "tone_vibrato",
+    "category": "tone",
+    "label": "vibrato",
+    "type": "compound",
+    "color": "#3DDCDD",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "tone_chorus",
+    "category": "tone",
+    "label": "chorus",
+    "type": "compound",
+    "color": "#3DDCDD",
+    "argCount": 3,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "tone_phaser",
+    "category": "tone",
+    "label": "phaser",
+    "type": "compound",
+    "color": "#3DDCDD",
+    "argCount": 3,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+
+  {
+    "id": "ornament_staccato",
+    "category": "ornament",
+    "label": "staccato",
+    "type": "compound",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "ornament_slur",
+    "category": "ornament",
+    "label": "slur",
+    "type": "compound",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "ornament_neighbor",
+    "category": "ornament",
+    "label": "neighbor(+/-)",
+    "type": "compound",
+    "color": "#3DDCDD",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "ornament_vibrato",
+    "category": "ornament",
+    "label": "vibrato",
+    "type": "compound",
+    "color": "#3DDCDD",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+
+  {
+    "id": "volume_master_volume",
+    "category": "volume",
+    "label": "master volume",
+    "type": "expression",
+    "color": "#3DDCDD",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "volume_fff",
+    "category": "volume",
+    "label": "fff",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "volume_ff",
+    "category": "volume",
+    "label": "ff",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "volume_f",
+    "category": "volume",
+    "label": "f",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "volume_mf",
+    "category": "volume",
+    "label": "mf",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "volume_mp",
+    "category": "volume",
+    "label": "mp",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "volume_p",
+    "category": "volume",
+    "label": "p",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "volume_pp",
+    "category": "volume",
+    "label": "pp",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "volume_ppp",
+    "category": "volume",
+    "label": "ppp",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "volume_synth_volume",
+    "category": "volume",
+    "label": "synth volume",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "volume_set_master_volume",
+    "category": "volume",
+    "label": "set master volume",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "volume_set_panning",
+    "category": "volume",
+    "label": "set panning",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "volume_set_synth_volume",
+    "category": "volume",
+    "label": "set synth volume",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "volume_set_drum_volume",
+    "category": "volume",
+    "label": "set drum volume",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "volume_crescendo",
+    "category": "volume",
+    "label": "crescendo",
+    "type": "compound",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "volume_decrescendo",
+    "category": "volume",
+    "label": "decrescendo",
+    "type": "compound",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "volume_set_relative_volume",
+    "category": "volume",
+    "label": "set relative volume",
+    "type": "compound",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+
+  {
+    "id": "drum_snare_drum",
+    "category": "drum",
+    "label": "snare drum",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_kick_drum",
+    "category": "drum",
+    "label": "kick drum",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_tom_tom",
+    "category": "drum",
+    "label": "tom tom",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_floor_tom",
+    "category": "drum",
+    "label": "floor tom",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_cup_drum",
+    "category": "drum",
+    "label": "cup drum",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_darbuka_drum",
+    "category": "drum",
+    "label": "darbuka drum",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_hi_hat",
+    "category": "drum",
+    "label": "hi hat",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_triangle_bell",
+    "category": "drum",
+    "label": "triangle bell",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_finger_cymbals",
+    "category": "drum",
+    "label": "finger cymbals",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_ride_bell",
+    "category": "drum",
+    "label": "ride bell",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_cow_bell",
+    "category": "drum",
+    "label": "cow bell",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_splash",
+    "category": "drum",
+    "label": "splash",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_crash",
+    "category": "drum",
+    "label": "crash",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_slap",
+    "category": "drum",
+    "label": "slap",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_clap",
+    "category": "drum",
+    "label": "clap",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_clang",
+    "category": "drum",
+    "label": "clang",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_chime",
+    "category": "drum",
+    "label": "chime",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_bubbles",
+    "category": "drum",
+    "label": "bubbles",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_bottle",
+    "category": "drum",
+    "label": "bottle",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_dog",
+    "category": "drum",
+    "label": "dog",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_cricket",
+    "category": "drum",
+    "label": "cricket",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_cat",
+    "category": "drum",
+    "label": "cat",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_duck",
+    "category": "drum",
+    "label": "duck",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_noise",
+    "category": "drum",
+    "label": "noise",
+    "type": "simple",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "drum_effect",
+    "category": "drum",
+    "label": "effect",
+    "type": "expression",
+    "color": "#3DDCDD",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "drum_drum",
+    "category": "drum",
+    "label": "drum",
+    "type": "expression",
+    "color": "#3DDCDD",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "drum_noise_name",
+    "category": "drum",
+    "label": "noise name",
+    "type": "expression",
+    "color": "#3DDCDD",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "drum_set_drum",
+    "category": "drum",
+    "label": "set drum",
+    "type": "compound",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "drum_map_pitch_to_drum",
+    "category": "drum",
+    "label": "map pitch to drum",
+    "type": "compound",
+    "color": "#3DDCDD",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+
+  {
+    "id": "widgets_status",
+    "category": "widgets",
+    "label": "status",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "widgets_phrase_maker",
+    "category": "widgets",
+    "label": "phrase maker",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "widgets_rhythm_maker",
+    "category": "widgets",
+    "label": "rhythm maker",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "widgets_pitch_staircase",
+    "category": "widgets",
+    "label": "pitch staircase",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "widgets_music_keyboard",
+    "category": "widgets",
+    "label": "music keyboard",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "widgets_chromatic_keyboard",
+    "category": "widgets",
+    "label": "chromatic keyboard",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "widgets_pitch_slide",
+    "category": "widgets",
+    "label": "pitch slide",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "widgets_oscilloscope",
+    "category": "widgets",
+    "label": "oscilloscope",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "widgets_pitch_drum_mapper",
+    "category": "widgets",
+    "label": "pitch-drum mapper",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "widgets_sampler",
+    "category": "widgets",
+    "label": "sampler",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "widgets_tempo",
+    "category": "widgets",
+    "label": "tempo",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "widgets_custom_mode",
+    "category": "widgets",
+    "label": "custom mode",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "widgets_meter",
+    "category": "widgets",
+    "label": "meter",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "widgets_arpeggio",
+    "category": "widgets",
+    "label": "arpeggio",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "widgets_timbre",
+    "category": "widgets",
+    "label": "timbre",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "widgets_temperament",
+    "category": "widgets",
+    "label": "temperament",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "widgets_tuplet",
+    "category": "widgets",
+    "label": "tuplet",
+    "type": "compound",
+    "color": "#7CD622",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "widgets_whole_note",
+    "category": "widgets",
+    "label": "whole note",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "widgets_half_note",
+    "category": "widgets",
+    "label": "half note",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "widgets_quarter_note",
+    "category": "widgets",
+    "label": "quarter note",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "widgets_eighth_note",
+    "category": "widgets",
+    "label": "eighth note",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "widgets_sixteenth_note",
+    "category": "widgets",
+    "label": "1/16 note",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "widgets_thirty_second_note",
+    "category": "widgets",
+    "label": "1/32 note",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "widgets_sixty_fourth_note",
+    "category": "widgets",
+    "label": "1/64 note",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "widgets_triplet",
+    "category": "widgets",
+    "label": "triplet",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "widgets_quintuplet",
+    "category": "widgets",
+    "label": "quintuplet",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "widgets_septuplet",
+    "category": "widgets",
+    "label": "septuplet",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "widgets_c_major_scale",
+    "category": "widgets",
+    "label": "C major scale",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "widgets_g_major_scale",
+    "category": "widgets",
+    "label": "G major scale",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "widgets_simple_tuplet",
+    "category": "widgets",
+    "label": "simple tuplet",
+    "type": "simple",
+    "color": "#7CD622",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+      "id": "flow_repeat",
+      "category": "flow",
+      "label": "repeat",
+      "type": "compound",
+      "color": "#D98A42",
+      "argCount": 1,
+      "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "flow_forever",
+    "category": "flow",
+    "label": "forever",
+    "type": "compound",
+    "color": "#D98A42",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "flow_if",
+    "category": "flow",
+    "label": "if",
+    "type": "compound",
+    "color": "#D98A42",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "flow_if_else",
+    "category": "flow",
+    "label": "if-else",
+    "type": "compound",
+    "color": "#D98A42",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "flow_backward",
+    "category": "flow",
+    "label": "backward",
+    "type": "compound",
+    "color": "#D98A42",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "action_action",
+    "category": "action",
+    "label": "action",
+    "type": "compound",
+    "color": "#F3C800",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "action_start",
+    "category": "action",
+    "label": "start",
+    "type": "compound",
+    "color": "#F3C800",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  }, 
+  {
+    "id": "action_start_drum",
+    "category": "action",
+    "label": "start drum",
+    "type": "compound",
+    "color": "#F3C800",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "action_broadcast",
+    "category": "action",
+    "label": "broadcast",
+    "type": "simple",
+    "color": "#F3C800",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  }, 
+  {
+    "id": "action_on",
+    "category": "action",
+    "label": "on",
+    "type": "simple",
+    "color": "#F3C800",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "action_do",
+    "category": "action",
+    "label": "do",
+    "type": "simple",
+    "color": "#F3C800",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "boxes_store_in_box1",
+    "category": "action",
+    "label": "store in box 1",
+    "type": "simple",
+    "color": "#F3C800",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "boxes_box1",
+    "category": "action",
+    "label": "box 1",
+    "type": "expression",
+    "color": "#F3C800",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "boxes_box2",
+    "category": "action",
+    "label": "box 2",
+    "type": "expression",
+    "color": "#F3C800",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "boxes_store_in_box2",
+    "category": "action",
+    "label": "store in box 2",
+    "type": "simple",
+    "color": "#F3C800",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "boxes_store_in",
+    "category": "action",
+    "label": "store in",
+    "type": "simple",
+    "color": "#F3C800",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "boxes_store_in_box",
+    "category": "action",
+    "label": "store in box",
+    "type": "expression",
+    "color": "#F3C800",
+    "argCount": 1,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "boxes_box",
+    "category": "action",
+    "label": "box",
+    "type": "expression",
+    "color": "#F3C800",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "boxes_add",
+    "category": "action",
+    "label": "add",
+    "type": "simple",
+    "color": "#F3C800",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "boxes_add_1_to",
+    "category": "action",
+    "label": "add 1 to",
+    "type": "simple",
+    "color": "#F3C800",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "boxes_subtract_1_from",
+    "category": "action",
+    "label": "subtract 1 from",
+    "type": "simple",
+    "color": "#F3C800",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "number_4",
+    "category": "number",
+    "label": "4",
+    "type": "expression",
+    "color": "#FF6EA1",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "number_random",
+    "category": "number",
+    "label": "random",
+    "type": "simple",
+    "color": "#FF6EA1",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "number_one_of",
+    "category": "number",
+    "label": "one of",
+    "type": "expression",
+    "color": "#FF6EA1",
+    "argCount": 2,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "number_add",
+    "category": "number",
+    "label": "+",
+    "type": "simple",
+    "color": "#FF6EA1",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "number_subtract",
+    "category": "number",
+    "label": "-",
+    "type": "simple",
+    "color": "#FF6EA1",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "number_multiply",
+    "category": "number",
+    "label": "X",
+    "type": "simple",
+    "color": "#FF6EA1",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "number_divide",
+    "category": "number",
+    "label": "/",
+    "type": "simple",
+    "color": "#FF6EA1",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "graphics_forward",
+    "category": "graphics",
+    "label": "forward",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  }, 
+  {
+    "id": "graphics_back",
+    "category": "graphics",
+    "label": "back",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "graphics_left",
+    "category": "graphics",
+    "label": "left",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "graphics_right",
+    "category": "graphics",
+    "label": "right",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "graphics_set_xy",
+    "category": "graphics",
+    "label": "set xy",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "graphics_set_heading",
+    "category": "graphics",
+    "label": "set heading",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "graphics_arc",
+    "category": "graphics",
+    "label": "arc",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "graphics_scroll_xy",
+    "category": "graphics",
+    "label": "scroll xy",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "graphics_wrap",
+    "category": "graphics",
+    "label": "set pen color",
+    "type": "compound",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "graphics_x",
+    "category": "graphics",
+    "label": "x",
+    "type": "expression",
+    "color": "#92A9FF",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "graphics_y",
+    "category": "graphics",
+    "label": "y",
+    "type": "expression",
+    "color": "#92A9FF",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "graphics_heading",
+    "category": "graphics",
+    "label": "heading",
+    "type": "expression",
+    "color": "#92A9FF",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "pen_set_color",
+    "category": "pen",
+    "label": "set color",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pen_set_shade",
+    "category": "pen",
+    "label": "set shade",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pen_set_pen_size",
+    "category": "pen",
+    "label": "set pen size",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pen_up",
+    "category": "pen",
+    "label": "pen up",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pen_down",
+    "category": "pen",
+    "label": "pen down",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pen_fill",
+    "category": "pen",
+    "label": "fill",
+    "type": "compound",
+    "color": "#92A9FF",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pen_background",
+    "category": "pen",
+    "label": "background",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pen_color",
+    "category": "pen",
+    "label": "color",
+    "type": "expression",
+    "color": "#92A9FF",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "media_text",
+    "category": "media",
+    "label": "text",
+    "type": "expression",
+    "color": "#FF664B",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "media_icon",
+    "category": "media",
+    "label": "icon",
+    "type": "expression",
+    "color": "#FF664B",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  }, 
+  {
+    "id": "media_show",
+    "category": "media",
+    "label": "show",
+    "type": "simple",
+    "color": "#FF664B",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "media_avatar",
+    "category": "media",
+    "label": "avatar",
+    "type": "simple",
+    "color": "#FF664B",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "media_height",
+    "category": "media",
+    "label": "height",
+    "type": "expression",
+    "color": "#FF664B",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "media_width",
+    "category": "media",
+    "label": "width",
+    "type": "expression",
+    "color": "#FF664B",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "media_bottom_(screen)",
+    "category": "media",
+    "label": "bottom(screen)",
+    "type": "expression",
+    "color": "#FF664B",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "media_top_(screen)",
+    "category": "media",
+    "label": "top(screen)",
+    "type": "expression",
+    "color": "#FF664B",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "media_left_(screen)",
+    "category": "media",
+    "label": "left(screen)",
+    "type": "expression",
+    "color": "#FF664B",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "media_right_(screen)",
+    "category": "media",
+    "label": "right(screen)",
+    "type": "expression",
+    "color": "#FF664B",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "media_print",
+    "category": "media",
+    "label": "print",
+    "type": "simple",
+    "color": "#FF664B",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "sensors_cursor_x",
+    "category": "sensors",
+    "label": "cursor x",
+    "type": "expression",
+    "color": "#AABB00",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "sensors_cursor_y",
+    "category": "sensors",
+    "label": "cursor y",
+    "type": "expression",
+    "color": "#AABB00",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "sensors_mouse_button",
+    "category": "sensors",
+    "label": "mouse button",
+    "type": "expression",
+    "color": "#AABB00",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "sensors_click",
+    "category": "sensors",
+    "label": "click",
+    "type": "expression",
+    "color": "#AABB00",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "sensors_loudness",
+    "category": "sensors",
+    "label": "loudness",
+    "type": "expression",
+    "color": "#AABB00",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "sensors_time",
+    "category": "sensors",
+    "label": "time",
+    "type": "expression",
+    "color": "#AABB00",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "ensemble_set_name",
+    "category": "ensemble",
+    "label": "set name",
+    "type": "simple",
+    "color": "#AABB00",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "ensemble_set_mouse_color",
+    "category": "ensemble",
+    "label": "set mouse color",
+    "type": "simple",
+    "color": "#AABB00",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "ensemble_mouse_name",
+    "category": "ensemble",
+    "label": "mouse name",
+    "type": "expression",
+    "color": "#AABB00",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  }
+]

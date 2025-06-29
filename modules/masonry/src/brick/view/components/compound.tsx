@@ -3,13 +3,7 @@ import type { TBrickRenderPropsCompound } from '../../@types/brick';
 import { generateBrickData } from '../../utils/path';
 
 const FONT_HEIGHT = 16;
-
-const PADDING = {
-  top: 4,
-  right: 8,
-  bottom: 4,
-  left: 8,
-};
+const PADDING = { top: 4, right: 8, bottom: 4, left: 8 };
 
 function toCssColor(color: string | ['rgb' | 'hsl', number, number, number]) {
   if (typeof color === 'string') return color;
@@ -21,18 +15,10 @@ function measureLabel(label: string, fontSize: number) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d')!;
   ctx.font = `${fontSize}px sans-serif`;
-
   const m = ctx.measureText(label);
   const ascent = m.actualBoundingBoxAscent ?? fontSize * 0.8;
   const descent = m.actualBoundingBoxDescent ?? fontSize * 0.2;
-  const height = ascent + descent;
-
-  return {
-    w: m.width + 8,
-    h: height,
-    ascent,
-    descent,
-  };
+  return { w: m.width + 8, h: ascent + descent, ascent, descent };
 }
 
 type TConnectionPoints = {
@@ -57,26 +43,26 @@ export const CompoundBrickView: React.FC<PropsWithMetrics> = (props) => {
     scale,
     shadow,
     tooltip,
-    bboxArgs,
+    bboxArgs: rawArgs,
+    bboxNest: rawNest,
     visualState,
     isActionMenuOpen,
     isVisible,
     topNotch,
     bottomNotch,
-    bboxNest,
     isFolded,
     RenderMetrics,
   } = props;
 
-  // Memoize bBoxLabel to prevent unnecessary recalculations
+  const bboxArgs = rawArgs ?? [];
+  const bBoxNesting = rawNest ?? [];
+
   const bBoxLabel = useMemo(() => {
-    const { w: labelW, h: labelH } = measureLabel(label, FONT_HEIGHT);
-    return { w: labelW, h: labelH };
+    const { w: lw, h: lh } = measureLabel(label, FONT_HEIGHT);
+    return { w: lw, h: lh };
   }, [label]);
 
-  const bBoxNesting = bboxNest;
-
-  const [shape, setShape] = useState<{ path: string; w: number; h: number }>(() => {
+  const [shape, setShape] = useState(() => {
     const cfg = {
       type: 'type3' as const,
       strokeWidth,
@@ -88,12 +74,8 @@ export const CompoundBrickView: React.FC<PropsWithMetrics> = (props) => {
       bBoxNesting,
       secondaryLabel: !isFolded,
     };
-    const brickData = generateBrickData(cfg);
-    return {
-      path: brickData.path,
-      w: brickData.boundingBox.w,
-      h: brickData.boundingBox.h,
-    };
+    const d = generateBrickData(cfg);
+    return { path: d.path, w: d.boundingBox.w, h: d.boundingBox.h };
   });
 
   useEffect(() => {
@@ -108,40 +90,26 @@ export const CompoundBrickView: React.FC<PropsWithMetrics> = (props) => {
       bBoxNesting,
       secondaryLabel: !isFolded,
     };
-    const brickData = generateBrickData(cfg);
-    if (RenderMetrics) {
-      RenderMetrics(brickData.boundingBox, brickData.connectionPoints);
-    }
-    setShape({ path: brickData.path, w: brickData.boundingBox.w, h: brickData.boundingBox.h });
-  }, [
-    label,
-    strokeWidth,
-    scale,
-    bboxArgs,
-    topNotch,
-    bottomNotch,
-    bboxNest,
-    isFolded,
-    bBoxLabel,
-    bBoxNesting,
-  ]);
+    const d = generateBrickData(cfg);
+    RenderMetrics?.(d.boundingBox, d.connectionPoints);
+    setShape({ path: d.path, w: d.boundingBox.w, h: d.boundingBox.h });
+  }, [label, strokeWidth, scale, rawArgs, rawNest, topNotch, bottomNotch, isFolded, bBoxLabel]);
 
   if (!isVisible) return null;
 
-  const svgWidth = shape.w + PADDING.left + PADDING.right;
-  const svgHeight = shape.h + PADDING.top + PADDING.bottom;
+  const svgW = shape.w + PADDING.left + PADDING.right;
+  const svgH = shape.h + PADDING.top + PADDING.bottom;
 
   return (
     <svg
-      width={svgWidth}
-      height={svgHeight}
-      viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+      width={svgW}
+      height={svgH}
+      viewBox={`0 0 ${svgW} ${svgH}`}
       data-visual-state={visualState}
       data-action-menu-open={isActionMenuOpen}
       style={{ overflow: 'visible' }}
     >
       <g transform={`translate(${PADDING.left},${PADDING.top})`}>
-        {/* Brick outline */}
         <path
           d={shape.path}
           fill={toCssColor(colorBg)}
@@ -149,8 +117,6 @@ export const CompoundBrickView: React.FC<PropsWithMetrics> = (props) => {
           strokeWidth={strokeWidth}
           filter={shadow ? 'drop-shadow(0 2px 2px rgba(0,0,0,0.2))' : undefined}
         />
-
-        {/* Text label */}
         {labelType === 'text' && (
           <text
             x={strokeWidth + 4}
@@ -162,10 +128,8 @@ export const CompoundBrickView: React.FC<PropsWithMetrics> = (props) => {
             {label}
           </text>
         )}
-
-        {/* Tooltip */}
-        {tooltip && <title>{tooltip}</title>}
       </g>
+      {tooltip && <title>{tooltip}</title>}
     </svg>
   );
 };

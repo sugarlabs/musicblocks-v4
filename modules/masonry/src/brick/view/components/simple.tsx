@@ -1,15 +1,10 @@
+// src/brick/view/components/simple.tsx
 import React, { useState, useEffect, useMemo } from 'react';
 import type { TBrickRenderPropsSimple } from '../../@types/brick';
 import { generateBrickData } from '../../utils/path';
 
 const FONT_HEIGHT = 16;
-
-const PADDING = {
-  top: 4,
-  right: 10,
-  bottom: 4,
-  left: 8,
-};
+const PADDING = { top: 4, right: 10, bottom: 4, left: 8 };
 
 function toCssColor(color: string | ['rgb' | 'hsl', number, number, number]) {
   if (typeof color === 'string') return color;
@@ -24,14 +19,7 @@ function measureLabel(label: string, fontSize: number) {
   const m = ctx.measureText(label);
   const ascent = m.actualBoundingBoxAscent ?? fontSize * 0.8;
   const descent = m.actualBoundingBoxDescent ?? fontSize * 0.2;
-  const height = ascent + descent;
-
-  return {
-    w: m.width + 8,
-    h: height,
-    ascent,
-    descent,
-  };
+  return { w: m.width + 8, h: ascent + descent, ascent, descent };
 }
 
 type TConnectionPoints = {
@@ -45,30 +33,29 @@ type PropsWithMetrics = TBrickRenderPropsSimple & {
   RenderMetrics?: (bbox: { w: number; h: number }, connectionPoints: TConnectionPoints) => void;
 };
 
-export const SimpleBrickView: React.FC<PropsWithMetrics> = (props) => {
-  const {
-    label,
-    labelType,
-    colorBg,
-    colorFg,
-    strokeColor,
-    strokeWidth,
-    scale,
-    shadow,
-    tooltip,
-    bboxArgs,
-    visualState,
-    isActionMenuOpen,
-    isVisible,
-    topNotch,
-    bottomNotch,
-    RenderMetrics,
-  } = props;
+export const SimpleBrickView: React.FC<PropsWithMetrics> = ({
+  label,
+  labelType,
+  colorBg,
+  colorFg,
+  strokeColor,
+  strokeWidth,
+  scale,
+  shadow,
+  tooltip,
+  bboxArgs: rawArgs,
+  visualState,
+  isActionMenuOpen,
+  isVisible,
+  topNotch,
+  bottomNotch,
+  RenderMetrics,
+}: PropsWithMetrics) => {
+  const bboxArgs = rawArgs ?? [];
 
-  // Memoize bBoxLabel to prevent unnecessary recalculations
   const bBoxLabel = useMemo(() => {
-    const { w: labelW, h: labelH } = measureLabel(label, FONT_HEIGHT);
-    return { w: labelW, h: labelH };
+    const { w: lw, h: lh } = measureLabel(label, FONT_HEIGHT);
+    return { w: lw, h: lh };
   }, [label]);
 
   const [shape, setShape] = useState<{ path: string; w: number; h: number }>(() => {
@@ -81,12 +68,8 @@ export const SimpleBrickView: React.FC<PropsWithMetrics> = (props) => {
       hasNotchAbove: topNotch,
       hasNotchBelow: bottomNotch,
     };
-    const brickData = generateBrickData(cfg);
-    return {
-      path: brickData.path,
-      w: brickData.boundingBox.w,
-      h: brickData.boundingBox.h,
-    };
+    const d = generateBrickData(cfg);
+    return { path: d.path, w: d.boundingBox.w, h: d.boundingBox.h };
   });
 
   useEffect(() => {
@@ -99,12 +82,10 @@ export const SimpleBrickView: React.FC<PropsWithMetrics> = (props) => {
       hasNotchAbove: topNotch,
       hasNotchBelow: bottomNotch,
     };
-    const brickData = generateBrickData(cfg);
-    if (RenderMetrics) {
-      RenderMetrics(brickData.boundingBox, brickData.connectionPoints);
-    }
-    setShape({ path: brickData.path, w: brickData.boundingBox.w, h: brickData.boundingBox.h });
-  }, [label, strokeWidth, scale, bboxArgs, topNotch, bottomNotch, bBoxLabel]);
+    const d = generateBrickData(cfg);
+    RenderMetrics?.(d.boundingBox, d.connectionPoints);
+    setShape({ path: d.path, w: d.boundingBox.w, h: d.boundingBox.h });
+  }, [label, strokeWidth, scale, rawArgs, topNotch, bottomNotch, bBoxLabel]);
 
   if (!isVisible) return null;
 

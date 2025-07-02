@@ -1,7 +1,7 @@
 // brickFactory.ts
 import { SimpleBrick, ExpressionBrick } from '../model/model';
 import CompoundBrick from '../model/model';
-import type { TBrickType, TColor, TExtent } from '../@types/brick';
+import type { TBrickType, TColor, TExtent } from '../../@types/brick';
 
 let idCounter = 0;
 function generateUUID(prefix: string): string {

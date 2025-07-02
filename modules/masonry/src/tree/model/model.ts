@@ -1,4 +1,4 @@
-import type { IBrick } from '../../brick/@types/brick';
+import type { IBrick } from '../../@types/brick';
 
 // Point type
 export type TPoint = {

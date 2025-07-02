@@ -11,7 +11,7 @@ import type {
     TBrickRenderPropsExpression,
     IBrickCompound,
     TBrickRenderPropsCompound,
-} from '../@types/brick';
+} from '../../@types/brick';
 import type { TConnectionPoints as TCP } from '../../tree/model/model';
 import { generateBrickData } from '../utils/path';
 import type { TInputUnion } from '../utils/path';

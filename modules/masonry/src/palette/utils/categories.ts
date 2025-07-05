@@ -26,15 +26,19 @@ const flowCategories: CategoryConfig[] = [
     { id: 'action', label: 'Action', icon: '', color: '#FE994F' },
     { id: 'boxes', label: 'Boxes', icon: '', color: '#7CD622' },
     { id: 'number', label: 'Number', icon: '', color: '#3DDCDD' },
-    { id: 'boolean', label: 'Boolean', icon: '', color: '#7CD622' },
+    { id: 'boolean', label: 'Boolean', icon: '', color: '#D98A42' },
+    { id: 'heap', label: 'Heap', icon: '', color: '#D98A42' },
+    { id: 'dictionary', label: 'Dictionary', icon: '', color: '#D98A42' },
+    { id: 'extras', label: 'Extras', icon: '', color: '#C4C4C4' },
+    { id: 'program', label: 'Program', icon: '', color: '#C4C4C4' },
 ];
 
 const graphicsCategories: CategoryConfig[] = [
-    { id: 'graphics', label: 'Graphics', icon: '🖼️', color: '#FF6B6B' },
-    { id: 'pen', label: 'Pen', icon: '✏️', color: '#4ECDC4' },
-    { id: 'media', label: 'Media', icon: '🎬', color: '#FFD166' },
-    { id: 'sensors', label: 'Sensors', icon: '📡', color: '#6A0572' },
-    { id: 'ensemble', label: 'Ensemble', icon: '👥', color: '#1A936F' },
+    { id: 'graphics', label: 'Graphics', icon: '', color: '#FF6B6B' },
+    { id: 'pen', label: 'Pen', icon: '', color: '#4ECDC4' },
+    { id: 'media', label: 'Media', icon: '', color: '#FFD166' },
+    { id: 'sensors', label: 'Sensors', icon: '', color: '#6A0572' },
+    { id: 'ensemble', label: 'Ensemble', icon: '', color: '#1A936F' },
 ];
 
 export function getCategories(mode: PaletteMode): CategoryConfig[] {

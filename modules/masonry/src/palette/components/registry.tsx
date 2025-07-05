@@ -1,8 +1,8 @@
 import React from 'react';
-import { SimpleBrickView } from '../brick/view/components/simple';
-import { ExpressionBrickView } from '../brick/view/components/expression';
-import { CompoundBrickView } from '../brick/view/components/compound';
-import type { BrickConfig } from './types';
+import { SimpleBrickView } from '../../brick/view/components/simple';
+import { ExpressionBrickView } from '../../brick/view/components/expression';
+import { CompoundBrickView } from '../../brick/view/components/compound';
+import type { BrickConfig } from '../utils/types';
 
 export type BrickType = 'simple' | 'expression' | 'compound';
 
@@ -48,7 +48,7 @@ function wrap<P extends object>(View: React.ComponentType<P>): React.FC<BrickCon
             case 'simple':
               result = (
                 <SimpleBrickView
-                  {...(common as any)}
+                  {...(common as React.ComponentProps<typeof SimpleBrickView>)}
                   topNotch={cfg.notches.top}
                   bottomNotch={cfg.notches.bottom}
                 />
@@ -57,16 +57,15 @@ function wrap<P extends object>(View: React.ComponentType<P>): React.FC<BrickCon
             case 'expression':
               result = (
                 <ExpressionBrickView
-                  {...(common as any)}
-                  topNotch={cfg.notches.top}
-                  bottomNotch={cfg.notches.bottom}
+                  {...(common as React.ComponentProps<typeof ExpressionBrickView>)}
                 />
               );
               break;
             case 'compound':
               result = (
                 <CompoundBrickView
-                  {...(common as any)}
+                  {...(common as React.ComponentProps<typeof CompoundBrickView>)}
+                  bboxNest={[]}
                   topNotch={cfg.notches.top}
                   bottomNotch={cfg.notches.bottom}
                 />
@@ -76,7 +75,7 @@ function wrap<P extends object>(View: React.ComponentType<P>): React.FC<BrickCon
               result = null;
           }
 
-          const finalResult = (await (result as any)?.then?.((x: React.ReactNode) => x)) ?? result;
+          const finalResult = result;
 
           if (isMounted) {
             setContent(finalResult);

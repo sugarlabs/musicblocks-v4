@@ -1741,13 +1741,13 @@
     "notches": { "top": true, "bottom": true, "connection": false }
   },
   {
-      "id": "flow_repeat",
-      "category": "flow",
-      "label": "repeat",
-      "type": "compound",
-      "color": "#D98A42",
-      "argCount": 1,
-      "notches": { "top": true, "bottom": true, "connection": false }
+    "id": "flow_repeat",
+    "category": "flow",
+    "label": "repeat",
+    "type": "compound",
+    "color": "#D98A42",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
   },
   {
     "id": "flow_forever",
@@ -1802,7 +1802,7 @@
     "color": "#F3C800",
     "argCount": 0,
     "notches": { "top": true, "bottom": true, "connection": false }
-  }, 
+  },
   {
     "id": "action_start_drum",
     "category": "action",
@@ -1820,7 +1820,7 @@
     "color": "#F3C800",
     "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
-  }, 
+  },
   {
     "id": "action_on",
     "category": "action",
@@ -1841,7 +1841,7 @@
   },
   {
     "id": "boxes_store_in_box1",
-    "category": "action",
+    "category": "boxes",
     "label": "store in box 1",
     "type": "simple",
     "color": "#F3C800",
@@ -1850,7 +1850,7 @@
   },
   {
     "id": "boxes_box1",
-    "category": "action",
+    "category": "boxes",
     "label": "box 1",
     "type": "expression",
     "color": "#F3C800",
@@ -1859,7 +1859,7 @@
   },
   {
     "id": "boxes_box2",
-    "category": "action",
+    "category": "boxes",
     "label": "box 2",
     "type": "expression",
     "color": "#F3C800",
@@ -1868,7 +1868,7 @@
   },
   {
     "id": "boxes_store_in_box2",
-    "category": "action",
+    "category": "boxes",
     "label": "store in box 2",
     "type": "simple",
     "color": "#F3C800",
@@ -1877,7 +1877,7 @@
   },
   {
     "id": "boxes_store_in",
-    "category": "action",
+    "category": "boxes",
     "label": "store in",
     "type": "simple",
     "color": "#F3C800",
@@ -1886,7 +1886,7 @@
   },
   {
     "id": "boxes_store_in_box",
-    "category": "action",
+    "category": "boxes",
     "label": "store in box",
     "type": "expression",
     "color": "#F3C800",
@@ -1895,7 +1895,7 @@
   },
   {
     "id": "boxes_box",
-    "category": "action",
+    "category": "boxes",
     "label": "box",
     "type": "expression",
     "color": "#F3C800",
@@ -1904,7 +1904,7 @@
   },
   {
     "id": "boxes_add",
-    "category": "action",
+    "category": "boxes",
     "label": "add",
     "type": "simple",
     "color": "#F3C800",
@@ -1913,7 +1913,7 @@
   },
   {
     "id": "boxes_add_1_to",
-    "category": "action",
+    "category": "boxes",
     "label": "add 1 to",
     "type": "simple",
     "color": "#F3C800",
@@ -1922,7 +1922,7 @@
   },
   {
     "id": "boxes_subtract_1_from",
-    "category": "action",
+    "category": "boxes",
     "label": "subtract 1 from",
     "type": "simple",
     "color": "#F3C800",
@@ -1945,7 +1945,7 @@
     "type": "simple",
     "color": "#FF6EA1",
     "argCount": 2,
-    "notches": { "top": true, "bottom": true, "connection": false }
+    "notches": { "top": true, "bottom": true, "connection": true }
   },
   {
     "id": "number_one_of",
@@ -1963,7 +1963,7 @@
     "type": "simple",
     "color": "#FF6EA1",
     "argCount": 2,
-    "notches": { "top": true, "bottom": true, "connection": false }
+    "notches": { "top": true, "bottom": true, "connection": true }
   },
   {
     "id": "number_subtract",
@@ -1972,7 +1972,7 @@
     "type": "simple",
     "color": "#FF6EA1",
     "argCount": 2,
-    "notches": { "top": true, "bottom": true, "connection": false }
+    "notches": { "top": true, "bottom": true, "connection": true }
   },
   {
     "id": "number_multiply",
@@ -1981,7 +1981,7 @@
     "type": "simple",
     "color": "#FF6EA1",
     "argCount": 2,
-    "notches": { "top": true, "bottom": true, "connection": false }
+    "notches": { "top": true, "bottom": true, "connection": true }
   },
   {
     "id": "number_divide",
@@ -1990,6 +1990,492 @@
     "type": "simple",
     "color": "#FF6EA1",
     "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "number_absolute",
+    "category": "number",
+    "label": "abs",
+    "type": "simple",
+    "color": "#FF6EA1",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "number_sqrt",
+    "category": "number",
+    "label": "sqrt",
+    "type": "simple",
+    "color": "#FF6EA1",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "number_A",
+    "category": "number",
+    "label": "A",
+    "type": "simple",
+    "color": "#FF6EA1",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "number_mod",
+    "category": "number",
+    "label": "random",
+    "type": "simple",
+    "color": "#FF6EA1",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "number_int",
+    "category": "number",
+    "label": "random",
+    "type": "simple",
+    "color": "#FF6EA1",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "number_distance",
+    "category": "number",
+    "label": "distance",
+    "type": "simple",
+    "color": "#FF6EA1",
+    "argCount": 3,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "boolean_true",
+    "category": "boolean",
+    "label": "true",
+    "type": "expression",
+    "color": "#FF6EA1",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "boolean_equal",
+    "category": "boolean",
+    "label": "=",
+    "type": "simple",
+    "color": "#FF6EA1",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "boolean_not_equal",
+    "category": "boolean",
+    "label": "!=",
+    "type": "simple",
+    "color": "#FF6EA1",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "boolean_less_than",
+    "category": "boolean",
+    "label": "<",
+    "type": "simple",
+    "color": "#FF6EA1",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "boolean_greater_than",
+    "category": "boolean",
+    "label": ">",
+    "type": "simple",
+    "color": "#FF6EA1",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "boolean_less_than_equal",
+    "category": "boolean",
+    "label": "≤",
+    "type": "simple",
+    "color": "#FF6EA1",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "boolean_greater_than_equal",
+    "category": "boolean",
+    "label": "≤",
+    "type": "simple",
+    "color": "#FF6EA1",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "boolean_or",
+    "category": "boolean",
+    "label": "or",
+    "type": "simple",
+    "color": "#FF6EA1",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "boolean_and",
+    "category": "boolean",
+    "label": "and",
+    "type": "simple",
+    "color": "#FF6EA1",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "boolean_xor",
+    "category": "boolean",
+    "label": "xor",
+    "type": "simple",
+    "color": "#FF6EA1",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "heap_push",
+    "category": "heap",
+    "label": "push",
+    "type": "simple",
+    "color": "#D98A42",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "heap_pop",
+    "category": "heap",
+    "label": "pop",
+    "type": "expression",
+    "color": "#D98A42",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "heap_set_heap",
+    "category": "heap",
+    "label": "set heap",
+    "type": "simple",
+    "color": "#D98A42",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "heap_index_heap",
+    "category": "heap",
+    "label": "index heap",
+    "type": "expression",
+    "color": "#D98A42",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "heap_reverse_heap",
+    "category": "heap",
+    "label": "reverse heap",
+    "type": "simple",
+    "color": "#D98A42",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "heap_empty_heap",
+    "category": "heap",
+    "label": "empty heap",
+    "type": "expression",
+    "color": "#D98A42",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "heap_heap_empty?",
+    "category": "heap",
+    "label": "heap empty?",
+    "type": "expression",
+    "color": "#D98A42",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "heap_heap_length",
+    "category": "heap",
+    "label": "heap length",
+    "type": "expression",
+    "color": "#D98A42",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "heap_heap",
+    "category": "heap",
+    "label": "heap",
+    "type": "expression",
+    "color": "#D98A42",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "dictionary_get_value",
+    "category": "dictionary",
+    "label": "get value",
+    "type": "simple",
+    "color": "#D98A42",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": false, "connection": true }
+  },
+  {
+    "id": "dictionary_set_value",
+    "category": "dictionary",
+    "label": "set value",
+    "type": "simple",
+    "color": "#D98A42",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": false, "connection": false }
+  },
+  {
+    "id": "dictionary_get_value",
+    "category": "dictionary",
+    "label": "get value",
+    "type": "simple",
+    "color": "#D98A42",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": false, "connection": true }
+  },
+  {
+    "id": "dictionary_set_value",
+    "category": "dictionary",
+    "label": "set value",
+    "type": "simple",
+    "color": "#D98A42",
+    "argCount": 3,
+    "notches": { "top": true, "bottom": false, "connection": false }
+  },
+  {
+    "id": "dictionary_dictionary",
+    "category": "dictionary",
+    "label": "gdictionary",
+    "type": "simple",
+    "color": "#D98A42",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": false, "connection": true }
+  },
+  {
+    "id": "extras_print",
+    "category": "extras",
+    "label": "print",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "extras_comment",
+    "category": "extras",
+    "label": "comment",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "extras_wait",
+    "category": "extras",
+    "label": "wait",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "extras_print",
+    "category": "extras",
+    "label": "print",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "extras_left",
+    "category": "extras",
+    "label": "←",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "extras_down",
+    "category": "extras",
+    "label": "↓",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "extras_fraction",
+    "category": "extras",
+    "label": "fraction",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "extras_hide_blocks",
+    "category": "extras",
+    "label": "hide blocks",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "extras_show_blocks",
+    "category": "extras",
+    "label": "ahwo blocks",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "extras_no_background",
+    "category": "extras",
+    "label": "no background",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "extras_grid",
+    "category": "extras",
+    "label": "grid",
+    "type": "expression",
+    "color": "##C4C4C4",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "program_set_heap",
+    "category": "program",
+    "label": "set heap",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "program_load_heap",
+    "category": "program",
+    "label": "load heap",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "program_save_heap",
+    "category": "program",
+    "label": "save heap",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "program_set_dictionary",
+    "category": "program",
+    "label": "set dictionary",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "program_laod_dictionary",
+    "category": "program",
+    "label": "laod dictionary",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "program_load_dictionary",
+    "category": "program",
+    "label": "load dictionary",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "program_save_heap_app",
+    "category": "program",
+    "label": "save heap to app",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "program_load_heap_app",
+    "category": "program",
+    "label": "load heap from app",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "program_open_palette",
+    "category": "program",
+    "label": "open palette",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "program_open_project",
+    "category": "program",
+    "label": "open project",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "program_run_block",
+    "category": "program",
+    "label": "run block",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "program_connect_block",
+    "category": "program",
+    "label": "connect blocks",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 3,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "program_move_block",
+    "category": "program",
+    "label": "move block",
+    "type": "simple",
+    "color": "##C4C4C4",
+    "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
   {
@@ -2000,7 +2486,25 @@
     "color": "#92A9FF",
     "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
-  }, 
+  },
+  {
+    "id": "graphics_turn_left",
+    "category": "graphics",
+    "label": "turn left",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "graphics_turn_right",
+    "category": "graphics",
+    "label": "turn right",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
   {
     "id": "graphics_back",
     "category": "graphics",
@@ -2053,6 +2557,51 @@
     "type": "simple",
     "color": "#92A9FF",
     "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "graphics_control_point_1",
+    "category": "graphics",
+    "label": "control point 1",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "graphics_control_point_2",
+    "category": "graphics",
+    "label": "control point 2",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "graphics_control_point_2",
+    "category": "graphics",
+    "label": "control point 2",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "graphics_bezier",
+    "category": "graphics",
+    "label": "bezier",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "graphics_clear",
+    "category": "graphics",
+    "label": "control point 1",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
   {
@@ -2110,9 +2659,36 @@
     "notches": { "top": true, "bottom": true, "connection": false }
   },
   {
+    "id": "pen_set_grey",
+    "category": "pen",
+    "label": "set grey",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
     "id": "pen_set_shade",
     "category": "pen",
     "label": "set shade",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pen_set_hue",
+    "category": "pen",
+    "label": "set hue",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pen_set_translucency",
+    "category": "pen",
+    "label": "set translucency",
     "type": "simple",
     "color": "#92A9FF",
     "argCount": 1,
@@ -2155,9 +2731,27 @@
     "notches": { "top": true, "bottom": true, "connection": false }
   },
   {
+    "id": "pen_hollow_line",
+    "category": "pen",
+    "label": "hollow line",
+    "type": "compound",
+    "color": "#92A9FF",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
     "id": "pen_background",
     "category": "pen",
     "label": "background",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pen_set_font",
+    "category": "pen",
+    "label": "set font",
     "type": "simple",
     "color": "#92A9FF",
     "argCount": 0,
@@ -2173,6 +2767,96 @@
     "notches": { "top": false, "bottom": false, "connection": true }
   },
   {
+    "id": "pen_size",
+    "category": "pen",
+    "label": "pen size",
+    "type": "expression",
+    "color": "#92A9FF",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "pen_shade",
+    "category": "pen",
+    "label": "shade",
+    "type": "expression",
+    "color": "#92A9FF",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "pen_grey",
+    "category": "pen",
+    "label": "grey",
+    "type": "expression",
+    "color": "#92A9FF",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "pen_black",
+    "category": "pen",
+    "label": "black",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pen_white",
+    "category": "pen",
+    "label": "white",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pen_red",
+    "category": "pen",
+    "label": "red",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pen_orange",
+    "category": "pen",
+    "label": "orange",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pen_yellow",
+    "category": "pen",
+    "label": "yellow",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pen_green",
+    "category": "pen",
+    "label": "green",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "pen_blue",
+    "category": "pen",
+    "label": "blue",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
     "id": "media_text",
     "category": "media",
     "label": "text",
@@ -2182,14 +2866,23 @@
     "notches": { "top": false, "bottom": false, "connection": true }
   },
   {
-    "id": "media_icon",
+    "id": "media_erase_media",
     "category": "media",
-    "label": "icon",
-    "type": "expression",
+    "label": "erase media",
+    "type": "simple",
     "color": "#FF664B",
     "argCount": 0,
-    "notches": { "top": false, "bottom": false, "connection": true }
-  }, 
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "media_note_to_frequency",
+    "category": "media",
+    "label": "note to frequency",
+    "type": "simple",
+    "color": "#FF664B",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
   {
     "id": "media_show",
     "category": "media",
@@ -2207,6 +2900,24 @@
     "color": "#FF664B",
     "argCount": 2,
     "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "media_stop_media",
+    "category": "media",
+    "label": "stop media",
+    "type": "simple",
+    "color": "#FF664B",
+    "argCount": 0,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "media_open_file",
+    "category": "media",
+    "label": "open file",
+    "type": "expression",
+    "color": "#FF664B",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
   },
   {
     "id": "media_height",
@@ -2299,6 +3010,42 @@
     "notches": { "top": false, "bottom": false, "connection": true }
   },
   {
+    "id": "sensors_cursor_button_down",
+    "category": "sensors",
+    "label": "cursor button down",
+    "type": "expression",
+    "color": "#AABB00",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "sensors_cursor_button_up",
+    "category": "sensors",
+    "label": "cursor button up",
+    "type": "expression",
+    "color": "#AABB00",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "sensors_cursor_out",
+    "category": "sensors",
+    "label": "cursor out",
+    "type": "expression",
+    "color": "#AABB00",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "sensors_cursor_over",
+    "category": "sensors",
+    "label": "cursor over",
+    "type": "expression",
+    "color": "#AABB00",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
     "id": "sensors_click",
     "category": "sensors",
     "label": "click",
@@ -2317,9 +3064,99 @@
     "notches": { "top": false, "bottom": false, "connection": true }
   },
   {
+    "id": "sensors_pitch",
+    "category": "sensors",
+    "label": "pitch",
+    "type": "expression",
+    "color": "#AABB00",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
     "id": "sensors_time",
     "category": "sensors",
     "label": "time",
+    "type": "expression",
+    "color": "#AABB00",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "sensors_input",
+    "category": "sensors",
+    "label": "input",
+    "type": "simple",
+    "color": "#AABB00",
+    "argCount": 1,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "sensors_to_ASCII",
+    "category": "sensors",
+    "label": "to ASCII",
+    "type": "expression",
+    "color": "#AABB00",
+    "argCount": 1,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "sensors_time",
+    "category": "sensors",
+    "label": "time",
+    "type": "expression",
+    "color": "#AABB00",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "sensors_input_value",
+    "category": "sensors",
+    "label": "inpur value",
+    "type": "expression",
+    "color": "#AABB00",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "sensors_keyboard",
+    "category": "sensors",
+    "label": "keyboard",
+    "type": "expression",
+    "color": "#AABB00",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "sensors_pixel_color",
+    "category": "sensors",
+    "label": "pixel color",
+    "type": "expression",
+    "color": "#AABB00",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "sensors_red",
+    "category": "sensors",
+    "label": "red",
+    "type": "expression",
+    "color": "#AABB00",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "sensors_green",
+    "category": "sensors",
+    "label": "green",
+    "type": "expression",
+    "color": "#AABB00",
+    "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "sensors_blue",
+    "category": "sensors",
+    "label": "blue",
     "type": "expression",
     "color": "#AABB00",
     "argCount": 0,
@@ -2330,7 +3167,7 @@
     "category": "ensemble",
     "label": "set name",
     "type": "simple",
-    "color": "#AABB00",
+    "color": "#92A9FF",
     "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2339,7 +3176,7 @@
     "category": "ensemble",
     "label": "set mouse color",
     "type": "simple",
-    "color": "#AABB00",
+    "color": "#92A9FF",
     "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2348,8 +3185,107 @@
     "category": "ensemble",
     "label": "mouse name",
     "type": "expression",
-    "color": "#AABB00",
+    "color": "#92A9FF",
     "argCount": 0,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "ensemble_new_mouse",
+    "category": "ensemble",
+    "label": "new mouse",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "ensemble_found_mouse",
+    "category": "ensemble",
+    "label": "found mouse",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "ensemble_nth_mouse_name",
+    "category": "ensemble",
+    "label": "nth mouse name",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "ensemble_mouse_x",
+    "category": "ensemble",
+    "label": "mouse x",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "ensemble_mouse_y",
+    "category": "ensemble",
+    "label": "mouse y",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "ensemble_start_mouse",
+    "category": "ensemble",
+    "label": "start mouse",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "ensemble_stop_mouse",
+    "category": "ensemble",
+    "label": "mouse name",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "ensemble_mouse_count",
+    "category": "ensemble",
+    "label": "mouse count",
+    "type": "expression",
+    "color": "#92A9FF",
+    "argCount": 1,
+    "notches": { "top": false, "bottom": false, "connection": true }
+  },
+  {
+    "id": "ensemble_set_mouse",
+    "category": "ensemble",
+    "label": "set mouse",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 3,
+    "notches": { "top": true, "bottom": true, "connection": false }
+  },
+  {
+    "id": "ensemble_mouse_index_heap",
+    "category": "ensemble",
+    "label": "mouse index heap",
+    "type": "simple",
+    "color": "#92A9FF",
+    "argCount": 2,
+    "notches": { "top": true, "bottom": true, "connection": true }
+  },
+  {
+    "id": "ensemble_set_mouse",
+    "category": "ensemble",
+    "label": "set mouse",
+    "type": "compound",
+    "color": "#92A9FF",
+    "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
   }
 ]

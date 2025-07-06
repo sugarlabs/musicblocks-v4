@@ -2256,7 +2256,7 @@
   {
     "id": "dictionary_dictionary",
     "category": "dictionary",
-    "label": "gdictionary",
+    "label": "dictionary",
     "type": "simple",
     "color": "#D98A42",
     "argCount": 1,
@@ -2267,7 +2267,7 @@
     "category": "extras",
     "label": "print",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2276,7 +2276,7 @@
     "category": "extras",
     "label": "comment",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2285,7 +2285,7 @@
     "category": "extras",
     "label": "wait",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2294,7 +2294,7 @@
     "category": "extras",
     "label": "print",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2303,7 +2303,7 @@
     "category": "extras",
     "label": "←",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": true }
   },
@@ -2312,7 +2312,7 @@
     "category": "extras",
     "label": "↓",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2321,7 +2321,7 @@
     "category": "extras",
     "label": "fraction",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": true }
   },
@@ -2330,7 +2330,7 @@
     "category": "extras",
     "label": "hide blocks",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2339,7 +2339,7 @@
     "category": "extras",
     "label": "ahwo blocks",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2348,7 +2348,7 @@
     "category": "extras",
     "label": "no background",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2357,7 +2357,7 @@
     "category": "extras",
     "label": "grid",
     "type": "expression",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 0,
     "notches": { "top": false, "bottom": false, "connection": true }
   },
@@ -2366,7 +2366,7 @@
     "category": "program",
     "label": "set heap",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2375,7 +2375,7 @@
     "category": "program",
     "label": "load heap",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2384,7 +2384,7 @@
     "category": "program",
     "label": "save heap",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2393,7 +2393,7 @@
     "category": "program",
     "label": "set dictionary",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 2,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2402,7 +2402,7 @@
     "category": "program",
     "label": "laod dictionary",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 2,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2411,7 +2411,7 @@
     "category": "program",
     "label": "load dictionary",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 2,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2420,7 +2420,7 @@
     "category": "program",
     "label": "save heap to app",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 2,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2429,7 +2429,7 @@
     "category": "program",
     "label": "load heap from app",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 2,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2438,7 +2438,7 @@
     "category": "program",
     "label": "open palette",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2447,7 +2447,7 @@
     "category": "program",
     "label": "open project",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2456,7 +2456,7 @@
     "category": "program",
     "label": "run block",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2465,7 +2465,7 @@
     "category": "program",
     "label": "connect blocks",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 3,
     "notches": { "top": true, "bottom": true, "connection": false }
   },
@@ -2474,7 +2474,7 @@
     "category": "program",
     "label": "move block",
     "type": "simple",
-    "color": "##C4C4C4",
+    "color": "#C4C4C4",
     "argCount": 1,
     "notches": { "top": true, "bottom": true, "connection": false }
   },

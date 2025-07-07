@@ -1,5 +1,5 @@
 import React from 'react';
-import type { TBrickRenderPropsSimple } from '../../@types/brick';
+import type { TBrickRenderPropsSimple } from '../../../@types/brick';
 import { BrickWrapper } from './BrickWrapper';
 import type { TConnectionPoints } from '../utils/common';
 

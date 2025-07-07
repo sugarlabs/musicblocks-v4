@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import type { TBrickRenderProps } from '../../@types/brick';
+import type { TBrickRenderProps } from '../../../@types/brick';
 import { generateBrickData } from '../../utils/path';
 import type { TInputUnion } from '../../utils/path';
 import { measureLabel } from '../../utils/textMeasurement';

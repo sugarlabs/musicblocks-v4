@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Meta, StoryFn } from '@storybook/react';
 import { SimpleBrickView } from '../components/simple';
-import type { TBrickRenderPropsSimple } from '../../@types/brick';
+import type { TBrickRenderPropsSimple } from '../../../@types/brick';
 
 export default {
   title: 'Bricks/SimpleBrick',

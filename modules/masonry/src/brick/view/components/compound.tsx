@@ -1,5 +1,5 @@
 import React from 'react';
-import type { TBrickRenderPropsCompound } from '../../@types/brick';
+import type { TBrickRenderPropsCompound } from '../../../@types/brick';
 import { BrickWrapper } from './BrickWrapper';
 import type { TConnectionPoints } from '../utils/common';
 
@@ -11,11 +11,11 @@ export const CompoundBrickView: React.FC<PropsWithMetrics> = (props) => {
   const {
     topNotch,
     bottomNotch,
-    bboxNest,
     isFolded,
     strokeWidth,
     scale,
     bboxArgs,
+    bboxNest,
     ...commonProps
   } = props;
 

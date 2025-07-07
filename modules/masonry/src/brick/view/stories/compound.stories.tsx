@@ -3,7 +3,7 @@
 import React from 'react';
 import type { Meta, StoryObj, Decorator } from '@storybook/react';
 import { CompoundBrickView } from '../components/compound';
-import type { TBrickRenderPropsCompound } from '../../@types/brick';
+import type { TBrickRenderPropsCompound } from '../../../@types/brick';
 
 const centerDecorator: Decorator<TBrickRenderPropsCompound> = (Story) => (
   <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>

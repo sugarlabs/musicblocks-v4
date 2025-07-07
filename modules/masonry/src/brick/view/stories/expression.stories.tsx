@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Meta, StoryObj, Decorator } from '@storybook/react';
 import { ExpressionBrickView } from '../components/expression';
-import type { TBrickRenderPropsExpression } from '../../@types/brick';
+import type { TBrickRenderPropsExpression } from '../../../@types/brick';
 
 const centerDecorator: Decorator<TBrickRenderPropsExpression> = (Story) => (
   <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>

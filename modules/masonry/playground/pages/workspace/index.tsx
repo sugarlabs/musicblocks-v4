@@ -14,13 +14,8 @@ export default function App() {
           overflowY: 'auto',
         }}
       >
-        <PaletteWrapper
-          categoryId=""
-          query=""
-          mode="flow"
-          onModeChange={() => {}}
-          onClose={() => {}}
-        />
+        <PaletteWrapper/>
+
       </aside>
 
       {/* Playground canvas */}

@@ -5,10 +5,11 @@ import type { TConnectionPoints } from '../utils/common';
 
 type PropsWithMetrics = TBrickRenderPropsSimple & {
   RenderMetrics?: (bbox: { w: number; h: number }, connectionPoints: TConnectionPoints) => void;
+  standaloneSvg?: boolean;
 };
 
 export const SimpleBrickView: React.FC<PropsWithMetrics> = (props) => {
-  const { topNotch, bottomNotch, strokeWidth, scale, bboxArgs, ...commonProps } = props;
+  const { topNotch, bottomNotch, strokeWidth, scale, bboxArgs, standaloneSvg, ...commonProps } = props;
 
   const getBrickConfig = (bBoxLabel: { w: number; h: number }) => ({
     type: 'type1' as const,
@@ -27,6 +28,7 @@ export const SimpleBrickView: React.FC<PropsWithMetrics> = (props) => {
       scale={scale}
       bboxArgs={bboxArgs}
       getBrickConfig={getBrickConfig}
+      standaloneSvg={standaloneSvg}
     />
   );
 };

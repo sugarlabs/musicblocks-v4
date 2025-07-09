@@ -5,19 +5,11 @@ import type { TConnectionPoints } from '../utils/common';
 
 type PropsWithMetrics = TBrickRenderPropsCompound & {
   RenderMetrics?: (bbox: { w: number; h: number }, connectionPoints: TConnectionPoints) => void;
+  standaloneSvg?: boolean;
 };
 
 export const CompoundBrickView: React.FC<PropsWithMetrics> = (props) => {
-  const {
-    topNotch,
-    bottomNotch,
-    isFolded,
-    strokeWidth,
-    scale,
-    bboxArgs,
-    bboxNest,
-    ...commonProps
-  } = props;
+  const { topNotch, bottomNotch, bboxNest, isFolded, strokeWidth, scale, bboxArgs, standaloneSvg, ...commonProps } = props;
 
   const getBrickConfig = (bBoxLabel: { w: number; h: number }) => ({
     type: 'type3' as const,
@@ -25,6 +17,7 @@ export const CompoundBrickView: React.FC<PropsWithMetrics> = (props) => {
     scaleFactor: scale,
     bBoxLabel,
     bBoxArgs: bboxArgs,
+    bboxNest,
     hasNotchAbove: topNotch,
     hasNotchBelow: bottomNotch,
     bBoxNesting: bboxNest,
@@ -38,6 +31,7 @@ export const CompoundBrickView: React.FC<PropsWithMetrics> = (props) => {
       scale={scale}
       bboxArgs={bboxArgs}
       getBrickConfig={getBrickConfig}
+      standaloneSvg={standaloneSvg}
     >
       {/* Compound-specific content */}
       {isFolded && (

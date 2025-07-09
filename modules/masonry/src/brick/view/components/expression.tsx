@@ -5,10 +5,11 @@ import type { TConnectionPoints } from '../utils/common';
 
 type PropsWithMetrics = TBrickRenderPropsExpression & {
   RenderMetrics?: (bbox: { w: number; h: number }, connectionPoints: TConnectionPoints) => void;
+  standaloneSvg?: boolean;
 };
 
 export const ExpressionBrickView: React.FC<PropsWithMetrics> = (props) => {
-  const { value, isValueSelectOpen, strokeWidth, scale, bboxArgs, ...commonProps } = props;
+  const { value, isValueSelectOpen, strokeWidth, scale, bboxArgs, standaloneSvg, ...commonProps } = props;
 
   const getBrickConfig = (bBoxLabel: { w: number; h: number }) => ({
     type: 'type2' as const,
@@ -25,6 +26,7 @@ export const ExpressionBrickView: React.FC<PropsWithMetrics> = (props) => {
       scale={scale}
       bboxArgs={bboxArgs}
       getBrickConfig={getBrickConfig}
+      standaloneSvg={standaloneSvg}
     >
       {/* Expression-specific content */}
       {value !== undefined && (

@@ -12,6 +12,8 @@ export interface BrickWrapperProps extends TBrickRenderProps {
   children?: React.ReactNode;
   /** Brick-specific configuration for path generation */
   getBrickConfig: (bBoxLabel: { w: number; h: number }) => TInputUnion;
+  /** If true, render as standalone SVG (for palette); else as <g> (for workspace) */
+  standaloneSvg?: boolean;
 }
 
 /**
@@ -35,6 +37,7 @@ export const BrickWrapper: React.FC<BrickWrapperProps> = ({
   RenderMetrics,
   children,
   getBrickConfig,
+  standaloneSvg,
 }) => {
   const bBoxLabel = useMemo(() => {
     const { w: labelW, h: labelH } = measureLabel(label, FONT_HEIGHT);
@@ -68,18 +71,70 @@ export const BrickWrapper: React.FC<BrickWrapperProps> = ({
 
   if (!isVisible) return null;
 
+  // Calculate width and height for background rect and transforms
   const svgWidth = shape.w + PADDING.left + PADDING.right;
   const svgHeight = shape.h + PADDING.top + PADDING.bottom;
 
+  if (standaloneSvg) {
+    return (
+      <svg
+        width={svgWidth}
+        height={svgHeight}
+        viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+        data-visual-state={visualState}
+        data-action-menu-open={isActionMenuOpen}
+        style={{ overflow: 'visible' }}
+      >
+        {/* Background rectangle for brick visuals, if needed */}
+        <rect
+          x={0}
+          y={0}
+          width={svgWidth}
+          height={svgHeight}
+          fill="none"
+          pointerEvents="none"
+        />
+        <g transform={`translate(${PADDING.left},${PADDING.top})`}>
+          <path
+            d={shape.path}
+            fill={toCssColor(colorBg)}
+            stroke={toCssColor(strokeColor)}
+            strokeWidth={strokeWidth}
+            filter={shadow ? 'drop-shadow(0 2px 2px rgba(0,0,0,0.2))' : undefined}
+          />
+          {labelType === 'text' && (
+            <text
+              x={strokeWidth + 4}
+              y={bBoxLabel.h * 0.8 + strokeWidth / 2}
+              fill={toCssColor(colorFg)}
+              fontSize={FONT_HEIGHT}
+              style={{ userSelect: 'none', pointerEvents: 'none' }}
+            >
+              {label}
+            </text>
+          )}
+          {children}
+        </g>
+        {tooltip && <title>{tooltip}</title>}
+      </svg>
+    );
+  }
+
   return (
-    <svg
-      width={svgWidth}
-      height={svgHeight}
-      viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+    <g
       data-visual-state={visualState}
       data-action-menu-open={isActionMenuOpen}
       style={{ overflow: 'visible' }}
     >
+      {/* Background rectangle for brick visuals, if needed */}
+      <rect
+        x={0}
+        y={0}
+        width={svgWidth}
+        height={svgHeight}
+        fill="none"
+        pointerEvents="none"
+      />
       <g transform={`translate(${PADDING.left},${PADDING.top})`}>
         <path
           d={shape.path}
@@ -102,6 +157,6 @@ export const BrickWrapper: React.FC<BrickWrapperProps> = ({
         {children}
       </g>
       {tooltip && <title>{tooltip}</title>}
-    </svg>
+    </g>
   );
 };

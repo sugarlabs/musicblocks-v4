@@ -100,7 +100,7 @@ export const BrickWrapper: React.FC<BrickWrapperProps> = ({
             fill={toCssColor(colorBg)}
             stroke={toCssColor(strokeColor)}
             strokeWidth={strokeWidth}
-            filter={shadow ? 'drop-shadow(0 2px 2px rgba(0,0,0,0.2))' : undefined}
+            filter={undefined}
           />
           {labelType === 'text' && (
             <text
@@ -141,7 +141,7 @@ export const BrickWrapper: React.FC<BrickWrapperProps> = ({
           fill={toCssColor(colorBg)}
           stroke={toCssColor(strokeColor)}
           strokeWidth={strokeWidth}
-          filter={shadow ? 'drop-shadow(0 2px 2px rgba(0,0,0,0.2))' : undefined}
+          filter={undefined}
         />
         {labelType === 'text' && (
           <text

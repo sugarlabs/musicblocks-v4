@@ -306,6 +306,10 @@ body {
   cursor: grabbing;
 }
 
+.brick-item.dragging svg {
+  filter: drop-shadow(0 4px 2px rgba(0,0,0,0.25));
+}
+
 /* Category grid container */
 .category-grid {
   display: flex;

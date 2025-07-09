@@ -52,7 +52,7 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
   const [selectedBrick, setSelectedBrick] = useState<BrickConfig | null>(null);
   const [isDetailView, setIsDetailView] = useState(false);
   const brickListRef = useRef<HTMLDivElement>(null);
-  const [draggedBrick, setDraggedBrick] = useState<BrickConfig | null>(null);
+  const [draggedBrickId, setDraggedBrickId] = useState<string | null>(null);
   const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
@@ -119,12 +119,12 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
 
   // Mouse move and up handlers for global drag
   useEffect(() => {
-    if (!draggedBrick) return;
+    if (!draggedBrickId) return;
     const handleMouseMove = (e: MouseEvent) => {
       setDragPos({ x: e.clientX, y: e.clientY });
     };
     const handleMouseUp = () => {
-      setDraggedBrick(null);
+      setDraggedBrickId(null);
       setDragPos(null);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
@@ -135,7 +135,7 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [draggedBrick]);
+  }, [draggedBrickId]);
 
   const handleBrickClick = useCallback((brick: BrickConfig) => {
     setSelectedBrick(brick);
@@ -293,9 +293,10 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
                   return (
                     <div
                       key={brick.id}
-                      className="brick-item"
+                      className={`brick-item${draggedBrickId === brick.id ? ' dragging' : ''}`}
                       draggable
                       onDragStart={(e) => {
+                        setDraggedBrickId(brick.id);
                         // Find the SVG element inside the brick item
                         const svg = e.currentTarget.querySelector('svg');
                         if (svg) {
@@ -313,6 +314,8 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
                         e.dataTransfer.effectAllowed = 'copy';
                         setDrag({ brickType: brick.type, origin: 'palette' });
                       }}
+                      onDragEnd={() => setDraggedBrickId(null)}
+                      onDrop={() => setDraggedBrickId(null)}
                     >
                       {/* Directly render the brick component from the registry */}
                       {(() => {
@@ -327,7 +330,7 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
           ),
         )}
         {/* Floating SVG brick during drag */}
-        {draggedBrick && dragPos && (
+        {draggedBrickId && dragPos && (
           <div
             style={{
               position: 'fixed',
@@ -337,12 +340,12 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
               zIndex: 9999,
             }}
           >
-            <Suspense fallback={<div />}>{
-              (() => {
-                const BrickComponent = brickViews[draggedBrick.type];
-                return BrickComponent ? <BrickComponent {...draggedBrick} /> : null;
-              })()
-            }</Suspense>
+            {(() => {
+              const draggedBrick = bricks.find(b => b.id === draggedBrickId);
+              if (!draggedBrick) return null;
+              const BrickComponent = brickViews[draggedBrick.type];
+              return BrickComponent ? <BrickComponent {...draggedBrick} /> : null;
+            })()}
           </div>
         )}
       </div>

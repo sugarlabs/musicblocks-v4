@@ -383,7 +383,10 @@ const TowerView: React.FC<TowerViewProps> = ({
           <g
             key={curr.brick.uuid}
             transform={`translate(${x},${y})`}
-            style={{ cursor: isDragging && draggedBrickId === curr.brick.uuid ? 'grabbing' : 'grab' }}
+            style={{
+              cursor: isDragging && draggedBrickId === curr.brick.uuid ? 'grabbing' : 'grab',
+              filter: isDragging && draggedBrickId === curr.brick.uuid ? 'drop-shadow(0 4px 2px rgba(0,0,0,0.25))' : undefined,
+            }}
             onMouseDown={handleMouseDown}
           >
             <BrickNodeView node={curr} />

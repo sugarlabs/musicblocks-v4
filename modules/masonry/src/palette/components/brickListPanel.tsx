@@ -271,7 +271,6 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
                     <div
                       key={brick.id}
                       className="brick-item"
-                      draggable
                       {...dragProps}
                       onDragStart={(e) => {
                         console.log(' dragStart:', brick.id, brick.type);

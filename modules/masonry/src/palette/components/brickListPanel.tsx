@@ -273,6 +273,22 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
                       className="brick-item"
                       {...dragProps}
                       onDragStart={(e) => {
+                        // Find the SVG element inside the brick item
+                        const svg = e.currentTarget.querySelector('svg');
+                        if (svg) {
+                          // Clone the SVG for a cleaner drag image
+                          const clone = svg.cloneNode(true);
+                          // Set style for the clone
+                          (clone as SVGElement).style.position = 'absolute';
+                          (clone as SVGElement).style.top = '-9999px';
+                          document.body.appendChild(clone);
+                          // Use the SVG's width/height for offset
+                          const width = (clone as SVGSVGElement).width.baseVal.value || 40;
+                          const height = (clone as SVGSVGElement).height.baseVal.value || 40;
+                          e.dataTransfer.setDragImage(clone as Element, width / 2, height / 2);
+                          // Remove the clone after a short delay
+                          setTimeout(() => document.body.removeChild(clone), 0);
+                        }
                         console.log(' dragStart:', brick.id, brick.type);
                         e.dataTransfer.setData(
                           'application/json',

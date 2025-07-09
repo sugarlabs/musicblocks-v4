@@ -9,6 +9,10 @@ import flow from '../assets/icons/flow.svg';
 import music from '../assets/icons/music.svg';
 import graphics from '../assets/icons/graphics.svg';
 
+import { useDrag } from '@react-aria/dnd';
+import { useSetRecoilState } from 'recoil';
+import { dragStateAtom } from '../../state/dragState';
+
 interface BrickListPanelProps {
   categoryId: string;
   query: string;
@@ -248,13 +252,43 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
                 <h4 className="category-header">{category}</h4>
               </div>
               <div className="brick-category-list">
-                {categoryBricks.map((brick) => (
-                  <div key={brick.id} className="brick-item">
-                    <Suspense fallback={<div>Loading brick...</div>}>
-                      <AsyncBrickView brick={brick} onClick={handleBrickClick} />
-                    </Suspense>
-                  </div>
-                ))}
+                {categoryBricks.map((brick) => {
+                  const setDrag = useSetRecoilState(dragStateAtom);
+                  const { dragProps } = useDrag({
+                    getItems() {
+                      return [
+                        {
+                          'application/json': JSON.stringify({
+                            brickType: brick.type,
+                            origin: 'palette',
+                          }),
+                        },
+                      ];
+                    },
+                  });
+
+                  return (
+                    <div
+                      key={brick.id}
+                      className="brick-item"
+                      draggable
+                      {...dragProps}
+                      onDragStart={(e) => {
+                        console.log(' dragStart:', brick.id, brick.type);
+                        e.dataTransfer.setData(
+                          'application/json',
+                          JSON.stringify({ brickId: brick.id }),
+                        );
+                        e.dataTransfer.effectAllowed = 'copy';
+                        setDrag({ brickType: brick.type, origin: 'palette' });
+                      }}
+                    >
+                      <Suspense fallback={<div>Loading brick…</div>}>
+                        <AsyncBrickView brick={brick} onClick={handleBrickClick} />
+                      </Suspense>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ),

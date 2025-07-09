@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import type { JSX } from 'react';
 import type TowerModel from '../../model/model';
 import type { ITowerNode } from '../../model/model';
@@ -7,6 +7,9 @@ import { ExpressionBrickView } from '../../../brick/view/components/expression';
 import { CompoundBrickView } from '../../../brick/view/components/compound';
 import CompoundBrick from '../../../brick/model/model';
 import type { BrickModel, SimpleBrick, ExpressionBrick } from '../../../brick/model/model';
+import { useSetRecoilState, useRecoilState } from 'recoil';
+import { dragStateAtom } from '../../../state/dragState';
+import { towersAtom } from '../../../state/towersState';
 
 // Extended ITowerNode to ensure compatibility
 interface ExtendedTowerNode extends ITowerNode {
@@ -156,13 +159,42 @@ function RenderTowerNodeStack({
     { node, x: offset.x, y: offset.y },
   ];
 
+  // Recoil state for drag and towers
+  const [towers, setTowers] = useRecoilState(towersAtom);
+  const setDrag = useSetRecoilState(dragStateAtom);
+
   while (stack.length > 0) {
     const { node: curr, x, y } = stack.pop()!;
     const children = getNodeChildren(curr.brick.uuid, allNodes);
 
-    // Render the current brick
+    // Drag handlers for each brick
+    const handleDragStart = () => {
+      setDrag({ brickType: curr.brick.type, origin: 'tower' });
+    };
+    const handleDragEnd = (e: React.DragEvent<SVGGElement>) => {
+      const svg = e.currentTarget.ownerSVGElement!;
+      const rect = svg.getBoundingClientRect();
+      const newX = e.clientX - rect.left;
+      const newY = e.clientY - rect.top;
+      // Find the tower containing this brick
+      const tower = towers.find(t => t.hasBrick(curr.brick.uuid));
+      if (tower) {
+        tower.setBrickPosition(curr.brick.uuid, { x: newX, y: newY });
+        setTowers([...towers]);
+      }
+    };
+
+    // Render the current brick as a draggable group
     elements.push(
-      <g key={curr.brick.uuid} transform={`translate(${x},${y})`}>
+      <g
+        key={curr.brick.uuid}
+        transform={`translate(${x},${y})`}
+        // @ts-ignore: SVGProps does not include 'draggable', but it works in browsers
+        draggable
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        style={{ cursor: 'move' }}
+      >
         <BrickNodeView node={curr} />
       </g>,
     );
@@ -248,8 +280,55 @@ function updateCompoundBrickLayouts(
   }
 }
 
-// Main TowerView component
-const TowerView: React.FC<{ tower: TowerModel }> = ({ tower }) => {
+interface TowerViewProps {
+  tower: TowerModel;
+  draggedBrickId: string | null;
+  setDraggedBrickId: React.Dispatch<React.SetStateAction<string | null>>;
+  dragOffset: { x: number; y: number };
+  setDragOffset: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
+  isDragging: boolean;
+  setIsDragging: React.Dispatch<React.SetStateAction<boolean>>;
+  svgRef: React.RefObject<SVGSVGElement>;
+}
+
+const TowerView: React.FC<TowerViewProps> = ({
+  tower,
+  draggedBrickId,
+  setDraggedBrickId,
+  dragOffset,
+  setDragOffset,
+  isDragging,
+  setIsDragging,
+  svgRef,
+}) => {
+  // Mouse move handler for dragging
+  const handleMouseMove = (e: React.MouseEvent | MouseEvent) => {
+    if (!draggedBrickId) return;
+    const svg = svgRef.current;
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+    const x = e.clientX - rect.left - dragOffset.x;
+    const y = e.clientY - rect.top - dragOffset.y;
+    if (tower.hasBrick(draggedBrickId)) {
+      tower.setBrickPosition(draggedBrickId, { x, y });
+    }
+  };
+
+  // Mouse up handler to stop dragging
+  const handleMouseUp = () => {
+    setDraggedBrickId(null);
+    setIsDragging(false);
+    window.removeEventListener('mousemove', handleMouseMove as any);
+    window.removeEventListener('mouseup', handleMouseUp as any);
+  };
+
+  // Attach global listeners when dragging starts
+  const startGlobalDrag = () => {
+    window.addEventListener('mousemove', handleMouseMove as any);
+    window.addEventListener('mouseup', handleMouseUp as any);
+  };
+
+  // Render logic (same as before, but pass handlers to each brick)
   const renderedTower = useMemo(() => {
     // Cast to extended type
     const extendedNodes = new Map<string, ExtendedTowerNode>();
@@ -268,8 +347,83 @@ const TowerView: React.FC<{ tower: TowerModel }> = ({ tower }) => {
     // Find root nodes
     const roots = Array.from(extendedNodes.values()).filter((n) => n.parent === null);
 
+    // Custom RenderTowerNodeStack with mouse handlers
+    function RenderTowerNodeStackWithDrag({
+      node,
+      allNodes,
+      bbMap,
+      offset = { x: 0, y: 0 },
+    }: {
+      node: ExtendedTowerNode;
+      allNodes: Map<string, ExtendedTowerNode>;
+      bbMap: Map<string, { w: number; h: number }>;
+      offset?: { x: number; y: number };
+    }) {
+      const elements: JSX.Element[] = [];
+      const stack: Array<{ node: ExtendedTowerNode; x: number; y: number }> = [
+        { node, x: offset.x, y: offset.y },
+      ];
+      while (stack.length > 0) {
+        const { node: curr, x, y } = stack.pop()!;
+        const children = getNodeChildren(curr.brick.uuid, allNodes);
+        // Mouse handlers for each brick
+        const handleMouseDown = (e: React.MouseEvent) => {
+          setDraggedBrickId(curr.brick.uuid);
+          setIsDragging(true);
+          const svg = svgRef.current;
+          if (!svg) return;
+          const rect = svg.getBoundingClientRect();
+          setDragOffset({
+            x: e.clientX - rect.left - x,
+            y: e.clientY - rect.top - y,
+          });
+          startGlobalDrag();
+        };
+        elements.push(
+          <g
+            key={curr.brick.uuid}
+            transform={`translate(${x},${y})`}
+            style={{ cursor: isDragging && draggedBrickId === curr.brick.uuid ? 'grabbing' : 'grab' }}
+            onMouseDown={handleMouseDown}
+          >
+            <BrickNodeView node={curr} />
+          </g>,
+        );
+        // Handle nested children - positioned inside the current brick
+        if (children.nested.length > 0 && curr.brick.connectionPoints.nested) {
+          let nestedOffsetY = 0;
+          children.nested.forEach((child) => {
+            const nestedX = x + curr.brick.connectionPoints.nested!.x;
+            const nestedY = y + curr.brick.connectionPoints.nested!.y + nestedOffsetY;
+            stack.push({ node: child, x: nestedX, y: nestedY });
+            const _childBB = bbMap.get(child.brick.uuid)!;
+            nestedOffsetY += _childBB.h;
+          });
+        }
+        // Handle argument children - positioned at specific argument slots
+        if (children.args.length > 0 && curr.brick.connectionPoints.args) {
+          children.args.forEach((child) => {
+            const argIndex = child.argIndex || 0;
+            if (argIndex < curr.brick.connectionPoints.args!.length) {
+              const argOrigin = curr.brick.connectionPoints.args![argIndex];
+              stack.push({ node: child, x: x + argOrigin.x, y: y + argOrigin.y });
+            }
+          });
+        }
+        // Handle stacked children - positioned below the current brick
+        if (children.stacked.length > 0) {
+          let stackedOffsetY = y + curr.brick.boundingBox.h;
+          children.stacked.forEach((child) => {
+            stack.push({ node: child, x: x, y: stackedOffsetY });
+            const _childBB3 = bbMap.get(child.brick.uuid)!;
+            stackedOffsetY += _childBB3.h;
+          });
+        }
+      }
+      return <>{elements}</>;
+    }
     return roots.map((root) => (
-      <RenderTowerNodeStack
+      <RenderTowerNodeStackWithDrag
         key={root.brick.uuid}
         node={root}
         allNodes={extendedNodes}
@@ -277,9 +431,13 @@ const TowerView: React.FC<{ tower: TowerModel }> = ({ tower }) => {
         offset={root.position}
       />
     ));
-  }, [tower]);
+  }, [tower, draggedBrickId, dragOffset, isDragging, svgRef]);
 
-  return <g>{renderedTower}</g>;
+  return (
+    <g>
+      {renderedTower}
+    </g>
+  );
 };
 
 export default TowerView;

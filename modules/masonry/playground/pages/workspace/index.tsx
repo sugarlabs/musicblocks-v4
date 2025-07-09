@@ -1,37 +1,30 @@
-import BrickFactory from './BrickFactory';
-import { WORKSPACES_DATA } from './data';
-import type { Brick } from './data';
+import React from 'react';
+import PaletteWrapper from '../../../src/palette/components/paletteWrapper';
+import '../../../src/palette/palette.css';
+import WorkspaceCanvas from './WorkspaceCanvas';
 
-function RenderBricks({ brickData }: { brickData: Brick }) {
+export default function App() {
   return (
-    <>
-      <BrickFactory brickData={brickData} />
-      {brickData.children &&
-        brickData.children?.length > 0 &&
-        brickData.children.map((child) => <RenderBricks key={child.id} brickData={child} />)}
-    </>
-  );
-}
+    <div style={{ display: 'flex', height: '100vh' }}>
+      {/* Palette sidebar */}
+      <aside
+        style={{
+          width: 280,
+          borderRight: '1px solid #ddd',
+          overflowY: 'auto',
+        }}
+      >
+        <PaletteWrapper
+          categoryId=""
+          query=""
+          mode="flow"
+          onModeChange={() => {}}
+          onClose={() => {}}
+        />
+      </aside>
 
-function WorkSpace() {
-  return (
-    <div style={{ padding: '20px 50px' }}>
-      {WORKSPACES_DATA.map((workspace) => (
-        <svg
-          version="1.1"
-          xmlns="http://www.w3.org/2000/svg"
-          key={workspace.id}
-          height="765px"
-          width="1800px"
-          style={{ border: '2px solid black' }}
-        >
-          {workspace.data.map((brick) => {
-            return <RenderBricks key={brick.id} brickData={brick} />;
-          })}
-        </svg>
-      ))}
+      {/* Playground canvas */}
+      <WorkspaceCanvas />
     </div>
   );
 }
-
-export default WorkSpace;

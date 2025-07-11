@@ -23,14 +23,12 @@
     "types": [
       "vite/client",
       "vitest/globals"
-    ]
-  },
-  /**
-   * `compilerOptions.module` should be UMD to execute modules with import statements
-   */
-  "ts-node": {
-    "compilerOptions": {
-      "module": "UMD"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@code-builder/*": [
+        "modules/code-builder/src/*"
+      ]
     }
   }
 }

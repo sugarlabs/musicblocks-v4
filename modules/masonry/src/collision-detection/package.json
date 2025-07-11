@@ -1,0 +1,13 @@
+{
+  "name": "@musicblocks/masonry-collision-detection",
+  "version": "1.0.0",
+  "description": "Collision detection system for brick-based editor",
+  "main": "index.ts",
+  "types": "index.ts",
+  "dependencies": {
+    "@musicblocks/masonry-brick": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+} 

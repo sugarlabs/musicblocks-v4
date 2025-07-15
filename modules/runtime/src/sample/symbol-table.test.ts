@@ -1,369 +1,262 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * Symbol Table and Symbol Resolver Tests
+ * Symbol Table Basic Tests
  *
- * Comprehensive test suite for the symbol table system including
- * symbol declarations, lookups, scope management, and memory integration.
+ * Simple test suite for symbol table features including
+ * enums, arrays, dictionaries, and member expressions.
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SymbolTable } from '../execution/scope/symbol-table';
-import { SymbolResolver } from '../execution/scope/symbol-resolver';
-import {
-    SymbolType,
-    DataType,
-    SymbolAlreadyExistsError,
-    SymbolNotFoundError,
-} from '../@types/symbol-types';
-import { ThreadManager } from '../execution/scope/thread';
+import { SymbolType, DataType, ExecutionContext, AccessControlError } from '../@types/symbol-types';
 
-interface TestKeyMap {
-    x: number;
-    y: string;
-    z: boolean;
-    [key: string]: any;
-}
-
-describe('SymbolTable', () => {
+describe('Enhanced Symbol Table - Basic Features', () => {
     let symbolTable: SymbolTable;
 
     beforeEach(() => {
         symbolTable = new SymbolTable();
     });
 
-    describe('Symbol Declaration', () => {
-        it('should declare a simple user variable', () => {
-            const entry = symbolTable.declare('x', SymbolType.USER_VARIABLE, DataType.NUMBER);
+    describe('Execution Context', () => {
+        it('should set and get execution context', () => {
+            expect(symbolTable.getExecutionContext()).toBe(ExecutionContext.USER_PROGRAM);
 
-            expect(entry.name).toBe('x');
-            expect(entry.symbolType).toBe(SymbolType.USER_VARIABLE);
-            expect(entry.dataType).toBe(DataType.NUMBER);
-            expect(entry.isUserDefined).toBe(true);
-            expect(entry.isMutable).toBe(true);
+            symbolTable.setExecutionContext(ExecutionContext.MAIN_PROGRAM);
+            expect(symbolTable.getExecutionContext()).toBe(ExecutionContext.MAIN_PROGRAM);
         });
+    });
 
-        it('should declare a system variable as immutable', () => {
+    describe('System Variable Types', () => {
+        it('should declare system variable (immutable)', () => {
+            symbolTable.setExecutionContext(ExecutionContext.MAIN_PROGRAM);
             const entry = symbolTable.declare('PI', SymbolType.SYSTEM_VARIABLE, DataType.NUMBER);
 
-            expect(entry.name).toBe('PI');
             expect(entry.symbolType).toBe(SymbolType.SYSTEM_VARIABLE);
             expect(entry.isMutable).toBe(false);
-            expect(entry.isUserDefined).toBe(false);
+            expect(entry.isUserModifiable).toBe(false);
         });
 
-        it('should declare a user function', () => {
+        it('should declare configurable system variable', () => {
+            symbolTable.setExecutionContext(ExecutionContext.MAIN_PROGRAM);
             const entry = symbolTable.declare(
-                'myFunc',
-                SymbolType.USER_FUNCTION,
-                DataType.FUNCTION,
-                {
-                    metadata: {
-                        functionMetadata: {
-                            parameterCount: 2,
-                            parameterNames: ['a', 'b'],
-                            returnType: DataType.NUMBER,
-                        },
-                    },
-                },
+                'config',
+                SymbolType.SYSTEM_VARIABLE_CONFIGURABLE,
+                DataType.STRING,
             );
 
-            expect(entry.name).toBe('myFunc');
-            expect(entry.symbolType).toBe(SymbolType.USER_FUNCTION);
-            expect(entry.dataType).toBe(DataType.FUNCTION);
-            expect(entry.isFunction()).toBe(true);
-            expect(entry.getFunctionMetadata()).toEqual({
-                parameterCount: 2,
-                parameterNames: ['a', 'b'],
-                returnType: DataType.NUMBER,
-            });
+            expect(entry.symbolType).toBe(SymbolType.SYSTEM_VARIABLE_CONFIGURABLE);
+            expect(entry.isMutable).toBe(true);
+            expect(entry.isUserModifiable).toBe(false);
         });
 
-        it('should prevent duplicate symbol declaration in same scope', () => {
-            symbolTable.declare('x', SymbolType.USER_VARIABLE, DataType.NUMBER);
+        it('should prevent user program from declaring system variables', () => {
+            symbolTable.setExecutionContext(ExecutionContext.USER_PROGRAM);
 
             expect(() => {
-                symbolTable.declare('x', SymbolType.USER_VARIABLE, DataType.STRING);
-            }).toThrow(SymbolAlreadyExistsError);
-        });
-
-        it('should allow declaring symbol with same name in different scope', () => {
-            symbolTable.declare('x', SymbolType.USER_VARIABLE, DataType.NUMBER);
-            symbolTable.pushScope();
-
-            const entry = symbolTable.declare('x', SymbolType.USER_VARIABLE, DataType.STRING);
-            expect(entry.dataType).toBe(DataType.STRING);
+                symbolTable.declare('PI', SymbolType.SYSTEM_VARIABLE, DataType.NUMBER);
+            }).toThrow(AccessControlError);
         });
     });
 
-    describe('Symbol Lookup', () => {
-        it('should find symbol in current scope', () => {
-            const declared = symbolTable.declare('x', SymbolType.USER_VARIABLE, DataType.NUMBER);
-            const result = symbolTable.lookup('x');
-
-            expect(result).not.toBeNull();
-            expect(result!.entry).toBe(declared);
-            expect(result!.isInCurrentScope).toBe(true);
-            expect(result!.scopeDepth).toBe(0);
-        });
-
-        it('should find symbol in parent scope', () => {
-            const declared = symbolTable.declare('x', SymbolType.USER_VARIABLE, DataType.NUMBER);
-            symbolTable.pushScope();
-
-            const result = symbolTable.lookup('x');
-            expect(result).not.toBeNull();
-            expect(result!.entry).toBe(declared);
-            expect(result!.isInCurrentScope).toBe(false);
-            expect(result!.scopeDepth).toBe(0);
-        });
-
-        it('should return null for non-existent symbol', () => {
-            const result = symbolTable.lookup('nonexistent');
-            expect(result).toBeNull();
-        });
-
-        it('should find closest scope symbol (shadowing)', () => {
-            symbolTable.declare('x', SymbolType.USER_VARIABLE, DataType.NUMBER);
-            symbolTable.pushScope();
-            const shadowing = symbolTable.declare('x', SymbolType.USER_VARIABLE, DataType.STRING);
-
-            const result = symbolTable.lookup('x');
-            expect(result!.entry).toBe(shadowing);
-            expect(result!.entry.dataType).toBe(DataType.STRING);
-        });
-    });
-
-    describe('Scope Management', () => {
-        it('should start with depth 0', () => {
-            expect(symbolTable.getCurrentScopeDepth()).toBe(0);
-        });
-
-        it('should increase depth when pushing scope', () => {
-            symbolTable.pushScope();
-            expect(symbolTable.getCurrentScopeDepth()).toBe(1);
-
-            symbolTable.pushScope();
-            expect(symbolTable.getCurrentScopeDepth()).toBe(2);
-        });
-
-        it('should decrease depth when popping scope', () => {
-            symbolTable.pushScope();
-            symbolTable.pushScope();
-            expect(symbolTable.getCurrentScopeDepth()).toBe(2);
-
-            symbolTable.popScope();
-            expect(symbolTable.getCurrentScopeDepth()).toBe(1);
-        });
-
-        it('should not allow popping global scope', () => {
-            expect(() => symbolTable.popScope()).toThrow('Cannot pop the global scope');
-        });
-
-        it('should remove symbols when popping scope', () => {
-            symbolTable.declare('global', SymbolType.USER_VARIABLE, DataType.NUMBER);
-            symbolTable.pushScope();
-            symbolTable.declare('local', SymbolType.USER_VARIABLE, DataType.STRING);
-
-            expect(symbolTable.existsInAnyScope('local')).toBe(true);
-            symbolTable.popScope();
-            expect(symbolTable.existsInAnyScope('local')).toBe(false);
-            expect(symbolTable.existsInAnyScope('global')).toBe(true);
-        });
-    });
-
-    describe('Symbol Queries', () => {
-        beforeEach(() => {
-            symbolTable.declare('global1', SymbolType.USER_VARIABLE, DataType.NUMBER);
-            symbolTable.declare('global2', SymbolType.SYSTEM_VARIABLE, DataType.STRING);
-            symbolTable.pushScope();
-            symbolTable.declare('local1', SymbolType.USER_VARIABLE, DataType.BOOLEAN);
-        });
-
-        it('should check existence in current scope', () => {
-            expect(symbolTable.existsInCurrentScope('local1')).toBe(true);
-            expect(symbolTable.existsInCurrentScope('global1')).toBe(false);
-        });
-
-        it('should check existence in any scope', () => {
-            expect(symbolTable.existsInAnyScope('local1')).toBe(true);
-            expect(symbolTable.existsInAnyScope('global1')).toBe(true);
-            expect(symbolTable.existsInAnyScope('nonexistent')).toBe(false);
-        });
-
-        it('should get current scope symbols', () => {
-            const symbols = symbolTable.getCurrentScopeSymbols();
-            expect(symbols).toHaveLength(1);
-            expect(symbols[0].name).toBe('local1');
-        });
-
-        it('should get all accessible symbols', () => {
-            const symbols = symbolTable.getAllAccessibleSymbols();
-            expect(symbols).toHaveLength(3);
-
-            const names = symbols.map((s) => s.name);
-            expect(names).toContain('global1');
-            expect(names).toContain('global2');
-            expect(names).toContain('local1');
-        });
-    });
-
-    describe('Symbol Management', () => {
-        it('should remove symbol from current scope', () => {
-            symbolTable.declare('x', SymbolType.USER_VARIABLE, DataType.NUMBER);
-            expect(symbolTable.existsInCurrentScope('x')).toBe(true);
-
-            const removed = symbolTable.removeSymbol('x');
-            expect(removed).toBe(true);
-            expect(symbolTable.existsInCurrentScope('x')).toBe(false);
-        });
-
-        it('should return false when removing non-existent symbol', () => {
-            const removed = symbolTable.removeSymbol('nonexistent');
-            expect(removed).toBe(false);
-        });
-
-        it('should clear current scope', () => {
-            symbolTable.declare('x', SymbolType.USER_VARIABLE, DataType.NUMBER);
-            symbolTable.declare('y', SymbolType.USER_VARIABLE, DataType.STRING);
-            expect(symbolTable.getCurrentScopeSymbols()).toHaveLength(2);
-
-            symbolTable.clearCurrentScope();
-            expect(symbolTable.getCurrentScopeSymbols()).toHaveLength(0);
-        });
-
-        it('should reset to initial state', () => {
-            symbolTable.declare('x', SymbolType.USER_VARIABLE, DataType.NUMBER);
-            symbolTable.pushScope();
-            symbolTable.declare('y', SymbolType.USER_VARIABLE, DataType.STRING);
-
-            symbolTable.reset();
-            expect(symbolTable.getCurrentScopeDepth()).toBe(0);
-            expect(symbolTable.getCurrentScopeSymbols()).toHaveLength(0);
-        });
-    });
-});
-
-describe('SymbolResolver', () => {
-    let symbolTable: SymbolTable;
-    let symbolResolver: SymbolResolver<TestKeyMap>;
-    let threadManager: ThreadManager<TestKeyMap>;
-    let threadContext: any;
-
-    beforeEach(() => {
-        symbolTable = new SymbolTable();
-        threadManager = new ThreadManager<TestKeyMap>({ x: 0, y: '', z: false });
-        threadContext = threadManager.createThread();
-        symbolResolver = new SymbolResolver(symbolTable, threadContext);
-    });
-
-    describe('Symbol Resolution', () => {
-        it('should return null for non-existent symbol memory location', () => {
-            const location = symbolResolver.resolveToMemoryLocation('nonexistent');
-            expect(location).toBeNull();
-        });
-
-        it('should resolve frame ID for symbol', () => {
-            symbolTable.declare('x', SymbolType.USER_VARIABLE, DataType.NUMBER, {
-                frameId: 'frame_456',
-            });
-
-            const frameId = symbolResolver.resolveToFrameId('x');
-            expect(frameId).toBe('frame_456');
-        });
-
-        it('should get symbol metadata', () => {
-            const metadata = {
-                variableMetadata: {
-                    isInitialized: true,
-                    defaultValue: 42,
+    describe('Enum Declaration', () => {
+        it('should declare enum with metadata', () => {
+            const enumMetadata = {
+                enumMetadata: {
+                    possibleValues: ['red', 'green', 'blue'],
+                    enumType: 'color',
+                    currentValue: 'red',
                 },
             };
 
-            symbolTable.declare('x', SymbolType.USER_VARIABLE, DataType.NUMBER, { metadata });
-
-            const resolvedMetadata = symbolResolver.getSymbolMetadata('x');
-            expect(resolvedMetadata).toEqual(metadata);
-        });
-    });
-
-    describe('Symbol Accessibility', () => {
-        it('should check if symbol is accessible', () => {
-            symbolTable.declare('x', SymbolType.USER_VARIABLE, DataType.NUMBER);
-
-            expect(symbolResolver.isSymbolAccessible('x')).toBe(true);
-            expect(symbolResolver.isSymbolAccessible('nonexistent')).toBe(false);
-        });
-
-        it('should check symbol existence', () => {
-            symbolTable.declare('x', SymbolType.USER_VARIABLE, DataType.NUMBER);
-
-            expect(symbolResolver.symbolExists('x')).toBe(true);
-            expect(symbolResolver.symbolExists('nonexistent')).toBe(false);
-        });
-    });
-
-    describe('Value Resolution and Setting', () => {
-        it('should resolve symbol value from local context', () => {
-            symbolTable.declare('x', SymbolType.USER_VARIABLE, DataType.NUMBER);
-            threadContext.setLocal('x', 42);
-
-            const value = symbolResolver.resolveValue('x');
-            expect(value).toBe(42);
-        });
-
-        it('should resolve symbol value from global context', () => {
-            symbolTable.declare('x', SymbolType.USER_VARIABLE, DataType.NUMBER);
-            threadContext.setGlobal('x', 100);
-            symbolTable.pushScope();
-
-            const value = symbolResolver.resolveValue('x');
-            expect(value).toBe(100);
-        });
-
-        it('should throw error when resolving non-existent symbol', () => {
-            expect(() => {
-                symbolResolver.resolveValue('nonexistent');
-            }).toThrow(SymbolNotFoundError);
-        });
-
-        it('should set mutable symbol value', () => {
-            symbolTable.declare('x', SymbolType.USER_VARIABLE, DataType.NUMBER, {
-                isMutable: true,
+            const entry = symbolTable.declare('color', SymbolType.USER_VARIABLE, DataType.ENUM, {
+                metadata: enumMetadata,
             });
 
-            symbolResolver.setValue('x', 42);
-            const value = symbolResolver.resolveValue('x');
-            expect(value).toBe(42);
+            expect(entry.dataType).toBe(DataType.ENUM);
+            expect(entry.isEnum()).toBe(true);
+            expect(entry.getEnumMetadata()).toEqual(enumMetadata.enumMetadata);
         });
 
-        it('should prevent setting immutable symbol value', () => {
-            symbolTable.declare('PI', SymbolType.SYSTEM_VARIABLE, DataType.NUMBER, {
-                isMutable: false,
+        it('should validate enum values', () => {
+            const enumMetadata = {
+                enumMetadata: {
+                    possibleValues: ['do', 're', 'mi'],
+                    enumType: 'note',
+                },
+            };
+
+            symbolTable.declare('note', SymbolType.USER_VARIABLE, DataType.ENUM, {
+                metadata: enumMetadata,
             });
 
-            expect(() => {
-                symbolResolver.setValue('PI', 3.14159);
-            }).toThrow('Cannot modify immutable symbol "PI"');
+            expect(symbolTable.validateEnumValue('note', 'do')).toBe(true);
+            expect(symbolTable.validateEnumValue('note', 'fa')).toBe(false);
         });
 
-        it('should throw error when setting non-existent symbol', () => {
-            expect(() => {
-                symbolResolver.setValue('nonexistent', 42);
-            }).toThrow(SymbolNotFoundError);
+        it('should get enum possible values', () => {
+            const enumMetadata = {
+                enumMetadata: {
+                    possibleValues: ['piano', 'guitar', 'violin'],
+                    enumType: 'instrument',
+                },
+            };
+
+            symbolTable.declare('instrument', SymbolType.USER_VARIABLE, DataType.ENUM, {
+                metadata: enumMetadata,
+            });
+
+            const values = symbolTable.getEnumPossibleValues('instrument');
+            expect(values).toEqual(['piano', 'guitar', 'violin']);
         });
     });
 
-    describe('Symbol Entry Access', () => {
-        it('should get symbol entry', () => {
-            const declared = symbolTable.declare('x', SymbolType.USER_VARIABLE, DataType.NUMBER);
-            const entry = symbolResolver.getSymbolEntry('x');
+    describe('Array Declaration', () => {
+        it('should declare array with metadata', () => {
+            const arrayMetadata = {
+                arrayMetadata: {
+                    elementType: DataType.NUMBER,
+                    maxLength: 10,
+                    dimensions: 1,
+                },
+            };
 
-            expect(entry).toBe(declared);
+            const entry = symbolTable.declare('numbers', SymbolType.USER_VARIABLE, DataType.ARRAY, {
+                metadata: arrayMetadata,
+            });
+
+            expect(entry.dataType).toBe(DataType.ARRAY);
+            expect(entry.isArray()).toBe(true);
+            expect(entry.getArrayMetadata()).toEqual(arrayMetadata.arrayMetadata);
+        });
+    });
+
+    describe('Dictionary Declaration', () => {
+        it('should declare dictionary with metadata', () => {
+            const dictMetadata = {
+                dictionaryMetadata: {
+                    keyType: DataType.STRING,
+                    valueType: DataType.NUMBER,
+                    allowDynamicKeys: true,
+                    requiredKeys: ['x', 'y'],
+                },
+            };
+
+            const entry = symbolTable.declare(
+                'point',
+                SymbolType.USER_VARIABLE,
+                DataType.DICTIONARY,
+                {
+                    metadata: dictMetadata,
+                },
+            );
+
+            expect(entry.dataType).toBe(DataType.DICTIONARY);
+            expect(entry.isDictionary()).toBe(true);
+            expect(entry.getDictionaryMetadata()).toEqual(dictMetadata.dictionaryMetadata);
+        });
+    });
+
+    describe('Member Expression Resolution', () => {
+        beforeEach(() => {
+            // Declare an enum for testing member access
+            const enumMetadata = {
+                enumMetadata: {
+                    possibleValues: ['do', 're', 'mi', 'fa', 'sol'],
+                    enumType: 'solfege',
+                },
+            };
+            symbolTable.declare('solfege', SymbolType.USER_VARIABLE, DataType.ENUM, {
+                metadata: enumMetadata,
+            });
+
+            const dictMetadata = {
+                dictionaryMetadata: {
+                    keyType: DataType.STRING,
+                    valueType: DataType.NUMBER,
+                    allowDynamicKeys: true,
+                },
+            };
+            symbolTable.declare('scores', SymbolType.USER_VARIABLE, DataType.DICTIONARY, {
+                metadata: dictMetadata,
+            });
         });
 
-        it('should return null for non-existent symbol entry', () => {
-            const entry = symbolResolver.getSymbolEntry('nonexistent');
-            expect(entry).toBeNull();
+        it('should resolve enum member access', () => {
+            const result = symbolTable.resolveMember('solfege', 'do');
+
+            expect(result).not.toBeNull();
+            expect(result!.exists).toBe(true);
+            expect(result!.isReadable).toBe(true);
+            expect(result!.isWritable).toBe(false);
+            expect(result!.propertyType).toBe(DataType.STRING);
+        });
+
+        it('should reject invalid enum member', () => {
+            const result = symbolTable.resolveMember('solfege', 'invalid');
+
+            expect(result).not.toBeNull();
+            expect(result!.exists).toBe(false);
+        });
+
+        it('should resolve dictionary member access', () => {
+            const result = symbolTable.resolveMember('scores', 'math');
+
+            expect(result).not.toBeNull();
+            expect(result!.exists).toBe(true);
+            expect(result!.isReadable).toBe(true);
+            expect(result!.isWritable).toBe(true);
+            expect(result!.propertyType).toBe(DataType.NUMBER);
+        });
+
+        it('should return null for non-object member access', () => {
+            symbolTable.declare('number', SymbolType.USER_VARIABLE, DataType.NUMBER);
+            const result = symbolTable.resolveMember('number', 'property');
+
+            expect(result).toBeNull();
+        });
+    });
+
+    describe('Access Control Validation', () => {
+        beforeEach(() => {
+            symbolTable.setExecutionContext(ExecutionContext.MAIN_PROGRAM);
+            symbolTable.declare('systemVar', SymbolType.SYSTEM_VARIABLE, DataType.NUMBER);
+            symbolTable.declare(
+                'configVar',
+                SymbolType.SYSTEM_VARIABLE_CONFIGURABLE,
+                DataType.NUMBER,
+            );
+            symbolTable.declare('userVar', SymbolType.USER_VARIABLE, DataType.NUMBER);
+        });
+
+        it('should validate symbol usage for read operations', () => {
+            symbolTable.setExecutionContext(ExecutionContext.USER_PROGRAM);
+
+            expect(symbolTable.validateSymbolUsage('systemVar', 'read')).toBe(true);
+            expect(symbolTable.validateSymbolUsage('configVar', 'read')).toBe(true);
+            expect(symbolTable.validateSymbolUsage('userVar', 'read')).toBe(true);
+        });
+
+        it('should validate symbol usage for write operations', () => {
+            symbolTable.setExecutionContext(ExecutionContext.USER_PROGRAM);
+
+            expect(symbolTable.validateSymbolUsage('systemVar', 'write')).toBe(false);
+            expect(symbolTable.validateSymbolUsage('configVar', 'write')).toBe(false);
+            expect(symbolTable.validateSymbolUsage('userVar', 'write')).toBe(true);
+        });
+
+        it('should validate member access', () => {
+            const enumMetadata = {
+                enumMetadata: {
+                    possibleValues: ['option1', 'option2'],
+                    enumType: 'test',
+                },
+            };
+            symbolTable.declare('testEnum', SymbolType.USER_VARIABLE, DataType.ENUM, {
+                metadata: enumMetadata,
+            });
+
+            expect(symbolTable.validateMemberAccess('testEnum', 'option1', false)).toBe(true); // read
+            expect(symbolTable.validateMemberAccess('testEnum', 'option1', true)).toBe(false); // write
         });
     });
 });

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import WorkspaceApp from './pages/workspace/index';
-import CollisionMapApp from './pages/collision-map';
+import WorkspaceApp from './pages/Workspace/index';
+import CollisionDetection from '../src/collision-detection/CollisionDetection';
 
 export default function App() {
-  const [tab, setTab] = useState<'workspace' | 'collision'>('workspace');
+  const [tab, setTab] = useState<'workspace' | 'collision' | 'collision-detection'>('workspace');
 
   return (
     <div style={{ height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column' }}>
-      {/* Fixed top-right tab bar */}
+      {/* Top-right tab bar */}
       <div
         style={{
           position: 'fixed',
@@ -39,24 +39,33 @@ export default function App() {
           Workspace
         </button>
         <button
-          onClick={() => setTab('collision')}
+          onClick={() => setTab('collision-detection')}
           style={{
             padding: '12px 24px',
             border: 'none',
-            background: tab === 'collision' ? '#e17055' : 'transparent',
-            color: tab === 'collision' ? 'white' : '#2c3e50',
+            background: tab === 'collision-detection' ? '#e17055' : 'transparent',
+            color: tab === 'collision-detection' ? 'white' : '#2c3e50',
             fontWeight: 600,
             cursor: 'pointer',
-            borderBottom: tab === 'collision' ? '2px solid #d35400' : 'none',
+            borderBottom: tab === 'collision-detection' ? '2px solid #d35400' : 'none',
             outline: 'none',
           }}
         >
-          Collision Map
+          Collision Detection
         </button>
       </div>
-      <div style={{ flex: 1, minHeight: 0 }}>
-        {tab === 'workspace' ? <WorkspaceApp /> : <CollisionMapApp />}
+
+      {/* Main Content */}
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          marginTop: 48,
+        }}
+      >
+        {tab === 'workspace' && <WorkspaceApp />}
+        {tab === 'collision-detection' && <CollisionDetection />}
       </div>
     </div>
   );
-} 
+}

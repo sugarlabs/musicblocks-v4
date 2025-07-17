@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import PaletteWrapper from '../../../src/palette/components/paletteWrapper';
 import '../../../src/palette/palette.css';
 import WorkspaceCanvas from './WorkspaceCanvas';
-import { CollisionTest } from './CollisionTest';
 
 export default function App() {
   const [showCollisionTest, setShowCollisionTest] = useState(false);
@@ -17,14 +16,16 @@ export default function App() {
           overflowY: 'auto',
         }}
       >
-        <PaletteWrapper/>
-        
+        <PaletteWrapper />
+
         {/* Collision Test Button */}
-        <div style={{ 
-          padding: '20px 0px', 
-          borderTop: '1px solid #ddd',
-          background: '#f8f9fa'
-        }}>
+        <div
+          style={{
+            padding: '20px 0px',
+            borderTop: '1px solid #ddd',
+            background: '#f8f9fa',
+          }}
+        >
           <button
             onClick={() => setShowCollisionTest(true)}
             style={{
@@ -35,7 +36,7 @@ export default function App() {
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '12px'
+              fontSize: '12px',
             }}
           >
             Test Collision Detection
@@ -45,11 +46,6 @@ export default function App() {
 
       {/* Playground canvas */}
       <WorkspaceCanvas />
-      
-      {/* Collision Test Modal */}
-      {showCollisionTest && (
-        <CollisionTest onClose={() => setShowCollisionTest(false)} />
-      )}
     </div>
   );
 }

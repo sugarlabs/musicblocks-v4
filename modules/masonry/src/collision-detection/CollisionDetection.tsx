@@ -90,7 +90,7 @@ class QuadNode {
   query(range: AABB, found: Input[]) {
     if (!this.intersects(range)) return;
     for (const p of this.points) {
-      if (p.x >= range.x && p.x < range.x + range.w && p.y >= range.y && p.y < range.y + range.h)
+      if (p.x >= range.x && p.x <= range.x + range.w && p.y >= range.y && p.y <= range.y + range.h)
         found.push(p);
     }
     if (this.divided) {
@@ -177,7 +177,7 @@ export default function CollisionDetection() {
       eng.addObjects(inputs);
       engineRef.current = eng;
 
-      // 3) reset all to inactive
+      // reset all to inactive
       setObjects(inputs.map((i) => ({ ...i, active: false })));
     };
 

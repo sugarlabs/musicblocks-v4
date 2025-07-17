@@ -86,14 +86,7 @@ export const BrickWrapper: React.FC<BrickWrapperProps> = ({
         style={{ overflow: 'visible' }}
       >
         {/* Background rectangle for brick visuals, if needed */}
-        <rect
-          x={0}
-          y={0}
-          width={svgWidth}
-          height={svgHeight}
-          fill="none"
-          pointerEvents="none"
-        />
+        <rect x={0} y={0} width={svgWidth} height={svgHeight} fill="none" pointerEvents="none" />
         <g transform={`translate(${PADDING.left},${PADDING.top})`}>
           <path
             d={shape.path}
@@ -127,14 +120,7 @@ export const BrickWrapper: React.FC<BrickWrapperProps> = ({
       style={{ overflow: 'visible' }}
     >
       {/* Background rectangle for brick visuals, if needed */}
-      <rect
-        x={0}
-        y={0}
-        width={svgWidth}
-        height={svgHeight}
-        fill="none"
-        pointerEvents="none"
-      />
+      <rect x={0} y={0} width={svgWidth} height={svgHeight} fill="none" pointerEvents="none" />
       <g transform={`translate(${PADDING.left},${PADDING.top})`}>
         <path
           d={shape.path}

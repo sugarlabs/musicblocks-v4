@@ -9,7 +9,8 @@ type PropsWithMetrics = TBrickRenderPropsSimple & {
 };
 
 export const SimpleBrickView: React.FC<PropsWithMetrics> = (props) => {
-  const { topNotch, bottomNotch, strokeWidth, scale, bboxArgs, standaloneSvg, ...commonProps } = props;
+  const { topNotch, bottomNotch, strokeWidth, scale, bboxArgs, standaloneSvg, ...commonProps } =
+    props;
 
   const getBrickConfig = (bBoxLabel: { w: number; h: number }) => ({
     type: 'type1' as const,

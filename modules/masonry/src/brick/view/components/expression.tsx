@@ -9,7 +9,8 @@ type PropsWithMetrics = TBrickRenderPropsExpression & {
 };
 
 export const ExpressionBrickView: React.FC<PropsWithMetrics> = (props) => {
-  const { value, isValueSelectOpen, strokeWidth, scale, bboxArgs, standaloneSvg, ...commonProps } = props;
+  const { value, isValueSelectOpen, strokeWidth, scale, bboxArgs, standaloneSvg, ...commonProps } =
+    props;
 
   const getBrickConfig = (bBoxLabel: { w: number; h: number }) => ({
     type: 'type2' as const,

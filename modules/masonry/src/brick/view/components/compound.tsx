@@ -9,7 +9,17 @@ type PropsWithMetrics = TBrickRenderPropsCompound & {
 };
 
 export const CompoundBrickView: React.FC<PropsWithMetrics> = (props) => {
-  const { topNotch, bottomNotch, bboxNest, isFolded, strokeWidth, scale, bboxArgs, standaloneSvg, ...commonProps } = props;
+  const {
+    topNotch,
+    bottomNotch,
+    bboxNest,
+    isFolded,
+    strokeWidth,
+    scale,
+    bboxArgs,
+    standaloneSvg,
+    ...commonProps
+  } = props;
 
   const getBrickConfig = (bBoxLabel: { w: number; h: number }) => ({
     type: 'type3' as const,

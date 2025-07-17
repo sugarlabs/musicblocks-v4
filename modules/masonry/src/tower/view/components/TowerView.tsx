@@ -177,7 +177,7 @@ function RenderTowerNodeStack({
       const newX = e.clientX - rect.left;
       const newY = e.clientY - rect.top;
       // Find the tower containing this brick
-      const tower = towers.find(t => t.hasBrick(curr.brick.uuid));
+      const tower = towers.find((t) => t.hasBrick(curr.brick.uuid));
       if (tower) {
         tower.setBrickPosition(curr.brick.uuid, { x: newX, y: newY });
         setTowers([...towers]);
@@ -302,7 +302,7 @@ const TowerView: React.FC<TowerViewProps> = ({
   svgRef,
 }) => {
   // Mouse move handler for dragging
-  const handleMouseMove = (e: React.MouseEvent | MouseEvent) => {
+  const handleMouseMove = (e: MouseEvent) => {
     if (!draggedBrickId) return;
     const svg = svgRef.current;
     if (!svg) return;
@@ -315,17 +315,17 @@ const TowerView: React.FC<TowerViewProps> = ({
   };
 
   // Mouse up handler to stop dragging
-  const handleMouseUp = () => {
+  const handleMouseUp = (e: MouseEvent) => {
     setDraggedBrickId(null);
     setIsDragging(false);
-    window.removeEventListener('mousemove', handleMouseMove as any);
-    window.removeEventListener('mouseup', handleMouseUp as any);
+    window.removeEventListener('mousemove', handleMouseMove);
+    window.removeEventListener('mouseup', handleMouseUp);
   };
 
   // Attach global listeners when dragging starts
   const startGlobalDrag = () => {
-    window.addEventListener('mousemove', handleMouseMove as any);
-    window.addEventListener('mouseup', handleMouseUp as any);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
   };
 
   // Render logic (same as before, but pass handlers to each brick)
@@ -385,7 +385,10 @@ const TowerView: React.FC<TowerViewProps> = ({
             transform={`translate(${x},${y})`}
             style={{
               cursor: isDragging && draggedBrickId === curr.brick.uuid ? 'grabbing' : 'grab',
-              filter: isDragging && draggedBrickId === curr.brick.uuid ? 'drop-shadow(0 4px 2px rgba(0,0,0,0.25))' : undefined,
+              filter:
+                isDragging && draggedBrickId === curr.brick.uuid
+                  ? 'drop-shadow(0 4px 2px rgba(0,0,0,0.25))'
+                  : undefined,
             }}
             onMouseDown={handleMouseDown}
           >
@@ -436,11 +439,7 @@ const TowerView: React.FC<TowerViewProps> = ({
     ));
   }, [tower, draggedBrickId, dragOffset, isDragging, svgRef]);
 
-  return (
-    <g>
-      {renderedTower}
-    </g>
-  );
+  return <g>{renderedTower}</g>;
 };
 
 export default TowerView;

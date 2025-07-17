@@ -3,15 +3,15 @@ import { defaultCategories as categories, PaletteMode } from '../utils/categorie
 
 import bricksData from '../config/brick-config.json';
 import type { BrickConfig } from '../utils/types';
-import { brickViews } from './registry';
+import { brickViews, BrickType } from './registry';
 import '../palette.css';
 import flow from '../assets/icons/flow.svg';
 import music from '../assets/icons/music.svg';
 import graphics from '../assets/icons/graphics.svg';
 
 import { useDrag } from '@react-aria/dnd';
-import { useSetRecoilState } from 'recoil';
-import { dragStateAtom } from '../../state/dragState';
+import { useSetRecoilState, SetterOrUpdater } from 'recoil';
+import { dragStateAtom, DragState } from '../../state/dragState';
 
 interface BrickListPanelProps {
   categoryId: string;
@@ -38,6 +38,65 @@ const groupBricksByCategory = (bricks: BrickConfig[]) => {
   return grouped;
 };
 
+const BrickItem: React.FC<{
+  brick: BrickConfig;
+  draggedBrickId: string | null;
+  setDraggedBrickId: (id: string | null) => void;
+  brickViews: Record<BrickType, React.FC<BrickConfig>>;
+  setDrag: SetterOrUpdater<DragState>;
+}> = ({ brick, draggedBrickId, setDraggedBrickId, brickViews, setDrag }) => {
+  const { dragProps } = useDrag({
+    getItems() {
+      return [
+        {
+          'application/json': JSON.stringify({
+            brickType: brick.type,
+            origin: 'palette',
+          }),
+        },
+      ];
+    },
+  });
+  return (
+    <div
+      key={brick.id}
+      className={`brick-item${draggedBrickId === brick.id ? ' dragging' : ''}`}
+      draggable
+      {...dragProps}
+      onDragStart={(e) => {
+        setDraggedBrickId(brick.id);
+        // Find the SVG element inside the brick item
+        const svg = e.currentTarget.querySelector('svg');
+        if (svg) {
+          // Clone the SVG for a cleaner drag image
+          const clone = svg.cloneNode(true);
+          (clone as SVGElement).style.position = 'absolute';
+          (clone as SVGElement).style.top = '-9999px';
+          document.body.appendChild(clone);
+          const width = (clone as SVGSVGElement).width.baseVal.value || 40;
+          const height = (clone as SVGSVGElement).height.baseVal.value || 40;
+          e.dataTransfer.setDragImage(clone as Element, width / 2, height / 2);
+          setTimeout(() => document.body.removeChild(clone), 0);
+        }
+        e.dataTransfer.setData(
+          'application/json',
+          JSON.stringify({ brickId: brick.id }),
+        );
+        e.dataTransfer.effectAllowed = 'copy';
+        setDrag({ brickType: brick.type, origin: 'palette' });
+      }}
+      onDragEnd={() => setDraggedBrickId(null)}
+      onDrop={() => setDraggedBrickId(null)}
+    >
+      {/* Directly render the brick component from the registry */}
+      {(() => {
+        const BrickComponent = brickViews[brick.type];
+        return BrickComponent ? <BrickComponent {...brick} /> : null;
+      })()}
+    </div>
+  );
+};
+
 const BrickListPanel: React.FC<BrickListPanelProps> = ({
   categoryId,
   query,
@@ -54,6 +113,8 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
   const brickListRef = useRef<HTMLDivElement>(null);
   const [draggedBrickId, setDraggedBrickId] = useState<string | null>(null);
   const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
+
+  const setDrag = useSetRecoilState(dragStateAtom);
 
   useEffect(() => {
     setSearchQuery(query);
@@ -126,14 +187,14 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
     const handleMouseUp = () => {
       setDraggedBrickId(null);
       setDragPos(null);
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mousemove', handleMouseMove as EventListener);
+      window.removeEventListener('mouseup', handleMouseUp as EventListener);
     };
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('mousemove', handleMouseMove as EventListener);
+    window.addEventListener('mouseup', handleMouseUp as EventListener);
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mousemove', handleMouseMove as EventListener);
+      window.removeEventListener('mouseup', handleMouseUp as EventListener);
     };
   }, [draggedBrickId]);
 
@@ -215,7 +276,8 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
         </div>
       );
     },
-    (prevProps, nextProps) => prevProps.brick.id === nextProps.brick.id && prevProps.onClick === nextProps.onClick
+    (prevProps, nextProps) =>
+      prevProps.brick.id === nextProps.brick.id && prevProps.onClick === nextProps.onClick,
   );
 
   return (
@@ -275,56 +337,16 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
                 <h4 className="category-header">{category}</h4>
               </div>
               <div className="brick-category-list">
-                {categoryBricks.map((brick) => {
-                  const setDrag = useSetRecoilState(dragStateAtom);
-                  const { dragProps } = useDrag({
-                    getItems() {
-                      return [
-                        {
-                          'application/json': JSON.stringify({
-                            brickType: brick.type,
-                            origin: 'palette',
-                          }),
-                        },
-                      ];
-                    },
-                  });
-
-                  return (
-                    <div
-                      key={brick.id}
-                      className={`brick-item${draggedBrickId === brick.id ? ' dragging' : ''}`}
-                      draggable
-                      onDragStart={(e) => {
-                        setDraggedBrickId(brick.id);
-                        // Find the SVG element inside the brick item
-                        const svg = e.currentTarget.querySelector('svg');
-                        if (svg) {
-                          // Clone the SVG for a cleaner drag image
-                          const clone = svg.cloneNode(true);
-                          (clone as SVGElement).style.position = 'absolute';
-                          (clone as SVGElement).style.top = '-9999px';
-                          document.body.appendChild(clone);
-                          const width = (clone as SVGSVGElement).width.baseVal.value || 40;
-                          const height = (clone as SVGSVGElement).height.baseVal.value || 40;
-                          e.dataTransfer.setDragImage(clone as Element, width / 2, height / 2);
-                          setTimeout(() => document.body.removeChild(clone), 0);
-                        }
-                        e.dataTransfer.setData('application/json', JSON.stringify({ brickId: brick.id }));
-                        e.dataTransfer.effectAllowed = 'copy';
-                        setDrag({ brickType: brick.type, origin: 'palette' });
-                      }}
-                      onDragEnd={() => setDraggedBrickId(null)}
-                      onDrop={() => setDraggedBrickId(null)}
-                    >
-                      {/* Directly render the brick component from the registry */}
-                      {(() => {
-                        const BrickComponent = brickViews[brick.type];
-                        return BrickComponent ? <BrickComponent {...brick} /> : null;
-                      })()}
-                    </div>
-                  );
-                })}
+                {categoryBricks.map((brick) => (
+                  <BrickItem
+                    key={brick.id}
+                    brick={brick}
+                    draggedBrickId={draggedBrickId}
+                    setDraggedBrickId={setDraggedBrickId}
+                    brickViews={brickViews}
+                    setDrag={setDrag}
+                  />
+                ))}
               </div>
             </div>
           ),
@@ -341,7 +363,7 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
             }}
           >
             {(() => {
-              const draggedBrick = bricks.find(b => b.id === draggedBrickId);
+              const draggedBrick = bricks.find((b) => b.id === draggedBrickId);
               if (!draggedBrick) return null;
               const BrickComponent = brickViews[draggedBrick.type];
               return BrickComponent ? <BrickComponent {...draggedBrick} /> : null;
@@ -415,7 +437,8 @@ const AsyncBrickView = React.memo(
       </div>
     );
   },
-  (prevProps, nextProps) => prevProps.brick.id === nextProps.brick.id && prevProps.onClick === nextProps.onClick
+  (prevProps, nextProps) =>
+    prevProps.brick.id === nextProps.brick.id && prevProps.onClick === nextProps.onClick,
 );
 
 export default BrickListPanel;

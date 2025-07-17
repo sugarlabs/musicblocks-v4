@@ -51,17 +51,13 @@
 .collision-space-wrapper {
   display: flex;
   flex-direction: column;
-  height: 100%; /* fill parent */
-}
-
-.collision-space-controls {
-  /* nothing special here */
+  height: 100%;
 }
 
 .collision-space {
-  flex: 1; /* grow to fill remaining height */
-  position: relative; /* so absolutely-positioned dots land in it */
-  background: #000; /* black background */
+  flex: 1;
+  position: relative;
+  background: #000;
   overflow: hidden;
 }
 
@@ -72,7 +68,7 @@
 }
 
 .collision-space-object-active {
-  background: #f00; /* collision highlight */
+  background: #f00;
 }
 
 .collision-object-active {
@@ -83,19 +79,14 @@
   border-color: #ffaa00 !important;
 }
 
-/* playground/pages/Collision/collision.scss */
-
 .collision-space-object {
   position: absolute;
-  /* you can keep your stroke/border here if you like */
 }
 
-/* non-colliding → nice blue */
 .collision-space-object-inactive {
   background: #74b9ff;
 }
 
-/* colliding → fire-engine red */
 .collision-space-object-active {
   background: #e74c3c;
 }

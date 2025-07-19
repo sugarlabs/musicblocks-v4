@@ -2236,24 +2236,6 @@
     "notches": { "top": true, "bottom": false, "connection": false }
   },
   {
-    "id": "dictionary_get_value",
-    "category": "dictionary",
-    "label": "get value",
-    "type": "simple",
-    "color": "#D98A42",
-    "argCount": 2,
-    "notches": { "top": true, "bottom": false, "connection": true }
-  },
-  {
-    "id": "dictionary_set_value",
-    "category": "dictionary",
-    "label": "set value",
-    "type": "simple",
-    "color": "#D98A42",
-    "argCount": 3,
-    "notches": { "top": true, "bottom": false, "connection": false }
-  },
-  {
     "id": "dictionary_dictionary",
     "category": "dictionary",
     "label": "dictionary",
@@ -2261,15 +2243,6 @@
     "color": "#D98A42",
     "argCount": 1,
     "notches": { "top": true, "bottom": false, "connection": true }
-  },
-  {
-    "id": "extras_print",
-    "category": "extras",
-    "label": "print",
-    "type": "simple",
-    "color": "#C4C4C4",
-    "argCount": 1,
-    "notches": { "top": true, "bottom": true, "connection": false }
   },
   {
     "id": "extras_comment",
@@ -2563,15 +2536,6 @@
     "id": "graphics_control_point_1",
     "category": "graphics",
     "label": "control point 1",
-    "type": "simple",
-    "color": "#92A9FF",
-    "argCount": 2,
-    "notches": { "top": true, "bottom": true, "connection": false }
-  },
-  {
-    "id": "graphics_control_point_2",
-    "category": "graphics",
-    "label": "control point 2",
     "type": "simple",
     "color": "#92A9FF",
     "argCount": 2,
@@ -3100,15 +3064,6 @@
     "notches": { "top": false, "bottom": false, "connection": true }
   },
   {
-    "id": "sensors_time",
-    "category": "sensors",
-    "label": "time",
-    "type": "expression",
-    "color": "#AABB00",
-    "argCount": 0,
-    "notches": { "top": false, "bottom": false, "connection": true }
-  },
-  {
     "id": "sensors_input_value",
     "category": "sensors",
     "label": "inpur value",
@@ -3278,14 +3233,5 @@
     "color": "#92A9FF",
     "argCount": 2,
     "notches": { "top": true, "bottom": true, "connection": true }
-  },
-  {
-    "id": "ensemble_set_mouse",
-    "category": "ensemble",
-    "label": "set mouse",
-    "type": "compound",
-    "color": "#92A9FF",
-    "argCount": 1,
-    "notches": { "top": true, "bottom": true, "connection": false }
   }
 ]

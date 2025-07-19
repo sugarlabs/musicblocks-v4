@@ -131,3 +131,15 @@ export function createBrick(
             throw new Error(`Unsupported brick type: ${type}`);
     }
 }
+export function createBrickInstance(type: string) {
+    switch (type.toLowerCase()) {
+        case 'simple':
+            return createSimpleBrick();
+        case 'expression':
+            return createExpressionBrick();
+        case 'compound':
+            return createCompoundBrick();
+        default:
+            throw new Error(`Unknown brick type: ${type}`);
+    }
+}

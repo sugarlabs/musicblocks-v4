@@ -3,11 +3,15 @@ import { defaultCategories as categories, PaletteMode } from '../utils/categorie
 
 import bricksData from '../config/brick-config.json';
 import type { BrickConfig } from '../utils/types';
-import { brickViews } from './registry';
+import { brickViews, BrickType } from './registry';
 import '../palette.css';
 import flow from '../assets/icons/flow.svg';
 import music from '../assets/icons/music.svg';
 import graphics from '../assets/icons/graphics.svg';
+
+import { useDrag } from '@react-aria/dnd';
+import { useSetRecoilState, SetterOrUpdater } from 'recoil';
+import { dragStateAtom, DragState } from '../../state/dragState';
 
 interface BrickListPanelProps {
   categoryId: string;
@@ -34,6 +38,65 @@ const groupBricksByCategory = (bricks: BrickConfig[]) => {
   return grouped;
 };
 
+const BrickItem: React.FC<{
+  brick: BrickConfig;
+  draggedBrickId: string | null;
+  setDraggedBrickId: (id: string | null) => void;
+  brickViews: Record<BrickType, React.FC<BrickConfig>>;
+  setDrag: SetterOrUpdater<DragState>;
+}> = ({ brick, draggedBrickId, setDraggedBrickId, brickViews, setDrag }) => {
+  const { dragProps } = useDrag({
+    getItems() {
+      return [
+        {
+          'application/json': JSON.stringify({
+            brickType: brick.type,
+            origin: 'palette',
+          }),
+        },
+      ];
+    },
+  });
+  return (
+    <div
+      key={brick.id}
+      className={`brick-item${draggedBrickId === brick.id ? ' dragging' : ''}`}
+      draggable
+      {...dragProps}
+      onDragStart={(e) => {
+        setDraggedBrickId(brick.id);
+        // Find the SVG element inside the brick item
+        const svg = e.currentTarget.querySelector('svg');
+        if (svg) {
+          // Clone the SVG for a cleaner drag image
+          const clone = svg.cloneNode(true);
+          (clone as SVGElement).style.position = 'absolute';
+          (clone as SVGElement).style.top = '-9999px';
+          document.body.appendChild(clone);
+          const width = (clone as SVGSVGElement).width.baseVal.value || 40;
+          const height = (clone as SVGSVGElement).height.baseVal.value || 40;
+          e.dataTransfer.setDragImage(clone as Element, width / 2, height / 2);
+          setTimeout(() => document.body.removeChild(clone), 0);
+        }
+        e.dataTransfer.setData(
+          'application/json',
+          JSON.stringify({ brickId: brick.id }),
+        );
+        e.dataTransfer.effectAllowed = 'copy';
+        setDrag({ brickType: brick.type, origin: 'palette' });
+      }}
+      onDragEnd={() => setDraggedBrickId(null)}
+      onDrop={() => setDraggedBrickId(null)}
+    >
+      {/* Directly render the brick component from the registry */}
+      {(() => {
+        const BrickComponent = brickViews[brick.type];
+        return BrickComponent ? <BrickComponent {...brick} /> : null;
+      })()}
+    </div>
+  );
+};
+
 const BrickListPanel: React.FC<BrickListPanelProps> = ({
   categoryId,
   query,
@@ -48,6 +111,10 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
   const [selectedBrick, setSelectedBrick] = useState<BrickConfig | null>(null);
   const [isDetailView, setIsDetailView] = useState(false);
   const brickListRef = useRef<HTMLDivElement>(null);
+  const [draggedBrickId, setDraggedBrickId] = useState<string | null>(null);
+  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
+
+  const setDrag = useSetRecoilState(dragStateAtom);
 
   useEffect(() => {
     setSearchQuery(query);
@@ -111,10 +178,30 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
     categoryElements.forEach((el) => observer.observe(el));
   }, [filteredBricks]);
 
-  const handleBrickClick = (brick: BrickConfig) => {
+  // Mouse move and up handlers for global drag
+  useEffect(() => {
+    if (!draggedBrickId) return;
+    const handleMouseMove = (e: MouseEvent) => {
+      setDragPos({ x: e.clientX, y: e.clientY });
+    };
+    const handleMouseUp = () => {
+      setDraggedBrickId(null);
+      setDragPos(null);
+      window.removeEventListener('mousemove', handleMouseMove as EventListener);
+      window.removeEventListener('mouseup', handleMouseUp as EventListener);
+    };
+    window.addEventListener('mousemove', handleMouseMove as EventListener);
+    window.addEventListener('mouseup', handleMouseUp as EventListener);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove as EventListener);
+      window.removeEventListener('mouseup', handleMouseUp as EventListener);
+    };
+  }, [draggedBrickId]);
+
+  const handleBrickClick = useCallback((brick: BrickConfig) => {
     setSelectedBrick(brick);
     setIsDetailView(true);
-  };
+  }, []);
 
   const groupedBricks = useMemo(() => {
     if (searchQuery.trim() === '') {
@@ -132,7 +219,7 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
       );
       const [error, setError] = React.useState<unknown>(null);
 
-      React.useEffect(() => {
+      useEffect(() => {
         let isMounted = true;
 
         const loadBrick = async () => {
@@ -161,7 +248,7 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
         return () => {
           isMounted = false;
         };
-      }, [brick]);
+      }, [brick.id, brick.type]);
 
       if (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
@@ -189,6 +276,8 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
         </div>
       );
     },
+    (prevProps, nextProps) =>
+      prevProps.brick.id === nextProps.brick.id && prevProps.onClick === nextProps.onClick,
   );
 
   return (
@@ -249,15 +338,37 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
               </div>
               <div className="brick-category-list">
                 {categoryBricks.map((brick) => (
-                  <div key={brick.id} className="brick-item">
-                    <Suspense fallback={<div>Loading brick...</div>}>
-                      <AsyncBrickView brick={brick} onClick={handleBrickClick} />
-                    </Suspense>
-                  </div>
+                  <BrickItem
+                    key={brick.id}
+                    brick={brick}
+                    draggedBrickId={draggedBrickId}
+                    setDraggedBrickId={setDraggedBrickId}
+                    brickViews={brickViews}
+                    setDrag={setDrag}
+                  />
                 ))}
               </div>
             </div>
           ),
+        )}
+        {/* Floating SVG brick during drag */}
+        {draggedBrickId && dragPos && (
+          <div
+            style={{
+              position: 'fixed',
+              left: dragPos.x + 8,
+              top: dragPos.y + 8,
+              pointerEvents: 'none',
+              zIndex: 9999,
+            }}
+          >
+            {(() => {
+              const draggedBrick = bricks.find((b) => b.id === draggedBrickId);
+              if (!draggedBrick) return null;
+              const BrickComponent = brickViews[draggedBrick.type];
+              return BrickComponent ? <BrickComponent {...draggedBrick} /> : null;
+            })()}
+          </div>
         )}
       </div>
     </div>
@@ -269,7 +380,7 @@ const AsyncBrickView = React.memo(
     const [BrickComponent, setBrickComponent] = React.useState<React.FC<BrickConfig> | null>(null);
     const [error, setError] = React.useState<unknown>(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
       let isMounted = true;
 
       const loadBrick = async () => {
@@ -298,7 +409,7 @@ const AsyncBrickView = React.memo(
       return () => {
         isMounted = false;
       };
-    }, [brick]);
+    }, [brick.id, brick.type]);
 
     if (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -326,6 +437,8 @@ const AsyncBrickView = React.memo(
       </div>
     );
   },
+  (prevProps, nextProps) =>
+    prevProps.brick.id === nextProps.brick.id && prevProps.onClick === nextProps.onClick,
 );
 
 export default BrickListPanel;

@@ -1,18 +1,13 @@
-import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import '../src/palette/palette.css';
+import App from './App';
+import { RecoilRoot } from 'recoil';
 
-import WorkSpace from './pages/workspace';
-
-const router = createBrowserRouter([
-  {
-    path: '/workspace',
-    element: <WorkSpace />,
-  },
-  {
-    path: '/',
-    element: <Navigate to="/workspace" />,
-  },
-]);
-
-const root = createRoot(document.getElementById('playground-root') as HTMLElement);
-root.render(<RouterProvider router={router} />);
+ReactDOM.createRoot(document.getElementById('playground-root')!).render(
+  <React.StrictMode>
+    <RecoilRoot>
+      <App />
+    </RecoilRoot>
+  </React.StrictMode>,
+);

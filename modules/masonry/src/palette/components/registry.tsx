@@ -51,6 +51,7 @@ function wrap<P extends object>(View: React.ComponentType<P>): React.FC<BrickCon
                   {...(common as React.ComponentProps<typeof SimpleBrickView>)}
                   topNotch={cfg.notches.top}
                   bottomNotch={cfg.notches.bottom}
+                  standaloneSvg={true}
                 />
               );
               break;
@@ -58,6 +59,7 @@ function wrap<P extends object>(View: React.ComponentType<P>): React.FC<BrickCon
               result = (
                 <ExpressionBrickView
                   {...(common as React.ComponentProps<typeof ExpressionBrickView>)}
+                  standaloneSvg={true}
                 />
               );
               break;
@@ -68,6 +70,7 @@ function wrap<P extends object>(View: React.ComponentType<P>): React.FC<BrickCon
                   bboxNest={[]}
                   topNotch={cfg.notches.top}
                   bottomNotch={cfg.notches.bottom}
+                  standaloneSvg={true}
                 />
               );
               break;

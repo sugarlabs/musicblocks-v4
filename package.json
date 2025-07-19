@@ -95,6 +95,7 @@
     "app"
   ],
   "dependencies": {
-    "quadtree-lib": "^1.0.9"
+    "quadtree-lib": "^1.0.9",
+    "recoil": "^0.7.7"
   }
 }

@@ -1,9 +1,8 @@
 /**
  * Symbol Entry Implementation
  *
- * This file implements the SymbolEntry class which represents individual symbol
- * metadata entries in the symbol table. Each entry contains information about
- * a symbol (variable, function, etc.) but not its actual value.
+ * This file implements the enhanced SymbolEntry class which represents individual symbol
+ * metadata entries with support for member expressions, enums, arrays, and dictionaries.
  */
 
 import { v4 as uuidv4 } from 'uuid';
@@ -13,6 +12,10 @@ import {
     DataType,
     type ISymbolEntry,
     type SymbolMetadata,
+    type EnumMetadata,
+    type ArrayMetadata,
+    type DictionaryMetadata,
+    type ObjectPropertyMetadata,
 } from '../../@types/symbol-types';
 
 /**
@@ -25,19 +28,14 @@ export class SymbolEntry implements ISymbolEntry {
     public readonly dataType: DataType;
     public readonly isUserDefined: boolean;
     public readonly isMutable: boolean;
+    public readonly isUserModifiable: boolean;
     public readonly memoryLocation?: string;
     public readonly frameId?: string;
     public readonly metadata?: SymbolMetadata;
     public readonly id: string;
 
     /**
-     * Creates a new symbol entry
-     *
-     * @param name - Symbol name/identifier
-     * @param symbolType - Type of symbol (variable, function, etc.)
-     * @param scopeType - Scope where symbol is defined
-     * @param dataType - Data type of symbol value
-     * @param options - Additional options for symbol creation
+     * Creates a new enhanced symbol entry
      */
     constructor(
         name: string,
@@ -75,6 +73,7 @@ export class SymbolEntry implements ISymbolEntry {
         this.scopeType = scopeType;
         this.dataType = dataType;
         this.isMutable = options.isMutable ?? this._getDefaultMutability(symbolType);
+        this.isUserModifiable = this._getDefaultUserModifiability(symbolType);
         this.memoryLocation = options.memoryLocation;
         this.frameId = options.frameId;
         this.metadata = options.metadata ? this._deepFreezeMetadata(options.metadata) : undefined;
@@ -83,15 +82,15 @@ export class SymbolEntry implements ISymbolEntry {
         // Determine if user-defined based on symbol type
         this.isUserDefined = this._isUserDefinedSymbol(symbolType);
 
+        // Validate metadata consistency with data type
+        this._validateMetadataConsistency();
+
         // Freeze the object to ensure immutability
         Object.freeze(this);
     }
 
     /**
      * Creates a new symbol entry with updated properties
-     *
-     * @param updates - Properties to update
-     * @returns New SymbolEntry instance with updated properties
      */
     public withUpdates(updates: {
         memoryLocation?: string;
@@ -109,8 +108,6 @@ export class SymbolEntry implements ISymbolEntry {
 
     /**
      * Checks if this symbol can be shadowed by another symbol
-     *
-     * @returns true if symbol can be shadowed
      */
     public canBeShadowed(): boolean {
         // System symbols generally cannot be shadowed
@@ -119,17 +116,20 @@ export class SymbolEntry implements ISymbolEntry {
 
     /**
      * Checks if this symbol can be modified
-     *
-     * @returns true if symbol value can be modified
      */
     public canBeModified(): boolean {
         return this.isMutable;
     }
 
     /**
+     * Checks if this symbol can be modified by user programs
+     */
+    public canBeModifiedByUser(): boolean {
+        return this.isUserModifiable && this.isMutable;
+    }
+
+    /**
      * Checks if this symbol is a function
-     *
-     * @returns true if symbol represents a function
      */
     public isFunction(): boolean {
         return (
@@ -140,12 +140,11 @@ export class SymbolEntry implements ISymbolEntry {
 
     /**
      * Checks if this symbol is a variable
-     *
-     * @returns true if symbol represents a variable
      */
     public isVariable(): boolean {
         return (
             this.symbolType === SymbolType.SYSTEM_VARIABLE ||
+            this.symbolType === SymbolType.SYSTEM_VARIABLE_CONFIGURABLE ||
             this.symbolType === SymbolType.USER_VARIABLE ||
             this.symbolType === SymbolType.PARAMETER ||
             this.symbolType === SymbolType.ITERATOR
@@ -153,9 +152,35 @@ export class SymbolEntry implements ISymbolEntry {
     }
 
     /**
+     * Checks if this symbol is an enum
+     */
+    public isEnum(): boolean {
+        return this.dataType === DataType.ENUM;
+    }
+
+    /**
+     * Checks if this symbol is an array
+     */
+    public isArray(): boolean {
+        return this.dataType === DataType.ARRAY;
+    }
+
+    /**
+     * Checks if this symbol is a dictionary
+     */
+    public isDictionary(): boolean {
+        return this.dataType === DataType.DICTIONARY;
+    }
+
+    /**
+     * Checks if this symbol is a member reference (part of member expression)
+     */
+    public isMemberReference(): boolean {
+        return this.metadata?.objectPropertyMetadata !== undefined;
+    }
+
+    /**
      * Gets the function metadata if this symbol is a function
-     *
-     * @returns Function metadata or null if not a function
      */
     public getFunctionMetadata(): SymbolMetadata['functionMetadata'] | null {
         if (!this.isFunction() || !this.metadata) {
@@ -166,8 +191,6 @@ export class SymbolEntry implements ISymbolEntry {
 
     /**
      * Gets the variable metadata if this symbol is a variable
-     *
-     * @returns Variable metadata or null if not a variable
      */
     public getVariableMetadata(): SymbolMetadata['variableMetadata'] | null {
         if (!this.isVariable() || !this.metadata) {
@@ -177,9 +200,47 @@ export class SymbolEntry implements ISymbolEntry {
     }
 
     /**
+     * Gets the enum metadata if this symbol is an enum
+     */
+    public getEnumMetadata(): EnumMetadata | null {
+        if (!this.isEnum() || !this.metadata) {
+            return null;
+        }
+        return this.metadata.enumMetadata ?? null;
+    }
+
+    /**
+     * Gets the array metadata if this symbol is an array
+     */
+    public getArrayMetadata(): ArrayMetadata | null {
+        if (!this.isArray() || !this.metadata) {
+            return null;
+        }
+        return this.metadata.arrayMetadata ?? null;
+    }
+
+    /**
+     * Gets the dictionary metadata if this symbol is a dictionary
+     */
+    public getDictionaryMetadata(): DictionaryMetadata | null {
+        if (!this.isDictionary() || !this.metadata) {
+            return null;
+        }
+        return this.metadata.dictionaryMetadata ?? null;
+    }
+
+    /**
+     * Gets the object property metadata if this symbol is a member reference
+     */
+    public getObjectPropertyMetadata(): ObjectPropertyMetadata | null {
+        if (!this.metadata) {
+            return null;
+        }
+        return this.metadata.objectPropertyMetadata ?? null;
+    }
+
+    /**
      * Converts symbol entry to a plain object for serialization
-     *
-     * @returns Plain object representation
      */
     public toPlainObject(): Record<string, unknown> {
         return {
@@ -190,6 +251,7 @@ export class SymbolEntry implements ISymbolEntry {
             dataType: this.dataType,
             isUserDefined: this.isUserDefined,
             isMutable: this.isMutable,
+            isUserModifiable: this.isUserModifiable,
             memoryLocation: this.memoryLocation,
             frameId: this.frameId,
             metadata: this.metadata,
@@ -198,8 +260,6 @@ export class SymbolEntry implements ISymbolEntry {
 
     /**
      * Creates a string representation of the symbol entry
-     *
-     * @returns String representation
      */
     public toString(): string {
         const parts = [
@@ -209,6 +269,7 @@ export class SymbolEntry implements ISymbolEntry {
             `dataType=${this.dataType}`,
             `userDefined=${this.isUserDefined}`,
             `mutable=${this.isMutable}`,
+            `userModifiable=${this.isUserModifiable}`,
         ];
 
         if (this.memoryLocation) {
@@ -219,14 +280,15 @@ export class SymbolEntry implements ISymbolEntry {
             parts.push(`frame=${this.frameId}`);
         }
 
+        if (this.isEnum() && this.metadata?.enumMetadata) {
+            parts.push(`enumType=${this.metadata.enumMetadata.enumType}`);
+        }
+
         return `{${parts.join(', ')}}`;
     }
 
     /**
      * Determines default mutability based on symbol type
-     *
-     * @param symbolType - The symbol type
-     * @returns Default mutability setting
      */
     private _getDefaultMutability(symbolType: SymbolType): boolean {
         switch (symbolType) {
@@ -239,10 +301,11 @@ export class SymbolEntry implements ISymbolEntry {
                 // System variables are typically immutable
                 return false;
 
+            case SymbolType.SYSTEM_VARIABLE_CONFIGURABLE:
             case SymbolType.USER_VARIABLE:
             case SymbolType.PARAMETER:
             case SymbolType.ITERATOR:
-                // User variables and parameters are typically mutable
+                // These are typically mutable
                 return true;
 
             default:
@@ -252,10 +315,33 @@ export class SymbolEntry implements ISymbolEntry {
     }
 
     /**
+     * Determines default user modifiability based on symbol type
+     */
+    private _getDefaultUserModifiability(symbolType: SymbolType): boolean {
+        switch (symbolType) {
+            case SymbolType.SYSTEM_VARIABLE:
+            case SymbolType.SYSTEM_FUNCTION:
+                // System symbols cannot be modified by user programs
+                return false;
+
+            case SymbolType.SYSTEM_VARIABLE_CONFIGURABLE:
+                // Configurable system variables can only be modified by main program
+                return false;
+
+            case SymbolType.USER_VARIABLE:
+            case SymbolType.USER_FUNCTION:
+            case SymbolType.PARAMETER:
+            case SymbolType.ITERATOR:
+                // User symbols can be modified by user programs
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    /**
      * Determines if symbol is user-defined based on symbol type
-     *
-     * @param symbolType - The symbol type
-     * @returns true if user-defined
      */
     private _isUserDefinedSymbol(symbolType: SymbolType): boolean {
         switch (symbolType) {
@@ -266,6 +352,7 @@ export class SymbolEntry implements ISymbolEntry {
                 return true;
 
             case SymbolType.SYSTEM_VARIABLE:
+            case SymbolType.SYSTEM_VARIABLE_CONFIGURABLE:
             case SymbolType.SYSTEM_FUNCTION:
                 return false;
 
@@ -275,10 +362,43 @@ export class SymbolEntry implements ISymbolEntry {
     }
 
     /**
+     * Validates metadata consistency with data type
+     */
+    private _validateMetadataConsistency(): void {
+        if (!this.metadata) {
+            return;
+        }
+
+        // Validate enum metadata
+        if (this.dataType === DataType.ENUM) {
+            if (!this.metadata.enumMetadata) {
+                throw new Error(`Enum symbol "${this.name}" must have enumMetadata`);
+            }
+            if (
+                !this.metadata.enumMetadata.possibleValues ||
+                this.metadata.enumMetadata.possibleValues.length === 0
+            ) {
+                throw new Error(`Enum symbol "${this.name}" must have non-empty possibleValues`);
+            }
+        }
+
+        // Validate array metadata
+        if (this.dataType === DataType.ARRAY) {
+            if (!this.metadata.arrayMetadata) {
+                throw new Error(`Array symbol "${this.name}" must have arrayMetadata`);
+            }
+        }
+
+        // Validate dictionary metadata
+        if (this.dataType === DataType.DICTIONARY) {
+            if (!this.metadata.dictionaryMetadata) {
+                throw new Error(`Dictionary symbol "${this.name}" must have dictionaryMetadata`);
+            }
+        }
+    }
+
+    /**
      * Deep freezes metadata to ensure immutability
-     *
-     * @param metadata - Metadata to freeze
-     * @returns Frozen metadata
      */
     private _deepFreezeMetadata(metadata: SymbolMetadata): SymbolMetadata {
         const frozen = { ...metadata };
@@ -286,6 +406,10 @@ export class SymbolEntry implements ISymbolEntry {
         // Freeze nested objects
         if (frozen.sourceLocation) {
             frozen.sourceLocation = Object.freeze({ ...frozen.sourceLocation });
+        }
+
+        if (frozen.memoryPointer) {
+            frozen.memoryPointer = Object.freeze({ ...frozen.memoryPointer });
         }
 
         if (frozen.functionMetadata) {
@@ -299,6 +423,30 @@ export class SymbolEntry implements ISymbolEntry {
             frozen.variableMetadata = Object.freeze({ ...frozen.variableMetadata });
         }
 
+        if (frozen.enumMetadata) {
+            frozen.enumMetadata = Object.freeze({
+                ...frozen.enumMetadata,
+                possibleValues: Object.freeze([...frozen.enumMetadata.possibleValues]),
+            });
+        }
+
+        if (frozen.arrayMetadata) {
+            frozen.arrayMetadata = Object.freeze({ ...frozen.arrayMetadata });
+        }
+
+        if (frozen.dictionaryMetadata) {
+            frozen.dictionaryMetadata = Object.freeze({
+                ...frozen.dictionaryMetadata,
+                requiredKeys: frozen.dictionaryMetadata.requiredKeys
+                    ? Object.freeze([...frozen.dictionaryMetadata.requiredKeys])
+                    : undefined,
+            });
+        }
+
+        if (frozen.objectPropertyMetadata) {
+            frozen.objectPropertyMetadata = Object.freeze({ ...frozen.objectPropertyMetadata });
+        }
+
         return Object.freeze(frozen);
     }
 }
@@ -309,11 +457,6 @@ export class SymbolEntry implements ISymbolEntry {
 export class SymbolEntryFactory {
     /**
      * Creates a system variable symbol entry
-     *
-     * @param name - Variable name
-     * @param dataType - Data type
-     * @param options - Additional options
-     * @returns SymbolEntry for system variable
      */
     public static createSystemVariable(
         name: string,
@@ -332,13 +475,31 @@ export class SymbolEntryFactory {
     }
 
     /**
+     * Creates a configurable system variable symbol entry
+     */
+    public static createSystemVariableConfigurable(
+        name: string,
+        dataType: DataType,
+        options: {
+            memoryLocation?: string;
+            frameId?: string;
+            metadata?: SymbolMetadata;
+        } = {},
+    ): SymbolEntry {
+        return new SymbolEntry(
+            name,
+            SymbolType.SYSTEM_VARIABLE_CONFIGURABLE,
+            ScopeType.GLOBAL,
+            dataType,
+            {
+                isMutable: true,
+                ...options,
+            },
+        );
+    }
+
+    /**
      * Creates a user variable symbol entry
-     *
-     * @param name - Variable name
-     * @param dataType - Data type
-     * @param scopeType - Scope type
-     * @param options - Additional options
-     * @returns SymbolEntry for user variable
      */
     public static createUserVariable(
         name: string,
@@ -358,13 +519,115 @@ export class SymbolEntryFactory {
     }
 
     /**
+     * Creates an enum symbol entry
+     */
+    public static createEnum(
+        name: string,
+        enumType: string,
+        possibleValues: readonly string[],
+        scopeType: ScopeType = ScopeType.GLOBAL,
+        options: {
+            currentValue?: string;
+            memoryLocation?: string;
+            frameId?: string;
+            metadata?: SymbolMetadata;
+        } = {},
+    ): SymbolEntry {
+        const enumMetadata: EnumMetadata = {
+            possibleValues,
+            currentValue: options.currentValue,
+            enumType,
+        };
+
+        const metadata: SymbolMetadata = {
+            ...options.metadata,
+            enumMetadata,
+        };
+
+        return new SymbolEntry(name, SymbolType.USER_VARIABLE, scopeType, DataType.ENUM, {
+            isMutable: true,
+            memoryLocation: options.memoryLocation,
+            frameId: options.frameId,
+            metadata,
+        });
+    }
+
+    /**
+     * Creates an array symbol entry
+     */
+    public static createArray(
+        name: string,
+        elementType: DataType,
+        scopeType: ScopeType,
+        options: {
+            dimensions?: number;
+            maxLength?: number;
+            minLength?: number;
+            memoryLocation?: string;
+            frameId?: string;
+            metadata?: SymbolMetadata;
+        } = {},
+    ): SymbolEntry {
+        const arrayMetadata: ArrayMetadata = {
+            elementType,
+            dimensions: options.dimensions,
+            maxLength: options.maxLength,
+            minLength: options.minLength,
+        };
+
+        const metadata: SymbolMetadata = {
+            ...options.metadata,
+            arrayMetadata,
+        };
+
+        return new SymbolEntry(name, SymbolType.USER_VARIABLE, scopeType, DataType.ARRAY, {
+            isMutable: true,
+            memoryLocation: options.memoryLocation,
+            frameId: options.frameId,
+            metadata,
+        });
+    }
+
+    /**
+     * Creates a dictionary symbol entry
+     */
+    public static createDictionary(
+        name: string,
+        keyType: DataType,
+        valueType: DataType,
+        scopeType: ScopeType,
+        options: {
+            requiredKeys?: readonly string[];
+            allowDynamicKeys?: boolean;
+            maxSize?: number;
+            memoryLocation?: string;
+            frameId?: string;
+            metadata?: SymbolMetadata;
+        } = {},
+    ): SymbolEntry {
+        const dictionaryMetadata: DictionaryMetadata = {
+            keyType,
+            valueType,
+            requiredKeys: options.requiredKeys,
+            allowDynamicKeys: options.allowDynamicKeys ?? true,
+            maxSize: options.maxSize,
+        };
+
+        const metadata: SymbolMetadata = {
+            ...options.metadata,
+            dictionaryMetadata,
+        };
+
+        return new SymbolEntry(name, SymbolType.USER_VARIABLE, scopeType, DataType.DICTIONARY, {
+            isMutable: true,
+            memoryLocation: options.memoryLocation,
+            frameId: options.frameId,
+            metadata,
+        });
+    }
+
+    /**
      * Creates a user function symbol entry
-     *
-     * @param name - Function name
-     * @param scopeType - Scope type
-     * @param parameterNames - Function parameter names
-     * @param options - Additional options
-     * @returns SymbolEntry for user function
      */
     public static createUserFunction(
         name: string,
@@ -400,11 +663,6 @@ export class SymbolEntryFactory {
 
     /**
      * Creates a parameter symbol entry
-     *
-     * @param name - Parameter name
-     * @param dataType - Data type
-     * @param options - Additional options
-     * @returns SymbolEntry for parameter
      */
     public static createParameter(
         name: string,

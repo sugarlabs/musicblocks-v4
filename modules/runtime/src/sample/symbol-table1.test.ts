@@ -1,230 +1,312 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * Advanced Symbol Table Tests
+ * Symbol Manager Tests
  *
- * This test suite covers advanced and edge-case scenarios for SymbolTable,
- * including deep scope chains, shadowing, custom metadata, serialization,
- * error handling, and stress tests.
+ * Simple test suite for the symbol manager with
+ * enum, array, dictionary support and access control.
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { SymbolTable } from '../execution/scope/symbol-table';
+import { SymbolManager } from '../execution/scope/symbol-manager';
 import {
     SymbolType,
     DataType,
-    SymbolTableError,
-    SymbolAlreadyExistsError,
+    ExecutionContext,
+    AccessControlError,
+    EnumValidationError,
 } from '../@types/symbol-types';
+import { ThreadManager } from '../execution/scope/thread';
 
-describe('SymbolTable (Advanced)', () => {
-    let symbolTable: SymbolTable;
+interface TestContext {
+    testEnum: string;
+    testArray: number[];
+    testDict: { [key: string]: any };
+    [key: string]: any;
+}
+
+describe('Enhanced Symbol Manager', () => {
+    let threadManager: ThreadManager<TestContext>;
+    let threadContext: any;
+    let symbolManager: SymbolManager<TestContext>;
 
     beforeEach(() => {
-        symbolTable = new SymbolTable();
+        threadManager = new ThreadManager<TestContext>({
+            testEnum: '',
+            testArray: [],
+            testDict: {},
+        });
+        threadContext = threadManager.createThread();
+        symbolManager = new SymbolManager(threadContext);
     });
 
-    describe('Deep Scope Chains & Shadowing', () => {
-        it('should handle shadowing through multiple nested scopes', () => {
-            symbolTable.declare('a', SymbolType.USER_VARIABLE, DataType.NUMBER);
-            symbolTable.pushScope();
-            symbolTable.declare('b', SymbolType.USER_VARIABLE, DataType.STRING);
-            symbolTable.pushScope();
-            symbolTable.declare('a', SymbolType.USER_VARIABLE, DataType.BOOLEAN);
+    describe('Execution Context Management', () => {
+        it('should manage execution context', () => {
+            expect(symbolManager.getExecutionContext()).toBe(ExecutionContext.USER_PROGRAM);
 
-            let result = symbolTable.lookup('a');
-            expect(result!.entry.dataType).toBe(DataType.BOOLEAN);
-            expect(result!.isInCurrentScope).toBe(true);
-
-            symbolTable.popScope();
-            result = symbolTable.lookup('a');
-            expect(result!.entry.dataType).toBe(DataType.NUMBER);
-            expect(result!.isInCurrentScope).toBe(false);
-
-            result = symbolTable.lookup('b');
-            expect(result!.entry.dataType).toBe(DataType.STRING);
-            expect(result!.scopeDepth).toBe(1);
-        });
-
-        it('should remove only symbols in the current scope on pop', () => {
-            symbolTable.declare('global', SymbolType.USER_VARIABLE, DataType.NUMBER);
-            symbolTable.pushScope();
-            symbolTable.declare('local', SymbolType.USER_VARIABLE, DataType.STRING);
-            symbolTable.pushScope();
-            symbolTable.declare('inner', SymbolType.USER_VARIABLE, DataType.BOOLEAN);
-
-            symbolTable.popScope();
-            expect(symbolTable.lookup('inner')).toBeNull();
-            expect(symbolTable.lookup('local')).not.toBeNull();
-            expect(symbolTable.lookup('global')).not.toBeNull();
-
-            symbolTable.popScope();
-            expect(symbolTable.lookup('local')).toBeNull();
-            expect(symbolTable.lookup('global')).not.toBeNull();
+            symbolManager.setExecutionContext(ExecutionContext.MAIN_PROGRAM);
+            expect(symbolManager.getExecutionContext()).toBe(ExecutionContext.MAIN_PROGRAM);
         });
     });
 
-    describe('Custom Metadata and Immutability', () => {
-        it('should attach and retrieve custom metadata', () => {
-            const metadata = {
-                declaredAt: '2025-07-08T17:00:00Z',
-                sourceLocation: { line: 10, column: 5, file: 'main.ts' },
-                variableMetadata: { isInitialized: true, defaultValue: 123 },
-                customField: 'extra',
-            };
-            const entry = symbolTable.declare('meta', SymbolType.USER_VARIABLE, DataType.NUMBER, {
-                metadata,
-            });
-            expect(entry.metadata).toBeDefined();
-            expect(entry.metadata!.declaredAt).toBe('2025-07-08T17:00:00Z');
-            expect(entry.metadata!.customField).toBe('extra');
-            // Check deep freeze: should throw if we try to mutate
+    describe('Enum Management', () => {
+        it('should declare enum with values', () => {
+            const entry = symbolManager.declareEnum(
+                'color',
+                'colorType',
+                ['red', 'green', 'blue'],
+                'red',
+            );
+
+            expect(entry.isEnum()).toBe(true);
+            expect(symbolManager.getEnumPossibleValues('color')).toEqual(['red', 'green', 'blue']);
+            expect(symbolManager.getValue('color')).toBe('red');
+        });
+
+        it('should validate enum values', () => {
+            symbolManager.declareEnum('direction', 'directionType', [
+                'north',
+                'south',
+                'east',
+                'west',
+            ]);
+
+            expect(symbolManager.validateEnumValue('direction', 'north')).toBe(true);
+            expect(symbolManager.validateEnumValue('direction', 'up')).toBe(false);
+        });
+
+        it('should set enum value with validation', () => {
+            symbolManager.declareEnum('size', 'sizeType', ['small', 'medium', 'large']);
+
+            symbolManager.setEnumValue('size', 'medium');
+            expect(symbolManager.getValue('size')).toBe('medium');
+
             expect(() => {
-                // @ts-expect-error
-                entry.metadata.declaredAt = 'mutated';
-            }).toThrow();
+                symbolManager.setEnumValue('size', 'huge');
+            }).toThrow(EnumValidationError);
         });
 
-        it('should deeply freeze nested metadata objects', () => {
-            const metadata = {
-                functionMetadata: {
-                    parameterCount: 2,
-                    parameterNames: ['x', 'y'],
-                    isAsync: true,
-                },
-            };
-            const entry = symbolTable.declare('f', SymbolType.USER_FUNCTION, DataType.FUNCTION, {
-                metadata,
+        it('should prevent invalid initial enum value', () => {
+            expect(() => {
+                symbolManager.declareEnum(
+                    'status',
+                    'statusType',
+                    ['active', 'inactive'],
+                    'unknown',
+                );
+            }).toThrow(EnumValidationError);
+        });
+    });
+
+    describe('Array Management', () => {
+        it('should declare array with metadata', () => {
+            const entry = symbolManager.declareArray('numbers', DataType.NUMBER, [1, 2, 3], {
+                maxLength: 10,
+                dimensions: 1,
             });
-            expect(Object.isFrozen(entry.metadata!.functionMetadata)).toBe(true);
-            expect(Object.isFrozen(entry.metadata!.functionMetadata?.parameterNames)).toBe(true);
+
+            expect(entry.isArray()).toBe(true);
+            expect(symbolManager.getValue('numbers')).toEqual([1, 2, 3]);
+
+            const metadata = entry.getArrayMetadata();
+            expect(metadata?.elementType).toBe(DataType.NUMBER);
+            expect(metadata?.maxLength).toBe(10);
+        });
+
+        it('should declare array without initial value', () => {
+            const entry = symbolManager.declareArray('empty', DataType.STRING);
+
+            expect(entry.isArray()).toBe(true);
+            expect(symbolManager.getValue('empty')).toBeUndefined();
         });
     });
 
-    describe('Serialization', () => {
-        it('should serialize symbol entry to a plain object', () => {
-            const meta = { variableMetadata: { isInitialized: true } };
-            const entry = symbolTable.declare('foo', SymbolType.USER_VARIABLE, DataType.NUMBER, {
-                metadata: meta,
-            });
-            const plainObj = entry.toPlainObject();
-            expect(plainObj).toMatchObject({
-                name: 'foo',
-                symbolType: SymbolType.USER_VARIABLE,
-                dataType: DataType.NUMBER,
-                isUserDefined: true,
-                isMutable: true,
-                metadata: meta,
-            });
-        });
+    describe('Dictionary Management', () => {
+        it('should declare dictionary with metadata', () => {
+            const entry = symbolManager.declareDictionary(
+                'settings',
+                DataType.STRING,
+                DataType.NUMBER,
+                { width: 800, height: 600 },
+                { requiredKeys: ['width', 'height'], allowDynamicKeys: false },
+            );
 
-        it('should provide a readable string representation', () => {
-            const entry = symbolTable.declare('bar', SymbolType.USER_VARIABLE, DataType.NUMBER);
-            expect(entry.toString()).toContain('SymbolEntry(bar)');
-            expect(entry.toString()).toContain('type=user_variable');
+            expect(entry.isDictionary()).toBe(true);
+            expect(symbolManager.getValue('settings')).toEqual({ width: 800, height: 600 });
+
+            const metadata = entry.getDictionaryMetadata();
+            expect(metadata?.keyType).toBe(DataType.STRING);
+            expect(metadata?.valueType).toBe(DataType.NUMBER);
+            expect(metadata?.requiredKeys).toEqual(['width', 'height']);
         });
     });
 
-    describe('Error Handling', () => {
-        it('should throw SymbolAlreadyExistsError on redeclaration', () => {
-            symbolTable.declare('dup', SymbolType.USER_VARIABLE, DataType.NUMBER);
-            expect(() =>
-                symbolTable.declare('dup', SymbolType.USER_VARIABLE, DataType.STRING),
-            ).toThrow(SymbolAlreadyExistsError);
+    describe('System Variable Management', () => {
+        it('should declare system variables in main program context', () => {
+            symbolManager.setExecutionContext(ExecutionContext.MAIN_PROGRAM);
+
+            const systemVar = symbolManager.declareSystemVariable(
+                'PI',
+                DataType.NUMBER,
+                3.14159 as any,
+            );
+            const configVar = symbolManager.declareSystemVariableConfigurable(
+                'defaultSize',
+                DataType.NUMBER,
+                10 as any,
+            );
+
+            expect(systemVar.symbolType).toBe(SymbolType.SYSTEM_VARIABLE);
+            expect(configVar.symbolType).toBe(SymbolType.SYSTEM_VARIABLE_CONFIGURABLE);
+            expect(symbolManager.getValue('PI')).toBe(3.14159);
+            expect(symbolManager.getValue('defaultSize')).toBe(10);
         });
 
-        it('should throw SymbolTableError if popping global scope', () => {
-            expect(() => symbolTable.popScope()).toThrow(SymbolTableError);
-        });
+        it('should prevent system variable declaration in user context', () => {
+            symbolManager.setExecutionContext(ExecutionContext.USER_PROGRAM);
 
-        it('should not throw when removing a non-existent symbol', () => {
-            expect(() => symbolTable.removeSymbol('nope')).not.toThrow();
-            expect(symbolTable.removeSymbol('nope')).toBe(false);
-        });
+            expect(() => {
+                symbolManager.declareSystemVariable('PI', DataType.NUMBER);
+            }).toThrow(AccessControlError);
 
-        it('should throw error on invalid symbol declaration', () => {
-            expect(() =>
-                symbolTable.declare('', SymbolType.USER_VARIABLE, DataType.NUMBER),
-            ).toThrow();
-            expect(() =>
-                // @ts-expect-error
-                symbolTable.declare('x', 'not-a-type', DataType.NUMBER),
-            ).toThrow();
-        });
-    });
-
-    describe('Stress Tests', () => {
-        it('should handle 1000+ symbol declarations and lookups', () => {
-            for (let i = 0; i < 1000; i++) {
-                symbolTable.declare(`var${i}`, SymbolType.USER_VARIABLE, DataType.NUMBER);
-            }
-            for (let i = 0; i < 1000; i++) {
-                const res = symbolTable.lookup(`var${i}`);
-                expect(res).not.toBeNull();
-                expect(res!.entry.name).toBe(`var${i}`);
-            }
-        });
-
-        it('should allow deep scope nesting (20 levels)', () => {
-            for (let i = 0; i < 20; i++) {
-                symbolTable.pushScope();
-                symbolTable.declare(`a${i}`, SymbolType.USER_VARIABLE, DataType.NUMBER);
-            }
-            for (let i = 0; i < 20; i++) {
-                const res = symbolTable.lookup(`a${i}`);
-                expect(res).not.toBeNull();
-            }
-            for (let i = 0; i < 20; i++) {
-                symbolTable.popScope();
-            }
-            for (let i = 0; i < 20; i++) {
-                expect(symbolTable.lookup(`a${i}`)).toBeNull();
-            }
+            expect(() => {
+                symbolManager.declareSystemVariableConfigurable('config', DataType.STRING);
+            }).toThrow(AccessControlError);
         });
     });
 
-    describe('Edge Cases', () => {
-        it('should allow symbols with underscores, numbers, and unicode', () => {
-            const names = ['_foo', 'bar123', '变量', '𝛼βγ'];
-            for (const n of names) {
-                symbolTable.declare(n, SymbolType.USER_VARIABLE, DataType.ANY);
-            }
-            for (const n of names) {
-                const res = symbolTable.lookup(n);
-                expect(res).not.toBeNull();
-                expect(res!.entry.name).toBe(n);
-            }
+    describe('Member Expression Support', () => {
+        beforeEach(() => {
+            symbolManager.declareEnum('instrument', 'instrumentType', [
+                'piano',
+                'guitar',
+                'violin',
+            ]);
+            symbolManager.declareDictionary('scores', DataType.STRING, DataType.NUMBER);
         });
 
-        it('should clear all symbols in the current scope only', () => {
-            symbolTable.declare('g', SymbolType.USER_VARIABLE, DataType.NUMBER);
-            symbolTable.pushScope();
-            symbolTable.declare('x', SymbolType.USER_VARIABLE, DataType.STRING);
-            symbolTable.declare('y', SymbolType.USER_VARIABLE, DataType.STRING);
-            expect(symbolTable.getCurrentScopeSymbols().length).toBe(2);
-            symbolTable.clearCurrentScope();
-            expect(symbolTable.getCurrentScopeSymbols().length).toBe(0);
-            expect(symbolTable.lookup('g')).not.toBeNull();
+        it('should get enum member value', () => {
+            const value = symbolManager.getMemberValue('instrument', 'piano');
+            expect(value).toBe('piano');
         });
-    });
 
-    describe('Factory Pattern and Mutation Flags', () => {
-        it('should correctly set isMutable for system and user symbols', () => {
-            const sys = symbolTable.declare('S', SymbolType.SYSTEM_VARIABLE, DataType.NUMBER);
-            const user = symbolTable.declare('U', SymbolType.USER_VARIABLE, DataType.NUMBER);
-            expect(sys.isMutable).toBe(false);
-            expect(user.isMutable).toBe(true);
+        it('should check member existence', () => {
+            expect(symbolManager.memberExists('instrument', 'piano')).toBe(true);
+            expect(symbolManager.memberExists('instrument', 'drums')).toBe(false);
+        });
+
+        it('should validate member access', () => {
+            expect(symbolManager.validateMemberAccess('instrument', 'piano', 'read')).toBe(true);
+            expect(symbolManager.validateMemberAccess('instrument', 'piano', 'write')).toBe(false);
+            expect(symbolManager.validateMemberAccess('scores', 'math', 'read')).toBe(true);
+            expect(symbolManager.validateMemberAccess('scores', 'math', 'write')).toBe(true);
         });
     });
 
-    describe('Reset', () => {
-        it('should reset the table to its initial state', () => {
-            symbolTable.declare('foo', SymbolType.USER_VARIABLE, DataType.NUMBER);
-            symbolTable.pushScope();
-            symbolTable.declare('bar', SymbolType.USER_VARIABLE, DataType.STRING);
-            expect(symbolTable.getCurrentScopeDepth()).toBe(1);
-            symbolTable.reset();
-            expect(symbolTable.getCurrentScopeDepth()).toBe(0);
-            expect(symbolTable.getCurrentScopeSymbols()).toHaveLength(0);
+    describe('Symbol Queries', () => {
+        beforeEach(() => {
+            symbolManager.declare('userVar', SymbolType.USER_VARIABLE, DataType.STRING);
+            symbolManager.declareEnum('color', 'colorType', ['red', 'blue']);
+            symbolManager.declareArray('list', DataType.NUMBER);
+            symbolManager.declareDictionary('map', DataType.STRING, DataType.STRING);
+        });
+
+        it('should get symbols by type', () => {
+            const userVars = symbolManager.getSymbolsByType(SymbolType.USER_VARIABLE);
+            expect(userVars.length).toBe(4);
+
+            const systemVars = symbolManager.getSystemSymbols();
+            expect(systemVars.length).toBe(0);
+        });
+
+        it('should get symbols by data type', () => {
+            const enums = symbolManager.getAllEnums();
+            expect(enums.length).toBe(1);
+            expect(enums[0].name).toBe('color');
+
+            const arrays = symbolManager.getAllArrays();
+            expect(arrays.length).toBe(1);
+            expect(arrays[0].name).toBe('list');
+
+            const dicts = symbolManager.getAllDictionaries();
+            expect(dicts.length).toBe(1);
+            expect(dicts[0].name).toBe('map');
+        });
+
+        it('should get user modifiable symbols', () => {
+            symbolManager.setExecutionContext(ExecutionContext.MAIN_PROGRAM);
+            symbolManager.declareSystemVariable('constant', DataType.NUMBER);
+
+            const modifiable = symbolManager.getUserModifiableSymbols();
+            const modifiableNames = modifiable.map((s) => s.name);
+
+            expect(modifiableNames).toContain('userVar');
+            expect(modifiableNames).not.toContain('constant');
+        });
+    });
+
+    describe('Access Control Validation', () => {
+        beforeEach(() => {
+            symbolManager.setExecutionContext(ExecutionContext.MAIN_PROGRAM);
+            symbolManager.declareSystemVariable('readOnly', DataType.STRING, 'constant' as any);
+            symbolManager.declareSystemVariableConfigurable(
+                'configurable',
+                DataType.NUMBER,
+                42 as any,
+            );
+            symbolManager.setExecutionContext(ExecutionContext.USER_PROGRAM);
+            symbolManager.declare(
+                'userVar',
+                SymbolType.USER_VARIABLE,
+                DataType.STRING,
+                'user' as any,
+            );
+        });
+
+        it('should validate symbol access', () => {
+            expect(symbolManager.validateSymbolAccess('readOnly', 'read')).toBe(true);
+            expect(symbolManager.validateSymbolAccess('readOnly', 'write')).toBe(false);
+            expect(symbolManager.validateSymbolAccess('userVar', 'write')).toBe(true);
+        });
+
+        it('should check symbol accessibility', () => {
+            expect(symbolManager.isSymbolAccessible('readOnly')).toBe(true);
+            expect(symbolManager.isSymbolAccessible('configurable')).toBe(true);
+            expect(symbolManager.isSymbolAccessible('userVar')).toBe(true);
+            expect(symbolManager.isSymbolAccessible('nonexistent')).toBe(false);
+        });
+    });
+
+    describe('Scope Management', () => {
+        it('should handle scope operations', () => {
+            symbolManager.declare('global', SymbolType.USER_VARIABLE, DataType.STRING);
+            expect(symbolManager.getCurrentScopeDepth()).toBe(0);
+
+            symbolManager.pushScope();
+            symbolManager.declare('local', SymbolType.USER_VARIABLE, DataType.NUMBER);
+            expect(symbolManager.getCurrentScopeDepth()).toBe(1);
+            expect(symbolManager.existsInCurrentScope('local')).toBe(true);
+            expect(symbolManager.existsInCurrentScope('global')).toBe(false);
+
+            symbolManager.popScope();
+            expect(symbolManager.existsInAnyScope('local')).toBe(false);
+            expect(symbolManager.existsInAnyScope('global')).toBe(true);
+        });
+
+        it('should remove symbols from current scope', () => {
+            symbolManager.declare('temp', SymbolType.USER_VARIABLE, DataType.STRING);
+            expect(symbolManager.existsInCurrentScope('temp')).toBe(true);
+
+            symbolManager.removeSymbol('temp');
+            expect(symbolManager.existsInCurrentScope('temp')).toBe(false);
+        });
+
+        it('should clear current scope', () => {
+            symbolManager.declare('a', SymbolType.USER_VARIABLE, DataType.STRING);
+            symbolManager.declare('b', SymbolType.USER_VARIABLE, DataType.NUMBER);
+            expect(symbolManager.getCurrentScopeSymbols().length).toBe(2);
+
+            symbolManager.clearCurrentScope();
+            expect(symbolManager.getCurrentScopeSymbols().length).toBe(0);
         });
     });
 });

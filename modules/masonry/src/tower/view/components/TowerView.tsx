@@ -151,7 +151,120 @@ function computeBoundingBoxes(
 
   return bbMap;
 }
-// Helper function to recursively update layout for compound bricks - REVERTED
+
+// Render tower using iterative approach with correct positioning
+function RenderTowerNodeStack({
+  node,
+  allNodes,
+  bbMap,
+  offset = { x: 0, y: 0 },
+}: {
+  node: ExtendedTowerNode;
+  allNodes: Map<string, ExtendedTowerNode>;
+  bbMap: Map<string, { w: number; h: number }>;
+  offset?: { x: number; y: number };
+}) {
+  const elements: JSX.Element[] = [];
+  const stack: Array<{ node: ExtendedTowerNode; x: number; y: number }> = [
+    { node, x: offset.x, y: offset.y },
+  ];
+
+  // Recoil state for drag and towers
+  const [towers, setTowers] = useRecoilState(towersAtom);
+  const setDrag = useSetRecoilState(dragStateAtom);
+
+  while (stack.length > 0) {
+    const { node: curr, x, y } = stack.pop()!;
+    const children = getNodeChildren(curr.brick.uuid, allNodes);
+
+    // Drag handlers for each brick
+    const handleDragStart = () => {
+      setDrag({ brickType: curr.brick.type, origin: 'tower' });
+    };
+    const handleDragEnd = (e: React.DragEvent<SVGGElement>) => {
+      const svg = e.currentTarget.ownerSVGElement!;
+      const rect = svg.getBoundingClientRect();
+      const newX = e.clientX - rect.left;
+      const newY = e.clientY - rect.top;
+      // Find the tower containing this brick
+      const tower = towers.find((t) => t.hasBrick(curr.brick.uuid));
+      if (tower) {
+        tower.setBrickPosition(curr.brick.uuid, { x: newX, y: newY });
+        setTowers([...towers]);
+      }
+    };
+
+    // Render the current brick as a draggable group
+    elements.push(
+      <g
+        key={curr.brick.uuid}
+        transform={`translate(${x},${y})`}
+        // @ts-ignore: SVGProps does not include 'draggable', but it works in browsers
+        draggable
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        style={{ cursor: 'move' }}
+      >
+        <BrickNodeView node={curr} />
+      </g>,
+    );
+
+    // Handle nested children - positioned inside the current brick
+    if (children.nested.length > 0 && curr.brick.connectionPoints.nested) {
+      let nestedOffsetY = 0;
+
+      children.nested.forEach((child) => {
+        const nestedX = x + curr.brick.connectionPoints.nested!.x;
+        const nestedY = y + curr.brick.connectionPoints.nested!.y + nestedOffsetY;
+
+        stack.push({
+          node: child,
+          x: nestedX,
+          y: nestedY,
+        });
+
+        const _childBB = bbMap.get(child.brick.uuid)!;
+        nestedOffsetY += _childBB.h;
+      });
+    }
+
+    // Handle argument children - positioned at specific argument slots
+    if (children.args.length > 0 && curr.brick.connectionPoints.args) {
+      children.args.forEach((child) => {
+        const argIndex = child.argIndex || 0;
+        if (argIndex < curr.brick.connectionPoints.args!.length) {
+          const argOrigin = curr.brick.connectionPoints.args![argIndex];
+
+          stack.push({
+            node: child,
+            x: x + argOrigin.x,
+            y: y + argOrigin.y,
+          });
+        }
+      });
+    }
+
+    // Handle stacked children - positioned below the current brick
+    if (children.stacked.length > 0) {
+      let stackedOffsetY = y + curr.brick.boundingBox.h;
+
+      children.stacked.forEach((child) => {
+        stack.push({
+          node: child,
+          x: x,
+          y: stackedOffsetY,
+        });
+
+        const _childBB3 = bbMap.get(child.brick.uuid)!;
+        stackedOffsetY += _childBB3.h;
+      });
+    }
+  }
+
+  return <>{elements}</>;
+}
+
+// Helper function to recursively update layout for compound bricks
 function updateCompoundBrickLayouts(
   nodes: Map<string, ExtendedTowerNode>,
   node?: ExtendedTowerNode,

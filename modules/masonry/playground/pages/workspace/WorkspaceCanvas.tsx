@@ -38,6 +38,7 @@ export default function WorkspaceCanvas(): JSX.Element {
   const [isDragging, setIsDragging] = useState(false);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [currentMousePos, setCurrentMousePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
   /**
    * Compute argument box sizes for a given brick config
@@ -128,16 +129,33 @@ export default function WorkspaceCanvas(): JSX.Element {
     const svg = svgRef.current;
     if (!svg) return;
 
-    // Calculate new position relative to SVG
+    // Update current mouse position relative to SVG
     const rect = svg.getBoundingClientRect();
-    const x = e.clientX - rect.left - dragOffset.x;
-    const y = e.clientY - rect.top - dragOffset.y;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    setCurrentMousePos({ x: mouseX, y: mouseY });
+
+    if (!draggedBrickId) return;
+
+    // Calculate new position relative to SVG with drag offset
+    const x = mouseX - dragOffset.x;
+    const y = mouseY - dragOffset.y;
 
     // Update the specific brick's position
     const towersCopy = [...towers];
     const towerModel = towersCopy.find((t) => t.hasBrick(draggedBrickId));
     if (towerModel) {
-      towerModel.setBrickPosition(draggedBrickId, { x, y });
+      // If dragging the root, move the entire structure using getTotalBounds
+      const rootNode = towerModel.nodesArray().find(n => n.parent === null);
+      // Type assertion to BrickModel to access getTotalBounds
+      if (rootNode && rootNode.brick.uuid === draggedBrickId && typeof (rootNode.brick as any).getTotalBounds === 'function') {
+        // we can use getTotalBounds for snap/visual feedback here
+        // For now, move the root and all children will follow
+        towerModel.setBrickPosition(draggedBrickId, { x, y });
+      } else {
+        // Otherwise, move just the dragged brick
+        towerModel.setBrickPosition(draggedBrickId, { x, y });
+      }
       setTowers(towersCopy);
       setRefreshKey((k) => k + 1);
     }
@@ -151,6 +169,25 @@ export default function WorkspaceCanvas(): JSX.Element {
     setIsDragging(false);
     window.removeEventListener('mousemove', handleMouseMove as any);
     window.removeEventListener('mouseup', handleMouseUp as any);
+  };
+
+  /**
+   * Handle brick disconnection with proper positioning and layout updates
+   * This function should be called when a brick is disconnected from its parent
+   */
+  const handleBrickDisconnect = (brickId: string, newTowerModel: TowerModel) => {
+      const newPosition = {
+          x: currentMousePos.x - dragOffset.x,
+          y: currentMousePos.y - dragOffset.y
+      };
+
+      // Set the position of the disconnected brick
+      newTowerModel.setBrickPosition(brickId, newPosition);
+      
+      // Force a refresh to trigger re-calculation of layouts and bounding boxes
+      setRefreshKey((k) => k + 1);
+      
+      console.log(`Brick ${brickId} disconnected and positioned at:`, newPosition);
   };
 
   /**
@@ -255,6 +292,7 @@ export default function WorkspaceCanvas(): JSX.Element {
             isDragging={isDragging}
             setIsDragging={setIsDragging}
             svgRef={svgRef as React.RefObject<SVGSVGElement>}
+            onBrickDisconnect={handleBrickDisconnect}
           />
         ))}
       </svg>

@@ -115,17 +115,23 @@ export default function WorkspaceCanvas(): JSX.Element {
       default:
         return;
     }
-
+    
     // Instantiate and add to towers state
     const tower = new TowerModel(uuid(), brick, { x, y });
-    setTowers([...towers, tower]);
+    setTowers((prevTowers) => {
+      const newTowers = [...prevTowers, tower];
+      console.log(`New tower created via drop. Total towers: ${newTowers.length}`);
+      newTowers.forEach((t, i) => {
+        console.log(`  Tower ${i + 1} (${t.id}):`, t.nodesArray().map(n => n.brick.uuid));
+      });
+      return newTowers;
+    });
   };
 
   /**
    * Handle pointer movement while dragging a brick
    */
   const handleMouseMove = (e: React.MouseEvent | MouseEvent) => {
-    if (!draggedBrickId) return;
     const svg = svgRef.current;
     if (!svg) return;
 
@@ -165,6 +171,14 @@ export default function WorkspaceCanvas(): JSX.Element {
    * Stop dragging: cleanup state and listeners
    */
   const handleMouseUp = () => {
+    if (draggedBrickId) {
+      // Log tower state before any potential modification
+      console.log('handleMouseUp triggered. Current tower count:', towers.length);
+      towers.forEach((t, i) => {
+        console.log(`  Tower ${i + 1} (${t.id}) before update:`, t.nodesArray().map(n => n.brick.uuid));
+      });
+    }
+
     setDraggedBrickId(null);
     setIsDragging(false);
     window.removeEventListener('mousemove', handleMouseMove as any);
@@ -285,6 +299,8 @@ export default function WorkspaceCanvas(): JSX.Element {
           <TowerView
             key={t.id + '-' + refreshKey}
             tower={t}
+            towers={towers}
+            setTowers={setTowers}
             draggedBrickId={draggedBrickId}
             setDraggedBrickId={setDraggedBrickId}
             dragOffset={dragOffset}

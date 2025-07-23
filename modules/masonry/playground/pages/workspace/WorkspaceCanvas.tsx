@@ -155,8 +155,8 @@ export default function WorkspaceCanvas(): JSX.Element {
       const rootNode = towerModel.nodesArray().find(n => n.parent === null);
       // Type assertion to BrickModel to access getTotalBounds
       if (rootNode && rootNode.brick.uuid === draggedBrickId && typeof (rootNode.brick as any).getTotalBounds === 'function') {
-        // we can use getTotalBounds for snap/visual feedback here
-        // For now, move the root and all children will follow
+        // Optionally, you could use getTotalBounds for snap/visual feedback here
+        // For now, just move the root and all children will follow
         towerModel.setBrickPosition(draggedBrickId, { x, y });
       } else {
         // Otherwise, move just the dragged brick
@@ -184,12 +184,13 @@ export default function WorkspaceCanvas(): JSX.Element {
     window.removeEventListener('mousemove', handleMouseMove as any);
     window.removeEventListener('mouseup', handleMouseUp as any);
   };
-
+  
   /**
    * Handle brick disconnection with proper positioning and layout updates
    * This function should be called when a brick is disconnected from its parent
    */
   const handleBrickDisconnect = (brickId: string, newTowerModel: TowerModel) => {
+      // Position the disconnected brick at current mouse position minus the drag offset
       const newPosition = {
           x: currentMousePos.x - dragOffset.x,
           y: currentMousePos.y - dragOffset.y
@@ -242,7 +243,7 @@ export default function WorkspaceCanvas(): JSX.Element {
         bboxArgs: [{ w: 60, h: 20 }, { w: 60, h: 20 }],
       });
 
-      const tower = new TowerModel('dummy_tower', root, { x: 100, y: 100 });
+      const tower = new TowerModel('interactive_tower', root, { x: 100, y: 100 });
 
       // Add 2 argument bricks (expressions)
       const expr1 = createExpressionBrick({ label: 'Expr 1' });

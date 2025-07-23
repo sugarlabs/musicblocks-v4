@@ -183,6 +183,48 @@ export default function WorkspaceCanvas(): JSX.Element {
     window.addEventListener('mouseup', handleMouseUp as any);
   };
 
+  useEffect(() => {
+    if (towers.length === 0) {
+      // Root compound brick with 2 argument slots
+      const root = createCompoundBrick({
+        label: 'Root Compound',
+        bboxArgs: [{ w: 60, h: 20 }, { w: 60, h: 20 }],
+      });
+
+      const tower = new TowerModel('dummy_tower', root, { x: 100, y: 100 });
+
+      // Add 2 argument bricks (expressions)
+      const expr1 = createExpressionBrick({ label: 'Expr 1' });
+      const expr2 = createExpressionBrick({ label: 'Expr 2' });
+      tower.addArgumentBrick(root.uuid, expr1, { x: 0, y: 0 }, 0);
+      tower.addArgumentBrick(root.uuid, expr2, { x: 0, y: 0 }, 1);
+
+      // Add a nested compound brick (with its own nested child)
+      const nestedCompound = createCompoundBrick({ label: 'Nested Compound' });
+      tower.addNestedBrick(root.uuid, nestedCompound, { x: 0, y: 0 });
+
+      const nestedChild = createSimpleBrick({ label: 'Nested Simple' });
+      tower.addNestedBrick(nestedCompound.uuid, nestedChild, { x: 0, y: 0 });
+
+      const nestedChild2 = createSimpleBrick({ label: 'Nested Simple' });
+      tower.addNestedBrick(nestedCompound.uuid, nestedChild2, { x: 0, y: 0 });
+
+      // Add a simple nested brick directly to root
+      const simpleNested = createSimpleBrick({ label: 'Simple Nested' });
+      tower.addBrick(nestedCompound.uuid, simpleNested, { x: 0, y: 0 });
+
+      // Add stacked bricks
+      let lastUuid = root.uuid;
+      for (let i = 1; i <= 2; i++) {
+        const stacked = createSimpleBrick({ label: `Stack ${i}` });
+        tower.addBrick(lastUuid, stacked, { x: 100, y: 150 + i * 30 });
+        lastUuid = stacked.uuid;
+      }
+
+      setTowers([tower]);
+    }
+  }, []);
+
   return (
     <div
       style={{

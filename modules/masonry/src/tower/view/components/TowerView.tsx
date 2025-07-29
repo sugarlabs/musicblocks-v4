@@ -10,9 +10,14 @@ import type { BrickModel, SimpleBrick, ExpressionBrick } from '../../../brick/mo
 import { useSetRecoilState, useRecoilState } from 'recoil';
 import { dragStateAtom } from '../../../state/dragState';
 import { towersAtom } from '../../../state/towersState';
+import { 
+  getNodeChildren,
+  computeBoundingBoxes, 
+  debugBoundingBoxCalculation,
+} from '../../../tower/utils/towerUtils'; // Moved to utility file
 
 // Extended ITowerNode to ensure compatibility
-interface ExtendedTowerNode extends ITowerNode {
+export interface ExtendedTowerNode extends ITowerNode {
   isNested?: boolean;
   argIndex?: number;
 }
@@ -32,125 +37,6 @@ function BrickNodeView({ node }: { node: ExtendedTowerNode }) {
   }
 }
 
-// Helper function to get children of a node from the tower structure
-function getNodeChildren(
-  nodeId: string,
-  allNodes: Map<string, ExtendedTowerNode>,
-): {
-  nested: ExtendedTowerNode[];
-  args: ExtendedTowerNode[];
-  stacked: ExtendedTowerNode[];
-} {
-  const nested: ExtendedTowerNode[] = [];
-  const args: ExtendedTowerNode[] = [];
-  const stacked: ExtendedTowerNode[] = [];
-
-  for (const [_, node] of allNodes) {
-    if (node.parent?.brick.uuid === nodeId) {
-      if (node.isNested) {
-        nested.push(node);
-      } else if (node.argIndex !== undefined) {
-        args.push(node);
-      } else {
-        stacked.push(node);
-      }
-    }
-  }
-
-  // Sort args by index
-  args.sort((a, b) => (a.argIndex || 0) - (b.argIndex || 0));
-
-  return { nested, args, stacked };
-}
-
-// Compute bounding boxes for all nodes (bottom-up)
-function computeBoundingBoxes(
-  allNodes: Map<string, ExtendedTowerNode>,
-): Map<string, { w: number; h: number }> {
-  const bbMap = new Map<string, { w: number; h: number }>();
-  const visited = new Set<string>();
-
-  // Post-order traversal: children first
-  const visit = (node: ExtendedTowerNode) => {
-    if (visited.has(node.brick.uuid)) {
-      return bbMap.get(node.brick.uuid)!;
-    }
-    visited.add(node.brick.uuid);
-
-    const children = getNodeChildren(node.brick.uuid, allNodes);
-
-    // Start with the brick's own bounding box
-    let width = node.brick.boundingBox.w;
-    let height = node.brick.boundingBox.h;
-
-    // Handle nested children (for compound bricks)
-    if (children.nested.length > 0) {
-      let nestedHeight = 0;
-      let nestedWidth = 0;
-
-      children.nested.forEach((child) => {
-        const childBB = visit(child);
-        nestedHeight += childBB.h;
-        nestedWidth = Math.max(nestedWidth, childBB.w);
-      });
-
-      // Update the compound brick's layout with nested children
-      if (node.brick instanceof CompoundBrick) {
-        const nestedBricks = children.nested.map((child) => child.brick as BrickModel);
-        node.brick.updateLayoutWithChildren(nestedBricks);
-
-        // Recalculate the brick's bounding box after layout update
-        width = node.brick.boundingBox.w;
-        height = node.brick.boundingBox.h;
-
-        // IMPORTANT FIX: Account for the total nested content height
-        // The compound brick needs to be tall enough to contain all nested content
-        // including any stacked children within the nested area
-        if (node.brick.connectionPoints.nested) {
-          height = Math.max(height, node.brick.connectionPoints.nested.y + nestedHeight);
-        } else {
-          // Fallback if nested connection point is not defined
-          height = Math.max(height, node.brick.boundingBox.h + nestedHeight);
-        }
-      } else {
-        // For non-compound bricks, expand to fit nested content
-        width = Math.max(width, nestedWidth + 20); // Add some padding
-        height = Math.max(height, node.brick.boundingBox.h + nestedHeight);
-      }
-    }
-
-    // Handle argument children - they don't affect parent size as they're positioned at specific slots
-    children.args.forEach((child) => {
-      visit(child); // Just ensure they're processed
-    });
-
-    // Handle stacked children (vertical stack below this brick)
-    if (children.stacked.length > 0) {
-      let stackedHeight = 0;
-      let stackedWidth = 0;
-
-      children.stacked.forEach((child) => {
-        const childBB = visit(child);
-        stackedHeight += childBB.h;
-        stackedWidth = Math.max(stackedWidth, childBB.w);
-      });
-
-      // Stacked children extend the total height and may affect width
-      width = Math.max(width, stackedWidth);
-      height += stackedHeight;
-    }
-
-    const result = { w: width, h: height };
-    bbMap.set(node.brick.uuid, result);
-    return result;
-  };
-
-  // Find roots and process them
-  const roots = Array.from(allNodes.values()).filter((n) => n.parent === null);
-  roots.forEach(visit);
-
-  return bbMap;
-}
 
 // Render tower using iterative approach with correct positioning
 function RenderTowerNodeStack({
@@ -210,53 +96,45 @@ function RenderTowerNodeStack({
     );
 
     // Handle nested children - positioned inside the current brick
-    if (children.nested.length > 0 && curr.brick.connectionPoints.nested) {
+    if (children.nested.length > 0 && curr.brick.connectionPoints?.nested) {
       let nestedOffsetY = 0;
-
       children.nested.forEach((child) => {
-        const nestedX = x + curr.brick.connectionPoints.nested!.x;
-        const nestedY = y + curr.brick.connectionPoints.nested!.y + nestedOffsetY;
-
-        stack.push({
-          node: child,
-          x: nestedX,
-          y: nestedY,
-        });
-
-        const _childBB = bbMap.get(child.brick.uuid)!;
-        nestedOffsetY += _childBB.h;
+        const nestedX = x + (curr.brick.connectionPoints.nested.x || 0);
+        const nestedY = y + (curr.brick.connectionPoints.nested.y || 0) + nestedOffsetY;
+        stack.push({ node: child, x: nestedX, y: nestedY });
+        const childBB = bbMap.get(child.brick.uuid) || { w: 0, h: 0 };
+        nestedOffsetY += childBB.h;
       });
     }
 
     // Handle argument children - positioned at specific argument slots
-    if (children.args.length > 0 && curr.brick.connectionPoints.args) {
+    if (children.args.length > 0 && curr.brick.connectionPoints?.args) {
       children.args.forEach((child) => {
         const argIndex = child.argIndex || 0;
-        if (argIndex < curr.brick.connectionPoints.args!.length) {
-          const argOrigin = curr.brick.connectionPoints.args![argIndex];
-
-          stack.push({
-            node: child,
-            x: x + argOrigin.x,
-            y: y + argOrigin.y,
-          });
+        if (argIndex < curr.brick.connectionPoints.args.length) {
+          const argOrigin = curr.brick.connectionPoints.args[argIndex];
+          stack.push({ node: child, x: x + (argOrigin.x || 0), y: y + (argOrigin.y || 0) });
         }
       });
     }
 
     // Handle stacked children - positioned below the current brick
     if (children.stacked.length > 0) {
-      let stackedOffsetY = y + curr.brick.boundingBox.h;
-
+      let stackedOffsetY = y + (curr.brick.boundingBox.h || 0);
       children.stacked.forEach((child) => {
-        stack.push({
-          node: child,
-          x: x,
-          y: stackedOffsetY,
-        });
+        stack.push({ node: child, x, y: stackedOffsetY });
+        const childBB = bbMap.get(child.brick.uuid) || { w: 0, h: 0 };
+        stackedOffsetY += childBB.h;
+      });
+    }
 
-        const _childBB3 = bbMap.get(child.brick.uuid)!;
-        stackedOffsetY += _childBB3.h;
+    // Handle nested chains under simple bricks
+    if (curr.brick.type === 'Simple' && children.nested.length > 0) {
+      let nestedOffsetY = y + (curr.brick.boundingBox.h || 0);
+      children.nested.forEach((child) => {
+        stack.push({ node: child, x, y: nestedOffsetY });
+        const childBB = bbMap.get(child.brick.uuid) || { w: 0, h: 0 };
+        nestedOffsetY += childBB.h;
       });
     }
   }
@@ -269,25 +147,19 @@ function updateCompoundBrickLayouts(
   nodes: Map<string, ExtendedTowerNode>,
   node?: ExtendedTowerNode,
 ): void {
-  // If node is not provided, start from all root nodes
   if (!node) {
     for (const n of nodes.values()) {
       if (n.parent === null) updateCompoundBrickLayouts(nodes, n);
     }
     return;
   }
-
-  // Process the current node
   if (node.brick instanceof CompoundBrick) {
-    const children = getNodeChildren(node.brick.uuid, nodes);
-    if (children.nested.length > 0) {
-      const nestedBricks = children.nested.map((child) => child.brick as BrickModel);
-      node.brick.updateLayoutWithChildren(nestedBricks);
-      // Recursively update only the nested children
-      children.nested.forEach((child) => {
-        updateCompoundBrickLayouts(nodes, child);
-      });
-    }
+    const children = (node.brick as CompoundBrick).getNestedChildren(nodes); // Fixed to use CompoundBrick method
+    (node.brick as CompoundBrick).updateLayoutWithChildren(children, nodes);
+    children.forEach(child => {
+      const childNode = Array.from(nodes.values()).find(n => n.brick.uuid === child.uuid);
+      if (childNode) updateCompoundBrickLayouts(nodes, childNode);
+    });
   }
 }
 
@@ -360,6 +232,7 @@ const TowerView: React.FC<TowerViewProps> = ({
 
     // Compute bounding boxes
     const bbMap = computeBoundingBoxes(extendedNodes);
+    debugBoundingBoxCalculation(extendedNodes, bbMap);
 
     // Find root nodes
     const roots = Array.from(extendedNodes.values()).filter((n) => n.parent === null);
@@ -386,25 +259,19 @@ const TowerView: React.FC<TowerViewProps> = ({
         
         // Mouse handlers for each brick
         const handleMouseDown = (e: React.MouseEvent) => {
-          // If the brick is not the root of its tower, detach it
           if (curr.parent !== null) {
             const originalTower = towers.find((t) => t.id === tower.id)?.clone();
             if (originalTower) {
               const newTower = originalTower.detachSubtree(curr.brick.uuid);
               if (newTower) {
-                // Use the onBrickDisconnect callback to position the new tower correctly
                 if (onBrickDisconnect) {
                   onBrickDisconnect(curr.brick.uuid, newTower);
                 }
-
-                // Update the state with the modified original tower and the new tower
                 setTowers((prevTowers) => {
                   const updatedTowers = prevTowers.map((t) =>
                     t.id === originalTower.id ? originalTower : t
                   );
                   updatedTowers.push(newTower);
-
-                  // Log the state after detaching
                   console.log(`Detached brick ${curr.brick.uuid} into a new tower. Total towers: ${updatedTowers.length}`);
                   updatedTowers.forEach((t, i) => {
                     console.log(`  Tower ${i + 1} (${t.id}):`, t.nodesArray().map(n => n.brick.uuid));
@@ -412,13 +279,12 @@ const TowerView: React.FC<TowerViewProps> = ({
 
                   return updatedTowers;
                 });
-                setDraggedBrickId(curr.brick.uuid); // Start dragging the new tower's root
+                setDraggedBrickId(curr.brick.uuid);
               }
             }
           } else {
             setDraggedBrickId(curr.brick.uuid);
           }
-
           setIsDragging(true);
           const svg = svgRef.current;
           if (!svg) return;
@@ -448,35 +314,45 @@ const TowerView: React.FC<TowerViewProps> = ({
         );
         
         // Handle nested children - positioned inside the current brick
-        if (children.nested.length > 0 && curr.brick.connectionPoints.nested) {
+        if (children.nested.length > 0 && curr.brick.connectionPoints?.nested) {
           let nestedOffsetY = 0;
           children.nested.forEach((child) => {
-            const nestedX = x + curr.brick.connectionPoints.nested!.x;
-            const nestedY = y + curr.brick.connectionPoints.nested!.y + nestedOffsetY;
+            const nestedX = x + (curr.brick.connectionPoints.nested.x || 0);
+            const nestedY = y + (curr.brick.connectionPoints.nested.y || 0) + nestedOffsetY;
             stack.push({ node: child, x: nestedX, y: nestedY });
-            const _childBB = bbMap.get(child.brick.uuid)!;
-            nestedOffsetY += _childBB.h;
+            const childBB = bbMap.get(child.brick.uuid) || { w: 0, h: 0 };
+            nestedOffsetY += childBB.h;
           });
         }
         
         // Handle argument children - positioned at specific argument slots
-        if (children.args.length > 0 && curr.brick.connectionPoints.args) {
+        if (children.args.length > 0 && curr.brick.connectionPoints?.args) {
           children.args.forEach((child) => {
             const argIndex = child.argIndex || 0;
             if (argIndex < curr.brick.connectionPoints.args!.length) {
               const argOrigin = curr.brick.connectionPoints.args![argIndex];
-              stack.push({ node: child, x: x + argOrigin.x, y: y + argOrigin.y });
+              stack.push({ node: child, x: x + (argOrigin.x || 0), y: y + (argOrigin.y || 0) });
             }
           });
         }
         
         // Handle stacked children - positioned below the current brick
         if (children.stacked.length > 0) {
-          let stackedOffsetY = y + curr.brick.boundingBox.h;
+          let stackedOffsetY = y + (curr.brick.boundingBox.h || 0);
           children.stacked.forEach((child) => {
-            stack.push({ node: child, x: x, y: stackedOffsetY });
-            const _childBB3 = bbMap.get(child.brick.uuid)!;
-            stackedOffsetY += _childBB3.h;
+            stack.push({ node: child, x, y: stackedOffsetY });
+            const childBB = bbMap.get(child.brick.uuid) || { w: 0, h: 0 };
+            stackedOffsetY += childBB.h;
+          });
+        }
+
+        // Handle nested chains under simple bricks
+        if (curr.brick.type === 'Simple' && children.nested.length > 0) {
+          let nestedOffsetY = y + (curr.brick.boundingBox.h || 0);
+          children.nested.forEach((child) => {
+            stack.push({ node: child, x, y: nestedOffsetY });
+            const childBB = bbMap.get(child.brick.uuid) || { w: 0, h: 0 };
+            nestedOffsetY += childBB.h;
           });
         }
       }

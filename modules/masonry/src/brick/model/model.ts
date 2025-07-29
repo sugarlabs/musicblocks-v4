@@ -16,6 +16,8 @@ import type { TConnectionPoints as TCP } from '../../tree/model/model';
 import { generateBrickData } from '../utils/path';
 import type { TInputUnion } from '../utils/path';
 import { getLabelWidth } from '../utils/textMeasurement';
+import type { ExtendedTowerNode } from '../../tower/view/components/TowerView';
+import { calculateCompleteSubtreeDimensions } from '../../tower/utils/towerUtils';
 
 export abstract class BrickModel implements IBrick {
     protected _uuid: string;
@@ -386,32 +388,52 @@ export default class CompoundBrick extends BrickModel implements IBrickCompound 
     public setBoundingBoxNest(extents: TExtent[]): void {
         this._bboxNest = extents;
     }
-
+    
     /**
      * Recursively update bounding box and connection points to fit nested children.
      * Call this after all children are attached, before rendering.
      */
-    public updateLayoutWithChildren(nestedChildren: BrickModel[]): void {
-        // If there are nested children, calculate the total bounding box
+    public updateLayoutWithChildren(nestedChildren: BrickModel[], allNodes: Map<string, ExtendedTowerNode>): void {
         if (nestedChildren && nestedChildren.length > 0) {
-            // Calculate the bounding box that fits all nested children
-            let _minX = 0,
-                _minY = 0,
-                maxX = 0,
-                maxY = 0;
-            nestedChildren.forEach((child) => {
-                const bbox = child.boundingBox;
-                // For simplicity, assume children are stacked vertically for now
-                maxY += bbox.h;
-                maxX = Math.max(maxX, bbox.w);
-            });
-            // Expand this brick's bboxNest to fit the children
-            this._bboxNest = [{ w: maxX, h: maxY }];
+            let totalHeight = 0;
+            let maxWidth = 0;
+
+            // Recursively calculate the total height and max width of all descendants
+            const calculateSubtreeDimensions = (children: BrickModel[]): { h: number; w: number } => {
+                let height = 0;
+                let width = 0;
+                children.forEach(child => {
+                    const childNode = Array.from(allNodes.values()).find(n => n.brick.uuid === child.uuid);
+                    if (childNode) {
+                        const { w, h } = calculateCompleteSubtreeDimensions(childNode.brick.uuid, allNodes, new Map<string, { w: number; h: number }>());
+                        height += h;
+                        width = Math.max(width, w);
+                    }
+                });
+                return { h: height, w: width };
+            };
+
+            const { h, w } = calculateSubtreeDimensions(nestedChildren);
+            totalHeight = h;
+            maxWidth = w;
+
+            // Update bboxNest to reflect the full subtree dimensions
+            this._bboxNest = [{ w: maxWidth, h: totalHeight }];
         } else {
             this._bboxNest = [];
         }
-        // Update geometry with new bboxNest
         this.updateGeometry();
+    }
+
+    // Helper method to get nested children based on the tower structure
+    public getNestedChildren(allNodes: Map<string, ExtendedTowerNode>): BrickModel[] {
+        const children: BrickModel[] = [];
+        allNodes.forEach(node => {
+            if (node.parent?.brick.uuid === this.uuid && node.isNested) {
+                children.push(node.brick as BrickModel); // Cast IBrick to BrickModel
+            }
+        });
+        return children;
     }
 
     public override get renderProps(): TBrickRenderPropsCompound {

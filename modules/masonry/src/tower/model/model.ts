@@ -202,11 +202,12 @@ export default class TowerModel {
         // Create a new tower for the detached subtree
         const newTower = new TowerModel(uuid(), node.brick, { ...node.position });
 
-        // Helper to recursively gather all descendants
-        const gatherDescendants = (n: ITowerNode, collection: Map<string, ITowerNode>) => {
+        // Helper to recursively gather all descendants, respecting isNested
+        const gatherDescendants = (n: ITowerNode, collection: Map<string, ITowerNode>): void => {
             collection.set(n.brick.uuid, cloneDeep(n));
+            // Find all children (nested, args, or stacked) based on parent reference
             this.nodes.forEach(childNode => {
-                if (childNode.parent && childNode.parent.brick.uuid === n.brick.uuid) {
+                if (childNode.parent?.brick.uuid === n.brick.uuid) {
                     gatherDescendants(childNode, collection);
                 }
             });
@@ -219,8 +220,7 @@ export default class TowerModel {
         if (node.parent) {
             // Remove connections involving the detached subtree
             this.connections = this.connections.filter(
-                (conn) => {
-                    // Keep connections that don't involve any node in the detached subtree
+                conn => {
                     const fromInSubtree = newNodes.has(conn.from);
                     const toInSubtree = newNodes.has(conn.to);
                     return !(fromInSubtree || toInSubtree);
@@ -233,14 +233,23 @@ export default class TowerModel {
             this.nodes.delete(key);
         }
 
-        // The new tower's nodes are the collected descendants
+        // Set up the new tower's nodes, adjusting parents
         newTower.nodes.clear(); // Clear the root created by the constructor
         newNodes.forEach((n, id) => {
+            const newNode = cloneDeep(n);
             // Reset parent for the root of the new tower
             if (id === brickId) {
-                n.parent = null;
+                newNode.parent = null;
+            } else {
+                // Re-link parent if it exists in the new tower
+                if (n.parent) {
+                    const parentNode = newNodes.get(n.parent.brick.uuid);
+                    newNode.parent = parentNode || null; // Safe assignment with type guard
+                } else {
+                    newNode.parent = null; // Explicitly handle null parent
+                }
             }
-            newTower.nodes.set(id, n);
+            newTower.nodes.set(id, newNode);
         });
 
         // Copy relevant connections to the new tower

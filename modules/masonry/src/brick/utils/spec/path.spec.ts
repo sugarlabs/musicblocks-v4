@@ -2,22 +2,22 @@ import { generateBrickData } from '../path';
 import type { TInputUnion } from '../path';
 
 // Helper function to parse SVG path and calculate actual bounding box
-function calculatePathBoundingBox(pathString: string): { w: number; h: number; debug?: any } {
+function calculatePathBoundingBox(pathString: string): { w: number; h: number; debug?: unknown } {
     // More robust parsing - split by spaces but handle commas and multiple spaces
     const pathData = pathString.trim().replace(/,/g, ' ').replace(/\s+/g, ' ');
     const tokens = pathData.split(' ');
-    
+
     let currentX = 0;
     let currentY = 0;
     let minX = 0;
     let minY = 0;
     let maxX = 0;
     let maxY = 0;
-    
+
     let i = 0;
     while (i < tokens.length) {
         const command = tokens[i];
-        
+
         if (command === 'm') {
             // Relative move
             const dx = parseFloat(tokens[i + 1]);
@@ -58,7 +58,7 @@ function calculatePathBoundingBox(pathString: string): { w: number; h: number; d
                 const sweepFlag = parseFloat(tokens[i + 5]);
                 const dx = parseFloat(tokens[i + 6]);
                 const dy = parseFloat(tokens[i + 7]);
-                
+
                 // For bounding box calculation, we need to consider arc extremes
                 // Simplified: just use start and end points for now
                 currentX += dx;
@@ -87,19 +87,19 @@ function calculatePathBoundingBox(pathString: string): { w: number; h: number; d
             // Unknown command, skip
             i += 1;
         }
-        
+
         // Update bounds after each command
         minX = Math.min(minX, currentX);
         minY = Math.min(minY, currentY);
         maxX = Math.max(maxX, currentX);
         maxY = Math.max(maxY, currentY);
     }
-    
+
     const result = {
         w: Math.abs(maxX - minX),
-        h: Math.abs(maxY - minY)
+        h: Math.abs(maxY - minY),
     };
-    
+
     return result;
 }
 
@@ -265,12 +265,15 @@ describe('Masonry: Brick > Path Generation', () => {
         // NEW TEST: Validate bounding box against actual path dimensions
         it(`bounding box matches actual path dimensions: ${name}`, () => {
             const { path, boundingBox } = generateBrickData(input as TInputUnion);
-            
+
             // Calculate actual bounding box from path
             const actualBounds = calculatePathBoundingBox(path);
-            
+
             // Debug output for failed tests
-            if (Math.abs(boundingBox.w - actualBounds.w) > 1 || Math.abs(boundingBox.h - actualBounds.h) > 1) {
+            if (
+                Math.abs(boundingBox.w - actualBounds.w) > 1 ||
+                Math.abs(boundingBox.h - actualBounds.h) > 1
+            ) {
                 console.log(`\n=== DEBUG INFO FOR: ${name} ===`);
                 console.log('Input:', JSON.stringify(input, null, 2));
                 console.log('Generated Path:', path);
@@ -280,11 +283,11 @@ describe('Masonry: Brick > Path Generation', () => {
                 console.log('Height Difference:', Math.abs(boundingBox.h - actualBounds.h));
                 console.log('=====================================\n');
             }
-            
+
             // Use larger tolerance since there might be genuine calculation differences
             // Especially with arc commands and complex path geometries
-            const tolerance = 1; 
-            
+            const tolerance = 1;
+
             expect(Math.abs(boundingBox.w - actualBounds.w)).toBeLessThanOrEqual(tolerance);
             expect(Math.abs(boundingBox.h - actualBounds.h)).toBeLessThanOrEqual(tolerance);
         });

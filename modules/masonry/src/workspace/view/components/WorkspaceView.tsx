@@ -120,13 +120,6 @@ export default function WorkspaceCanvas(): JSX.Element {
     const tower = new TowerModel(uuid(), brick, { x, y });
     setTowers((prevTowers) => {
       const newTowers = [...prevTowers, tower];
-      console.log(`New tower created via drop. Total towers: ${newTowers.length}`);
-      newTowers.forEach((t, i) => {
-        console.log(
-          `  Tower ${i + 1} (${t.id}):`,
-          t.nodesArray().map((n) => n.brick.uuid),
-        );
-      });
       return newTowers;
     });
   };
@@ -134,7 +127,7 @@ export default function WorkspaceCanvas(): JSX.Element {
   /**
    * Handle pointer movement while dragging a brick
    */
-  const handleMouseMove = (e: React.MouseEvent | MouseEvent) => {
+  const handleMouseMove = (e: MouseEvent) => {
     const svg = svgRef.current;
     if (!svg) return;
 
@@ -150,6 +143,12 @@ export default function WorkspaceCanvas(): JSX.Element {
     const x = mouseX - dragOffset.x;
     const y = mouseY - dragOffset.y;
 
+    function hasGetTotalBounds(
+      brick: unknown,
+    ): brick is { getTotalBounds(): { x: number; y: number; width: number; height: number } } {
+      return typeof (brick as { getTotalBounds?: unknown }).getTotalBounds === 'function';
+    }
+
     // Update the specific brick's position
     const towersCopy = [...towers];
     const towerModel = towersCopy.find((t) => t.hasBrick(draggedBrickId));
@@ -157,11 +156,7 @@ export default function WorkspaceCanvas(): JSX.Element {
       // If dragging the root, move the entire structure using getTotalBounds
       const rootNode = towerModel.nodesArray().find((n) => n.parent === null);
       // Type assertion to BrickModel to access getTotalBounds
-      if (
-        rootNode &&
-        rootNode.brick.uuid === draggedBrickId &&
-        typeof (rootNode.brick as any).getTotalBounds === 'function'
-      ) {
+      if (rootNode && rootNode.brick.uuid === draggedBrickId && hasGetTotalBounds(rootNode.brick)) {
         // we can use getTotalBounds for snap/visual feedback here
         // For now, move the root and all children will follow
         towerModel.setBrickPosition(draggedBrickId, { x, y });
@@ -178,21 +173,10 @@ export default function WorkspaceCanvas(): JSX.Element {
    * Stop dragging: cleanup state and listeners
    */
   const handleMouseUp = () => {
-    if (draggedBrickId) {
-      // Log tower state before any potential modification
-      console.log('handleMouseUp triggered. Current tower count:', towers.length);
-      towers.forEach((t, i) => {
-        console.log(
-          `  Tower ${i + 1} (${t.id}) before update:`,
-          t.nodesArray().map((n) => n.brick.uuid),
-        );
-      });
-    }
-
     setDraggedBrickId(null);
     setIsDragging(false);
-    window.removeEventListener('mousemove', handleMouseMove as any);
-    window.removeEventListener('mouseup', handleMouseUp as any);
+    window.removeEventListener('mousemove', handleMouseMove);
+    window.removeEventListener('mouseup', handleMouseUp);
   };
 
   /**
@@ -211,8 +195,6 @@ export default function WorkspaceCanvas(): JSX.Element {
 
     // Force a refresh to trigger re-calculation of layouts and bounding boxes
     setRefreshKey((k) => k + 1);
-
-    console.log(`Brick ${brickId} disconnected and positioned at:`, newPosition);
   };
 
   /**
@@ -241,8 +223,8 @@ export default function WorkspaceCanvas(): JSX.Element {
    * Initiate global drag listeners (alternative to useEffect)
    */
   const startGlobalDrag = () => {
-    window.addEventListener('mousemove', handleMouseMove as any);
-    window.addEventListener('mouseup', handleMouseUp as any);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
   };
 
   useEffect(() => {
@@ -311,7 +293,7 @@ export default function WorkspaceCanvas(): JSX.Element {
         ref={svgRef}
         width="100%"
         height="100%"
-        onMouseMove={handleMouseMove}
+        onMouseMove={(e) => handleMouseMove(e.nativeEvent)}
         onMouseUp={handleMouseUp}
         style={{ pointerEvents: 'all' }}
       >

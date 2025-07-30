@@ -259,11 +259,17 @@ export default function WorkspaceCanvas(): JSX.Element {
       tower.addNestedBrick(nestedCompound.uuid, nestedChild, { x: 0, y: 0 });
 
       const nestedChild2 = createSimpleBrick({ label: 'Nested Simple' });
-      tower.addNestedBrick(nestedCompound.uuid, nestedChild2, { x: 0, y: 0 });
+      tower.addBrick(nestedChild.uuid, nestedChild2, { x: 0, y: 0 });
+
+      const nestedChild3 = createSimpleBrick({ label: 'Nested Simple' });
+      tower.addBrick(nestedChild2.uuid, nestedChild3, { x: 0, y: 0 });
 
       // Add a simple nested brick directly to root
       const simpleNested = createSimpleBrick({ label: 'Simple Nested' });
       tower.addBrick(nestedCompound.uuid, simpleNested, { x: 0, y: 0 });
+
+      const simpleNested2 = createSimpleBrick({ label: 'Simple Nested' });
+      tower.addBrick(simpleNested.uuid, simpleNested2, { x: 0, y: 0 });
 
       // Add stacked bricks
       let lastUuid = root.uuid;

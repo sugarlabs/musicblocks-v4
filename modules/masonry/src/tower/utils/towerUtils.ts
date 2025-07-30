@@ -79,22 +79,11 @@ export function calculateNestedAreaDimensions(
   let totalNestedHeight = 0;
   let totalNestedWidth = 0;
 
-  // Recursively process all nested children and their descendants
-  const processNestedChain = (nodeId: string) => {
-    const node = allNodes.get(nodeId);
-    if (!node) return;
-
-    const { h, w } = calculateCompleteSubtreeDimensions(nodeId, allNodes, memoMap);
+  // Process only nested children and their full subtrees
+  children.nested.forEach(nestedChild => {
+    const { h, w } = calculateCompleteSubtreeDimensions(nestedChild.brick.uuid, allNodes, memoMap);
     totalNestedHeight += h;
     totalNestedWidth = Math.max(totalNestedWidth, w);
-
-    const childChildren = getNodeChildren(nodeId, allNodes);
-    childChildren.nested.forEach(child => processNestedChain(child.brick.uuid));
-    childChildren.stacked.forEach(child => processNestedChain(child.brick.uuid)); // Include stacked chains as part of nested area
-  };
-
-  children.nested.forEach(nestedChild => {
-    processNestedChain(nestedChild.brick.uuid);
   });
 
   const result = { w: totalNestedWidth, h: totalNestedHeight };
@@ -241,6 +230,17 @@ export function debugBoundingBoxCalculation(
       const childLabel = child.brick.name || child.brick.type || 'Unknown';
       const childOriginal = child.brick.boundingBox;
       
+      console.log(`     ${index + 1}. "${childLabel}":`);
+      console.log(`         Original: ${childOriginal.w}×${childOriginal.h}`);
+      console.log(`         Calculated: ${childBB?.w || 0}×${childBB?.h || 0}`);
+    });
+
+    // Additional debug for stacked children affecting nested area
+    console.log(`    Stacked children affecting nested area:`);
+    children.stacked.forEach((child, index) => {
+      const childBB = bbMap.get(child.brick.uuid);
+      const childLabel = child.brick.name || child.brick.type || 'Unknown';
+      const childOriginal = child.brick.boundingBox;
       console.log(`     ${index + 1}. "${childLabel}":`);
       console.log(`         Original: ${childOriginal.w}×${childOriginal.h}`);
       console.log(`         Calculated: ${childBB?.w || 0}×${childBB?.h || 0}`);

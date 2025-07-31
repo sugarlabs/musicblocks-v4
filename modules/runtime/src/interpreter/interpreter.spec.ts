@@ -31,7 +31,7 @@ describe('IRInterpreter', () => {
         emptyProgram.functions.delete('start2');
 
         expect(() => interpreter.load(emptyProgram)).toThrow(
-            'Program must have a start2 function with at least one block',
+            'Program must have a start1, start2, or main function with at least one block. Available functions: action1, action2',
         );
     });
 

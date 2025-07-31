@@ -16,15 +16,29 @@ export class IRInterpreter {
     load(program: IRProgram): void {
         this.context = new ExecutionContext(program);
 
-        // Initialize the instruction pointer to the first instruction of the 'start2' function
-        // (We'll use 'start2' as the entry point based on the mock program)
-        const startFunction = program.functions.get('start2');
+        let startFunction = program.functions.get('start1');
+        let entryPointName = 'start1';
+
+        if (!startFunction) {
+            startFunction = program.functions.get('start2');
+            entryPointName = 'start2';
+        }
+
+        if (!startFunction) {
+            startFunction = program.functions.get('main');
+            entryPointName = 'main';
+        }
+
         if (!startFunction || startFunction.blocks.length === 0) {
-            throw new Error('Program must have a start2 function with at least one block');
+            const availableFunctions = Array.from(program.functions.keys());
+            throw new Error(
+                `Program must have a start1, start2, or main function with at least one block. ` +
+                    `Available functions: ${availableFunctions.join(', ')}`,
+            );
         }
 
         this.context.instructionPointer = {
-            functionName: 'start2',
+            functionName: entryPointName,
             blockLabel: startFunction.blocks[0].label,
             instructionIndex: 0,
         };

@@ -9,18 +9,17 @@ import { SymDeclareInstruction } from './sym-declare-instruction';
 describe('CallInstruction', () => {
     describe('Host Function Calls', () => {
         it('should be instantiated correctly for host functions', () => {
-            const instruction = new CallInstruction('console.log', ['"Hello"'], true);
+            const instruction = new CallInstruction('console.log', ['"Hello"']);
 
             expect(instruction).toBeInstanceOf(CallInstruction);
             expect(instruction.functionName).toBe('console.log');
             expect(instruction.parameters).toEqual(['"Hello"']);
-            expect(instruction.isHostFunction).toBe(true);
         });
 
         it('should execute console.log host function', () => {
             const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-            const instruction = new CallInstruction('console.log', ['"Hello"', '"World"'], true);
+            const instruction = new CallInstruction('console.log', ['"Hello"', '"World"']);
             const program = new IRProgram(new Map());
             const context = new ExecutionContext(program);
 
@@ -29,7 +28,9 @@ describe('CallInstruction', () => {
 
             instruction.execute(context);
 
-            expect(consoleSpy).toHaveBeenCalledWith('Hello', 'World');
+            expect(consoleSpy).toHaveBeenCalledWith(
+                'Call: console.log with args: ["Hello","World"]',
+            );
             expect(context.instructionPointer.instructionIndex).toBe(1);
 
             consoleSpy.mockRestore();
@@ -38,7 +39,7 @@ describe('CallInstruction', () => {
         it('should resolve variables from value store for host functions', () => {
             const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-            const instruction = new CallInstruction('console.log', ['myVar'], true);
+            const instruction = new CallInstruction('console.log', ['myVar']);
             const program = new IRProgram(new Map());
             const context = new ExecutionContext(program);
 
@@ -47,7 +48,9 @@ describe('CallInstruction', () => {
 
             instruction.execute(context);
 
-            expect(consoleSpy).toHaveBeenCalledWith('Hello from variable');
+            expect(consoleSpy).toHaveBeenCalledWith(
+                'Call: console.log with args: ["Hello from variable"]',
+            );
 
             consoleSpy.mockRestore();
         });
@@ -55,12 +58,11 @@ describe('CallInstruction', () => {
 
     describe('Function Calls', () => {
         it('should be instantiated correctly for function calls', () => {
-            const instruction = new CallInstruction('myFunction', ['param1'], false);
+            const instruction = new CallInstruction('myFunction', ['param1']);
 
             expect(instruction).toBeInstanceOf(CallInstruction);
             expect(instruction.functionName).toBe('myFunction');
             expect(instruction.parameters).toEqual(['param1']);
-            expect(instruction.isHostFunction).toBe(false);
         });
 
         it('should create stack frame and jump to function', () => {
@@ -70,7 +72,7 @@ describe('CallInstruction', () => {
             ]);
             functions.set('myFunction', targetFunction);
 
-            const instruction = new CallInstruction('myFunction', [], false);
+            const instruction = new CallInstruction('myFunction', []);
             const program = new IRProgram(functions);
             const context = new ExecutionContext(program);
 
@@ -101,7 +103,7 @@ describe('CallInstruction', () => {
             ]);
             functions.set('testFunc', targetFunction);
 
-            const instruction = new CallInstruction('testFunc', ['42', 'myVar'], false);
+            const instruction = new CallInstruction('testFunc', ['42', 'myVar']);
             const program = new IRProgram(functions);
             const context = new ExecutionContext(program);
 
@@ -125,13 +127,13 @@ describe('CallInstruction', () => {
         it('should parse numeric literals correctly', () => {
             const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-            const instruction = new CallInstruction('console.log', ['42', '-3.14'], true);
+            const instruction = new CallInstruction('console.log', ['42', '-3.14']);
             const program = new IRProgram(new Map());
             const context = new ExecutionContext(program);
 
             instruction.execute(context);
 
-            expect(consoleSpy).toHaveBeenCalledWith(42, -3.14);
+            expect(consoleSpy).toHaveBeenCalledWith('Call: console.log with args: [42,-3.14]');
 
             consoleSpy.mockRestore();
         });
@@ -139,13 +141,13 @@ describe('CallInstruction', () => {
         it('should parse boolean literals correctly', () => {
             const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-            const instruction = new CallInstruction('console.log', ['true', 'false'], true);
+            const instruction = new CallInstruction('console.log', ['true', 'false']);
             const program = new IRProgram(new Map());
             const context = new ExecutionContext(program);
 
             instruction.execute(context);
 
-            expect(consoleSpy).toHaveBeenCalledWith(true, false);
+            expect(consoleSpy).toHaveBeenCalledWith('Call: console.log with args: [true,false]');
 
             consoleSpy.mockRestore();
         });
@@ -153,13 +155,15 @@ describe('CallInstruction', () => {
         it('should parse string literals correctly', () => {
             const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-            const instruction = new CallInstruction('console.log', ['"Hello"', "'World'"], true);
+            const instruction = new CallInstruction('console.log', ['"Hello"', "'World'"]);
             const program = new IRProgram(new Map());
             const context = new ExecutionContext(program);
 
             instruction.execute(context);
 
-            expect(consoleSpy).toHaveBeenCalledWith('Hello', 'World');
+            expect(consoleSpy).toHaveBeenCalledWith(
+                'Call: console.log with args: ["Hello","World"]',
+            );
 
             consoleSpy.mockRestore();
         });

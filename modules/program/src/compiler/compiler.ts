@@ -16,18 +16,25 @@ export class Compiler {
 
         this.threadFunctionCounter = 0;
 
-        // Discover all functions in the program body
+        const functionDeclarations: { node: FunctionDeclaration; name: string }[] = [];
         for (const node of programNode.body) {
             if (
                 node.type === 'ThreadFunctionDeclaration' ||
                 node.type === 'CustomFunctionDeclaration'
             ) {
-                const irFunction = this.parser.compileFunction(node as FunctionDeclaration);
-
-                // Extract function name
                 const functionName = this.extractFunctionName(node);
-                functions.set(functionName, irFunction);
+                functionDeclarations.push({
+                    node: node as FunctionDeclaration,
+                    name: functionName,
+                });
             }
+        }
+
+        this.parser.registerProgramFunctions(functionDeclarations.map((f) => f.name));
+
+        for (const { node, name } of functionDeclarations) {
+            const irFunction = this.parser.compileFunction(node);
+            functions.set(name, irFunction);
         }
 
         return new IRProgram(functions);
@@ -48,7 +55,6 @@ export class Compiler {
         ) {
             return (functionNode as unknown as { id: { name: string } }).id.name;
         }
-        // Default case, return a generic function name
         return 'function';
     }
 }

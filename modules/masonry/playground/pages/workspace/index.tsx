@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PaletteWrapper from '../../../src/palette/components/paletteWrapper';
 import '../../../src/palette/palette.css';
-import WorkspaceCanvas from './WorkspaceCanvas';
+import WorkSpaceView from '../../../src/workspace/view/components/WorkspaceView';
 
 export default function App() {
   const [showCollisionTest, setShowCollisionTest] = useState(false);
@@ -45,7 +45,7 @@ export default function App() {
       </aside>
 
       {/* Playground canvas */}
-      <WorkspaceCanvas />
+      <WorkSpaceView />
     </div>
   );
 }

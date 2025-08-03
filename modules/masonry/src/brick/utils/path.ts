@@ -426,7 +426,7 @@ function getBoundingBox(config: TInputUnion): TBBox {
     const baseWidth = CORNER_RADIUS + OFFSET_NOTCH_TOP + WIDTH_NOTCH_TOP + variableTopWidth;
 
     const width = hasArgs
-        ? baseWidth + OFFSET_NOTCH_RIGHT + CORNER_RADIUS + strokeWidth / 2
+        ? baseWidth + OFFSET_NOTCH_RIGHT + CORNER_RADIUS + strokeWidth / 2 + (type === 'type2' ? 7 : 0)  // Add 7 more for left notch
         : baseWidth + CORNER_RADIUS + strokeWidth / 2;
 
     // Get rightVertical from _generateRight
@@ -437,7 +437,7 @@ function getBoundingBox(config: TInputUnion): TBBox {
         bBoxArgs: bBoxArgs || [],
     });
 
-    let height = rightVertical + CORNER_RADIUS + (type !== 'type3' ? strokeWidth / 2 : 0);
+    let height = rightVertical + CORNER_RADIUS + (type === 'type2' ? strokeWidth / 2 - 1 : strokeWidth / 2);
 
     if (type === 'type3') {
         const { bBoxNesting, secondaryLabel } = config as TInputType3;
@@ -474,7 +474,7 @@ function getBoundingBox(config: TInputUnion): TBBox {
 
 // functions to calculate coordinates of the connection points
 
-type TCentroid = { x: number; y: number };
+export type TCentroid = { x: number; y: number };
 
 // Centroid calculation for Top Notch
 function getTopCentroid(config: TInputUnion): TCentroid | undefined {

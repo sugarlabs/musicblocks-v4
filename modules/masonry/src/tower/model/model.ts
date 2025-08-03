@@ -5,6 +5,8 @@ import type {
     TBrickConnection,
     TConnectionValidation,
 } from '../../@types/tower';
+import { v4 as uuid } from 'uuid';
+import cloneDeep from 'lodash.clonedeep';
 
 /**
  * Public representation of a node inside a tower.
@@ -47,6 +49,19 @@ export default class TowerModel {
     /** All physical connections inside this tower */
     get allConnections(): readonly TBrickConnection[] {
         return this.connections;
+    }
+
+    clone(): TowerModel {
+      const newTower = new TowerModel(this.id, this.bricks[0], { x: 0, y: 0 }); // Temp root
+      newTower.nodes.clear(); // Clear initial root
+  
+      // Deep copy nodes and connections
+      this.nodes.forEach((node, id) => {
+        newTower.nodes.set(id, cloneDeep(node));
+      });
+      newTower.connections = cloneDeep(this.connections);
+  
+      return newTower;
     }
 
     hasBrick(brickId: string): boolean {
@@ -178,54 +193,71 @@ export default class TowerModel {
     }
 
     /**
-     * Detach a subtree starting from `brickId`, returning a **new** `TowerModel`.
+     * Detach a subtree starting from `brickId`, returning a **new** `TowerModel`
      */
-    detachSubTree(
-        brickId: string,
-        newTowerId: string,
-    ): {
-        detachedTower: TowerModel;
-        removedConnections: TBrickConnection[];
-    } {
-        const startNode = this.nodes.get(brickId);
-        if (!startNode) throw new Error('Brick not found in tower');
+    detachSubtree(brickId: string): TowerModel | null {
+        const node = this.nodes.get(brickId);
+        if (!node || node.parent === null) return null; // Don't detach root
 
-        // collect all nodes in the subtree (DFS)
-        const nodesToMove = new Map<string, ITowerNode>();
-        const stack: ITowerNode[] = [startNode];
-        while (stack.length) {
-            const n = stack.pop()!;
-            nodesToMove.set(n.brick.uuid, n);
-            this.nodes.forEach((child) => {
-                if (child.parent?.brick.uuid === n.brick.uuid) stack.push(child);
+        // Create a new tower for the detached subtree
+        const newTower = new TowerModel(uuid(), node.brick, { ...node.position });
+
+        // Helper to recursively gather all descendants, respecting isNested
+        const gatherDescendants = (n: ITowerNode, collection: Map<string, ITowerNode>): void => {
+            collection.set(n.brick.uuid, cloneDeep(n));
+            // Find all children (nested, args, or stacked) based on parent reference
+            this.nodes.forEach(childNode => {
+                if (childNode.parent?.brick.uuid === n.brick.uuid) {
+                    gatherDescendants(childNode, collection);
+                }
             });
+        };
+
+        const newNodes = new Map<string, ITowerNode>();
+        gatherDescendants(node, newNodes);
+
+        // Disconnect the subtree from the original tower
+        if (node.parent) {
+            // Remove connections involving the detached subtree
+            this.connections = this.connections.filter(
+                conn => {
+                    const fromInSubtree = newNodes.has(conn.from);
+                    const toInSubtree = newNodes.has(conn.to);
+                    return !(fromInSubtree || toInSubtree);
+                }
+            );
         }
 
-        // create the new tower
-        const rootPos = { ...startNode.position };
-        const detached = new TowerModel(newTowerId, startNode.brick, rootPos);
+        // Remove nodes from the original tower
+        for (const key of newNodes.keys()) {
+            this.nodes.delete(key);
+        }
 
-        nodesToMove.forEach((node, id) => {
-            if (id === brickId) return; // root already exists in detached
-            detached.nodes.set(id, node);
-        });
-
-        // move / prune connections
-        const removedConnections: TBrickConnection[] = [];
-        this.connections = this.connections.filter((conn) => {
-            const inSubtree = nodesToMove.has(conn.from) && nodesToMove.has(conn.to);
-            if (inSubtree) {
-                detached.connections.push(conn);
-                return false; // remove from original tower
+        // Set up the new tower's nodes, adjusting parents
+        newTower.nodes.clear(); // Clear the root created by the constructor
+        newNodes.forEach((n, id) => {
+            const newNode = cloneDeep(n);
+            // Reset parent for the root of the new tower
+            if (id === brickId) {
+                newNode.parent = null;
+            } else {
+                // Re-link parent if it exists in the new tower
+                if (n.parent) {
+                    const parentNode = newNodes.get(n.parent.brick.uuid);
+                    newNode.parent = parentNode || null; // Safe assignment with type guard
+                } else {
+                    newNode.parent = null; // Explicitly handle null parent
+                }
             }
-            const touchesSubtree = nodesToMove.has(conn.from) || nodesToMove.has(conn.to);
-            if (touchesSubtree) removedConnections.push(conn);
-            return !touchesSubtree;
+            newTower.nodes.set(id, newNode);
         });
 
-        // finally delete nodes from original tower
-        nodesToMove.forEach((_, id) => this.nodes.delete(id));
+        // Copy relevant connections to the new tower
+        const detachedConnections = this.connections.filter(conn => 
+            newNodes.has(conn.from) && newNodes.has(conn.to)
+        );
+        newTower.connections = detachedConnections;
 
-        return { detachedTower: detached, removedConnections };
+        return newTower;
     }
 }

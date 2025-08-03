@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import type { TBrickRenderProps } from '../../../@types/brick';
 import { generateBrickData } from '../../utils/path';
 import type { TInputUnion } from '../../utils/path';
@@ -54,18 +54,36 @@ export const BrickWrapper: React.FC<BrickWrapperProps> = ({
     };
   });
 
+  const lastMetrics = useRef<{ w: number; h: number } | null>(null);
+
   useEffect(() => {
     const cfg = getBrickConfig(bBoxLabel);
     const brickData = generateBrickData(cfg);
 
-    if (RenderMetrics) {
+    // Only call RenderMetrics if the bounding box actually changed
+    if (
+      RenderMetrics &&
+      (!lastMetrics.current ||
+        lastMetrics.current.w !== brickData.boundingBox.w ||
+        lastMetrics.current.h !== brickData.boundingBox.h)
+    ) {
       RenderMetrics(brickData.boundingBox, brickData.connectionPoints);
+      lastMetrics.current = { w: brickData.boundingBox.w, h: brickData.boundingBox.h };
     }
 
-    setShape({
+    setShape(prev => {
+      if (
+        prev.path === brickData.path &&
+        prev.w === brickData.boundingBox.w &&
+        prev.h === brickData.boundingBox.h
+      ) {
+        return prev; // No change, don't trigger a re-render
+      }
+      return {
       path: brickData.path,
       w: brickData.boundingBox.w,
       h: brickData.boundingBox.h,
+      };
     });
   }, [label, strokeWidth, scale, bboxArgs, bBoxLabel, RenderMetrics, getBrickConfig]);
 

@@ -36,8 +36,8 @@ describe('Full Mock Program Integration Test', () => {
             ]),
 
             new IRBasicBlock('loop_body', [
-                new CallInstruction('action1', [], false),
-                new CallInstruction('action2', [], false),
+                new CallInstruction('action1', []),
+                new CallInstruction('action2', []),
 
                 // Use SymQueryInstruction to read current loop counter value
                 new SymQueryInstruction('i', 'current_i'),

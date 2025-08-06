@@ -16,7 +16,7 @@ describe('Function Call Integration Tests', () => {
         const mainFunction = new IRFunction('start2', [
             new IRBasicBlock('entry', [
                 new CallInstruction('Clear', []),
-                new CallInstruction('action1', [], false),
+                new CallInstruction('action1', []),
                 new CallInstruction('Finish', []),
             ]),
         ]);
@@ -98,7 +98,7 @@ describe('Function Call Integration Tests', () => {
         const mainFunction = new IRFunction('start2', [
             new IRBasicBlock('entry', [
                 new CallInstruction('Start', []),
-                new CallInstruction('level1', [], false), // Function call
+                new CallInstruction('level1', []), // Function call
                 new CallInstruction('End', []),
             ]),
         ]);
@@ -107,7 +107,7 @@ describe('Function Call Integration Tests', () => {
         const level1Function = new IRFunction('level1', [
             new IRBasicBlock('entry', [
                 new CallInstruction('Level1', []),
-                new CallInstruction('level2', [], false), // Function call
+                new CallInstruction('level2', []), // Function call
                 new CallInstruction('Level1End', []),
             ]),
         ]);

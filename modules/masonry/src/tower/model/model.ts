@@ -52,16 +52,16 @@ export default class TowerModel {
     }
 
     clone(): TowerModel {
-      const newTower = new TowerModel(this.id, this.bricks[0], { x: 0, y: 0 }); // Temp root
-      newTower.nodes.clear(); // Clear initial root
-  
-      // Deep copy nodes and connections
-      this.nodes.forEach((node, id) => {
-        newTower.nodes.set(id, cloneDeep(node));
-      });
-      newTower.connections = cloneDeep(this.connections);
-  
-      return newTower;
+        const newTower = new TowerModel(this.id, this.bricks[0], { x: 0, y: 0 }); // Temp root
+        newTower.nodes.clear(); // Clear initial root
+
+        // Deep copy nodes and connections
+        this.nodes.forEach((node, id) => {
+            newTower.nodes.set(id, cloneDeep(node));
+        });
+        newTower.connections = cloneDeep(this.connections);
+
+        return newTower;
     }
 
     hasBrick(brickId: string): boolean {
@@ -206,7 +206,7 @@ export default class TowerModel {
         const gatherDescendants = (n: ITowerNode, collection: Map<string, ITowerNode>): void => {
             collection.set(n.brick.uuid, cloneDeep(n));
             // Find all children (nested, args, or stacked) based on parent reference
-            this.nodes.forEach(childNode => {
+            this.nodes.forEach((childNode) => {
                 if (childNode.parent?.brick.uuid === n.brick.uuid) {
                     gatherDescendants(childNode, collection);
                 }
@@ -219,13 +219,11 @@ export default class TowerModel {
         // Disconnect the subtree from the original tower
         if (node.parent) {
             // Remove connections involving the detached subtree
-            this.connections = this.connections.filter(
-                conn => {
-                    const fromInSubtree = newNodes.has(conn.from);
-                    const toInSubtree = newNodes.has(conn.to);
-                    return !(fromInSubtree || toInSubtree);
-                }
-            );
+            this.connections = this.connections.filter((conn) => {
+                const fromInSubtree = newNodes.has(conn.from);
+                const toInSubtree = newNodes.has(conn.to);
+                return !(fromInSubtree || toInSubtree);
+            });
         }
 
         // Remove nodes from the original tower
@@ -253,11 +251,34 @@ export default class TowerModel {
         });
 
         // Copy relevant connections to the new tower
-        const detachedConnections = this.connections.filter(conn => 
-            newNodes.has(conn.from) && newNodes.has(conn.to)
+        const detachedConnections = this.connections.filter(
+            (conn) => newNodes.has(conn.from) && newNodes.has(conn.to),
         );
         newTower.connections = detachedConnections;
 
         return newTower;
+    }
+
+    /**
+     * Returns [{ brickId, notchType, point: {x,y} }]
+     * for every top/bottom notch in this tower, in absolute SVG coords.
+     */
+    public getNotchWorldPoints(): Array<{
+        brickId: string;
+        notchType: TNotchType;
+        point: TPoint;
+    }> {
+        return this.nodesArray().flatMap((node) => {
+            const cp = node.brick.connectionPoints;
+            if (!cp) return [];
+            const out: any[] = [];
+            if (cp.top) {
+                out.push({ brickId: node.brick.uuid, notchType: 'top', offset: cp.top });
+            }
+            if (cp.bottom) {
+                out.push({ brickId: node.brick.uuid, notchType: 'bottom', offset: cp.bottom });
+            }
+            return out;
+        });
     }
 }

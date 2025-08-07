@@ -80,7 +80,7 @@ export default class WorkspaceManager {
         if (!res.isValid) throw new Error(res.reason);
     }
 
-    private findTowerByBrickId(brickId: string): TowerModel | undefined {
+    public findTowerByBrickId(brickId: string): TowerModel | undefined {
         for (const tower of this.towers.values()) {
             if (tower.hasBrick(brickId)) return tower;
         }

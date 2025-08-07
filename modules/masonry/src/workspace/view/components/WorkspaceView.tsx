@@ -19,6 +19,10 @@ import {
 import { v4 as uuid } from 'uuid';
 import TowerView from '../../../tower/view/components/TowerView';
 import { JSX } from 'react/jsx-runtime';
+import { expressionMap, statementMap } from '../../../collision-detection/types/index';
+import { computeOutgoingNotches } from '../../../collision-detection/utils/OutgoingNotchCalculator';
+import type { CollisionResult } from '../../../collision-detection/types/Types';
+import { computeIncomingNotches } from '../../../collision-detection/utils/NotchCalculator';
 
 /**
  * WorkspaceCanvas
@@ -39,6 +43,21 @@ export default function WorkspaceCanvas(): JSX.Element {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [currentMousePos, setCurrentMousePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [potentialConnection, setPotentialConnection] = useState<CollisionResult | null>(null);
+  const DIAG_BOUND = 2000; // arbitrary large enough value for diagonal queries
+
+  // After your useState hooks:
+  useEffect(() => {
+    if (isDragging && draggedBrickId) {
+      const sourceTower = towers.find((t) => t.hasBrick(draggedBrickId));
+      if (!sourceTower) return;
+      console.log('Map Contents at drag-start');
+      console.log(' expressionMap all hits:', expressionMap.query(0, 0, DIAG_BOUND));
+      console.log(' statementMap all hits:', statementMap.query(0, 0, DIAG_BOUND));
+      expressionMap.removeTower(sourceTower.id);
+      statementMap.removeTower(sourceTower.id);
+    }
+  }, [isDragging, draggedBrickId, towers]);
 
   /**
    * Compute argument box sizes for a given brick config
@@ -118,8 +137,15 @@ export default function WorkspaceCanvas(): JSX.Element {
 
     // Instantiate and add to towers state
     const tower = new TowerModel(uuid(), brick, { x, y });
-    setTowers((prevTowers) => {
-      const newTowers = [...prevTowers, tower];
+    setTowers((prev) => {
+      const newTowers = [...prev, tower];
+      // populate the new one immediately
+      expressionMap.upsertTower(tower);
+      statementMap.upsertTower(tower);
+      tower.nodesArray().forEach((node) => {
+        const incomingNotches = computeIncomingNotches(node.brick, node.position);
+        console.log(`[${tower.id}] indexed incoming notches:`, incomingNotches);
+      });
       return newTowers;
     });
   };
@@ -164,6 +190,57 @@ export default function WorkspaceCanvas(): JSX.Element {
         // Otherwise, move just the dragged brick
         towerModel.setBrickPosition(draggedBrickId, { x, y });
       }
+      // 1) Find the tower & brick being dragged
+      const tower = towersCopy.find((t) => t.hasBrick(draggedBrickId));
+      if (!tower) return;
+      const node = tower.nodesArray().find((n) => n.brick.uuid === draggedBrickId)!;
+      const brk = node.brick;
+      const pos = { x, y }; // the new global pos you just calculated
+
+      // 2) Compute outgoing notches for this brick
+      const outgoing = computeOutgoingNotches(brk, pos);
+      console.log('Outgoing notches:', outgoing);
+
+      // 3) For each outgoing, query the opposite map
+      for (const o of outgoing) {
+        console.log(`Querying ${o.type} at`, o.x, o.y);
+        const hits =
+          o.type === 'expression'
+            ? expressionMap.query(o.x, o.y, /* radius: */ 5)
+            : statementMap.query(o.x, o.y, /* radius: */ 5);
+        console.log('  Hits:', hits);
+
+        if (hits.length > 0) {
+          console.log('⚡️ Potential connection:', hits[0].brickId, 'in tower', hits[0].towerId);
+          const rawHit = hits[0];
+
+          // reverse‐map to get the brick/tower objects
+          const reverse =
+            o.type === 'expression'
+              ? statementMap.findHit(rawHit.x, rawHit.y)
+              : expressionMap.findHit(rawHit.x, rawHit.y);
+
+          // only proceed if we actually found both tower and brick
+          if (reverse && reverse.tower && reverse.brick) {
+            const conn: CollisionResult = {
+              sourceNotch: { x: o.x, y: o.y },
+              // use the raw notch coords from the quadtree entry:
+              targetNotch: { x: rawHit.x, y: rawHit.y },
+              // pull IDs off the model objects:
+              targetBrick: {
+                brickId: reverse.brick.uuid,
+                towerId: reverse.tower.id,
+              },
+              connectionType: o.type,
+            };
+            console.log('🔥 PotentialConnection:', conn);
+            setPotentialConnection(conn);
+          }
+          return;
+        }
+        setPotentialConnection(null);
+      }
+
       setTowers(towersCopy);
       setRefreshKey((k) => k + 1);
     }
@@ -275,6 +352,14 @@ export default function WorkspaceCanvas(): JSX.Element {
       }
 
       setTowers([tower]);
+      expressionMap.upsertTower(tower);
+      statementMap.upsertTower(tower);
+      tower.nodesArray().forEach((node) => {
+        console.log(
+          `[${tower.id}] initial indexed notches:`,
+          computeIncomingNotches(node.brick, node.position),
+        );
+      });
     }
   }, []);
 

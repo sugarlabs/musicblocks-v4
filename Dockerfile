@@ -5,6 +5,7 @@ FROM node:lts-alpine
 RUN apk update && apk add --no-cache \
     build-base \
     python3 \
+    py3-pip \
     py3-setuptools
 
 # Install simple http server for serving static content

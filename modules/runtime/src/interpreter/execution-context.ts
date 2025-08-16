@@ -2,6 +2,10 @@ import { IRProgram } from './ir-program';
 import { StackFrame } from './stack-frame';
 import { SimpleValueStore } from './testing/mock-program';
 import { SymbolTable } from '../execution/scope/symbol-table';
+import {
+    IExternalFunctionRegistry,
+    MockFunctionRegistry,
+} from '../execution/external-function-registry';
 
 /**
  * ExecutionContext holds the full state of the interpreter at any moment.
@@ -16,13 +20,18 @@ export class ExecutionContext {
     public isHalted: boolean = false;
     public valueStore: SimpleValueStore = new SimpleValueStore();
     public globalSymbolTable: SymbolTable = new SymbolTable();
+    public externalFunctions: IExternalFunctionRegistry;
 
-    constructor(public program: IRProgram) {
+    constructor(
+        public program: IRProgram,
+        externalFunctions?: IExternalFunctionRegistry,
+    ) {
         this.instructionPointer = {
             functionName: '',
             blockLabel: '',
             instructionIndex: 0,
         };
+        this.externalFunctions = externalFunctions || new MockFunctionRegistry();
     }
 
     /**

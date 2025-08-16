@@ -1,20 +1,24 @@
 import { IRProgram } from './ir-program';
 import { ExecutionContext } from './execution-context';
 import { IRInstruction } from './instructions/ir-instruction';
+import { IExternalFunctionRegistry } from '../execution/external-function-registry';
 
 /**
  * IRInterpreter executes IR programs step by step.
  */
 export class IRInterpreter {
     private context: ExecutionContext | null = null;
+    private externalFunctions?: IExternalFunctionRegistry;
 
-    constructor() {}
+    constructor(externalFunctions?: IExternalFunctionRegistry) {
+        this.externalFunctions = externalFunctions;
+    }
 
     /**
      * Load a program into the interpreter.
      */
     load(program: IRProgram): void {
-        this.context = new ExecutionContext(program);
+        this.context = new ExecutionContext(program, this.externalFunctions);
 
         let startFunction = program.functions.get('start1');
         let entryPointName = 'start1';

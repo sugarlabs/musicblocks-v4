@@ -4,33 +4,33 @@ import { StackFrame } from '../stack-frame';
 import { SymbolTable } from '../../execution/scope/symbol-table';
 
 /**
- * CallInstruction handles both function calls and host function calls in the IR interpreter.
- * It manages function parameters, creates new stack frames for function calls,
- * and executes host functions directly.
+ * CallInstruction handles function calls in the IR interpreter.
+ * It manages function parameters and delegates execution to either
+ * user-defined functions or external functions.
  */
 export class CallInstruction extends IRInstruction {
     public functionName: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public parameters: any[];
-    public isHostFunction: boolean;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    constructor(functionName: string, parameters: any[] = [], isHostFunction: boolean = true) {
+    constructor(functionName: string, parameters: any[] = []) {
         super();
         this.functionName = functionName;
         this.parameters = parameters;
-        this.isHostFunction = isHostFunction;
     }
 
     execute(context: ExecutionContext): void {
-        if (this.isHostFunction) {
-            this.executeHostFunction(context);
+        if (context.program.functions.has(this.functionName)) {
+            this.executeUserFunction(context);
+        } else if (context.externalFunctions.hasFunction(this.functionName)) {
+            this.executeExternalFunction(context);
         } else {
-            this.executeFunctionCall(context);
+            throw new Error(`Function '${this.functionName}' not found`);
         }
     }
 
-    private executeHostFunction(context: ExecutionContext): void {
+    private executeExternalFunction(context: ExecutionContext): void {
         const parameterValues: unknown[] = [];
         for (const param of this.parameters) {
             if (typeof param === 'number' || typeof param === 'boolean') {
@@ -55,16 +55,12 @@ export class CallInstruction extends IRInstruction {
             }
         }
 
-        if (this.functionName === 'console.log') {
-            console.log(...parameterValues);
-        } else {
-            console.log(`Call: ${this.functionName} with args: ${JSON.stringify(parameterValues)}`);
-        }
-
+        // Execute external function (mock for now)
+        context.externalFunctions.executeFunction(this.functionName, parameterValues);
         context.instructionPointer.instructionIndex++;
     }
 
-    private executeFunctionCall(context: ExecutionContext): void {
+    private executeUserFunction(context: ExecutionContext): void {
         const parameterValues: unknown[] = [];
         for (const param of this.parameters) {
             if (typeof param === 'number' || typeof param === 'boolean') {

@@ -3,15 +3,43 @@ import { ExecutionContext } from './execution-context';
 import { IRInstruction } from './instructions/ir-instruction';
 import { IExternalFunctionRegistry } from '../execution/external-function-registry';
 
+export type ExecutionStatus =
+    | { status: 'COMPLETED_SLICE' }
+    | { status: 'BLOCKED_ON_TIME'; duration: number }
+    | { status: 'THREAD_HALTED' };
+
 /**
  * IRInterpreter executes IR programs step by step.
  */
 export class IRInterpreter {
     private context: ExecutionContext | null = null;
     private externalFunctions?: IExternalFunctionRegistry;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private functionRegistry: Map<string, (...args: any[]) => any>;
 
-    constructor(externalFunctions?: IExternalFunctionRegistry) {
-        this.externalFunctions = externalFunctions;
+    constructor(
+        externalFunctionsOrRegistry?:
+            | IExternalFunctionRegistry
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            | Map<string, (...args: any[]) => any>,
+    ) {
+        if (externalFunctionsOrRegistry instanceof Map) {
+            this.functionRegistry = externalFunctionsOrRegistry;
+            // Create a wrapper registry for the Map
+            this.externalFunctions = {
+                hasFunction: (name: string) => this.functionRegistry.has(name),
+                executeFunction: (name: string, args: unknown[]) => {
+                    const fn = this.functionRegistry.get(name);
+                    if (fn) {
+                        return fn(...args);
+                    }
+                    return undefined;
+                },
+            };
+        } else {
+            this.externalFunctions = externalFunctionsOrRegistry;
+            this.functionRegistry = new Map();
+        }
     }
 
     /**
@@ -98,15 +126,82 @@ export class IRInterpreter {
     }
 
     /**
+     * Execute up to `sliceSize` instructions for the given context.
+     * Returns a status indicating why execution stopped.
+     */
+    public executeSlice(context: ExecutionContext, sliceSize: number): ExecutionStatus {
+        let instructionsExecuted = 0;
+
+        while (instructionsExecuted < sliceSize && !context.isHalted) {
+            const instruction = this.getCurrentInstructionForContext(context);
+            if (!instruction) {
+                this.handleEndOfFunctionForContext(context);
+                if (context.isHalted) {
+                    return { status: 'THREAD_HALTED' };
+                }
+                continue;
+            }
+
+            const beforeIP = {
+                functionName: context.instructionPointer.functionName,
+                blockLabel: context.instructionPointer.blockLabel,
+                instructionIndex: context.instructionPointer.instructionIndex,
+            };
+
+            // Clear any previous blocking result
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (context as any).__blockingResult = undefined;
+
+            // Execute the instruction
+            instruction.execute(context);
+
+            // Check for blocking operations after executing
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const blockingResult = (context as any).__blockingResult;
+            if (blockingResult && typeof blockingResult === 'object') {
+                // Handle both old format (__isBlocking) and new format (type)
+                if ('__isBlocking' in blockingResult && blockingResult.__isBlocking) {
+                    return { status: 'BLOCKED_ON_TIME', duration: blockingResult.duration || 1000 };
+                } else if ('type' in blockingResult && blockingResult.type === 'time') {
+                    return { status: 'BLOCKED_ON_TIME', duration: blockingResult.duration || 1000 };
+                }
+            }
+
+            const afterIP = context.instructionPointer;
+            if (
+                afterIP.functionName === beforeIP.functionName &&
+                afterIP.blockLabel === beforeIP.blockLabel &&
+                afterIP.instructionIndex === beforeIP.instructionIndex
+            ) {
+                this.advanceInstructionPointerForContext(context);
+            }
+
+            instructionsExecuted++;
+        }
+
+        if (context.isHalted) {
+            return { status: 'THREAD_HALTED' };
+        }
+
+        return { status: 'COMPLETED_SLICE' };
+    }
+
+    /**
      * Get the current instruction based on the instruction pointer.
      */
     private getCurrentInstruction(): IRInstruction | null {
         if (!this.context) {
             return null;
         }
+        return this.getCurrentInstructionForContext(this.context);
+    }
 
-        const { functionName, blockLabel, instructionIndex } = this.context.instructionPointer;
-        const func = this.context.program.functions.get(functionName);
+    /**
+     * Get the current instruction for a specific context.
+     */
+    private getCurrentInstructionForContext(context: ExecutionContext): IRInstruction | null {
+        const { functionName, blockLabel, instructionIndex } = context.instructionPointer;
+        const func = context.program.functions.get(functionName);
         if (!func) {
             return null;
         }
@@ -130,8 +225,14 @@ export class IRInterpreter {
         if (!this.context) {
             return;
         }
+        this.advanceInstructionPointerForContext(this.context);
+    }
 
-        this.context.instructionPointer.instructionIndex++;
+    /**
+     * Advance the instruction pointer for a specific context.
+     */
+    private advanceInstructionPointerForContext(context: ExecutionContext): void {
+        context.instructionPointer.instructionIndex++;
     }
 
     /**
@@ -141,23 +242,28 @@ export class IRInterpreter {
         if (!this.context) {
             return;
         }
+        this.handleEndOfFunctionForContext(this.context);
+    }
 
-        if (this.context.callStack.length === 0) {
-            this.context.isHalted = true;
+    /**
+     * Handle the end of a function for a specific context.
+     */
+    private handleEndOfFunctionForContext(context: ExecutionContext): void {
+        if (context.callStack.length === 0) {
+            context.isHalted = true;
             return;
         }
 
-        const completedFrame = this.context.callStack.pop()!;
+        const completedFrame = context.callStack.pop()!;
 
-        this.context.instructionPointer.functionName = completedFrame.returnAddress.functionName;
-        this.context.instructionPointer.blockLabel = completedFrame.returnAddress.blockLabel;
-        this.context.instructionPointer.instructionIndex =
-            completedFrame.returnAddress.instructionIndex;
+        context.instructionPointer.functionName = completedFrame.returnAddress.functionName;
+        context.instructionPointer.blockLabel = completedFrame.returnAddress.blockLabel;
+        context.instructionPointer.instructionIndex = completedFrame.returnAddress.instructionIndex;
 
         // TODO: Handle return value assignment to destinationVariable
         // For now, we'll skip this since our mock functions don't return meaningful values
 
-        this.advanceInstructionPointer();
+        this.advanceInstructionPointerForContext(context);
     }
 
     /**

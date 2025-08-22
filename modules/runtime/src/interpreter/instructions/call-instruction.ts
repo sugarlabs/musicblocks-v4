@@ -24,13 +24,24 @@ export class CallInstruction extends IRInstruction {
         if (context.program.functions.has(this.functionName)) {
             this.executeUserFunction(context);
         } else if (context.externalFunctions.hasFunction(this.functionName)) {
-            this.executeExternalFunction(context);
+            const result = this.executeExternalFunction(context);
+            // Check for blocking operation result
+            if (
+                result &&
+                typeof result === 'object' &&
+                ('__isBlocking' in result || 'type' in result)
+            ) {
+                // Store blocking information for scheduler detection
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (context as any).__blockingResult = result;
+            }
         } else {
             throw new Error(`Function '${this.functionName}' not found`);
         }
     }
 
-    private executeExternalFunction(context: ExecutionContext): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private executeExternalFunction(context: ExecutionContext): any {
         const parameterValues: unknown[] = [];
         for (const param of this.parameters) {
             if (typeof param === 'number' || typeof param === 'boolean') {
@@ -56,8 +67,12 @@ export class CallInstruction extends IRInstruction {
         }
 
         // Execute external function (mock for now)
-        context.externalFunctions.executeFunction(this.functionName, parameterValues);
+        const result = context.externalFunctions.executeFunction(
+            this.functionName,
+            parameterValues,
+        );
         context.instructionPointer.instructionIndex++;
+        return result;
     }
 
     private executeUserFunction(context: ExecutionContext): void {

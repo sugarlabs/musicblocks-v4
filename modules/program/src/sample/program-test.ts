@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createMusicBlocksProgram, astToJSON } from '../examples/MusicBlocksProgram';
+import { createMusicBlocksProgram2 } from '../examples/MusicBlocksProgram2';
 
 // Create and test the program
-const program = createMusicBlocksProgram();
+const program = createMusicBlocksProgram2();
 
 console.log('Music Blocks Program AST:');
-console.log(JSON.stringify(astToJSON(program), null, 2));
+console.log(JSON.stringify(program, null, 2));
 
 // Test type checking
 console.log('\nProgram Structure:');

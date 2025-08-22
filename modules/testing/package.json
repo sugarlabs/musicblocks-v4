@@ -1,0 +1,15 @@
+{
+  "name": "@sugarlabs/mb4-module-testing",
+  "version": "4.2.0",
+  "description": "End-to-end testing and plugin system for Music Blocks execution engine",
+  "private": "true",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "vitest --passWithNoTests",
+    "coverage": "vitest run --coverage --passWithNoTests",
+    "check": "tsc",
+    "lint": "eslint src",
+    "test:e2e": "vitest src/end-to-end --passWithNoTests",
+    "test:plugins": "vitest src/plugins --passWithNoTests"
+  }
+}

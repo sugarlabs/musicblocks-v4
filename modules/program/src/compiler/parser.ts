@@ -570,11 +570,19 @@ export class Parser {
                 const stringValue = (arg.value as unknown as { value: string }).value;
                 compiledArgs.push(stringValue);
             } else if (arg.value.type === 'IdentifierExpression') {
-                const tempVar = this.generateTempVar();
                 const variableName = (arg.value as unknown as { name: string }).name;
-                const queryInstruction = new SymQueryInstruction(variableName, tempVar);
-                this.context.currentBlock.instructions.push(queryInstruction);
-                compiledArgs.push(tempVar);
+
+                // Check if this identifier refers to a known function
+                if (this.isKnownFunction(variableName)) {
+                    // Pass function name directly as a function reference
+                    compiledArgs.push(`__func_ref:${variableName}`);
+                } else {
+                    // Treat as variable lookup
+                    const tempVar = this.generateTempVar();
+                    const queryInstruction = new SymQueryInstruction(variableName, tempVar);
+                    this.context.currentBlock.instructions.push(queryInstruction);
+                    compiledArgs.push(tempVar);
+                }
             } else if (arg.value.type === 'BinaryOperatorExpression') {
                 const tempVar = this.generateTempVar();
                 this.compileExpression(arg.value, tempVar);

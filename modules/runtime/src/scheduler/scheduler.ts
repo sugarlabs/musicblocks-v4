@@ -9,18 +9,28 @@ export type ExternalFunction = (...args: any[]) => any;
 export type ExecutionStatus =
     | { status: 'COMPLETED_SLICE' }
     | { status: 'BLOCKED_ON_TIME'; duration: number }
+    | { status: 'BLOCKED_ON_IO'; duration?: number }
+    | { status: 'BLOCKED_ON_EVENT'; eventType?: string }
     | { status: 'THREAD_HALTED' };
 
 /**
  * The Scheduler manages multiple concurrent threads using cooperative multitasking.
- * It maintains a run queue and wait queue to manage thread states and executes
- * small slices of instructions from each thread in round-robin fashion.
+ * It maintains four specialized queues to manage different thread states:
+ * - runQueue: Threads ready for immediate execution
+ * - waitQueue: Threads blocked on time-based delays
+ * - ioQueue: Threads blocked on I/O operations or external functions
+ * - eventQueue: Threads blocked waiting for specific events
+ *
+ * Uses round-robin scheduling with cooperative multitasking to execute
+ * small slices of instructions from each thread.
  */
 export class Scheduler {
     private interpreter: IRInterpreter;
     private tcbMap: Map<string, ThreadControlBlock> = new Map();
     private runQueue: ThreadControlBlock[] = [];
     private waitQueue: { tcb: ThreadControlBlock; wakeUpTime: number }[] = [];
+    private ioQueue: { tcb: ThreadControlBlock; blockTime: number }[] = [];
+    private eventQueue: { tcb: ThreadControlBlock; eventType?: string; blockTime: number }[] = [];
     private functionRegistry: Map<string, ExternalFunction> = new Map();
     private isRunning: boolean = false;
 
@@ -35,6 +45,8 @@ export class Scheduler {
         this.tcbMap.clear();
         this.runQueue.length = 0;
         this.waitQueue.length = 0;
+        this.ioQueue.length = 0;
+        this.eventQueue.length = 0;
 
         for (const [functionName, irFunction] of program.functions) {
             if (functionName.startsWith('start')) {
@@ -83,7 +95,35 @@ export class Scheduler {
             return;
         }
 
-        // Check the wait queue and move threads that are ready back to the run queue
+        // Process all specialized queues to move ready threads back to run queue
+        this.processWaitQueue();
+        this.processIOQueue();
+        this.processEventQueue();
+
+        // Check if there are any threads to run
+        if (this.runQueue.length === 0) {
+            // If no threads are ready to run, schedule next check and return
+            setImmediate(() => this.mainLoop());
+            return;
+        }
+
+        // Dequeue the first TCB from the run queue
+        const tcb = this.runQueue.shift()!;
+
+        // Execute a slice of instructions for this thread
+        const result = this.interpreter.executeSlice(tcb.context, 5);
+
+        // Handle the result based on execution status
+        this.handleExecutionResult(tcb, result);
+
+        // Schedule the next iteration of the main loop
+        setImmediate(() => this.mainLoop());
+    }
+
+    /**
+     * Process the wait queue and move threads that are ready back to the run queue.
+     */
+    private processWaitQueue(): void {
         const currentTime = Date.now();
         const readyToRun: { tcb: ThreadControlBlock; wakeUpTime: number }[] = [];
         const stillWaiting: { tcb: ThreadControlBlock; wakeUpTime: number }[] = [];
@@ -101,34 +141,106 @@ export class Scheduler {
             this.runQueue.push(readyThread.tcb);
         }
         this.waitQueue = stillWaiting;
+    }
 
-        // Check if there are any threads to run
-        if (this.runQueue.length === 0) {
-            // If no threads are ready to run, schedule next check and return
-            setImmediate(() => this.mainLoop());
-            return;
+    /**
+     * Process the I/O queue and move threads that should be retried back to the run queue.
+     */
+    private processIOQueue(): void {
+        const currentTime = Date.now();
+        const readyToRetry: { tcb: ThreadControlBlock; blockTime: number }[] = [];
+        const stillBlocked: { tcb: ThreadControlBlock; blockTime: number }[] = [];
+
+        for (const blockedThread of this.ioQueue) {
+            // For I/O operations, we can implement a retry mechanism or timeout
+            // For now, we'll retry I/O operations after a short delay (100ms)
+            if (currentTime - blockedThread.blockTime >= 100) {
+                readyToRetry.push(blockedThread);
+            } else {
+                stillBlocked.push(blockedThread);
+            }
         }
 
-        // Dequeue the first TCB from the run queue
-        const tcb = this.runQueue.shift()!;
+        // Move ready threads back to run queue for retry
+        for (const readyThread of readyToRetry) {
+            this.runQueue.push(readyThread.tcb);
+        }
+        this.ioQueue = stillBlocked;
+    }
 
-        // Execute a slice of instructions for this thread
-        const result = this.interpreter.executeSlice(tcb.context, 5); // Execute 5 instructions at a time
+    /**
+     * Process the event queue and move threads that should be retried back to the run queue.
+     */
+    private processEventQueue(): void {
+        const currentTime = Date.now();
+        const readyToRetry: {
+            tcb: ThreadControlBlock;
+            eventType?: string;
+            blockTime: number;
+        }[] = [];
+        const stillBlocked: {
+            tcb: ThreadControlBlock;
+            eventType?: string;
+            blockTime: number;
+        }[] = [];
 
-        // Handle the result
-        if (result.status === 'COMPLETED_SLICE') {
-            // Put the thread back at the end of the run queue
-            this.runQueue.push(tcb);
-        } else if (result.status === 'THREAD_HALTED') {
-            // Thread is finished, don't put it back in any queue
-            this.tcbMap.delete(tcb.threadId);
-        } else if (result.status === 'BLOCKED_ON_TIME') {
-            // Thread is blocked waiting for time, move to wait queue
-            const wakeUpTime = Date.now() + result.duration;
-            this.waitQueue.push({ tcb, wakeUpTime });
+        for (const blockedThread of this.eventQueue) {
+            // For event operations, we implement a timeout mechanism
+            // Events are retried after 500ms if not resolved
+            if (currentTime - blockedThread.blockTime >= 500) {
+                readyToRetry.push(blockedThread);
+            } else {
+                stillBlocked.push(blockedThread);
+            }
         }
 
-        // Schedule the next iteration of the main loop
-        setImmediate(() => this.mainLoop());
+        // Move ready threads back to run queue for retry
+        for (const readyThread of readyToRetry) {
+            this.runQueue.push(readyThread.tcb);
+        }
+        this.eventQueue = stillBlocked;
+    }
+
+    /**
+     * Handle the execution result and place the thread in the appropriate queue.
+     */
+    private handleExecutionResult(tcb: ThreadControlBlock, result: ExecutionStatus): void {
+        switch (result.status) {
+            case 'COMPLETED_SLICE':
+                // Put the thread back at the end of the run queue
+                this.runQueue.push(tcb);
+                break;
+
+            case 'THREAD_HALTED':
+                // Thread is finished, don't put it back in any queue
+                this.tcbMap.delete(tcb.threadId);
+                break;
+
+            case 'BLOCKED_ON_TIME': {
+                // Thread is blocked waiting for time, move to wait queue
+                const wakeUpTime = Date.now() + result.duration;
+                this.waitQueue.push({ tcb, wakeUpTime });
+                break;
+            }
+
+            case 'BLOCKED_ON_IO':
+                // Thread is blocked on I/O operation, move to I/O queue
+                this.ioQueue.push({ tcb, blockTime: Date.now() });
+                break;
+
+            case 'BLOCKED_ON_EVENT':
+                // Thread is blocked waiting for event, move to event queue
+                this.eventQueue.push({
+                    tcb,
+                    eventType: result.eventType,
+                    blockTime: Date.now(),
+                });
+                break;
+
+            default:
+                // Should never reach here, but put back in run queue as fallback
+                this.runQueue.push(tcb);
+                break;
+        }
     }
 }

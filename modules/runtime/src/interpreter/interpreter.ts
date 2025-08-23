@@ -6,6 +6,8 @@ import { IExternalFunctionRegistry } from '../execution/external-function-regist
 export type ExecutionStatus =
     | { status: 'COMPLETED_SLICE' }
     | { status: 'BLOCKED_ON_TIME'; duration: number }
+    | { status: 'BLOCKED_ON_IO'; duration?: number }
+    | { status: 'BLOCKED_ON_EVENT'; eventType?: string }
     | { status: 'THREAD_HALTED' };
 
 /**
@@ -159,11 +161,31 @@ export class IRInterpreter {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const blockingResult = (context as any).__blockingResult;
             if (blockingResult && typeof blockingResult === 'object') {
-                // Handle both old format (__isBlocking) and new format (type)
                 if ('__isBlocking' in blockingResult && blockingResult.__isBlocking) {
                     return { status: 'BLOCKED_ON_TIME', duration: blockingResult.duration || 1000 };
-                } else if ('type' in blockingResult && blockingResult.type === 'time') {
-                    return { status: 'BLOCKED_ON_TIME', duration: blockingResult.duration || 1000 };
+                } else if ('type' in blockingResult) {
+                    switch (blockingResult.type) {
+                        case 'time':
+                            return {
+                                status: 'BLOCKED_ON_TIME',
+                                duration: blockingResult.duration || 1000,
+                            };
+                        case 'io':
+                            return {
+                                status: 'BLOCKED_ON_IO',
+                                duration: blockingResult.duration,
+                            };
+                        case 'event':
+                            return {
+                                status: 'BLOCKED_ON_EVENT',
+                                eventType: blockingResult.eventType,
+                            };
+                        default:
+                            return {
+                                status: 'BLOCKED_ON_TIME',
+                                duration: blockingResult.duration || 1000,
+                            };
+                    }
                 }
             }
 

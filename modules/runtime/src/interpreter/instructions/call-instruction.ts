@@ -47,7 +47,10 @@ export class CallInstruction extends IRInstruction {
             if (typeof param === 'number' || typeof param === 'boolean') {
                 parameterValues.push(param);
             } else if (typeof param === 'string') {
-                if (this.isLiteral(param)) {
+                if (param.startsWith('__func_ref:')) {
+                    const functionName = param.substring('__func_ref:'.length);
+                    parameterValues.push(functionName);
+                } else if (this.isLiteral(param)) {
                     parameterValues.push(this.parseLiteral(param));
                 } else {
                     try {
@@ -81,7 +84,10 @@ export class CallInstruction extends IRInstruction {
             if (typeof param === 'number' || typeof param === 'boolean') {
                 parameterValues.push(param);
             } else if (typeof param === 'string') {
-                if (this.isLiteral(param)) {
+                if (param.startsWith('__func_ref:')) {
+                    const functionName = param.substring('__func_ref:'.length);
+                    parameterValues.push(functionName);
+                } else if (this.isLiteral(param)) {
                     parameterValues.push(this.parseLiteral(param));
                 } else {
                     const value = context.valueStore.getValue(param);

@@ -1,14 +1,15 @@
 import { Program, FunctionDeclaration, ASTNodeBase } from '../abstracts';
 import { IRProgram } from '../../../runtime/src/interpreter/ir-program';
 import { IRFunction } from '../../../runtime/src/interpreter/ir-function';
+import { IExternalFunctionRegistry } from '../../../runtime/src/execution/external-function-registry';
 import { Parser } from './parser';
 
 export class Compiler {
     private parser: Parser;
     private threadFunctionCounter: number = 0;
 
-    constructor() {
-        this.parser = new Parser();
+    constructor(externalFunctions?: IExternalFunctionRegistry) {
+        this.parser = new Parser(externalFunctions);
     }
 
     public compile(programNode: Program): IRProgram {

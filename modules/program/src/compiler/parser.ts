@@ -113,6 +113,9 @@ export class Parser {
     }
 
     public compileFunction(functionNode: FunctionDeclaration): IRFunction {
+        // Create a new BasicBlockManager for each function to avoid shared state
+        this.blockManager = new BasicBlockManager();
+
         const threadContext = new CompilationThreadContext();
         this.context = {
             currentFunction: 'main',

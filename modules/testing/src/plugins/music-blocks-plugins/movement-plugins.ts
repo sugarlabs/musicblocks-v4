@@ -1,20 +1,28 @@
-import { IPlugin, PluginResult, PluginArgs } from '../plugin-interface';
+import { IPlugin, PluginResult, PluginArgs, ExecutionContext } from '../plugin-interface';
 
 /**
- * Forward Plugin - Blocking operation that moves forward
+ * Forward Plugin - Context-aware blocking operation that moves forward
+ * Timing depends on context: 500ms outside notes, note duration inside notes
  */
 export class ForwardPlugin implements IPlugin {
     public name = 'forward';
 
-    public execute(args: PluginArgs[]): PluginResult {
+    public execute(args: PluginArgs[], context?: ExecutionContext): PluginResult {
         const steps = args.find((arg) => arg.param === 'steps')?.value as number;
-
-        console.log(`[MOVEMENT] Moving forward ${steps} steps`);
+        let duration = 500;
+        if (context && context.currentNoteDuration) {
+            duration = (context.currentNoteDuration as number) * 1000;
+            console.log(
+                `[MOVEMENT] Moving forward ${steps} steps (concurrent with note: ${duration}ms)`,
+            );
+        } else {
+            console.log(`[MOVEMENT] Moving forward ${steps} steps (standalone: ${duration}ms)`);
+        }
 
         return {
             type: 'blocking',
-            duration: 1000,
-            value: { steps },
+            duration,
+            value: { steps, contextDuration: duration },
         };
     }
 }

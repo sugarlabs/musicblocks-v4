@@ -16,6 +16,7 @@ export type PluginResult =
 export interface ExecutionContext {
     instrument?: string;
     volume?: number;
+    currentNoteDuration?: number;
     [key: string]: unknown;
 }
 

@@ -18,20 +18,47 @@ export class PluginManager implements IExternalFunctionRegistry {
     }
 
     /**
-     * Execute a plugin - called by the IR interpreter
+     * Execute nested plugin operations with proper context and parameter handling
      */
-    public executeFunction(name: string, args: unknown[]): unknown {
+    public executeNestedPlugin(
+        name: string,
+        args: unknown[],
+        noteContext?: ExecutionContext,
+    ): PluginResult | null {
         const plugin = this.plugins.get(name);
         if (!plugin) {
-            console.log(`[PLUGIN] Plugin not found: ${name}, falling back to mock`);
-            return this.mockFunction(name, args);
+            console.log(`[NESTED-PLUGIN] Plugin not found: ${name}`);
+            return null;
         }
+
+        const pluginArgs: PluginArgs[] = this.buildPluginArgs(name, args);
+
+        // Use note context if provided, otherwise use current context
+        const executionContext = noteContext || this.currentContext;
+
+        console.log(`[NESTED-PLUGIN] Executing nested plugin: ${name} with args:`, pluginArgs);
+        const result = plugin.execute(pluginArgs, executionContext);
+        console.log(`[NESTED-PLUGIN] Nested plugin ${name} result:`, result);
+
+        return result;
+    }
+
+    /**
+     * Build plugin arguments based on plugin name and argument list
+     */
+    private buildPluginArgs(name: string, args: unknown[]): PluginArgs[] {
         const pluginArgs: PluginArgs[] = [];
 
         if (name === 'playNote') {
             pluginArgs.push({ param: 'pitch', value: args[0] });
             if (args.length > 1) pluginArgs.push({ param: 'duration', value: args[1] });
             if (args.length > 2) pluginArgs.push({ param: 'volume', value: args[2] });
+            if (args.length > 3) {
+                // Parse nested operations from JSON string
+                const nestedOps =
+                    typeof args[3] === 'string' ? JSON.parse(args[3] as string) : args[3];
+                pluginArgs.push({ param: 'nestedOperations', value: nestedOps });
+            }
         } else if (name === 'setKey') {
             pluginArgs.push({ param: 'key', value: args[0] });
         } else if (name === 'setMasterVolume') {
@@ -47,16 +74,37 @@ export class PluginManager implements IExternalFunctionRegistry {
         } else if (name === 'onNoteDo') {
             pluginArgs.push({ param: 'callback', value: args[0] });
         } else if (name.startsWith('setContext_')) {
-            const contextType = name.replace('setContext_', '');
             pluginArgs.push({ param: 'value', value: args[0] });
-            this.currentContext[contextType] = args[0];
         } else if (name.startsWith('resetContext_')) {
-            const contextType = name.replace('resetContext_', '');
-            delete this.currentContext[contextType];
+            // No args needed for reset operations
         } else {
             for (let i = 0; i < args.length; i++) {
                 pluginArgs.push({ param: `arg${i}`, value: args[i] });
             }
+        }
+
+        return pluginArgs;
+    }
+
+    /**
+     * Execute a plugin - called by the IR interpreter
+     */
+    public executeFunction(name: string, args: unknown[]): unknown {
+        const plugin = this.plugins.get(name);
+        if (!plugin) {
+            console.log(`[PLUGIN] Plugin not found: ${name}, falling back to mock`);
+            return this.mockFunction(name, args);
+        }
+
+        const pluginArgs: PluginArgs[] = this.buildPluginArgs(name, args);
+
+        // Handle context modifications
+        if (name.startsWith('setContext_')) {
+            const contextType = name.replace('setContext_', '');
+            this.currentContext[contextType] = args[0];
+        } else if (name.startsWith('resetContext_')) {
+            const contextType = name.replace('resetContext_', '');
+            delete this.currentContext[contextType];
         }
 
         console.log(`[PLUGIN] Executing plugin: ${name} with args:`, pluginArgs);
@@ -156,7 +204,7 @@ export class PluginManager implements IExternalFunctionRegistry {
             case 'blocking':
                 return {
                     type: 'time',
-                    duration: result.duration, // Duration should already be in milliseconds
+                    duration: result.duration,
                     value: result.value,
                 };
 

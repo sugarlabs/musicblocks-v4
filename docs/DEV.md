@@ -42,9 +42,11 @@ v14.1.0
 
 ### With Docker
 
+
 This project development tools have been containerized using [**docker**](https://www.docker.com/).
-Therefore, to use an execution sandbox, it requires **docker** to be installed on the development
-machine.
+Therefore, to use an execution sandbox, it requires **docker** to be installed on the development machine.
+
+> **Note:** The Docker container already installs Python (`python3`) and related build tools. If you encounter errors about missing Python when installing dependencies, it is likely already available inside the container. If you need additional Python tools (like `pip`), you may need to update the Dockerfile accordingly.
 
 1. Setup _docker_.
 

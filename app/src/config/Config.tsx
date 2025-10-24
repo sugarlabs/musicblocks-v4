@@ -248,7 +248,12 @@ export default function (props: {
 
   return (
     <div id="config-wrapper">
-      <p id="config-disclaimer">refresh webpage to go to main application page</p>
+      <div className="config-header">
+        <h2 className="config-title">Available Modules</h2>
+        <p className="config-description">
+          Enable or disable modules to customize your Music Blocks experience
+        </p>
+      </div>
 
       <ul id="config-module-list">
         {Object.entries(modules).map(([id, { name, desc, active, elements, flags }], i) => (

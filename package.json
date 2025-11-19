@@ -53,7 +53,7 @@
     "http-server": "^14.1.1",
     "lerna": "^8.2.2",
     "markdownlint": "^0.38.0",
-    "markdownlint-cli": "^0.45.0",
+    "markdownlint-cli": "^0.46.0",
     "nodemon": "^3.0.0",
     "nyc": "^17.1.0",
     "prettier": "^3.5.3",

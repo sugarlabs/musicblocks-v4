@@ -1,4 +1,3 @@
-// File: src/collision/spec/index.spec.ts
 import { describe, it, expect } from 'vitest';
 import { checkCollision } from '../utils';
 import type { TCollisionObject } from '@/@types/collision';

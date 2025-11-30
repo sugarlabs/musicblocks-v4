@@ -1,0 +1,27 @@
+.toggle-switch {
+  width: 40px;
+  height: 20px;
+  border-radius: 20px;
+  background: #ccc;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.toggle-switch--active {
+  background: #00c853;
+}
+
+.toggle-switch__thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s ease;
+}
+
+.toggle-switch--active .toggle-switch__thumb {
+  transform: translateX(20px);
+}

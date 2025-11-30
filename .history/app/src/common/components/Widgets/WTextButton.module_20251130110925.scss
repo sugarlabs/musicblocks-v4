@@ -1,0 +1,14 @@
+.text-button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #ddd;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #ccc;
+  }
+}

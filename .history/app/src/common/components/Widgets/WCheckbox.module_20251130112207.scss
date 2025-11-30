@@ -1,0 +1,31 @@
+.checkbox {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #ccc;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.checkbox--active {
+  background: #00c853;
+  border-color: #00c853;
+}
+
+.checkbox__thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s ease;
+}
+
+.checkbox--active .checkbox__thumb {
+  transform: translateX(8px);
+}

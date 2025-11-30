@@ -1,0 +1,14 @@
+.raster {
+  display: block;
+  object-fit: contain;
+}
+
+.raster--small {
+  width: 18px;
+  height: 18px;
+}
+
+.raster--big {
+  width: 28px;
+  height: 28px;
+}

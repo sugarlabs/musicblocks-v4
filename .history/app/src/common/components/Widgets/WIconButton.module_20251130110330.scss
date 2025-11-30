@@ -1,0 +1,29 @@
+.button {
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #eee;
+  border-radius: 8px;
+}
+
+.big {
+  width: 48px;
+  height: 48px;
+}
+
+.small {
+  width: 32px;
+  height: 32px;
+}
+
+.iconBig {
+  width: 28px;
+  height: 28px;
+}
+
+.iconSmall {
+  width: 18px;
+  height: 18px;
+}

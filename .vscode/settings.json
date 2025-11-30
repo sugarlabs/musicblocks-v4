@@ -40,5 +40,15 @@
   },
   "[jsonc]": {
     "editor.defaultFormatter": "vscode.json-language-features"
-  }
+  },
+  "cSpell.words": [
+    "Anindya",
+    "Kundu",
+    "musicblocks",
+    "quadtree",
+    "QUADTREEMAXELEMS",
+    "sugarlabs",
+    "textlint",
+    "Thres"
+  ]
 }

@@ -1,0 +1,17 @@
+/* SImage.module.scss */
+
+/* Default wrapper for SImage component */
+.simage {
+  display: inline-block;
+}
+
+/* Size modifiers can be passed down via className to Raster or Vector */
+.simage--small {
+  width: 18px;
+  height: 18px;
+}
+
+.simage--big {
+  width: 28px;
+  height: 28px;
+}

@@ -1,0 +1,27 @@
+.w-toggle-rounded {
+  width: 50px;
+  height: 26px;
+  border-radius: 26px;
+  background-color: #bbb;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.w-toggle-rounded--active {
+  background-color: #2196f3;
+}
+
+.w-toggle-rounded__thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #fff;
+  transition: transform 0.2s;
+}
+
+.w-toggle-rounded--active .w-toggle-rounded__thumb {
+  transform: translateX(24px);
+}

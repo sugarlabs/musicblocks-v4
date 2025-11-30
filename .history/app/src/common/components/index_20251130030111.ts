@@ -1,0 +1,6 @@
+export { default as WIconButton } from './WIconButton';
+export { default as WTextButton } from './WTextButton';
+export { default as WToggleSwitch } from './WToggleSwitch';
+export { default as WToggleSwitchRounded } from './WToggleSwitchRounded';
+export { default as WCheckbox } from './WCheckbox';
+export { default as SImage } from './SImage';

@@ -6,7 +6,6 @@ const App: React.FC = () => {
   return (
     <Router>
       <Routes>
-        {/* Root route shows TestPage */}
         <Route path="/" element={<TestPage />} />
       </Routes>
     </Router>

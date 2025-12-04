@@ -9,19 +9,18 @@ UI components, however, the project is set up to independently use any _JavaScri
 or the _JS DOM API_ directly. It is bundled using _Vite_.
 
 - Application
-  - TypeScript 4
-  - React 17
+  - TypeScript 5
+  - React 18
   - SCSS
 
 - Tooling
   - Node.js
-  - Vite 4
+  - Vite 6
   - ESLint
   - Docker
 
 - Testing
-  - Jest
-  - Cypress
+  - Vitest
 
 ## Development
 

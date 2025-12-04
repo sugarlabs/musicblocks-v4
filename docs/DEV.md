@@ -192,18 +192,12 @@ After you are set-up, the steps you take depend on what you want to do:
         - For running unit tests, run
 
             ```bash
-            npm run test:unit
+            npm run test
             ```
 
-        - For running end-to-end tests, run
+            This uses **Lerna + Vitest** to run tests across all packages.
 
-            ```bash
-            ## In 1 terminal
-            npm run build
-            npm run preview
-            ## In another terminal
-            npm run test:e2e
-            ```
+            No end to end test framework is currently configured.
 
         _**Note:**_ If you're running using _Docker Desktop_ on _Windows_ or _Mac_, you might experience
         longer execution times for these scripts. This happens due to cross-file-system communication.

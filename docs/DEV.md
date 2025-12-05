@@ -143,11 +143,23 @@ your _GitHub Personal Access Token_ (_PAT_) is stored in your local system's _np
 Learn
 [how to create a _PAT_](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-token).
 
+**On Linux/macOS**\
 Add your _PAT_ to `.npmrc` using
-
 ```bash
 echo "//npm.pkg.github.com/:_authToken=[YOUR_GITHUB_PERSONAL_ACCESS_TOKEN]" >> ~/.npmrc
 ```
+
+**On Windows (PowerShell)**\
+Windows users should create or update their `.npmrc` file located at:
+```
+C:\Users\<username>\.npmrc
+```
+
+Run :
+```powershell
+Set-Content $env:USERPROFILE\.npmrc "@sugarlabs:registry=https://npm.pkg.github.com`n//npm.pkg.github.com/:_authToken=YOUR_GITHUB_ACCESS_TOKEN"
+```
+- Replace `YOUR_GITHUB_ACCESS_TOKEN` with your actual PAT
 
 After you are set-up, the steps you take depend on what you want to do:
 

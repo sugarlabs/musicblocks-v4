@@ -1,5 +1,7 @@
 import type { PluginOption } from 'vite';
+
 import path from 'path';
+
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { ViteEjsPlugin as ejs } from 'vite-plugin-ejs';
@@ -7,6 +9,7 @@ import { VitePWA as pwa } from 'vite-plugin-pwa';
 import compression from 'vite-plugin-compression';
 import eslint from 'vite-plugin-eslint';
 import { visualizer } from 'rollup-plugin-visualizer';
+
 import { parse as parseJsonc } from 'jsonc-parser';
 
 function resolve(rootPath: string) {
@@ -36,43 +39,27 @@ export default defineConfig({
         react(),
 
         pwa({
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
             manifest: require(resolve('public/manifest.json')),
             manifestFilename: 'manifest.json',
             registerType: 'autoUpdate',
             workbox: {
                 clientsClaim: true,
                 skipWaiting: true,
-                globPatterns: ['**/*.{js,css,html,svg,png,wav}'],
             },
-            includeAssets: [
-                'index.html',
-                'build-53e87ed8.svg',
-                'close-444dc9a6.svg',
-                'code-74870b2e.svg',
-                'exportDrawing-aee43b5d.svg',
-                'help-a0383ce2.svg',
-                'logo-3080f493.png',
-                'mouse-46cf41ce.svg',
-                'pin-8515e01d.svg',
-                'reset-a8de2102.svg',
-                'run-123f2282.svg',
-                'saveProjectHTML-e442bff6.svg',
-                'startRecording-5dec9e0d.svg',
-                'stop-aa193098.svg',
-                'stopRecording-48f9a011.svg',
-                'unpin-427cfcc6.svg',
-            ],
+        }),
+        compression({
+            algorithm: 'gzip',
         }),
 
-        compression({ algorithm: 'gzip' }),
         eslint(),
-
+        // this emits bundle data as HTML (required for bundle visualisation)
         visualizer({
             emitFile: true,
             gzipSize: true,
             filename: 'stats.html',
         }) as PluginOption,
-
+        // this emits bundle data as JSON (required for bundle assessment)
         visualizer({
             emitFile: true,
             gzipSize: true,

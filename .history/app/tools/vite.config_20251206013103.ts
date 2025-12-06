@@ -42,7 +42,7 @@ export default defineConfig({
             workbox: {
                 clientsClaim: true,
                 skipWaiting: true,
-                globPatterns: ['**/*.{js,css,html,svg,png,wav}'],
+                globPatterns: ['assets/*.{svg,png,wav}'], // ✅ move it here
             },
             includeAssets: [
                 'index.html',

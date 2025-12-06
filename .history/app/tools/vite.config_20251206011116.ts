@@ -36,16 +36,16 @@ export default defineConfig({
         react(),
 
         pwa({
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
             manifest: require(resolve('public/manifest.json')),
             manifestFilename: 'manifest.json',
             registerType: 'autoUpdate',
             workbox: {
                 clientsClaim: true,
                 skipWaiting: true,
-                globPatterns: ['**/*.{js,css,html,svg,png,wav}'],
             },
+            // ✅ Added for precaching specific assets
             includeAssets: [
-                'index.html',
                 'build-53e87ed8.svg',
                 'close-444dc9a6.svg',
                 'code-74870b2e.svg',
@@ -62,6 +62,8 @@ export default defineConfig({
                 'stopRecording-48f9a011.svg',
                 'unpin-427cfcc6.svg',
             ],
+            // Optional: catch any other assets in the folder automatically
+            globPatterns: ['assets/*.{svg,png,wav}'],
         }),
 
         compression({ algorithm: 'gzip' }),

@@ -48,6 +48,7 @@ export default defineConfig({
                 skipWaiting: true,
                 globPatterns: ['**/*.{js,css,html,svg,png,wav}'],
             },
+
             includeAssets: [
                 'index.html',
                 'build-53e87ed8.svg',
@@ -70,6 +71,7 @@ export default defineConfig({
         compression({
             algorithm: 'gzip',
         }),
+
         eslint(),
         // this emits bundle data as HTML (required for bundle visualisation)
         visualizer({

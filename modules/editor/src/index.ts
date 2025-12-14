@@ -11,6 +11,9 @@ import {
     setHelp,
     setStatus,
     setup as setupView,
+    addNewTab,
+    switchToTab,
+    getCurrentTabContent,
 } from './view';
 import { generateAPI, resetProgram } from './core';
 
@@ -141,6 +144,55 @@ export async function setup(): Promise<void> {
         }
     });
 }
+
+// -- public API functions -------------------------------------------------------------------------
+
+/**
+ * Creates a new tab for a sprite's code
+ * @param spriteName Name of the sprite
+ * @param spriteId Unique identifier for the sprite
+ * @param initialCode Initial code content for the sprite
+ */
+export function createSpriteTab(
+    spriteName: string,
+    spriteId: string,
+    initialCode: string = '',
+): void {
+    addNewTab(`Sprite: ${spriteName}`, 'sprite', initialCode, { spriteId });
+}
+
+/**
+ * Creates a new tab for a routine's code
+ * @param routineName Name of the routine
+ * @param spriteId Associated sprite ID (if routine belongs to a sprite)
+ * @param initialCode Initial code content for the routine
+ */
+export function createRoutineTab(
+    routineName: string,
+    spriteId: string | undefined,
+    initialCode: string = '',
+): void {
+    addNewTab(`Routine: ${routineName}`, 'routine', initialCode, { spriteId, routineName });
+}
+
+/**
+ * Creates a new generic tab
+ * @param label Label for the tab
+ * @param initialCode Initial code content
+ */
+export function createNewTab(label: string, initialCode: string = ''): void {
+    addNewTab(label, 'main', initialCode);
+}
+
+/**
+ * Gets the code from the currently active tab
+ */
+export function getActiveTabCode(): string {
+    return getCurrentTabContent();
+}
+
+// Re-export commonly used functions for convenience
+export { setCode, setStatus, setHelp } from './view';
 
 // -- public variables -----------------------------------------------------------------------------
 

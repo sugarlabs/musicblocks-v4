@@ -4,11 +4,157 @@
   width: 26rem;
   height: 100%;
 
+  .editor-tab-bar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background-color: $background-light;
+    border-bottom: 1px solid darken($background-light, 10%);
+    height: 2.5rem;
+    flex-shrink: 0;
+
+    .editor-tabs {
+      display: flex;
+      flex-direction: row;
+      flex: 1;
+      overflow-x: auto;
+      overflow-y: hidden;
+      
+      &::-webkit-scrollbar {
+        height: 4px;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background: $mb-accent;
+        border-radius: 2px;
+      }
+
+      .editor-tab {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.5rem 0.75rem;
+        background-color: darken($background-light, 5%);
+        border-right: 1px solid darken($background-light, 10%);
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background-color 0.2s ease;
+        font-size: 0.85rem;
+        user-select: none;
+
+        &:hover {
+          background-color: darken($background-light, 8%);
+        }
+
+        &.editor-tab-active {
+          background-color: white;
+          border-bottom: 2px solid $mb-accent;
+          font-weight: bold;
+        }
+
+        .editor-tab-icon {
+          font-size: 1rem;
+        }
+
+        .editor-tab-label {
+          color: $text-dark;
+        }
+
+        .editor-tab-dirty-indicator {
+          color: $mb-accent;
+          font-size: 1.2rem;
+          line-height: 0;
+        }
+
+        .editor-tab-close {
+          border: none;
+          background: none;
+          font-size: 1.2rem;
+          line-height: 1;
+          padding: 0 0.25rem;
+          cursor: pointer;
+          color: lighten($text-dark, 30%);
+          transition: color 0.2s ease;
+
+          &:hover {
+            color: $text-dark;
+          }
+        }
+      }
+    }
+
+    .editor-tab-add-wrapper {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .editor-tab-add {
+      width: 2.5rem;
+      height: 2.5rem;
+      border: none;
+      background-color: transparent;
+      font-size: 1.5rem;
+      line-height: 1;
+      cursor: pointer;
+      color: $mb-accent;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: darken($background-light, 5%);
+        color: $mb-accent-light;
+      }
+    }
+
+    .editor-tab-add-menu {
+      position: absolute;
+      right: 0;
+      top: 100%;
+      background: white;
+      border: 1px solid darken($background-light, 10%);
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      min-width: 160px;
+      margin-top: 4px;
+
+      button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding: 8px 12px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        text-align: left;
+        font-size: 14px;
+        color: $text-dark;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+          background: darken($background-light, 3%);
+        }
+
+        &:first-child {
+          border-radius: 4px 4px 0 0;
+        }
+
+        &:last-child {
+          border-radius: 0 0 4px 4px;
+        }
+
+        span {
+          font-size: 16px;
+        }
+      }
+    }
+  }
+
   .editor-wrapper {
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: 100%;
+    height: calc(100% - 2.5rem);
 
     &.editor-wrapper-hidden {
       display: none;

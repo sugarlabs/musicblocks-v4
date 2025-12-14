@@ -78,10 +78,7 @@ const BrickItem: React.FC<{
           e.dataTransfer.setDragImage(clone as Element, width / 2, height / 2);
           setTimeout(() => document.body.removeChild(clone), 0);
         }
-        e.dataTransfer.setData(
-          'application/json',
-          JSON.stringify({ brickId: brick.id }),
-        );
+        e.dataTransfer.setData('application/json', JSON.stringify({ brickId: brick.id }));
         e.dataTransfer.effectAllowed = 'copy';
         setDrag({ brickType: brick.type, origin: 'palette' });
       }}

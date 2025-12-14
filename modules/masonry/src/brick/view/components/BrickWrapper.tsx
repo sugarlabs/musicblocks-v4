@@ -71,7 +71,7 @@ export const BrickWrapper: React.FC<BrickWrapperProps> = ({
       lastMetrics.current = { w: brickData.boundingBox.w, h: brickData.boundingBox.h };
     }
 
-    setShape(prev => {
+    setShape((prev) => {
       if (
         prev.path === brickData.path &&
         prev.w === brickData.boundingBox.w &&
@@ -80,9 +80,9 @@ export const BrickWrapper: React.FC<BrickWrapperProps> = ({
         return prev; // No change, don't trigger a re-render
       }
       return {
-      path: brickData.path,
-      w: brickData.boundingBox.w,
-      h: brickData.boundingBox.h,
+        path: brickData.path,
+        w: brickData.boundingBox.w,
+        h: brickData.boundingBox.h,
       };
     });
   }, [label, strokeWidth, scale, bboxArgs, bBoxLabel, RenderMetrics, getBrickConfig]);

@@ -79,4 +79,12 @@ export function setButtonState(state: 'clicked' | 'unclicked'): void {
     setButtonImg(state === 'clicked' ? 'cross' : 'code');
 }
 
-export { setCode, setHelp, setStatus, resetStates } from './components';
+export {
+    setCode,
+    setHelp,
+    setStatus,
+    resetStates,
+    addNewTab,
+    switchToTab,
+    getCurrentTabContent,
+} from './components';

@@ -10,9 +10,9 @@ import type { BrickModel, SimpleBrick, ExpressionBrick } from '../../../brick/mo
 import { useSetRecoilState, useRecoilState } from 'recoil';
 import { dragStateAtom } from '../../../state/dragState';
 import { towersAtom } from '../../../state/towersState';
-import { 
+import {
   getNodeChildren,
-  computeBoundingBoxes, 
+  computeBoundingBoxes,
   debugBoundingBoxCalculation,
 } from '../../../tower/utils/towerUtils'; // Moved to utility file
 
@@ -36,7 +36,6 @@ function BrickNodeView({ node }: { node: ExtendedTowerNode }) {
       return null;
   }
 }
-
 
 // Render tower using iterative approach with correct positioning
 function RenderTowerNodeStack({
@@ -156,8 +155,8 @@ function updateCompoundBrickLayouts(
   if (node.brick instanceof CompoundBrick) {
     const children = (node.brick as CompoundBrick).getNestedChildren(nodes); // Fixed to use CompoundBrick method
     (node.brick as CompoundBrick).updateLayoutWithChildren(children, nodes);
-    children.forEach(child => {
-      const childNode = Array.from(nodes.values()).find(n => n.brick.uuid === child.uuid);
+    children.forEach((child) => {
+      const childNode = Array.from(nodes.values()).find((n) => n.brick.uuid === child.uuid);
       if (childNode) updateCompoundBrickLayouts(nodes, childNode);
     });
   }
@@ -256,7 +255,7 @@ const TowerView: React.FC<TowerViewProps> = ({
       while (stack.length > 0) {
         const { node: curr, x, y } = stack.pop()!;
         const children = getNodeChildren(curr.brick.uuid, allNodes);
-        
+
         // Mouse handlers for each brick
         const handleMouseDown = (e: React.MouseEvent) => {
           if (curr.parent !== null) {
@@ -269,12 +268,17 @@ const TowerView: React.FC<TowerViewProps> = ({
                 }
                 setTowers((prevTowers) => {
                   const updatedTowers = prevTowers.map((t) =>
-                    t.id === originalTower.id ? originalTower : t
+                    t.id === originalTower.id ? originalTower : t,
                   );
                   updatedTowers.push(newTower);
-                  console.log(`Detached brick ${curr.brick.uuid} into a new tower. Total towers: ${updatedTowers.length}`);
+                  console.log(
+                    `Detached brick ${curr.brick.uuid} into a new tower. Total towers: ${updatedTowers.length}`,
+                  );
                   updatedTowers.forEach((t, i) => {
-                    console.log(`  Tower ${i + 1} (${t.id}):`, t.nodesArray().map(n => n.brick.uuid));
+                    console.log(
+                      `  Tower ${i + 1} (${t.id}):`,
+                      t.nodesArray().map((n) => n.brick.uuid),
+                    );
                   });
 
                   return updatedTowers;
@@ -295,7 +299,7 @@ const TowerView: React.FC<TowerViewProps> = ({
           });
           startGlobalDrag();
         };
-        
+
         elements.push(
           <g
             key={curr.brick.uuid}
@@ -312,7 +316,7 @@ const TowerView: React.FC<TowerViewProps> = ({
             <BrickNodeView node={curr} />
           </g>,
         );
-        
+
         // Handle nested children - positioned inside the current brick
         if (children.nested.length > 0 && curr.brick.connectionPoints?.nested) {
           let nestedOffsetY = 0;
@@ -324,7 +328,7 @@ const TowerView: React.FC<TowerViewProps> = ({
             nestedOffsetY += childBB.h;
           });
         }
-        
+
         // Handle argument children - positioned at specific argument slots
         if (children.args.length > 0 && curr.brick.connectionPoints?.args) {
           children.args.forEach((child) => {
@@ -335,7 +339,7 @@ const TowerView: React.FC<TowerViewProps> = ({
             }
           });
         }
-        
+
         // Handle stacked children - positioned below the current brick
         if (children.stacked.length > 0) {
           let stackedOffsetY = y + (curr.brick.boundingBox.h || 0);
@@ -358,7 +362,7 @@ const TowerView: React.FC<TowerViewProps> = ({
       }
       return <>{elements}</>;
     }
-    
+
     return roots.map((root) => (
       <RenderTowerNodeStackWithDrag
         key={root.brick.uuid}

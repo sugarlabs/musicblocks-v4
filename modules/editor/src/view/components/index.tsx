@@ -1,9 +1,21 @@
 import type { JSX } from 'react';
+import type { ITabManagerState } from '../../@types/tabs';
 
 import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { injected } from '../..';
+import { TabBar } from './TabBar';
+import {
+  createDefaultTabState,
+  createTab,
+  addTab,
+  removeTab,
+  updateTabContent,
+  setActiveTab,
+  getActiveTab,
+  updateTabBuildStatus,
+} from '../../core/tabManager';
 
 // -- stylesheet -----------------------------------------------------------------------------------
 
@@ -20,6 +32,7 @@ let _btnClose: HTMLButtonElement;
 let _helpBox: HTMLTextAreaElement;
 
 let _mountedCallback: CallableFunction;
+let _setTabState: React.Dispatch<React.SetStateAction<ITabManagerState>>;
 
 // -- component definition -------------------------------------------------------------------------
 
@@ -36,6 +49,12 @@ function Editor(): JSX.Element {
   const helpBoxRef = useRef(null);
 
   const [showingHelp, setShowingHelp] = useState(false);
+  const [tabState, setTabState] = useState<ITabManagerState>(createDefaultTabState());
+
+  // Store setTabState for external access
+  _setTabState = setTabState;
+
+  const activeTab = getActiveTab(tabState);
 
   useEffect(() => {
     _codeBox = codeBoxRef.current!;
@@ -63,14 +82,83 @@ function Editor(): JSX.Element {
     });
   }, []);
 
+  // Update textarea content and status when active tab changes
+  useEffect(() => {
+    if (activeTab && _codeBox) {
+      _codeBox.value = activeTab.content;
+      // Restore the build status for this tab
+      _status.innerHTML = activeTab.buildStatus || '';
+    }
+  }, [activeTab?.id]);
+
+  const handleTabSelect = (tabId: string) => {
+    // Save current tab content before switching
+    if (activeTab) {
+      setTabState((prevState) => updateTabContent(prevState, activeTab.id, _codeBox.value));
+    }
+    setTabState((prevState) => setActiveTab(prevState, tabId));
+  };
+
+  const handleTabClose = (tabId: string) => {
+    // Save current tab content before closing (in case it's not the one being closed)
+    if (activeTab && activeTab.id !== tabId) {
+      setTabState((prevState) => updateTabContent(prevState, activeTab.id, _codeBox.value));
+    }
+    setTabState((prevState) => removeTab(prevState, tabId));
+  };
+
+  const handleTabAdd = () => {
+    // Save current tab content before creating new tab
+    if (activeTab) {
+      setTabState((prevState) => updateTabContent(prevState, activeTab.id, _codeBox.value));
+    }
+    const newTab = createTab(`Tab ${tabState.tabs.length + 1}`, 'main');
+    setTabState((prevState) => addTab(prevState, newTab, true));
+  };
+
+  const handleCodeInput = () => {
+    if (activeTab) {
+      // Clear build status when code is modified
+      _status.innerHTML = '';
+      setTabState((prevState) => {
+        let newState = updateTabContent(prevState, activeTab.id, _codeBox.value);
+        newState = updateTabBuildStatus(newState, activeTab.id, '');
+        return newState;
+      });
+    }
+  };
+
   return (
     <>
+      <TabBar
+        tabs={tabState.tabs}
+        activeTabId={tabState.activeTabId}
+        onTabSelect={handleTabSelect}
+        onTabClose={handleTabClose}
+        onTabAdd={handleTabAdd}
+        onTabAddType={(type, name) => {
+          // Save current tab content before creating new tab
+          if (activeTab) {
+            setTabState((prevState) => updateTabContent(prevState, activeTab.id, _codeBox.value));
+          }
+
+          // Name is now always provided and required
+          let label = name!;
+          if (type === 'sprite') {
+            label = `Sprite: ${name}`;
+          } else if (type === 'routine') {
+            label = `Routine: ${name}`;
+          }
+
+          const newTab = createTab(label, type, '', {
+            spriteId: type === 'sprite' ? `sprite-${Date.now()}` : undefined,
+            routineName: type === 'routine' ? name : undefined,
+          });
+          setTabState((prevState) => addTab(prevState, newTab, true));
+        }}
+      />
       <div className={`editor-wrapper ${showingHelp ? 'editor-wrapper-hidden' : ''}`}>
-        <textarea
-          id="editor-codebox"
-          ref={codeBoxRef}
-          onInput={() => (_status.innerHTML = '')}
-        ></textarea>
+        <textarea id="editor-codebox" ref={codeBoxRef} onInput={handleCodeInput}></textarea>
         <div id="editor-console">
           <button
             id="editor-btn-help"
@@ -136,6 +224,16 @@ export function setCode(text: string): void {
  */
 export function setStatus(text: string): void {
   _status.innerHTML = text;
+  // Also save the status in the active tab's state
+  if (_setTabState) {
+    _setTabState((prevState) => {
+      const activeTab = getActiveTab(prevState);
+      if (activeTab) {
+        return updateTabBuildStatus(prevState, activeTab.id, text);
+      }
+      return prevState;
+    });
+  }
 }
 
 /**
@@ -151,4 +249,44 @@ export function setHelp(text: string): void {
  */
 export function resetStates(): void {
   _editor.dispatchEvent(new Event('resetstates'));
+}
+
+/**
+ * Adds a new tab to the editor
+ * @param label Label for the tab
+ * @param type Type of tab ('main', 'sprite', or 'routine')
+ * @param content Initial content for the tab
+ * @param options Additional options (spriteId, routineName)
+ */
+export function addNewTab(
+  label: string,
+  type: 'main' | 'sprite' | 'routine' = 'main',
+  content: string = '',
+  options?: { spriteId?: string; routineName?: string },
+): void {
+  const newTab = createTab(label, type, content, options);
+  _setTabState((prevState) => addTab(prevState, newTab, true));
+}
+
+/**
+ * Gets the content of the currently active tab
+ */
+export function getCurrentTabContent(): string {
+  return _codeBox.value;
+}
+
+/**
+ * Gets all tabs
+ */
+export function getAllTabs(): ITabManagerState['tabs'] {
+  // This will be populated through state, but we need a way to access it
+  // For now, return empty array as we need to manage state externally
+  return [];
+}
+
+/**
+ * Switches to a tab by its ID
+ */
+export function switchToTab(tabId: string): void {
+  _setTabState((prevState) => setActiveTab(prevState, tabId));
 }

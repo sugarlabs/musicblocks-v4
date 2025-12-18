@@ -5,6 +5,9 @@ import type { IComponentDefinitionExtended, TComponentId } from '#/@types/compon
 import { getConfigCache, updateConfigCache } from '.';
 import { default as componentManifest } from '../components';
 
+// Flag features metadata Object
+import { FEATURE_FLAG_META } from '../components';
+
 // -- ui items -------------------------------------------------------------------------------------
 
 import { WToggleSwitch } from '@sugarlabs/mb4-components';
@@ -305,20 +308,40 @@ export default function (props: {
                     </h3>
 
                     <ul className="config-module-list-item-subitem-list config-module-list-item-flag-list">
-                      {Object.keys(flags).map((flag, i) => (
-                        <li
-                          className="config-module-list-item-subitem config-module-list-item-flag"
-                          key={`config-module-list-item-flag-${i}`}
-                        >
-                          <p className="config-module-list-item-subitem-name config-module-list-item-flag-name">
-                            <code>{flag}</code>
-                          </p>
-                          <WToggleSwitch
-                            active={flags[flag]}
-                            handlerClick={() => toggleModuleFlag(id as TComponentId, flag)}
-                          />
-                        </li>
-                      ))}
+                      {/*Added readable Labels and description*/}
+                      {Object.keys(flags).map((flag, i) => {
+                        const meta = FEATURE_FLAG_META[flag];
+
+                        return (
+                          <li
+                            className="config-module-list-item-subitem config-module-list-item-flag"
+                            key={`config-module-list-item-flag-${i}`}
+                          >
+                            <div>
+                              <p className="config-module-list-item-subitem-name config-module-list-item-flag-name">
+                                <strong>{meta?.label ?? flag}</strong>
+                              </p>
+
+                              {meta?.description && (
+                                <p
+                                  style={{
+                                    fontSize: '0.85rem',
+                                    opacity: 0.75,
+                                    marginTop: '0.25rem',
+                                  }}
+                                >
+                                  {meta.description}
+                                </p>
+                              )}
+                            </div>
+
+                            <WToggleSwitch
+                              active={flags[flag]}
+                              handlerClick={() => toggleModuleFlag(id as TComponentId, flag)}
+                            />
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
                 )}

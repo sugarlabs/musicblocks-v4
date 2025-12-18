@@ -1,5 +1,28 @@
 import type { TComponentManifest } from '#/@types/components';
 
+export const FEATURE_FLAG_META: Record<string, { label: string; description: string }> = {
+    uploadFile: {
+        label: 'Upload files',
+        description: 'Allow importing files from your computer into MusicBlocks.',
+    },
+    recording: {
+        label: 'Recording',
+        description: 'Enable recording of audio output.',
+    },
+    exportDrawing: {
+        label: 'Export drawing',
+        description: 'Allow exporting drawings created in the workspace.',
+    },
+    loadProject: {
+        label: 'Load project',
+        description: 'Load a previously saved MusicBlocks project.',
+    },
+    saveProject: {
+        label: 'Save project',
+        description: 'Save the current project for later use.',
+    },
+};
+
 const manifest: TComponentManifest = {
     editor: {
         name: 'Editor',

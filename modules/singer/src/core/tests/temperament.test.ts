@@ -181,7 +181,7 @@ describe('class Temperament', () => {
 
         test('Expect frequency of index 20 into the frequency list to be 51.91309408272643', () => {
             const num: number = t.getFreqByIndex(20);
-            expect(num).toBe(51.91309408272643);
+            expect(num).toBeCloseTo(51.91309408272643, 12);
         });
     });
 

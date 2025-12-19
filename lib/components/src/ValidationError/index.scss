@@ -1,0 +1,143 @@
+/**
+ * Styles for ValidationError component.
+ */
+
+.validation-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    margin-top: 4px;
+    animation: validationSlideIn 0.2s ease-out;
+}
+
+@keyframes validationSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// Status variants
+.validation-message-valid {
+    background-color: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #166534;
+
+    .validation-message-icon {
+        color: #22c55e;
+    }
+}
+
+.validation-message-invalid {
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #991b1b;
+
+    .validation-message-icon {
+        color: #ef4444;
+    }
+}
+
+.validation-message-warning {
+    background-color: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: #92400e;
+
+    .validation-message-icon {
+        color: #f59e0b;
+    }
+}
+
+// Icon
+.validation-message-icon {
+    flex-shrink: 0;
+    font-size: 1rem;
+    font-weight: bold;
+    width: 20px;
+    text-align: center;
+}
+
+// Content container
+.validation-message-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+// Main text
+.validation-message-text {
+    font-weight: 500;
+}
+
+// Suggestion
+.validation-message-suggestion {
+    font-size: 0.8125rem;
+    opacity: 0.9;
+
+    strong {
+        font-family: monospace;
+        background-color: rgba(0, 0, 0, 0.05);
+        padding: 1px 4px;
+        border-radius: 2px;
+    }
+}
+
+// Suggestion button
+.validation-suggestion-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+
+    &:hover {
+        text-decoration-style: solid;
+    }
+
+    &:focus {
+        outline: 2px solid currentColor;
+        outline-offset: 2px;
+        border-radius: 2px;
+    }
+}
+
+// Details
+.validation-message-details {
+    font-size: 0.75rem;
+    opacity: 0.75;
+    font-style: italic;
+}
+
+// Inline variant for use in forms
+.validation-message-inline {
+    margin-top: 2px;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+
+    .validation-message-icon {
+        font-size: 0.875rem;
+        width: 16px;
+    }
+}
+
+// Compact variant
+.validation-message-compact {
+    padding: 4px 8px;
+    
+    .validation-message-suggestion,
+    .validation-message-details {
+        display: none;
+    }
+}

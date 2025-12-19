@@ -1,0 +1,148 @@
+/**
+ * Styles for ValidatedInput component.
+ */
+
+.validated-input {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+}
+
+.validated-input-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 2px;
+}
+
+.validated-input-field {
+    padding: 8px 12px;
+    font-size: 1rem;
+    border: 2px solid #d1d5db;
+    border-radius: 6px;
+    background-color: #ffffff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+
+    &:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    &:disabled {
+        background-color: #f3f4f6;
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+
+    &::placeholder {
+        color: #9ca3af;
+    }
+}
+
+// Valid state
+.validated-input-valid {
+    border-color: #22c55e;
+
+    &:focus {
+        border-color: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+    }
+}
+
+// Invalid state
+.validated-input-invalid {
+    border-color: #ef4444;
+
+    &:focus {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+    }
+}
+
+// Number input spinner customization
+.validated-input-field[type="number"] {
+    -moz-appearance: textfield;
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+}
+
+// Range input customization
+.validated-input-field[type="range"] {
+    padding: 0;
+    height: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+
+    &::-webkit-slider-runnable-track {
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 4px;
+    }
+
+    &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 20px;
+        width: 20px;
+        background: #3b82f6;
+        border-radius: 50%;
+        margin-top: -6px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+            background: #2563eb;
+        }
+    }
+
+    &::-moz-range-track {
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 4px;
+    }
+
+    &::-moz-range-thumb {
+        height: 20px;
+        width: 20px;
+        background: #3b82f6;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+}
+
+// Compact variant for inline use
+.validated-input-compact {
+    .validated-input-label {
+        font-size: 0.75rem;
+    }
+
+    .validated-input-field {
+        padding: 4px 8px;
+        font-size: 0.875rem;
+    }
+}
+
+// Inline variant (label and input on same row)
+.validated-input-inline {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+
+    .validated-input-label {
+        margin-bottom: 0;
+        white-space: nowrap;
+    }
+
+    .validated-input-field {
+        flex: 1;
+    }
+}

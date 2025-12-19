@@ -1,0 +1,15 @@
+{
+  "name": "@sugarlabs/mb4-validation",
+  "version": "4.2.0",
+  "description": "Validation utilities for Music Blocks parameters",
+  "private": "true",
+  "main": "index.ts",
+  "scripts": {
+    "check": "tsc",
+    "lint": "eslint src",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "react": "~18.x"
+  }
+}

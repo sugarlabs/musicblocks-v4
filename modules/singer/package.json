@@ -12,6 +12,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "@sugarlabs/mb4-validation": "*",
     "@sugarlabs/musicblocks-v4-lib": "^0.2.0",
     "tone": "^14.7.77"
   }

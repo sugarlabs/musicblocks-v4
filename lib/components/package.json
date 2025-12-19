@@ -10,7 +10,8 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@sugarlabs/mb4-assets": "*"
+    "@sugarlabs/mb4-assets": "*",
+    "@sugarlabs/mb4-validation": "*"
   },
   "peerDependencies": {
     "react": "~18.x",

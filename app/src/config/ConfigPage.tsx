@@ -4,13 +4,21 @@ import type { IComponentDefinitionExtended, TComponentId } from '#/@types/compon
 
 import Config from './Config';
 
-// -- stylesheet -----------------------------------------------------------------------------------
-
+// -- Stylesheet -----------------------------------------------------------------------------------
 import './index.scss';
 
-// -- component definition -------------------------------------------------------------------------
+// -- Component Definition -------------------------------------------------------------------------
 
-export default function (props: {
+/**
+ * Configuration Page Component
+ * 
+ * Renders the application configuration interface and handles updates to app settings.
+ */
+export default function ConfigPage({
+  config,
+  definitions,
+  handlerUpdate,
+}: {
   /** App configurations. */
   config: IAppConfig;
   /** Map of component definitions. */
@@ -18,15 +26,13 @@ export default function (props: {
   /** Callback for when configurations are updated. */
   handlerUpdate: (config: IAppConfig) => unknown;
 }): JSX.Element {
-  // ---------------------------------------------------------------------------
-
   return (
     <div id="config-page">
       <div id="config-page-content-wrapper">
         <Config
-          definitions={props.definitions}
-          config={props.config}
-          handlerUpdate={props.handlerUpdate}
+          definitions={definitions}
+          config={config}
+          handlerUpdate={handlerUpdate}
         />
       </div>
     </div>

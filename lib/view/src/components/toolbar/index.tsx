@@ -90,14 +90,20 @@ export function setToolbarExtended(
   const float = document.getElementById('toolbar-float')!;
   const pinned = document.getElementById('toolbar-pinned')!;
 
-  const _btnFloatPin = float.children[0].children[1] as HTMLButtonElement;
-  const btnFloatPin = _btnFloatPin.cloneNode(true);
-  _btnFloatPin.parentNode!.replaceChild(btnFloatPin, _btnFloatPin);
+  const _btnFloatPin = document.getElementById('toolbar-float-btn-pin') as HTMLButtonElement;
+  let btnFloatPin = _btnFloatPin;
 
-  const _btnPinnedUnpin = pinned.children[0].children[1] as HTMLButtonElement;
-  const btnPinnedUnpin = _btnPinnedUnpin.cloneNode(true);
-  _btnPinnedUnpin.parentNode!.replaceChild(btnPinnedUnpin, _btnPinnedUnpin);
+  if (_btnFloatPin) {
+    btnFloatPin = _btnFloatPin.cloneNode(true) as HTMLButtonElement;
+    _btnFloatPin.parentNode!.replaceChild(btnFloatPin, _btnFloatPin);
+  }
 
+  const _btnPinnedUnpin = document.getElementById('toolbar-pinned-btn-unpin') as HTMLButtonElement;
+  let btnPinnedUnpin = _btnPinnedUnpin;
+  if (_btnPinnedUnpin) {
+    btnPinnedUnpin = _btnPinnedUnpin.cloneNode(true) as HTMLButtonElement;
+    _btnPinnedUnpin.parentNode!.replaceChild(btnPinnedUnpin, _btnPinnedUnpin);
+  }
   float.classList.remove('toolbar-extended-hidden');
   pinned.classList.remove('toolbar-extended-hidden');
 
@@ -109,38 +115,41 @@ export function setToolbarExtended(
     pinned.classList.remove('toolbar-extended-hidden');
   }
 
-  btnFloatPin.addEventListener('click', () => {
+  btnFloatPin?.addEventListener('click', () => {
     float.classList.add('toolbar-extended-hidden');
     pinned.classList.remove('toolbar-extended-hidden');
 
     hooks.pin();
   });
-  btnPinnedUnpin.addEventListener('click', () => {
+  btnPinnedUnpin?.addEventListener('click', () => {
     pinned.classList.add('toolbar-extended-hidden');
     float.classList.remove('toolbar-extended-hidden');
 
     hooks.unpin();
   });
 
-  const toolbar = type === 'float' ? float : pinned;
+  const headTitle = document.getElementById(`toolbar-${type}-title`);
+  if (headTitle) {
+    headTitle.innerHTML = title;
+  }
 
-  const headTitle = toolbar.children[0].children[0] as HTMLHeadingElement;
-  headTitle.innerHTML = title;
-
-  return toolbar.children[1] as HTMLDivElement;
+  const content = document.getElementById(`toolbar-${type}-content`) as HTMLDivElement;
+  return content;
 }
 
 export function unsetToolbarExtended(): void {
   const float = document.getElementById('toolbar-float')!;
   const pinned = document.getElementById('toolbar-pinned')!;
 
-  const _btnFloatPin = float.children[0].children[1] as HTMLButtonElement;
-  const btnFloatPin = _btnFloatPin.cloneNode(true);
-  _btnFloatPin.parentNode!.replaceChild(btnFloatPin, _btnFloatPin);
+  const btnFloatPin = document.getElementById('toolbar-float-btn-pin');
+  const btnPinnedUnpin = document.getElementById('toolbar-pinned-btn-unpin');
 
-  const _btnPinnedUnpin = pinned.children[0].children[1] as HTMLButtonElement;
-  const btnPinnedUnpin = _btnPinnedUnpin.cloneNode(true);
-  _btnPinnedUnpin.parentNode!.replaceChild(btnPinnedUnpin, _btnPinnedUnpin);
+  if (btnFloatPin) {
+    btnFloatPin.parentNode!.replaceChild(btnFloatPin.cloneNode(true), btnFloatPin);
+  }
+  if (btnPinnedUnpin) {
+    btnPinnedUnpin.parentNode!.replaceChild(btnPinnedUnpin.cloneNode(true), btnPinnedUnpin);
+  }
 
   float.classList.add('toolbar-extended-hidden');
   pinned.classList.add('toolbar-extended-hidden');

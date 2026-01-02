@@ -6,7 +6,7 @@
   "main": "index.ts",
   "scripts": {
     "storybook": "storybook dev -p 6006",
-    "check": "tsc --types 'vite/client'",
+    "check": "tsc --types vite/client",
     "lint": "eslint src"
   },
   "dependencies": {

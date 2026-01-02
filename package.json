@@ -25,7 +25,8 @@
     "check": "lerna run check",
     "lint": "lerna run lint && markdownlint -i '**/node_modules/**' . && textlint '**/*.md'",
     "test": "lerna run test",
-    "coverage": "./coverage.sh"
+    "coverage": "./coverage.sh",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@storybook/addon-essentials": "^8.6.14",
@@ -51,12 +52,14 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.1",
     "http-server": "^14.1.1",
+    "husky": "^9.1.7",
     "lerna": "^8.2.2",
     "markdownlint": "^0.38.0",
     "markdownlint-cli": "^0.45.0",
     "nodemon": "^3.0.0",
     "nyc": "^17.1.0",
     "prettier": "^3.5.3",
+    "pretty-quick": "^4.2.2",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "^6.14.0",

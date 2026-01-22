@@ -1,0 +1,15 @@
+.s-input-field {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+
+  border: 1px solid #cfcfcf;
+  border-radius: 8px;
+
+  outline: none;
+  font-size: 14px;
+}
+
+.s-input-field:focus {
+  border-color: #888;
+}

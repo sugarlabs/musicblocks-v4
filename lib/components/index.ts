@@ -6,3 +6,4 @@ export { default as WIconButton } from './src/WIconButton';
 export { default as SImage } from './src/SImage';
 export { default as SImageVector } from './src/SImageVector';
 export { default as SImageRaster } from './src/SImageRaster';
+export { default as LButtonBar } from "./src/LButtonBar";

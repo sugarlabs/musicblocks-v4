@@ -48,3 +48,12 @@ issue number in the pull request, but not the commit message. These practices al
 of ideas (Sugar Labs is a meritocracy).
 
 See [**full contributing guide**](./docs/CONTRIBUTING.md).
+
+## Windows Installation Troubleshooting
+
+If you encounter 401 Unauthorized errors during installation, create a .npmrc file in the root directory and add your GitHub Personal Access Token:
+
+```
+@sugarlabs:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=YOUR_TOKEN
+```

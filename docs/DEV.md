@@ -5,7 +5,7 @@
 ### Without Docker
 
 This is a _**TypeScript**_ project that uses _**React**_. You'll just need
-_[**Node.js**](https://nodejs.org/en) v16_ and _**npm**_ installed on your development machine.
+_[**Node.js**](https://nodejs.org/en) v22_ and _**npm**_ installed on your development machine.
 Although, this is sufficient to run, build, and test the project as a whole, you might need some
 extra tools for other development tasks.
 
@@ -33,11 +33,11 @@ node -v && npm -v && tsc -v && ts-node -v && http-server -v
 Output should look like
 
 ```bash
-v16.14.0
-8.3.1
-Version 4.6.2
-v10.6.0
-v14.1.0
+v22.x.x
+10.x.x
+Version 5.x.x
+v10.x.x
+v14.x.x
 ```
 
 ### With Docker
@@ -111,11 +111,11 @@ Windows) this repository using
     Output should look like
 
     ```bash
-    v16.14.0
-    8.3.1
-    Version 4.6.2
-    v10.6.0
-    v14.1.0
+    v22.x.x
+    10.x.x
+    Version 5.x.x
+    v10.x.x
+    v14.x.x
     ```
 
 7. To shut down the _docker network_, run (in the terminal where you ran `docker-compose up -d` or
@@ -189,21 +189,25 @@ After you are set-up, the steps you take depend on what you want to do:
 
             Visit `localhost:4173` in a browser to view the web page served.
 
-        - For running unit tests, run
+        - For running unit tests with Vitest, run
 
             ```bash
-            npm run test:unit
+            npm run test
             ```
 
-        - For running end-to-end tests, run
+            Or run vitest directly for a specific file:
 
             ```bash
-            ## In 1 terminal
-            npm run build
-            npm run preview
-            ## In another terminal
-            npm run test:e2e
+            npx vitest path/to/file.test.ts
             ```
+
+        - For running Storybook (component development), run
+
+            ```bash
+            # From root
+            lerna --scope @sugarlabs/mb4-app run storybook
+            ```
+
 
         _**Note:**_ If you're running using _Docker Desktop_ on _Windows_ or _Mac_, you might experience
         longer execution times for these scripts. This happens due to cross-file-system communication.
@@ -240,6 +244,39 @@ After you are set-up, the steps you take depend on what you want to do:
     ```bash
     ts-node file.ts
     ```
+
+## Troubleshooting & Common Pitfalls
+
+### GitHub Packages Authentication
+
+This project depends on packages published to the Sugar Labs GitHub npm Registry. If `npm install` fails with `401 Unauthorized` or `404 Not Found` for `@sugarlabs/*` packages:
+
+1. Ensure you have a **GitHub Personal Access Token (classic)** with `read:packages` scope.
+2. Ensure your `.npmrc` contains:
+   ```
+   @sugarlabs:registry=https://npm.pkg.github.com
+   //npm.pkg.github.com/:_authToken=YOUR_PAT_HERE
+   ```
+3. Use `npm install` instead of `npm ci` if you encounter lockfile mismatches during initial setup.
+
+### Lerna Command Not Found
+
+If `npm run serve` fails with `lerna: command not found`:
+
+1. Install lerna globally: `npm install -g lerna`
+2. Or use `npx lerna ...` if you prefer not to install globally.
+
+### Vitest Configuration Issues
+
+If Vitest fails to load the configuration:
+1. Ensure `vite` is installed: `npm install -g vite`
+2. Check if `vitest.config.ts` is in the root directory.
+3. If using `npx vitest`, ensure you are in the root directory where `package.json` resides.
+
+### Node.js Version
+
+While the project was originally built for Node v16, it is currently compatible with **Node v22+**. Using older versions may cause dependency resolution issues with newer versions of Vite and Vitest.
+
 
 ## Editor
 

@@ -18,6 +18,7 @@ let _svgClose: string;
  */
 export function setup(container: HTMLElement): void {
   container.id = 'editor-toolbar-btn';
+  container.classList.add('editor-btn-wrapper');
   _container = container;
 
   _svgCode = injected.assets['image.icon.code'].data;
@@ -31,5 +32,12 @@ export function setup(container: HTMLElement): void {
  * @param icon icon name
  */
 export function setButtonImg(icon: 'code' | 'cross'): void {
-  _container.innerHTML = icon === 'code' ? _svgCode : _svgClose;
+  _container.innerHTML = `
+    <p class="editor-btn-label">
+      <span>Editor</span>
+    </p>
+    <div class="editor-btn-img">
+      ${icon === 'code' ? _svgCode : _svgClose}
+    </div>
+  `;
 }

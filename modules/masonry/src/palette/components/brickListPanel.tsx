@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo, useCallback, Suspense } from 'react';
-import { defaultCategories as categories, PaletteMode } from '../utils/categories';
+import { defaultCategories as categories, PaletteMode, getCategoryMode } from '../utils/categories';
 
 import bricksData from '../config/brick-config.json';
 import type { BrickConfig } from '../utils/types';
@@ -37,6 +37,7 @@ const groupBricksByCategory = (bricks: BrickConfig[]) => {
   });
   return grouped;
 };
+
 
 const BrickItem: React.FC<{
   brick: BrickConfig;
@@ -148,6 +149,12 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
 
           const category = (mostVisibleEntry.target as HTMLElement).dataset.category;
           if (category && category !== categoryId && onCategoryInView) {
+            // Detect if the category belongs to a different mode
+            const categoryMode = getCategoryMode(category);
+            if (categoryMode && categoryMode !== mode) {
+              // Update mode first, then category
+              onModeChange(categoryMode);
+            }
             onCategoryInView(category);
           }
         }
@@ -167,7 +174,7 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
     return () => {
       observer.disconnect();
     };
-  }, [categoryId, onCategoryInView]);
+  }, [categoryId, onCategoryInView, mode, onModeChange]);
 
   useEffect(() => {
     const container = containerRef.current;

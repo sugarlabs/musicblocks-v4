@@ -54,4 +54,27 @@ export function getCategories(mode: PaletteMode): CategoryConfig[] {
     }
 }
 
+/**
+ * Determines which mode a category belongs to based on its ID.
+ * @param categoryId - The category ID to check
+ * @returns The mode the category belongs to, or null if not found
+ */
+export function getCategoryMode(categoryId: string): PaletteMode | null {
+    const lowerCaseId = categoryId.toLowerCase();
+    
+    // Check if the category exists in any of the mode's categories
+    if (musicCategories.some(cat => cat.id.toLowerCase() === lowerCaseId)) {
+        return 'music';
+    }
+    if (flowCategories.some(cat => cat.id.toLowerCase() === lowerCaseId)) {
+        return 'flow';
+    }
+    if (graphicsCategories.some(cat => cat.id.toLowerCase() === lowerCaseId)) {
+        return 'graphics';
+    }
+    
+    return null;
+}
+
 export const defaultCategories = musicCategories;
+

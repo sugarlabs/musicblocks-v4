@@ -15,6 +15,7 @@
   "dependencies": {
     "@react-aria/dnd": "^3.10.1",
     "@react-stately/dnd": "^3.6.0",
+    "lodash.clonedeep": "^4.5.0",
     "recoil": "^0.7.7",
     "uuid": "^10.0.0"
   },

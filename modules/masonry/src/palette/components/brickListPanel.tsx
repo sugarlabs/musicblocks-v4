@@ -20,6 +20,7 @@ interface BrickListPanelProps {
   onModeChange: (mode: PaletteMode) => void;
   onClose: () => void;
   onCategoryInView?: (categoryId: string) => void;
+  containerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 const bricks: BrickConfig[] = (bricksData as BrickConfig[]).map((b) => ({
@@ -104,9 +105,11 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
   onModeChange,
   onClose,
   onCategoryInView,
+  containerRef,
 }) => {
   const [searchQuery, setSearchQuery] = useState(query);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const localContainerRef = useRef<HTMLDivElement>(null);
+  const effectiveContainerRef = containerRef || localContainerRef;
   const observerRef = useRef<IntersectionObserver | null>(null);
   const [selectedBrick, setSelectedBrick] = useState<BrickConfig | null>(null);
   const [isDetailView, setIsDetailView] = useState(false);
@@ -129,13 +132,13 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
 
   const handleScroll = useCallback(() => {}, []);
   useEffect(() => {
-    const container = containerRef.current;
+    const container = effectiveContainerRef.current;
     if (!container) return;
     return () => {};
   }, []);
 
   useEffect(() => {
-    const container = containerRef.current;
+    const container = effectiveContainerRef.current;
     if (!container) return;
 
     const observer = new IntersectionObserver(
@@ -170,7 +173,7 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
   }, [categoryId, onCategoryInView]);
 
   useEffect(() => {
-    const container = containerRef.current;
+    const container = effectiveContainerRef.current;
     const observer = observerRef.current;
     if (!container || !observer) return;
 
@@ -329,7 +332,7 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
           aria-label="Search bricks"
         />
       </div>
-      <div className="brick-list" ref={containerRef}>
+      <div className="brick-list" ref={effectiveContainerRef}>
         {Object.entries(groupedBricks).map(
           ([category, categoryBricks]: [string, BrickConfig[]]) => (
             <div key={category} className="brick-category" data-category={category}>

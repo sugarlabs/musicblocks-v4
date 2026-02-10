@@ -10,17 +10,39 @@ const PaletteWrapper: React.FC = () => {
   const [query, setQuery] = useState<string>('');
   const prevSelectedCategory = useRef<string>('RHYTHM');
   const isCategoryChangeFromScroll = useRef(false);
+  const brickListContainerRef = useRef<HTMLDivElement>(null);
 
   const handleCategorySelect = useCallback((categoryId: string) => {
-    if (!isCategoryChangeFromScroll.current) {
-      setSelectedCategory(categoryId);
+    // Always update the selected category
+    setSelectedCategory(categoryId);
+    
+    // Set flag to true BEFORE scrolling to ignore IntersectionObserver events
+    isCategoryChangeFromScroll.current = true;
+    
+    // Scroll to the selected category section
+    if (brickListContainerRef.current) {
+      const categoryElement = brickListContainerRef.current.querySelector(
+        `[data-category="${categoryId}"]`
+      );
+      if (categoryElement) {
+        categoryElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }
     }
-    isCategoryChangeFromScroll.current = false;
+    
+    // Reset flag after scroll animation completes (smooth scroll takes ~500ms)
+    setTimeout(() => {
+      isCategoryChangeFromScroll.current = false;
+    }, 600);
   }, []);
 
   const handleCategoryInView = useCallback((categoryId: string) => {
-    isCategoryChangeFromScroll.current = true;
-    setSelectedCategory(categoryId);
+    // Only update if this is a real scroll event (not from our programmatic scroll)
+    if (!isCategoryChangeFromScroll.current) {
+      setSelectedCategory(categoryId);
+    }
   }, []);
 
   const handleModeChange = useCallback((mode: PaletteMode) => {
@@ -70,6 +92,7 @@ const PaletteWrapper: React.FC = () => {
           onModeChange={handleModeChange}
           onClose={() => {}}
           onCategoryInView={handleCategoryInView}
+          containerRef={brickListContainerRef}
         />
       </div>
     </>

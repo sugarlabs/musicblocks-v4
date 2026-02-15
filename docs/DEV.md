@@ -149,6 +149,54 @@ Add your _PAT_ to `.npmrc` using
 echo "//npm.pkg.github.com/:_authToken=[YOUR_GITHUB_PERSONAL_ACCESS_TOKEN]" >> ~/.npmrc
 ```
 
+### Windows Users: Resolving "401 Unauthorized" Error
+
+If you encounter a **401 Unauthorized** error during `npm install` on Windows, this is typically because the authentication token for the GitHub Package Registry is not properly configured. The `@sugarlabs/musicblocks-v4-lib` package is hosted on the [GitHub Package Registry](https://github.com/features/packages), which requires authentication.
+
+**Steps to Fix:**
+
+1. **Create a GitHub Personal Access Token (PAT)**
+
+   - Go to [GitHub Personal Access Tokens](https://github.com/settings/tokens) (or navigate to **Settings** → **Developer settings** → **Personal access tokens** on GitHub).
+   - Click **Generate new token**.
+   - Give it a descriptive name (e.g., `musicblocks-v4-dev`).
+   - Under **Select scopes**, ensure **`read:packages`** is checked. (This is the minimum required scope for reading packages from the GitHub Package Registry.)
+   - Click **Generate token** and copy the token value immediately (you won't be able to see it again).
+
+2. **Authenticate npm with Your Token**
+
+   Run the following command in your terminal (PowerShell, CMD, or Git Bash):
+
+   ```bash
+   npm config set //npm.pkg.github.com/:_authToken YOUR_TOKEN
+   ```
+
+   Replace `YOUR_TOKEN` with the actual token you just generated.
+
+3. **Verify Configuration**
+
+   You can verify the configuration was set correctly by running:
+
+   ```bash
+   npm config get //npm.pkg.github.com/:_authToken
+   ```
+
+   This should display your token (masked or visible, depending on your npm version).
+
+4. **Now Install Dependencies**
+
+   ```bash
+   npm ci
+   ```
+
+**Security Warning:**
+
+⚠️ **Do not commit your `.npmrc` file to version control.** The `.npmrc` file contains your authentication token and should remain private. Ensure that `.npmrc` is added to your `.gitignore` file to prevent accidental commits.
+
+If you accidentally commit your token, immediately:
+- Revoke the compromised token from your GitHub settings.
+- Generate a new token with a fresh `npm config set` command.
+
 After you are set-up, the steps you take depend on what you want to do:
 
 - **Run a development server and test suites**

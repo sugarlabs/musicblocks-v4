@@ -1,12 +1,14 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
 import type { IAppConfig, TAppImportMap } from '#/@types/app';
 import type {
     IComponent,
     IComponentDefinition,
-    IComponentDefinitionExtended,
     TComponentId,
 } from '#/@types/components';
 import type { TAsset } from '#/@types/assets';
 import type { TI18nLang } from '#/@types/i18n';
+import { SImageRaster } from './common/components/SImageRaster';
 
 // -------------------------------------------------------------------------------------------------
 
@@ -310,84 +312,15 @@ async function init(config?: IAppConfig) {
 
 // =================================================================================================
 
+// MEGANINDYA HACK: Render SImageRaster component for development and testing
 (async function () {
-    /**
-     * if PRODUCTION mode, proceed initializing with configuration preset.
-     */
-
-    if (import.meta.env.PROD) {
-        await init();
-        return;
-    }
-
-    /**
-     * if DEVELOPMENT mode, and configuration in session storage,
-     * proceed initializing with configuration from session storage.
-     */
-
-    {
-        const config = window.sessionStorage.getItem('appConfig');
-
-        if (config !== null) {
-            await init(JSON.parse(config) as IAppConfig);
-            return;
-        }
-    }
-
-    /**
-     * if DEVELOPMENT mode, and configuration not in session storage,
-     * open configurator page.
-     * @todo currently needs refresh to go to main app page
-     */
-
-    {
-        const config = await _loadConfig(import.meta.env.VITE_CONFIG_PRESET);
-
-        const { initView } = await import('@sugarlabs/mb4-view');
-        await initView();
-
-        window.sessionStorage.setItem('appConfig', JSON.stringify(config));
-
-        const componentManifest = (await import('./components')).default;
-        const { importComponent } = await import('@sugarlabs/mb4-config');
-        const components = Object.fromEntries(
-            await Promise.all(
-                (Object.keys(componentManifest) as TComponentId[]).map((componentId) =>
-                    importComponent(componentId, componentManifest[componentId].importFunc).then(
-                        (component) => [componentId, component],
-                    ),
-                ),
-            ),
-        ) as Record<TComponentId, IComponent>;
-        const componentDefinitions = Object.fromEntries(
-            Object.entries(componentManifest).map<[TComponentId, IComponentDefinitionExtended]>(
-                ([componentId, { definition }]) => [
-                    componentId as TComponentId,
-                    { ...definition, elements: components[componentId as TComponentId].elements },
-                ],
-            ),
-        ) as Record<TComponentId, IComponentDefinition>;
-
-        const { mountConfigPage, updateConfigPage } = await import('./config');
-
-        await mountConfigPage(
-            { ...config },
-            Object.fromEntries(
-                (
-                    Object.entries(componentDefinitions) as [TComponentId, IComponentDefinition][]
-                ).map(([componentId, definition]) => [
-                    componentId,
-                    {
-                        ...definition,
-                        elements: components[componentId]?.elements,
-                    },
-                ]),
-            ),
-            (config: IAppConfig) =>
-                requestAnimationFrame(() => {
-                    window.sessionStorage.setItem('appConfig', JSON.stringify(config));
-                    updateConfigPage(config);
-                }),
+    const root = document.getElementById('mb-root');
+    if (root) {
+        ReactDOM.render(
+          React.createElement(SImageRaster, { 
+            content: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==" 
+          }), 
+          root
         );
     }
 })();

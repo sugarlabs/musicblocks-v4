@@ -1,0 +1,34 @@
+# Default: enforce LF for all text files
+* text=auto eol=lf
+
+# Explicit rules for project file types
+*.js        text eol=lf
+*.ts        text eol=lf
+*.jsx       text eol=lf
+*.tsx       text eol=lf
+*.json      text eol=lf
+*.jsonc     text eol=lf
+*.md        text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.css       text eol=lf
+*.scss      text eol=lf
+*.html      text eol=lf
+*.sh        text eol=lf
+
+# Files without extensions
+Dockerfile  text eol=lf
+LICENSE     text eol=lf
+
+# Dotfiles
+.prettierrc     text eol=lf
+.npmrc          text eol=lf
+.browserslistrc text eol=lf
+
+# Binary files — no conversion, no diff
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.ico   binary
+*.woff  binary
+*.woff2 binary

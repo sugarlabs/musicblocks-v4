@@ -10,8 +10,9 @@ import music from '../assets/icons/music.svg';
 import graphics from '../assets/icons/graphics.svg';
 
 import { useDrag } from '@react-aria/dnd';
-import { useSetRecoilState, SetterOrUpdater } from 'recoil';
+import { useSetRecoilState, useRecoilState, SetterOrUpdater } from 'recoil';
 import { dragStateAtom, DragState } from '../../state/dragState';
+import { keyboardInsertStateAtom, KeyboardInsertState } from '../../state/keyboardInsertState';
 
 interface BrickListPanelProps {
   categoryId: string;
@@ -44,7 +45,17 @@ const BrickItem: React.FC<{
   setDraggedBrickId: (id: string | null) => void;
   brickViews: Record<BrickType, React.FC<BrickConfig>>;
   setDrag: SetterOrUpdater<DragState>;
-}> = ({ brick, draggedBrickId, setDraggedBrickId, brickViews, setDrag }) => {
+  orderedBrickIds: string[];
+  setKeyboardInsertState: (state: KeyboardInsertState | null) => void;
+}> = ({
+  brick,
+  draggedBrickId,
+  setDraggedBrickId,
+  brickViews,
+  setDrag,
+  orderedBrickIds,
+  setKeyboardInsertState,
+}) => {
   const { dragProps } = useDrag({
     getItems() {
       return [
@@ -59,10 +70,40 @@ const BrickItem: React.FC<{
   });
   return (
     <div
-      key={brick.id}
+      id={brick.id}
       className={`brick-item${draggedBrickId === brick.id ? ' dragging' : ''}`}
       draggable
+      tabIndex={0}
+      aria-label={`Insert ${brick.label || brick.id} block`}
       {...dragProps}
+      onKeyDown={(event) => {
+        const currentIndex = orderedBrickIds.indexOf(brick.id);
+
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          const nextId = orderedBrickIds[currentIndex + 1];
+          if (nextId) {
+            document.getElementById(nextId)?.focus();
+          }
+        }
+
+        if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          const prevId = orderedBrickIds[currentIndex - 1];
+          if (prevId) {
+            document.getElementById(prevId)?.focus();
+          }
+        }
+
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          setKeyboardInsertState({ brickId: brick.id });
+        }
+
+        if (event.key === 'Escape') {
+          (event.target as HTMLElement).blur();
+        }
+      }}
       onDragStart={(e) => {
         setDraggedBrickId(brick.id);
         // Find the SVG element inside the brick item
@@ -78,10 +119,7 @@ const BrickItem: React.FC<{
           e.dataTransfer.setDragImage(clone as Element, width / 2, height / 2);
           setTimeout(() => document.body.removeChild(clone), 0);
         }
-        e.dataTransfer.setData(
-          'application/json',
-          JSON.stringify({ brickId: brick.id }),
-        );
+        e.dataTransfer.setData('application/json', JSON.stringify({ brickId: brick.id }));
         e.dataTransfer.effectAllowed = 'copy';
         setDrag({ brickType: brick.type, origin: 'palette' });
       }}
@@ -115,6 +153,7 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
   const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
 
   const setDrag = useSetRecoilState(dragStateAtom);
+  const [, setKeyboardInsertState] = useRecoilState(keyboardInsertStateAtom);
 
   useEffect(() => {
     setSearchQuery(query);
@@ -126,6 +165,17 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
       return brickLabel.toLowerCase().includes(searchQuery.toLowerCase());
     });
   }, [searchQuery, bricks]);
+
+  const orderedBrickIds = useMemo(() => {
+    const source =
+      searchQuery.trim() === ''
+        ? groupBricksByCategory(bricks)
+        : groupBricksByCategory(filteredBricks);
+
+    return Object.values(source)
+      .flat()
+      .map((brick) => brick.id);
+  }, [bricks, filteredBricks, searchQuery]);
 
   const handleScroll = useCallback(() => {}, []);
   useEffect(() => {
@@ -345,6 +395,8 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
                     setDraggedBrickId={setDraggedBrickId}
                     brickViews={brickViews}
                     setDrag={setDrag}
+                    orderedBrickIds={orderedBrickIds}
+                    setKeyboardInsertState={setKeyboardInsertState}
                   />
                 ))}
               </div>
@@ -374,71 +426,5 @@ const BrickListPanel: React.FC<BrickListPanelProps> = ({
     </div>
   );
 };
-
-const AsyncBrickView = React.memo(
-  ({ brick, onClick }: { brick: BrickConfig; onClick: (brick: BrickConfig) => void }) => {
-    const [BrickComponent, setBrickComponent] = React.useState<React.FC<BrickConfig> | null>(null);
-    const [error, setError] = React.useState<unknown>(null);
-
-    useEffect(() => {
-      let isMounted = true;
-
-      const loadBrick = async () => {
-        try {
-          const Component = brickViews[brick.type];
-          if (!Component) {
-            throw new Error(`No view found for brick type: ${brick.type}`);
-          }
-
-          if (isMounted) {
-            setBrickComponent(() => Component);
-          }
-        } catch (err) {
-          if (isMounted) {
-            if (err instanceof Error) {
-              setError(err);
-            } else {
-              setError(new Error('An unknown error occurred'));
-            }
-          }
-        }
-      };
-
-      loadBrick();
-
-      return () => {
-        isMounted = false;
-      };
-    }, [brick.id, brick.type]);
-
-    if (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      return (
-        <div className="brick-default">
-          <div className="brick-name">Error loading brick</div>
-          <div className="brick-description">{errorMessage}</div>
-        </div>
-      );
-    }
-
-    if (error) {
-      return <div className="brick-item">Error loading brick: {String(error)}</div>;
-    }
-
-    if (!BrickComponent) {
-      return <div className="brick-item">Loading...</div>;
-    }
-
-    return (
-      <div className="brick-item" onClick={() => onClick(brick)}>
-        <Suspense fallback={<div>Loading...</div>}>
-          <BrickComponent {...brick} />
-        </Suspense>
-      </div>
-    );
-  },
-  (prevProps, nextProps) =>
-    prevProps.brick.id === nextProps.brick.id && prevProps.onClick === nextProps.onClick,
-);
 
 export default BrickListPanel;

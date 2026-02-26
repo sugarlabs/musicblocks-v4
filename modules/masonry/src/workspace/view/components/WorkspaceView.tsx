@@ -8,6 +8,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useRecoilValue, useRecoilState } from 'recoil';
 import { dragStateAtom } from '../../../state/dragState';
 import { towersAtom } from '../../../state/towersState';
+import { keyboardInsertStateAtom } from '../../../state/keyboardInsertState';
 import TowerModel from '../../../tower/model/model';
 import type { BrickConfig } from '../../../palette/utils/types';
 import bricksData from '../../../palette/config/brick-config.json';
@@ -32,6 +33,7 @@ import { JSX } from 'react/jsx-runtime';
 export default function WorkspaceCanvas(): JSX.Element {
   const { origin } = useRecoilValue(dragStateAtom);
   const [towers, setTowers] = useRecoilState(towersAtom);
+  const [keyboardInsertState, setKeyboardInsertState] = useRecoilState(keyboardInsertStateAtom);
   const [isOver, setIsOver] = useState(false);
   const [draggedBrickId, setDraggedBrickId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -49,38 +51,18 @@ export default function WorkspaceCanvas(): JSX.Element {
     cfg.argCount > 0 ? Array(cfg.argCount).fill({ w: 20, h: 20 }) : [];
 
   /**
-   * Handle drag-over event on the workspace container
+   * Shared brick insertion logic — used by both drag-drop and keyboard insert
    */
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    if (origin !== 'palette') return; // only accept from palette
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
-    setIsOver(true);
-  };
-
-  /**
-   * Handle drop event: create a new TowerModel at drop coords
-   */
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    if (origin !== 'palette') return;
-    e.preventDefault();
-    setIsOver(false);
-
-    // Extract brickId from dataTransfer
-    const raw = e.dataTransfer.getData('application/json');
-    if (!raw) return;
-    const { brickId } = JSON.parse(raw) as { brickId: string };
-
-    // Find config for the dropped brick
+  const handleBrickInsert = (brickId: string, x?: number, y?: number) => {
     const cfg = (bricksData as BrickConfig[]).find((b) => b.id === brickId);
     if (!cfg) return;
 
-    // Compute drop coordinates inside the div
-    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    // Default to a visible position near center of workspace
+    const svg = svgRef.current;
+    const rect = svg?.getBoundingClientRect();
+    const insertX = x ?? (rect ? rect.width / 2 : 200);
+    const insertY = y ?? (rect ? rect.height / 2 : 200);
 
-    // Create brick via factory methods
     let brick;
     switch (cfg.type) {
       case 'simple':
@@ -116,12 +98,38 @@ export default function WorkspaceCanvas(): JSX.Element {
         return;
     }
 
-    // Instantiate and add to towers state
-    const tower = new TowerModel(uuid(), brick, { x, y });
-    setTowers((prevTowers) => {
-      const newTowers = [...prevTowers, tower];
-      return newTowers;
-    });
+    const tower = new TowerModel(uuid(), brick, { x: insertX, y: insertY });
+    setTowers((prevTowers) => [...prevTowers, tower]);
+  };
+  /**
+   * Handle drag-over event on the workspace container
+   */
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    if (origin !== 'palette') return; // only accept from palette
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    setIsOver(true);
+  };
+
+  /**
+   * Handle drop event: create a new TowerModel at drop coords
+   */
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    if (origin !== 'palette') return;
+    e.preventDefault();
+    setIsOver(false);
+
+    // Extract brickId from dataTransfer
+    const raw = e.dataTransfer.getData('application/json');
+    if (!raw) return;
+    const { brickId } = JSON.parse(raw) as { brickId: string };
+
+    // Compute drop coordinates inside the div
+    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    handleBrickInsert(brickId, x, y);
   };
 
   /**
@@ -169,15 +177,23 @@ export default function WorkspaceCanvas(): JSX.Element {
     }
   };
 
-  /**
-   * Stop dragging: cleanup state and listeners
-   */
   const handleMouseUp = () => {
     setDraggedBrickId(null);
     setIsDragging(false);
     window.removeEventListener('mousemove', handleMouseMove);
     window.removeEventListener('mouseup', handleMouseUp);
   };
+
+  /**
+   * useEffect to handle keyboard-triggered brick insertion
+   */
+  useEffect(() => {
+    if (!keyboardInsertState?.brickId) return;
+
+    const brickId = keyboardInsertState.brickId;
+    handleBrickInsert(brickId);
+    setKeyboardInsertState(null);
+  }, [keyboardInsertState]);
 
   /**
    * Handle brick disconnection with proper positioning and layout updates
@@ -216,7 +232,6 @@ export default function WorkspaceCanvas(): JSX.Element {
       window.removeEventListener('mouseup', handleMouseUp);
       cancelAnimationFrame(animationFrameId);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging]);
 
   /**

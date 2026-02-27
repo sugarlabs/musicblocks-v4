@@ -566,3 +566,40 @@ describe('Key Signature', () => {
         }
     });
 });
+
+    describe('Error handling tests', () => {
+        test('customNoteNames throws on invalid length', () => {
+            const ks = new KeySignature();
+            expect(() => {
+                ks.customNoteNames = ['a', 'b'];
+            }).toThrow();
+        });
+
+        test('customNoteNames throws on duplicate names', () => {
+            const ks = new KeySignature();
+            expect(() => {
+                ks.customNoteNames = ['a', 'b', 'c', 'd', 'e', 'f', 'f'];
+            }).toThrow();
+        });
+
+        test('convertToGenericNoteName throws on invalid input', () => {
+            const ks = new KeySignature();
+            expect(() => {
+                ks.convertToGenericNoteName('invalidPitch');
+            }).toThrow();
+        });
+
+        test('closestNote throws on invalid input', () => {
+            const ks = new KeySignature();
+            expect(() => {
+                ks.closestNote('invalidPitch');
+            }).toThrow();
+        });
+
+        test('semitoneTransform throws on invalid input', () => {
+            const ks = new KeySignature();
+            expect(() => {
+                ks.semitoneTransform('invalidPitch', 2);
+            }).toThrow();
+        });
+    });

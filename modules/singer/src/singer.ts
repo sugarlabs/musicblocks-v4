@@ -83,9 +83,7 @@ export class ElementTestSynth extends ElementStatement {
                 let octave = currentpitch.octave;
                 const fullNote = noteTup[0] + (octave + noteTup[1]);
                 _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset);
-                console.log('noteTup', noteTup, 'fullNote', fullNote);
                 octave += noteTup[1];
-                console.log('octave', octave);
                 _state.notesPlayed += 1 / 8;
             }
         } else if ((params['mode'] as number) === 2) {
@@ -102,7 +100,6 @@ export class ElementTestSynth extends ElementStatement {
                 );
                 const fullNote = note[0] + currentpitch.octave;
                 _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset);
-                console.log('fullNote:', fullNote, 'noteTup:', note);
                 _state.notesPlayed += 1 / 8;
                 currentpitch.applyScalarTransposition(1);
             }
@@ -131,7 +128,6 @@ export class ElementPlayNote extends ElementStatement {
         const noteTup = testKeySignature.modalPitchToLetter((params['pitch'] as number) - 1); //getting the note from a list in keySignature.ts
         const fullNote = noteTup[0] + /*params['octave'] as number*/ (4 + noteTup[1]); //adding the octave (in this case 4) to the note
         _defaultSynth.triggerAttackRelease(fullNote, noteValue, now + offset); //playing the note
-        console.log('noteTup', noteTup, 'fullNote', fullNote); //printing out the note
         _state.notesPlayed += 1 / duration;
     }
 }
@@ -147,13 +143,27 @@ export class PlayGenericNoteName extends ElementStatement {
 
         const note = params['name'] as string;
         const octave = currentpitch.octave;
-        const generic = testKeySignature.convertToGenericNoteName(note); //converts solfege to generic note, ie. do ---> n0
+        let generic: string | null = null;
+        try {
+            generic = testKeySignature.convertToGenericNoteName(note);
+        } catch (err: unknown) {
+            if (
+                typeof err === 'object' &&
+                err !== null &&
+                'defaultValue' in err
+            ) {
+                const errorWithDefault = err as { defaultValue?: string };
+                generic = errorWithDefault.defaultValue ?? null;
+            }
+        } //converts solfege to generic note, ie. do ---> n0
+
+        if (!generic) return;
+
         let full = testKeySignature.modalPitchToLetter(
             parseInt(testKeySignature.genericNoteNameConvertToType(generic, SCALAR_MODE_NUMBER)) -
                 1,
         ); //converts generic note to letter note, ie. n0 -----> d
         let fullNote = full[0] + (octave + full[1]);
-        console.log(fullNote);
         _defaultSynth.triggerAttackRelease(fullNote, '4n', now + offset); //playing the note
         _state.notesPlayed += 1 / 4;
     }
@@ -180,7 +190,6 @@ export class PlayInterval extends ElementStatement {
                 ) - 1,
             );
 
-            console.log(note[0] + currentpitch.octave);
             _defaultSynth.triggerAttackRelease(note[0] + currentpitch.octave, '8n', now + offset);
 
             _state.notesPlayed += 1 / 8;

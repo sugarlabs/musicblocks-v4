@@ -3,6 +3,7 @@ import type { JSX } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
+import { SImage } from '@sugarlabs/mb4-components';
 import { injected } from '../..';
 
 // -- stylesheet -----------------------------------------------------------------------------------
@@ -53,14 +54,13 @@ function Editor(): JSX.Element {
 
     (
       [
-        ['image.icon.help', _btnHelp],
-        ['image.icon.build', _btnBuild],
-        ['image.icon.close', _btnClose],
-      ] as [string, HTMLButtonElement][]
-    ).forEach(([assetId, button]) => {
-      // @ts-ignore
-      button.innerHTML = injected.assets[assetId].data;
-    });
+        ['image.icon.close', _btnClose]
+      ] as [string, HTMLButtonElement][]).forEach(
+      ([assetId, button]) => {
+        // @ts-ignore
+        button.innerHTML = injected.assets[assetId].data;
+      },
+    );
   }, []);
 
   return (
@@ -72,17 +72,20 @@ function Editor(): JSX.Element {
           onInput={() => (_status.innerHTML = '')}
         ></textarea>
         <div id="editor-console">
-          <button
-            id="editor-btn-help"
-            ref={btnHelpRef}
-            onClick={() => setShowingHelp(true)}
-          ></button>
+          <button id="editor-btn-help" className="menu-btn" onClick={() => setShowingHelp(true)}>
+            <p className="menu-btn-label">
+              <span>{injected.i18n['editor.help'].toLowerCase()}</span>
+            </p>
+            <div className="menu-btn-img">
+              <SImage asset={injected.assets['image.icon.help']} />
+            </div>
+          </button>
           <div id="editor-status-wrapper">
             <p id="editor-status" ref={statusRef}></p>
           </div>
           <button
             id="editor-btn-build"
-            ref={btnBuildRef}
+            className="menu-btn"
             onClick={() =>
               _editor.dispatchEvent(
                 new CustomEvent<string>('buildprogram', {
@@ -90,7 +93,14 @@ function Editor(): JSX.Element {
                 }),
               )
             }
-          ></button>
+          >
+            <p className="menu-btn-label">
+              <span>{injected.i18n['editor.build'].toLocaleLowerCase()}</span>
+            </p>
+            <div className="menu-btn-img">
+              <SImage asset={injected.assets['image.icon.build']} />
+            </div>
+          </button>
         </div>
       </div>
       <div className={`editor-wrapper ${!showingHelp ? 'editor-wrapper-hidden' : ''}`}>

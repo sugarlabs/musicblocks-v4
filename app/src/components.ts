@@ -13,6 +13,8 @@ const manifest: TComponentManifest = {
             strings: {
                 'editor.build': 'build button - build the program',
                 'editor.help': 'help button - show syntax information',
+                'editor.close': 'close button - close the editor bar',
+                'editor.editor': 'editor button - open editor bar',
             },
             assets: [
                 'image.icon.build',

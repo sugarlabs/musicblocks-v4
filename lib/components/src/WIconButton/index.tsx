@@ -1,37 +1,31 @@
 import type { JSX } from 'react';
 import type { TAsset } from '#/@types/assets';
 
-// -- ui items -------------------------------------------------------------------------------------
+// -- ui items ----------------------------------------------------------------
 
-import { SImage } from '../..';
-
+import SImage from '../SImage'; 
 import './index.scss';
 
-// -- component definition -------------------------------------------------------------------------
+// -- component definition ----------------------------------------------------
 
 /**
  * React component definition for Icon Button component.
  */
 export default function (props: {
-  /** Choosable button size */
-  size: `big` | `small`;
-  /** Asset entry. */
-  asset: TAsset;
-  /** Callback function for click event. */
-  handlerClick: CallableFunction;
+    /** Choosable button size */
+    size: 'big' | 'small';
+    /** Asset entry. */
+    asset: TAsset;
+    /** Callback function for click event. */
+    handlerClick: CallableFunction;
 }): JSX.Element {
-  // ---------------------------------------------------------------------------
-
-  return (
-    <>
-      <button
-        className={`w-button-icon ${
-          props.size === 'big' ? 'w-button-icon-lg' : 'w-button-icon-sm'
-        }`}
-        onClick={() => props.handlerClick()}
-      >
-        <SImage asset={props.asset} />
-      </button>
-    </>
-  );
+    
+    return (
+        <button
+            className={`w-button-icon ${props.size === 'big' ? 'w-button-icon-lg' : 'w-button-icon-sm'}`}
+            onClick={() => props.handlerClick()}
+        >
+            <SImage asset={props.asset} />
+        </button>
+    );
 }

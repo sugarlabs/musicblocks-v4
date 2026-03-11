@@ -76,7 +76,7 @@
    - Non-functional requirements: Performance, scalability, maintainability.
 
 2. **Wiki Storages**
-   - [Link to project documentation](https://github.com/sugarlabs/musicblocks/blob/master/guide/README.md)
+   - [Link to project documentation](https://github.com/sugarlabs/musicblocks/blob/master/README.md)
 
 3. **Docs and Responsible Entities**
    - Documentation maintained by project contributors.

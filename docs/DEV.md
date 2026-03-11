@@ -55,7 +55,7 @@ machine.
 
 2. Open a terminal and navigate to working directory (where the source code will reside).
 
-3. _Git Clone_ (additional [installation](https://git-scm.com/downloads) of _Git_ required on
+3. _Git Clone_ (additional [installation](https://git-scm.com/downloads/) of _Git_ required on
 Windows) this repository using
 
     ```bash

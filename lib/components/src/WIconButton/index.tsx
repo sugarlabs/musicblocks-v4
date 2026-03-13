@@ -3,7 +3,7 @@ import type { TAsset } from '#/@types/assets';
 
 // -- ui items -------------------------------------------------------------------------------------
 
-import { SImage } from '../..';
+import SImage from '../SImage';
 
 import './index.scss';
 

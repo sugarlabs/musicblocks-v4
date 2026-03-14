@@ -61,6 +61,25 @@ Windows) this repository using
     ```bash
     git clone https://github.com/sugarlabs/musicblocks-v4.git
     ```
+### ⚠️ Important Note for Windows Users (GitHub Packages Setup)
+
+Before running `npm install` or setting up dependencies, you need to authenticate with GitHub Packages to download `@sugarlabs` packages.
+
+**1. Generate a Personal Access Token (PAT):**
+* Go to GitHub Settings -> Developer settings -> Personal access tokens (Classic).
+* Generate a new token with the `read:packages` scope.
+
+**2. Create the `.npmrc` file:**
+* In the main `musicblocks` folder, create a new file named exactly `.npmrc`.
+* Add these lines to it (replace `<YOUR_GITHUB_PAT>` with your actual token):
+  ```ini
+@sugarlabs:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=<YOUR_GITHUB_PAT>
+```
+
+**3. Security Warning:**
+* **NEVER commit your `.npmrc` file.** It contains your secret password. 
+* If you accidentally add it, run `git rm --cached .npmrc` to remove it from tracking.
 
 4. Build _docker image_ and launch _docker network_.
 

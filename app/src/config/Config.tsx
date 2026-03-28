@@ -2,6 +2,8 @@ import type { JSX } from 'react';
 import type { IAppConfig } from '#/@types/app';
 import type { IComponentDefinitionExtended, TComponentId } from '#/@types/components';
 
+import { useState } from 'react';
+
 import { getConfigCache, updateConfigCache } from '.';
 import { default as componentManifest } from '../components';
 
@@ -11,7 +13,53 @@ import { WToggleSwitch } from '@sugarlabs/mb4-components';
 
 import './index.scss';
 
+const FEATURE_FLAG_INFO: Partial<
+  Record<TComponentId, Record<string, { label: string; description: string }>>
+> = {
+  menu: {
+    uploadFile: {
+      label: 'Upload files',
+      description: 'Show the toolbar control for importing files into the workspace.',
+    },
+    recording: {
+      label: 'Animation recording',
+      description: 'Show the controls for starting and stopping animation recording.',
+    },
+    exportDrawing: {
+      label: 'Export drawing as PNG',
+      description: 'Show the toolbar action for saving the current mouse artwork as a PNG file.',
+    },
+    loadProject: {
+      label: 'Load project from HTML',
+      description: 'Show the toolbar control for opening a previously exported project file.',
+    },
+    saveProject: {
+      label: 'Save project as HTML',
+      description: 'Show the toolbar action for exporting the current project as an HTML file.',
+    },
+  },
+};
+
 // -- component definition -------------------------------------------------------------------------
+
+function humanizeFlagName(flag: string): string {
+  return flag
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, (char) => char.toUpperCase())
+    .trim();
+}
+
+function getFeatureFlagInfo(
+  componentId: TComponentId,
+  flag: string,
+): { label: string; description: string } {
+  return (
+    FEATURE_FLAG_INFO[componentId]?.[flag] ?? {
+      label: humanizeFlagName(flag),
+      description: 'Enable this optional feature while testing the application locally.',
+    }
+  );
+}
 
 /**
  * React component definition for the feature configurator component.
@@ -25,6 +73,8 @@ export default function (props: {
   handlerUpdate: (config: IAppConfig) => unknown;
 }): JSX.Element {
   // ---------------------------------------------------------------------------
+
+  const [flagStatus, setFlagStatus] = useState('');
 
   function _isActive(componentId: TComponentId): boolean {
     return props.config.components.findIndex(({ id }) => id === componentId) !== -1;
@@ -233,6 +283,9 @@ export default function (props: {
   }
 
   function toggleModuleFlag(componentId: TComponentId, flag: string) {
+    const nextValue = !(modules[componentId].flags?.[flag] ?? false);
+    const flagInfo = getFeatureFlagInfo(componentId, flag);
+
     _update((config: IAppConfig) => {
       const componentIndex = config.components.findIndex(({ id }) => id === componentId);
       // @ts-ignore
@@ -242,6 +295,10 @@ export default function (props: {
 
       return config;
     });
+
+    setFlagStatus(
+      `${flagInfo.label} ${nextValue ? 'enabled' : 'disabled'}. ${flagInfo.description}`,
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -304,21 +361,50 @@ export default function (props: {
                       Feature Flags
                     </h3>
 
+                    <p className="config-module-list-item-subitems-note">
+                      Feature flags expose optional controls so you can test specific capabilities
+                      without changing the default preset.
+                    </p>
+
+                    {flagStatus !== '' && (
+                      <p
+                        className="config-module-list-item-subitems-status"
+                        aria-live="polite"
+                        role="status"
+                      >
+                        {flagStatus}
+                      </p>
+                    )}
+
                     <ul className="config-module-list-item-subitem-list config-module-list-item-flag-list">
-                      {Object.keys(flags).map((flag, i) => (
-                        <li
-                          className="config-module-list-item-subitem config-module-list-item-flag"
-                          key={`config-module-list-item-flag-${i}`}
-                        >
-                          <p className="config-module-list-item-subitem-name config-module-list-item-flag-name">
-                            <code>{flag}</code>
-                          </p>
-                          <WToggleSwitch
-                            active={flags[flag]}
-                            handlerClick={() => toggleModuleFlag(id as TComponentId, flag)}
-                          />
-                        </li>
-                      ))}
+                      {Object.keys(flags).map((flag, i) => {
+                        const flagInfo = getFeatureFlagInfo(id as TComponentId, flag);
+
+                        return (
+                          <li
+                            className="config-module-list-item-subitem config-module-list-item-flag"
+                            key={`config-module-list-item-flag-${i}`}
+                          >
+                            <div className="config-module-list-item-subitem-copy">
+                              <p className="config-module-list-item-flag-title">
+                                {flagInfo.label}
+                              </p>
+                              <p className="config-module-list-item-flag-desc">
+                                {flagInfo.description}
+                              </p>
+                              <p className="config-module-list-item-subitem-name config-module-list-item-flag-name">
+                                <code>{flag}</code>
+                              </p>
+                            </div>
+                            <div className="config-module-list-item-subitem-toggle">
+                              <WToggleSwitch
+                                active={flags[flag]}
+                                handlerClick={() => toggleModuleFlag(id as TComponentId, flag)}
+                              />
+                            </div>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
                 )}

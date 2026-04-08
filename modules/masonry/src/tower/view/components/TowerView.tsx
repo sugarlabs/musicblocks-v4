@@ -23,7 +23,7 @@ export interface ExtendedTowerNode extends ITowerNode {
 }
 
 // Helper to render the correct brick view
-function BrickNodeView({ node }: { node: ExtendedTowerNode }) {
+export function BrickNodeView({ node }: { node: ExtendedTowerNode }) {
   const { brick } = node;
   switch (brick.type) {
     case 'Simple':
@@ -175,6 +175,7 @@ interface TowerViewProps {
   setIsDragging: React.Dispatch<React.SetStateAction<boolean>>;
   svgRef: React.RefObject<SVGSVGElement>;
   onBrickDisconnect?: (brickId: string, newTowerModel: TowerModel) => void;
+  refreshTrigger?: number;
 }
 
 const TowerView: React.FC<TowerViewProps> = ({
@@ -189,6 +190,7 @@ const TowerView: React.FC<TowerViewProps> = ({
   setIsDragging,
   svgRef,
   onBrickDisconnect,
+  refreshTrigger,
 }) => {
   // Mouse move handler for dragging
   const handleMouseMove = (e: MouseEvent) => {
@@ -368,7 +370,7 @@ const TowerView: React.FC<TowerViewProps> = ({
         offset={root.position}
       />
     ));
-  }, [tower, draggedBrickId, dragOffset, isDragging, svgRef, towers, setTowers, onBrickDisconnect]);
+  }, [tower, draggedBrickId, dragOffset, isDragging, svgRef, towers, setTowers, onBrickDisconnect, refreshTrigger]);
 
   return <g>{renderedTower}</g>;
 };

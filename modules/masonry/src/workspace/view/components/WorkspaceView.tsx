@@ -17,8 +17,17 @@ import {
   createCompoundBrick,
 } from '../../../brick/utils/brickFactory';
 import { v4 as uuid } from 'uuid';
-import TowerView from '../../../tower/view/components/TowerView';
+import TowerView, {
+  BrickNodeView,
+  ExtendedTowerNode,
+} from '../../../tower/view/components/TowerView';
 import { JSX } from 'react/jsx-runtime';
+import {
+  QuadTreeIndex,
+  INotchIndex,
+  TSingleNotchType,
+  getCompatibleTargets,
+} from '../../../collision-detection/QuadTreeIndex';
 
 /**
  * WorkspaceCanvas
@@ -39,6 +48,37 @@ export default function WorkspaceCanvas(): JSX.Element {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [currentMousePos, setCurrentMousePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  // ── Snap / collision state ──────────────────────────────────────────────
+  const quadtreeRef = useRef<QuadTreeIndex>(new QuadTreeIndex(4000, 4000, 30));
+  const [snapPreview, setSnapPreview] = useState<{
+    ghostX: number;
+    ghostY: number;
+    targetBrickId: string;
+    targetNotchId: string;
+    targetTowerId: string;
+    targetNotchType: TSingleNotchType;
+    targetWorldPos: { x: number; y: number };
+    draggedNotchId: string;
+    draggedNotchType: TSingleNotchType;
+    ghostNode: ExtendedTowerNode;
+  } | null>(null);
+
+  // Rebuild the quadtree whenever a drag starts so it has fresh positions
+  // (excluding the tower being dragged — self-collision is handled by towerId filter).
+  useEffect(() => {
+    if (isDragging && draggedBrickId) {
+      let allNotches: INotchIndex[] = [];
+      towers.forEach((t) => {
+        allNotches = allNotches.concat(t.getAbsoluteNotches());
+      });
+      const qt = new QuadTreeIndex(4000, 4000, 30);
+      qt.insertAll(allNotches);
+      quadtreeRef.current = qt;
+    } else {
+      setSnapPreview(null);
+    }
+  }, [isDragging, draggedBrickId, towers]);
 
   /**
    * Compute argument box sizes for a given brick config
@@ -152,28 +192,129 @@ export default function WorkspaceCanvas(): JSX.Element {
     // Update the specific brick's position
     const towersCopy = [...towers];
     const towerModel = towersCopy.find((t) => t.hasBrick(draggedBrickId));
+
     if (towerModel) {
-      // If dragging the root, move the entire structure using getTotalBounds
       const rootNode = towerModel.nodesArray().find((n) => n.parent === null);
-      // Type assertion to BrickModel to access getTotalBounds
       if (rootNode && rootNode.brick.uuid === draggedBrickId && hasGetTotalBounds(rootNode.brick)) {
-        // we can use getTotalBounds for snap/visual feedback here
-        // For now, move the root and all children will follow
         towerModel.setBrickPosition(draggedBrickId, { x, y });
       } else {
-        // Otherwise, move just the dragged brick
         towerModel.setBrickPosition(draggedBrickId, { x, y });
       }
       setTowers(towersCopy);
       setRefreshKey((k) => k + 1);
+
+      // ── Snap detection via QuadTree ─────────────────────────────────────
+      const draggedNotches = towerModel.getAbsoluteNotches();
+      let bestSnap: typeof snapPreview = null;
+
+      for (const dNotch of draggedNotches) {
+        const target = quadtreeRef.current.queryNearest(
+          dNotch,
+          getCompatibleTargets(dNotch.notchType),
+        );
+        if (target) {
+          // Offset so the two notches would align perfectly
+          const dx = target.worldPosition.x - dNotch.worldPosition.x;
+          const dy = target.worldPosition.y - dNotch.worldPosition.y;
+          bestSnap = {
+            ghostX: x + dx,
+            ghostY: y + dy,
+            targetBrickId: target.brickId,
+            targetNotchId: target.notchId,
+            targetTowerId: target.towerId,
+            targetNotchType: target.notchType,
+            targetWorldPos: target.worldPosition,
+            draggedNotchId: dNotch.notchId,
+            draggedNotchType: dNotch.notchType,
+            ghostNode: rootNode as ExtendedTowerNode,
+          };
+          break; // take the first valid match
+        }
+      }
+      setSnapPreview(bestSnap);
     }
   };
 
   /**
-   * Stop dragging: cleanup state and listeners
+   * Stop dragging: if a snap preview is active, connect the bricks; otherwise just release.
    */
   const handleMouseUp = () => {
+    if (snapPreview && draggedBrickId) {
+      setTowers((prev) => {
+        const towersCopy = [...prev];
+        const toTowerIndex = towersCopy.findIndex((t) => t.id === snapPreview.targetTowerId);
+        const fromTowerIndex = towersCopy.findIndex((t) => t.hasBrick(draggedBrickId));
+
+        if (toTowerIndex > -1 && fromTowerIndex > -1 && toTowerIndex !== fromTowerIndex) {
+          // Clone the target tower before mutating to avoid Recoil Object-freeze errors
+          const toTower = towersCopy[toTowerIndex].clone();
+          const fromTower = towersCopy[fromTowerIndex];
+
+          // Merge the dragged tower into the target tower
+          toTower.mergeIn(fromTower);
+          
+          // Remove the old source tower and replace target tower with cloned instance
+          if (fromTowerIndex > -1) {
+            towersCopy.splice(fromTowerIndex, 1);
+          }
+          const updatedToTowerIndex = towersCopy.findIndex((t) => t.id === toTower.id);
+          if (updatedToTowerIndex > -1) {
+            towersCopy[updatedToTowerIndex] = toTower;
+          }
+
+          // Determine the TNotchType for the connection record
+          let connectionType: import('../../../@types/tower').TNotchType = 'top-bottom';
+          if (
+            snapPreview.targetNotchType === 'insNestTop' ||
+            snapPreview.draggedNotchType === 'insNestTop'
+          ) {
+            connectionType = 'nested';
+          } else if (
+            ['argRight', 'argLeft'].includes(snapPreview.targetNotchType) ||
+            ['argRight', 'argLeft'].includes(snapPreview.draggedNotchType)
+          ) {
+            connectionType = 'left-right';
+          }
+
+          // Determine parent vs child based on notch types
+          let parentBrickId = draggedBrickId;
+          let childBrickId = snapPreview.targetBrickId;
+          let parentNotchId = snapPreview.draggedNotchId;
+          let childNotchId = snapPreview.targetNotchId;
+
+          // The parent is the brick providing the "bottom", "nest", or "argument" slot
+          if (['insBot', 'insNestTop', 'argRight'].includes(snapPreview.targetNotchType)) {
+             parentBrickId = snapPreview.targetBrickId;
+             childBrickId = draggedBrickId;
+             parentNotchId = snapPreview.targetNotchId;
+             childNotchId = snapPreview.draggedNotchId;
+          } else if (['insBot', 'insNestTop', 'argRight'].includes(snapPreview.draggedNotchType)) {
+             parentBrickId = draggedBrickId;
+             childBrickId = snapPreview.targetBrickId;
+             parentNotchId = snapPreview.draggedNotchId;
+             childNotchId = snapPreview.targetNotchId;
+          }
+
+          toTower.connectBricks(
+            parentBrickId,
+            childBrickId,
+            parentNotchId,
+            childNotchId,
+            connectionType,
+          );
+
+          // Snap position so the brick renders at the aligned location
+          toTower.setBrickPosition(draggedBrickId, {
+            x: snapPreview.ghostX,
+            y: snapPreview.ghostY,
+          });
+        }
+        return towersCopy;
+      });
+    }
+
     setDraggedBrickId(null);
+    setSnapPreview(null);
     setIsDragging(false);
     window.removeEventListener('mousemove', handleMouseMove);
     window.removeEventListener('mouseup', handleMouseUp);
@@ -203,6 +344,9 @@ export default function WorkspaceCanvas(): JSX.Element {
   useEffect(() => {
     let animationFrameId: number;
     const animate = (e: MouseEvent) => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
       animationFrameId = requestAnimationFrame(() => {
         handleMouseMove(e);
       });
@@ -299,7 +443,8 @@ export default function WorkspaceCanvas(): JSX.Element {
       >
         {towers.map((t) => (
           <TowerView
-            key={t.id + '-' + refreshKey}
+            key={t.id}
+            refreshTrigger={refreshKey}
             tower={t}
             towers={towers}
             setTowers={setTowers}
@@ -313,6 +458,43 @@ export default function WorkspaceCanvas(): JSX.Element {
             onBrickDisconnect={handleBrickDisconnect}
           />
         ))}
+
+        {/* ── Hybrid snap preview ──────────────────────────────────── */}
+        {snapPreview && (
+          <g style={{ pointerEvents: 'none' }}>
+            {/* Primary: semitransparent "ghost" of the full brick */}
+            <g
+              transform={`translate(${snapPreview.ghostX}, ${snapPreview.ghostY})`}
+              opacity={0.45}
+            >
+              <BrickNodeView node={snapPreview.ghostNode} />
+            </g>
+
+            {/* Secondary: pulsing highlight ring on the target notch */}
+            <circle
+              cx={snapPreview.targetWorldPos.x}
+              cy={snapPreview.targetWorldPos.y}
+              r={12}
+              fill="none"
+              stroke="#00ffff"
+              strokeWidth={3}
+              filter="drop-shadow(0 0 6px #00ffff)"
+            >
+              <animate
+                attributeName="r"
+                values="10;16;10"
+                dur="0.9s"
+                repeatCount="indefinite"
+              />
+              <animate
+                attributeName="stroke-opacity"
+                values="1;0.4;1"
+                dur="0.9s"
+                repeatCount="indefinite"
+              />
+            </circle>
+          </g>
+        )}
       </svg>
     </div>
   );

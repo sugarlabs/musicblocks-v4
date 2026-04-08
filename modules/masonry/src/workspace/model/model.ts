@@ -86,4 +86,15 @@ export default class WorkspaceManager {
         }
         return undefined;
     }
+
+    /**
+     * Gathers all unconnected notches from every tower in the workspace.
+     */
+    getAbsoluteNotches(): import('../../collision-detection/QuadTreeIndex').INotchIndex[] {
+        let allNotches: import('../../collision-detection/QuadTreeIndex').INotchIndex[] = [];
+        this.towers.forEach((tower) => {
+            allNotches = allNotches.concat(tower.getAbsoluteNotches());
+        });
+        return allNotches;
+    }
 }

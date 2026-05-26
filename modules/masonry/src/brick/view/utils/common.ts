@@ -2,7 +2,7 @@
  * Common utilities for brick view components
  */
 
-import type { TColor } from '../../@types/brick';
+import type { TColor } from '../../../@types/brick';
 
 export const FONT_HEIGHT = 16;
 
@@ -30,4 +30,6 @@ export type TConnectionPoints = {
     right: { x: number; y: number }[];
     bottom?: { x: number; y: number };
     left?: { x: number; y: number };
+    args?: { x: number; y: number }[];
+    nested?: { x: number; y: number };
 };

@@ -65,7 +65,7 @@ export type TBrickRenderPropsCompound = TBrickRenderProps & {
     isFolded: boolean;
 };
 
-import { TConnectionPoints } from '../../tree/model/model';
+import { TConnectionPoints } from '../brick/view/utils/common';
 
 /**
  * @interface

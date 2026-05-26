@@ -12,7 +12,7 @@ import type {
     IBrickCompound,
     TBrickRenderPropsCompound,
 } from '../../@types/brick';
-import type { TConnectionPoints as TCP } from '../../tree/model/model';
+import type { TConnectionPoints as TCP } from '../view/utils/common';
 import { generateBrickData } from '../utils/path';
 import type { TInputUnion } from '../utils/path';
 import { getLabelWidth } from '../utils/textMeasurement';

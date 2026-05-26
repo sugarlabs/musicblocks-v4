@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import WorkspaceApp from './pages/Workspace/index';
+import WorkspaceApp from './pages/workspace/index';
 import CollisionDetection from '../src/collision-detection/CollisionDetection';
 
 export default function App() {

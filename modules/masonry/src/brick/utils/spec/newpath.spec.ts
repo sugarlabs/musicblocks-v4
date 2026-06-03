@@ -278,6 +278,94 @@ const equivalenceCases: EquivalencePair[] = [
             strokeWidth: 2,
         },
     },
+    {
+        name: 'Type1 – no top/bottom notches, no args',
+        oldInput: {
+            type: 'type1',
+            strokeWidth: 2,
+            scaleFactor: 1,
+            bBoxLabel: { w: 80, h: 40 },
+            bBoxArgs: [],
+            hasNotchAbove: false,
+            hasNotchBelow: false,
+        },
+        newInput: {
+            hasTopNotch: false,
+            hasBottomNotch: false,
+            hasLeftNotch: false,
+            containsNesting: false,
+            nestingDimensions: [],
+            argumentDimensions: [],
+            labelWidth: 80,
+            labelHeight: 40,
+            secondaryLabel: false,
+            strokeWidth: 2,
+        },
+    },
+    {
+        name: 'Type2 – left notch, three args',
+        oldInput: {
+            type: 'type2',
+            strokeWidth: 2,
+            scaleFactor: 1,
+            bBoxLabel: { w: 120, h: 90 },
+            bBoxArgs: [
+                { w: 60, h: 30 },
+                { w: 70, h: 30 },
+                { w: 40, h: 60 },
+            ],
+        },
+        newInput: {
+            hasTopNotch: false,
+            hasBottomNotch: false,
+            hasLeftNotch: true,
+            containsNesting: false,
+            nestingDimensions: [],
+            argumentDimensions: [
+                { w: 60, h: 30 },
+                { w: 70, h: 30 },
+                { w: 40, h: 60 },
+            ],
+            labelWidth: 120,
+            labelHeight: 90,
+            secondaryLabel: false,
+            strokeWidth: 2,
+        },
+    },
+    {
+        name: 'Type2 – left notch, five args',
+        oldInput: {
+            type: 'type2',
+            strokeWidth: 2,
+            scaleFactor: 1,
+            bBoxLabel: { w: 200, h: 100 },
+            bBoxArgs: [
+                { w: 30, h: 20 },
+                { w: 30, h: 20 },
+                { w: 30, h: 20 },
+                { w: 30, h: 20 },
+                { w: 30, h: 20 },
+            ],
+        },
+        newInput: {
+            hasTopNotch: false,
+            hasBottomNotch: false,
+            hasLeftNotch: true,
+            containsNesting: false,
+            nestingDimensions: [],
+            argumentDimensions: [
+                { w: 30, h: 20 },
+                { w: 30, h: 20 },
+                { w: 30, h: 20 },
+                { w: 30, h: 20 },
+                { w: 30, h: 20 },
+            ],
+            labelWidth: 200,
+            labelHeight: 100,
+            secondaryLabel: false,
+            strokeWidth: 2,
+        },
+    },
 ];
 
 // ---------------------------------------------------------------------------
@@ -538,6 +626,138 @@ describe('newpath.ts — Brick Outline Generation', () => {
             expect(r1.path).toBe(r2.path);
             expect(r1.boundingBox).toEqual(r2.boundingBox);
             expect(r1.connectionPoints).toEqual(r2.connectionPoints);
+        });
+    });
+
+    describe('Extended Edge Cases', () => {
+        it('stroke width variation – thicker stroke produces larger bounding box', () => {
+            const base: BrickOutlineConfig = {
+                hasTopNotch: true,
+                hasBottomNotch: true,
+                hasLeftNotch: false,
+                containsNesting: false,
+                nestingDimensions: [],
+                argumentDimensions: [],
+                labelWidth: 80,
+                labelHeight: 40,
+                secondaryLabel: false,
+                strokeWidth: 2,
+            };
+            const thick: BrickOutlineConfig = { ...base, strokeWidth: 6 };
+            const baseResult = generateBrickOutline(base);
+            const thickResult = generateBrickOutline(thick);
+            expect(thickResult.boundingBox.w).toBeGreaterThan(baseResult.boundingBox.w);
+            expect(thickResult.boundingBox.h).toBeGreaterThan(baseResult.boundingBox.h);
+        });
+
+        it('Type3 complex nesting – 3 nesting boxes, strokeWidth=4, secondaryLabel=true', () => {
+            const config: BrickOutlineConfig = {
+                hasTopNotch: true,
+                hasBottomNotch: true,
+                hasLeftNotch: false,
+                containsNesting: true,
+                nestingDimensions: [
+                    { w: 60, h: 25 },
+                    { w: 70, h: 35 },
+                    { w: 80, h: 45 },
+                ],
+                argumentDimensions: [
+                    { w: 40, h: 30 },
+                    { w: 50, h: 40 },
+                ],
+                labelWidth: 180,
+                labelHeight: 80,
+                secondaryLabel: true,
+                strokeWidth: 4,
+            };
+            const { path, boundingBox, connectionPoints } = generateBrickOutline(config);
+            expect(typeof path).toBe('string');
+            expect(path.length).toBeGreaterThan(0);
+            expect(boundingBox.w).toBeGreaterThan(0);
+            expect(boundingBox.h).toBeGreaterThan(0);
+            expect(connectionPoints.top).toBeDefined();
+            expect(connectionPoints.bottom).toBeDefined();
+            expect(connectionPoints.nested).toBeDefined();
+            expect(connectionPoints.right).toHaveLength(2);
+            const actualBounds = calculatePathBoundingBox(path);
+            expect(Math.abs(boundingBox.w - actualBounds.w)).toBeLessThanOrEqual(5);
+            expect(Math.abs(boundingBox.h - actualBounds.h)).toBeLessThanOrEqual(5);
+        });
+
+        it('minimal label dimensions – w=0, h=0, no args', () => {
+            const config: BrickOutlineConfig = {
+                hasTopNotch: false,
+                hasBottomNotch: false,
+                hasLeftNotch: false,
+                containsNesting: false,
+                nestingDimensions: [],
+                argumentDimensions: [],
+                labelWidth: 0,
+                labelHeight: 0,
+                secondaryLabel: false,
+                strokeWidth: 2,
+            };
+            const { path, boundingBox } = generateBrickOutline(config);
+            expect(boundingBox.w).toBeGreaterThan(0);
+            expect(boundingBox.h).toBeGreaterThan(0);
+            const actualBounds = calculatePathBoundingBox(path);
+            expect(Math.abs(boundingBox.w - actualBounds.w)).toBeLessThanOrEqual(1);
+            expect(Math.abs(boundingBox.h - actualBounds.h)).toBeLessThanOrEqual(1);
+        });
+
+        it('containsNesting=true with empty nestingDimensions uses MIN_NESTED_HEIGHT', () => {
+            const config: BrickOutlineConfig = {
+                hasTopNotch: true,
+                hasBottomNotch: true,
+                hasLeftNotch: false,
+                containsNesting: true,
+                nestingDimensions: [],
+                argumentDimensions: [],
+                labelWidth: 80,
+                labelHeight: 30,
+                secondaryLabel: false,
+                strokeWidth: 2,
+            };
+            const { path, boundingBox } = generateBrickOutline(config);
+            expect(boundingBox.w).toBeGreaterThan(0);
+            expect(boundingBox.h).toBeGreaterThan(0);
+            const actualBounds = calculatePathBoundingBox(path);
+            expect(Math.abs(boundingBox.w - actualBounds.w)).toBeLessThanOrEqual(1);
+            expect(Math.abs(boundingBox.h - actualBounds.h)).toBeLessThanOrEqual(1);
+        });
+
+        it('pure function – no module-level state side-effects across calls', () => {
+            const config1: BrickOutlineConfig = {
+                hasTopNotch: true,
+                hasBottomNotch: true,
+                hasLeftNotch: false,
+                containsNesting: false,
+                nestingDimensions: [],
+                argumentDimensions: [{ w: 40, h: 30 }],
+                labelWidth: 80,
+                labelHeight: 40,
+                secondaryLabel: false,
+                strokeWidth: 2,
+            };
+            const config2: BrickOutlineConfig = {
+                hasTopNotch: false,
+                hasBottomNotch: false,
+                hasLeftNotch: true,
+                containsNesting: false,
+                nestingDimensions: [],
+                argumentDimensions: [{ w: 60, h: 50 }],
+                labelWidth: 120,
+                labelHeight: 60,
+                secondaryLabel: false,
+                strokeWidth: 4,
+            };
+            // Call config1, interleave config2, then call config1 again – must get identical output
+            const r1a = generateBrickOutline(config1);
+            generateBrickOutline(config2);
+            const r1b = generateBrickOutline(config1);
+            expect(r1a.path).toBe(r1b.path);
+            expect(r1a.boundingBox).toEqual(r1b.boundingBox);
+            expect(r1a.connectionPoints).toEqual(r1b.connectionPoints);
         });
     });
 });

@@ -304,6 +304,103 @@ export function generateBrickOutline(input: BrickOutlineInput): BrickOutlineOutp
     };
 }
 
+// ────────────────────────── Path Segments ──────────────────────────
+
+function segTopEdge(width: number): string[] {
+    return [`m 0 0`, `h ${width}`];
+}
+
+function segHeadRight(headHeight: number): string[] {
+    return [`v ${headHeight}`];
+}
+
+function segHeadBottom(width: number): string[] {
+    return [`h ${-width}`];
+}
+
+function segLeftEdge(height: number): string[] {
+    return [`v ${-height}`];
+}
+
+function segTailCavityRoof(width: number): string[] {
+    return [`h ${-(width - TAIL_INDENT_W)}`];
+}
+
+function segTailCavityLeft(nestHeight: number): string[] {
+    return [`v ${nestHeight}`];
+}
+
+function segTailFootStep(): string[] {
+    return [`h ${TAIL_FOOT_W - TAIL_INDENT_W}`];
+}
+
+function segTailFootRight(): string[] {
+    return [`v ${TAIL_FOOT_H}`];
+}
+
+function segTailBottom(): string[] {
+    return [`h ${-TAIL_FOOT_W}`];
+}
+
+function generateMarkers(
+    input: BrickOutlineInput2,
+    width: number,
+    headHeight: number,
+    nestHeight: number,
+    hasNesting: boolean,
+): BrickOutlineOutput2['markers'] {
+    const mainLabelRect = [
+        `M ${HEAD_PAD_X1} ${HEAD_PAD_Y1}`,
+        `h ${input.labelMainDims.w}`,
+        `v ${input.labelMainDims.h}`,
+        `h ${-input.labelMainDims.w}`,
+        'Z',
+    ].join(' ');
+
+    let nestingRect: string | undefined;
+    if (hasNesting) {
+        const nestingW = input.nestingDims?.w ?? 0;
+        nestingRect = [
+            `M ${TAIL_INDENT_W} ${headHeight}`,
+            `h ${nestingW}`,
+            `v ${nestHeight}`,
+            `h ${-nestingW}`,
+            'Z',
+        ].join(' ');
+    }
+
+    const paramRects: string[] = [];
+    const argRectList: string[] = [];
+    let y = 0;
+
+    for (const { param, arg } of input.paramArgDims) {
+        const rowH = arg?.h ?? MIN_ARG_H;
+
+        if (arg !== null) {
+            argRectList.push(
+                [`M ${width} ${y}`, `h ${arg.w}`, `v ${arg.h}`, `h ${-arg.w}`, 'Z'].join(' '),
+            );
+        }
+
+        if (param !== null) {
+            const paramY = y + (rowH - param.h) / 2;
+            const x = width - HEAD_PAD_X2 - param.w;
+            paramRects.push(
+                [`M ${x} ${paramY}`, `h ${param.w}`, `v ${param.h}`, `h ${-param.w}`, 'Z'].join(' '),
+            );
+        }
+
+        y += rowH;
+    }
+
+    return {
+        labelMain: mainLabelRect,
+        labelParams: paramRects.length > 0 ? paramRects : undefined,
+        args: argRectList.length > 0 ? argRectList : undefined,
+        nesting: nestingRect,
+    };
+}
+
 /**
  * Generates a brick outline SVG path from its inner dimension properties.
  *
@@ -318,102 +415,30 @@ export function generateBrickOutline2(
     const { width, height, headHeight, nestHeight } = computeDimensions2(input);
     const hasNesting = input.nestingDims !== undefined;
 
-    // 1. Top line: origin → top-right corner
-    const topLine = [`m 0 0`, `h ${width}`];
-
-    // 2. Head right: top-right → bottom-right of head
-    const headRight = [`v ${headHeight}`];
-
-    let segments: string[];
-
-    if (!hasNesting) {
-        // 3. Head bottom: bottom-right → bottom-left
-        const headBottom = [`h ${-width}`];
-        // 4. Head left: bottom-left → origin
-        const headLeft = [`v ${-headHeight}`, 'z'];
-        segments = [...topLine, ...headRight, ...headBottom, ...headLeft];
-    } else {
-        // 3. Tail cavity roof: inward to the indent
-        const tailCavityRoof = [`h ${-(width - TAIL_INDENT_W)}`];
-        // 4. Tail cavity left: down through nesting height
-        const tailCavityLeft = [`v ${nestHeight}`];
-        // 5. Tail foot left: outward to foot width
-        const tailFootLeft = [`h ${TAIL_FOOT_W - TAIL_INDENT_W}`];
-        // 6. Tail foot right: down through foot height
-        const tailFootRight = [`v ${TAIL_FOOT_H}`];
-        // 7. Tail bottom + close: left to left edge, then back to origin
-        const tailBottom = [`h ${-TAIL_FOOT_W}`, 'z'];
-        segments = [
-            ...topLine,
-            ...headRight,
-            ...tailCavityRoof,
-            ...tailCavityLeft,
-            ...tailFootLeft,
-            ...tailFootRight,
-            ...tailBottom,
-        ];
-    }
+    const segments = !hasNesting
+        ? [
+              ...segTopEdge(width),
+              ...segHeadRight(headHeight),
+              ...segHeadBottom(width),
+              ...segLeftEdge(headHeight),
+              'z',
+          ]
+        : [
+              ...segTopEdge(width),
+              ...segHeadRight(headHeight),
+              ...segTailCavityRoof(width),
+              ...segTailCavityLeft(nestHeight),
+              ...segTailFootStep(),
+              ...segTailFootRight(),
+              ...segTailBottom(),
+              ...segLeftEdge(height),
+              'z',
+          ];
 
     const path = segments.join(' ');
-
-    let markers: BrickOutlineOutput2['markers'];
-    if (showMarkers) {
-        const mainLabelRect = [
-            `M ${HEAD_PAD_X1} ${HEAD_PAD_Y1}`,
-            `h ${input.labelMainDims.w}`,
-            `v ${input.labelMainDims.h}`,
-            `h ${-input.labelMainDims.w}`,
-            'Z',
-        ].join(' ');
-
-        let nestingRect: string | undefined;
-        if (hasNesting) {
-            const nestingW = input.nestingDims?.w ?? 0;
-            nestingRect = [
-                `M ${TAIL_INDENT_W} ${headHeight}`,
-                `h ${nestingW}`,
-                `v ${nestHeight}`,
-                `h ${-nestingW}`,
-                'Z',
-            ].join(' ');
-        }
-
-        const paramRects: string[] = [];
-        const argRectList: string[] = [];
-        let y = 0;
-
-        for (const { param, arg } of input.paramArgDims) {
-            const rowH = arg?.h ?? MIN_ARG_H;
-
-            if (arg !== null) {
-                argRectList.push(
-                    [`M ${width} ${y}`, `h ${arg.w}`, `v ${arg.h}`, `h ${-arg.w}`, 'Z'].join(' '),
-                );
-            }
-
-            if (param !== null) {
-                const paramY = y + (rowH - param.h) / 2;
-                const x = width - HEAD_PAD_X2 - param.w;
-                paramRects.push(
-                    [`M ${x} ${paramY}`, `h ${param.w}`, `v ${param.h}`, `h ${-param.w}`, 'Z'].join(
-                        ' ',
-                    ),
-                );
-            }
-
-            y += rowH;
-        }
-
-        const paramLabelRects = paramRects.length > 0 ? paramRects : undefined;
-        const argRects = argRectList.length > 0 ? argRectList : undefined;
-
-        markers = {
-            labelMain: mainLabelRect,
-            labelParams: paramLabelRects,
-            args: argRects,
-            nesting: nestingRect,
-        };
-    }
+    const markers = showMarkers
+        ? generateMarkers(input, width, headHeight, nestHeight, hasNesting)
+        : undefined;
 
     return { path, width, height, markers };
 }

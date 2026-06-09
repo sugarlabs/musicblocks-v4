@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { PathBrickView } from '../components/Path';
+import type { BrickOutlineInput2 } from '../../utils/newPath';
 
 const meta: Meta<typeof PathBrickView> = {
   title: 'Bricks/Path',
@@ -12,4 +13,67 @@ const meta: Meta<typeof PathBrickView> = {
 export default meta;
 type Story = StoryObj<typeof PathBrickView>;
 
-export const Default: Story = {};
+// ── No nesting ──
+
+export const JustLabel: Story = {
+  args: {
+    input: {
+      labelMainDims: { w: 120, h: 20 },
+      paramArgDims: [],
+    },
+  },
+};
+
+export const LabelArgNoParam: Story = {
+  args: {
+    input: {
+      labelMainDims: { w: 120, h: 20 },
+      paramArgDims: [{ param: null, arg: { w: 100, h: 40 } }],
+    },
+  },
+};
+
+export const LabelArgWithParam: Story = {
+  args: {
+    input: {
+      labelMainDims: { w: 120, h: 20 },
+      paramArgDims: [{ param: { w: 80, h: 15 }, arg: { w: 100, h: 40 } }],
+    },
+  },
+};
+
+export const LabelMixedParamArgs: Story = {
+  args: {
+    input: {
+      labelMainDims: { w: 120, h: 20 },
+      paramArgDims: [
+        { param: { w: 100, h: 15 }, arg: { w: 100, h: 40 } },
+        { param: { w: 60, h: 15 }, arg: null },
+        { param: { w: 80, h: 15 }, arg: { w: 120, h: 80 } },
+        { param: null, arg: { w: 80, h: 60 } },
+      ],
+    },
+  },
+};
+
+// ── Nesting variants (label + 2 args each with their param) ──
+
+const nestingBase: Pick<BrickOutlineInput2, 'labelMainDims' | 'paramArgDims'> = {
+  labelMainDims: { w: 120, h: 20 },
+  paramArgDims: [
+    { param: { w: 80, h: 15 }, arg: { w: 100, h: 40 } },
+    { param: { w: 60, h: 15 }, arg: { w: 80, h: 40 } },
+  ],
+};
+
+export const NestingEmpty: Story = {
+  args: { input: { ...nestingBase, nestingDims: null } },
+};
+
+export const NestingNarrow: Story = {
+  args: { input: { ...nestingBase, nestingDims: { w: 80, h: 120 } } },
+};
+
+export const NestingWide: Story = {
+  args: { input: { ...nestingBase, nestingDims: { w: 300, h: 120 } } },
+};

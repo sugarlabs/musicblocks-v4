@@ -17,19 +17,92 @@ export interface BrickOutlineInput {
     nestings: Size[];
 }
 
+export interface BrickOutlineInput2 {
+    /** Dimensions of the main label text area */
+    labelMainDims: Size;
+    /** One entry per argument slot; each pairs a parameter label with its argument */
+    paramArgDims: {
+        /** Dimensions of the parameter label; null if the slot has no label (uses MIN_PARAM_H) */
+        param: Size | null;
+        /** Dimensions of the argument area; null if the slot has no argument (uses MIN_ARG_H) */
+        arg: Size | null;
+    }[];
+    /**
+     * Dimensions of the nested content area.
+     * - `undefined` — no nesting, tail is not rendered
+     * - `null` — nesting exists but content dimensions are unknown; falls back to MIN_NEST_HEIGHT
+     * - `Size` — nesting exists with known content dimensions
+     */
+    nestingDims?: Size | null;
+}
+
 export interface BrickOutlineOutput {
     path: string;
     width: number;
     height: number;
 }
 
+export interface BrickOutlineOutput2 {
+    /** SVG path string tracing the brick outline */
+    path: string;
+    /** Total outer width of the brick */
+    width: number;
+    /** Total outer height of the brick */
+    height: number;
+    /** Debug overlay rectangles for each layout region; only present when showMarkers is true */
+    markers?: {
+        /** Rect covering the main label area */
+        labelMain: string;
+        /** Rects covering each parameter label area; absent when no params are provided */
+        labelParams?: string[];
+        /** Rects covering each argument area; absent when no args are provided */
+        args?: string[];
+        /** Rect covering the nesting cavity; absent when there is no nesting */
+        nesting?: string;
+    };
+}
+
 // ────────────────────────── Constants ──────────────────────────
 
-const MIN_WIDTH = 100;
 const MIN_HEIGHT = 40;
-const MIN_NEST_HEIGHT = 40;
 const PADDING = 8;
 const NEST_INDENT = 16;
+
+// ── Minimums ──
+/** Minimum total outer width of the brick */
+const MIN_WIDTH = 100;
+/** Minimum height of the main label content */
+const MIN_LABEL_MAIN_H = 20;
+/** Minimum height of the nesting cavity */
+const MIN_NEST_HEIGHT = 40;
+/** Minimum height reserved for a null param slot */
+const MIN_PARAM_H = 15;
+/** Minimum height reserved for a null arg slot */
+const MIN_ARG_H = 40;
+
+// ── Head padding ──
+/** Distance from the top edge of the head to its inner content */
+const HEAD_PAD_Y1 = 10;
+/** Distance from the bottom edge of the head to its inner content */
+const HEAD_PAD_Y2 = 10;
+/** Distance from the left edge of the head to its inner content */
+const HEAD_PAD_X1 = 10;
+/** Distance from the right edge of the head to its inner content */
+const HEAD_PAD_X2 = 10;
+
+// ── Gutters ──
+/** Horizontal gap between the main label and the parameter labels */
+const LABEL_PARAM_GUTTER_X = 10;
+/** Vertical gap between stacked parameter labels */
+const PARAM_GUTTER_Y = 10;
+
+// ── Tail ──
+/** Horizontal width of the tail's indent step that forms the nesting cavity notch */
+const TAIL_INDENT_W = 10;
+/** Height of the closing foot bar at the bottom of the tail */
+const TAIL_FOOT_H = 10;
+/** Width of the closing foot bar at the bottom of the tail */
+const TAIL_FOOT_W = 40;
 
 // ────────────────────────── Dimension Calculation ──────────────────────────
 
@@ -40,6 +113,17 @@ interface ComputedDimensions {
     nestHeight: number;
     footerHeight: number;
     footerWidth: number;
+}
+
+interface ComputedDimensions2 {
+    /** Total outer width of the brick */
+    width: number;
+    /** Total outer height of the brick (headHeight + tailHeight) */
+    height: number;
+    /** Height of the top head section containing labels and args */
+    headHeight: number;
+    /** Height of the nesting cavity between the head and the tail foot; 0 when no nesting */
+    nestHeight: number;
 }
 
 /**
@@ -91,6 +175,41 @@ export function computeDimensions(input: BrickOutlineInput): ComputedDimensions 
         : Math.max(MIN_HEIGHT, topBarHeight);
 
     return { width, height, topBarHeight, nestHeight, footerHeight, footerWidth };
+}
+
+export function computeDimensions2(input: BrickOutlineInput2): ComputedDimensions2 {
+    const params = input.paramArgDims.map((p) => p.param ?? { w: 0, h: MIN_PARAM_H });
+    const args = input.paramArgDims.map((p) => p.arg ?? { w: 0, h: MIN_ARG_H });
+
+    // ── Width ──
+    const maxParamWidth = params.length > 0 ? Math.max(...params.map((p) => p.w)) : 0;
+    const labelParamGutter = maxParamWidth > 0 ? LABEL_PARAM_GUTTER_X : 0;
+    const headWidth =
+        HEAD_PAD_X1 + HEAD_PAD_X2 + input.labelMainDims.w + labelParamGutter + maxParamWidth;
+
+    const tailWidth = TAIL_INDENT_W + (input.nestingDims?.w ?? 0);
+
+    const width = Math.max(headWidth, tailWidth, MIN_WIDTH);
+
+    // ── Height of head ──
+    const paramsTotalHeight = params.reduce((sum, p) => sum + p.h, 0);
+    const paramGutterTotal = PARAM_GUTTER_Y * Math.max(0, params.length - 1);
+    const argsTotalHeight = args.reduce((sum, a) => sum + a.h, 0);
+
+    const headHeight = Math.max(
+        Math.max(input.labelMainDims.h, MIN_LABEL_MAIN_H) + HEAD_PAD_Y1 + HEAD_PAD_Y2,
+        HEAD_PAD_Y1 + HEAD_PAD_Y2 + paramsTotalHeight + paramGutterTotal,
+        argsTotalHeight,
+    );
+
+    // ── Height of tail ──
+    const hasNesting = input.nestingDims !== undefined;
+    const nestHeight = hasNesting ? Math.max(input.nestingDims?.h ?? 0, MIN_NEST_HEIGHT) : 0;
+    const tailHeight = hasNesting ? nestHeight + TAIL_FOOT_H : 0;
+
+    const height = headHeight + tailHeight;
+
+    return { width, height, headHeight, nestHeight };
 }
 
 // ────────────────────────── Outline Generation ──────────────────────────
@@ -183,4 +302,118 @@ export function generateBrickOutline(input: BrickOutlineInput): BrickOutlineOutp
         width: dims.width,
         height: dims.height,
     };
+}
+
+/**
+ * Generates a brick outline SVG path from its inner dimension properties.
+ *
+ * @param input - The dimensions of the brick's inner elements
+ * @param showMarkers - Whether to include marker elements for debugging layout
+ * @returns The SVG path string and computed outer dimensions
+ */
+export function generateBrickOutline2(
+    input: BrickOutlineInput2,
+    showMarkers: boolean = false,
+): BrickOutlineOutput2 {
+    const { width, height, headHeight, nestHeight } = computeDimensions2(input);
+    const hasNesting = input.nestingDims !== undefined;
+
+    // 1. Top line: origin → top-right corner
+    const topLine = [`m 0 0`, `h ${width}`];
+
+    // 2. Head right: top-right → bottom-right of head
+    const headRight = [`v ${headHeight}`];
+
+    let segments: string[];
+
+    if (!hasNesting) {
+        // 3. Head bottom: bottom-right → bottom-left
+        const headBottom = [`h ${-width}`];
+        // 4. Head left: bottom-left → origin
+        const headLeft = [`v ${-headHeight}`, 'z'];
+        segments = [...topLine, ...headRight, ...headBottom, ...headLeft];
+    } else {
+        // 3. Tail cavity roof: inward to the indent
+        const tailCavityRoof = [`h ${-(width - TAIL_INDENT_W)}`];
+        // 4. Tail cavity left: down through nesting height
+        const tailCavityLeft = [`v ${nestHeight}`];
+        // 5. Tail foot left: outward to foot width
+        const tailFootLeft = [`h ${TAIL_FOOT_W - TAIL_INDENT_W}`];
+        // 6. Tail foot right: down through foot height
+        const tailFootRight = [`v ${TAIL_FOOT_H}`];
+        // 7. Tail bottom + close: left to left edge, then back to origin
+        const tailBottom = [`h ${-TAIL_FOOT_W}`, 'z'];
+        segments = [
+            ...topLine,
+            ...headRight,
+            ...tailCavityRoof,
+            ...tailCavityLeft,
+            ...tailFootLeft,
+            ...tailFootRight,
+            ...tailBottom,
+        ];
+    }
+
+    const path = segments.join(' ');
+
+    let markers: BrickOutlineOutput2['markers'];
+    if (showMarkers) {
+        const mainLabelRect = [
+            `M ${HEAD_PAD_X1} ${HEAD_PAD_Y1}`,
+            `h ${input.labelMainDims.w}`,
+            `v ${input.labelMainDims.h}`,
+            `h ${-input.labelMainDims.w}`,
+            'Z',
+        ].join(' ');
+
+        let nestingRect: string | undefined;
+        if (hasNesting) {
+            const nestingW = input.nestingDims?.w ?? 0;
+            nestingRect = [
+                `M ${TAIL_INDENT_W} ${headHeight}`,
+                `h ${nestingW}`,
+                `v ${nestHeight}`,
+                `h ${-nestingW}`,
+                'Z',
+            ].join(' ');
+        }
+
+        const paramRects: string[] = [];
+        const argRectList: string[] = [];
+        let y = 0;
+
+        for (const { param, arg } of input.paramArgDims) {
+            const rowH = arg?.h ?? MIN_ARG_H;
+
+            if (arg !== null) {
+                argRectList.push(
+                    [`M ${width} ${y}`, `h ${arg.w}`, `v ${arg.h}`, `h ${-arg.w}`, 'Z'].join(' '),
+                );
+            }
+
+            if (param !== null) {
+                const paramY = y + (rowH - param.h) / 2;
+                const x = width - HEAD_PAD_X2 - param.w;
+                paramRects.push(
+                    [`M ${x} ${paramY}`, `h ${param.w}`, `v ${param.h}`, `h ${-param.w}`, 'Z'].join(
+                        ' ',
+                    ),
+                );
+            }
+
+            y += rowH;
+        }
+
+        const paramLabelRects = paramRects.length > 0 ? paramRects : undefined;
+        const argRects = argRectList.length > 0 ? argRectList : undefined;
+
+        markers = {
+            labelMain: mainLabelRect,
+            labelParams: paramLabelRects,
+            args: argRects,
+            nesting: nestingRect,
+        };
+    }
+
+    return { path, width, height, markers };
 }

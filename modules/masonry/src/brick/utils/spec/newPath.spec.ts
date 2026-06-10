@@ -508,7 +508,7 @@ describe('path V2: computeDimensions2', () => {
         it('main label dominates (no stroke)', () => {
             const dims = computeDimensions2({
                 strokeWidth: 0,
-                labelMainDims: { w: 200, h: 30 },
+                labelDims: { w: 200, h: 30 },
                 paramArgDims: [],
             });
             // headWidth = 0 + 20 + 200 = 220 ; tailWidth = 10 ; width = max(220,10,100)
@@ -518,7 +518,7 @@ describe('path V2: computeDimensions2', () => {
         it('MIN_WIDTH dominates a small brick (no stroke)', () => {
             const dims = computeDimensions2({
                 strokeWidth: 0,
-                labelMainDims: { w: 30, h: 10 },
+                labelDims: { w: 30, h: 10 },
                 paramArgDims: [],
             });
             // headWidth = 20 + 30 = 50 ; width = max(50,10,100) = 100
@@ -529,7 +529,7 @@ describe('path V2: computeDimensions2', () => {
             const s = 4;
             const dims = computeDimensions2({
                 strokeWidth: s,
-                labelMainDims: { w: 200, h: 30 },
+                labelDims: { w: 200, h: 30 },
                 paramArgDims: [],
             });
             // headWidth = s + 20 + 200 = 224
@@ -540,7 +540,7 @@ describe('path V2: computeDimensions2', () => {
             const s = 4;
             const dims = computeDimensions2({
                 strokeWidth: s,
-                labelMainDims: { w: 30, h: 10 },
+                labelDims: { w: 30, h: 10 },
                 paramArgDims: [],
             });
             // headWidth = s + 20 + 30 = 54 ; tailWidth = s + 10 = 14 ; width = max(54,14,100) = 100
@@ -551,7 +551,7 @@ describe('path V2: computeDimensions2', () => {
         it('widens for the widest param plus the label gutter', () => {
             const dims = computeDimensions2({
                 strokeWidth: 0,
-                labelMainDims: { w: 60, h: 20 },
+                labelDims: { w: 60, h: 20 },
                 paramArgDims: [
                     { param: { w: 40, h: 15 }, arg: null },
                     { param: { w: 30, h: 25 }, arg: null },
@@ -564,7 +564,7 @@ describe('path V2: computeDimensions2', () => {
         it('tail (nesting) can drive the width', () => {
             const dims = computeDimensions2({
                 strokeWidth: 0,
-                labelMainDims: { w: 20, h: 10 },
+                labelDims: { w: 20, h: 10 },
                 paramArgDims: [],
                 nestingDims: { w: 200, h: 50 },
             });
@@ -577,7 +577,7 @@ describe('path V2: computeDimensions2', () => {
         it('falls back to the main-label minimum height', () => {
             const dims = computeDimensions2({
                 strokeWidth: 0,
-                labelMainDims: { w: 60, h: 10 },
+                labelDims: { w: 60, h: 10 },
                 paramArgDims: [],
             });
             // headHeight = max(max(10,20)+20, 20, 0) = 40 ; no tail ; +s = 0
@@ -589,7 +589,7 @@ describe('path V2: computeDimensions2', () => {
         it('stacked null-arg rows drive head height via MIN_ARG_H', () => {
             const dims = computeDimensions2({
                 strokeWidth: 0,
-                labelMainDims: { w: 60, h: 20 },
+                labelDims: { w: 60, h: 20 },
                 paramArgDims: [
                     { param: { w: 40, h: 15 }, arg: null },
                     { param: { w: 30, h: 25 }, arg: null },
@@ -603,7 +603,7 @@ describe('path V2: computeDimensions2', () => {
             const s = 6;
             const dims = computeDimensions2({
                 strokeWidth: s,
-                labelMainDims: { w: 60, h: 30 },
+                labelDims: { w: 60, h: 30 },
                 paramArgDims: [],
             });
             // headHeight = s/2 + HEAD_PAD_Y1 + max(30,20) + HEAD_PAD_Y2 + s/2 = 3+10+30+10+3 = 56
@@ -615,7 +615,7 @@ describe('path V2: computeDimensions2', () => {
             const s = 4;
             const dims = computeDimensions2({
                 strokeWidth: s,
-                labelMainDims: { w: 80, h: 20 },
+                labelDims: { w: 80, h: 20 },
                 paramArgDims: [],
                 nestingDims: { w: 50, h: 50 },
             });
@@ -628,7 +628,7 @@ describe('path V2: computeDimensions2', () => {
         it('enforces the minimum nesting height', () => {
             const dims = computeDimensions2({
                 strokeWidth: 0,
-                labelMainDims: { w: 80, h: 20 },
+                labelDims: { w: 80, h: 20 },
                 paramArgDims: [],
                 nestingDims: { w: 50, h: 5 },
             });
@@ -639,7 +639,7 @@ describe('path V2: computeDimensions2', () => {
             const s = 4;
             const dims = computeDimensions2({
                 strokeWidth: s,
-                labelMainDims: { w: 60, h: 20 },
+                labelDims: { w: 60, h: 20 },
                 paramArgDims: [
                     { param: null, arg: { w: 50, h: 30 } },
                     { param: null, arg: { w: 50, h: 30 } },
@@ -657,7 +657,7 @@ describe('path V2: generateBrickOutline2', () => {
     it('simple brick path with no stroke', () => {
         const result = generateBrickOutline2({
             strokeWidth: 0,
-            labelMainDims: { w: 60, h: 20 },
+            labelDims: { w: 60, h: 20 },
             paramArgDims: [],
         });
         // width = 100 (MIN_WIDTH), headHeight = 40, height = 40
@@ -669,7 +669,7 @@ describe('path V2: generateBrickOutline2', () => {
     it('simple brick path inset by s/2 with stroke', () => {
         const result = generateBrickOutline2({
             strokeWidth: 4,
-            labelMainDims: { w: 200, h: 30 },
+            labelDims: { w: 200, h: 30 },
             paramArgDims: [],
         });
         // width = 224, headHeight = 54 (includes s), height = 54
@@ -682,7 +682,7 @@ describe('path V2: generateBrickOutline2', () => {
     it('compound brick path with no stroke', () => {
         const result = generateBrickOutline2({
             strokeWidth: 0,
-            labelMainDims: { w: 80, h: 20 },
+            labelDims: { w: 80, h: 20 },
             paramArgDims: [],
             nestingDims: { w: 50, h: 50 },
         });
@@ -693,7 +693,7 @@ describe('path V2: generateBrickOutline2', () => {
     it('compound brick path with stroke (cavity −s, foot +s)', () => {
         const result = generateBrickOutline2({
             strokeWidth: 4,
-            labelMainDims: { w: 80, h: 20 },
+            labelDims: { w: 80, h: 20 },
             paramArgDims: [],
             nestingDims: { w: 50, h: 50 },
         });
@@ -706,17 +706,17 @@ describe('path V2: generateBrickOutline2', () => {
         const inputs: { name: string; input: BrickOutlineInput2 }[] = [
             {
                 name: 'simple, s=0',
-                input: { strokeWidth: 0, labelMainDims: { w: 60, h: 20 }, paramArgDims: [] },
+                input: { strokeWidth: 0, labelDims: { w: 60, h: 20 }, paramArgDims: [] },
             },
             {
                 name: 'simple, s=4',
-                input: { strokeWidth: 4, labelMainDims: { w: 200, h: 30 }, paramArgDims: [] },
+                input: { strokeWidth: 4, labelDims: { w: 200, h: 30 }, paramArgDims: [] },
             },
             {
                 name: 'compound, s=0',
                 input: {
                     strokeWidth: 0,
-                    labelMainDims: { w: 80, h: 20 },
+                    labelDims: { w: 80, h: 20 },
                     paramArgDims: [],
                     nestingDims: { w: 50, h: 50 },
                 },
@@ -725,7 +725,7 @@ describe('path V2: generateBrickOutline2', () => {
                 name: 'compound, s=4',
                 input: {
                     strokeWidth: 4,
-                    labelMainDims: { w: 80, h: 20 },
+                    labelDims: { w: 80, h: 20 },
                     paramArgDims: [],
                     nestingDims: { w: 50, h: 50 },
                 },
@@ -745,7 +745,7 @@ describe('path V2: generateBrickOutline2', () => {
         it('width has no stroke contribution at s=0', () => {
             const input: BrickOutlineInput2 = {
                 strokeWidth: 0,
-                labelMainDims: { w: 120, h: 30 },
+                labelDims: { w: 120, h: 30 },
                 paramArgDims: [{ param: { w: 40, h: 18 }, arg: null }],
             };
             const dims = computeDimensions2(input);
@@ -756,7 +756,7 @@ describe('path V2: generateBrickOutline2', () => {
         it('path starts at the origin (no inset) when s=0', () => {
             const { path } = generateBrickOutline2({
                 strokeWidth: 0,
-                labelMainDims: { w: 60, h: 20 },
+                labelDims: { w: 60, h: 20 },
                 paramArgDims: [],
             });
             expect(path.startsWith('M 0 0')).toBe(true);
@@ -767,11 +767,11 @@ describe('path V2: generateBrickOutline2', () => {
         it('always emits bounds with labelMain; omits params, args, nesting when absent', () => {
             const result = generateBrickOutline2({
                 strokeWidth: 0,
-                labelMainDims: { w: 60, h: 20 },
+                labelDims: { w: 60, h: 20 },
                 paramArgDims: [],
             });
             expect(result.bounds).toBeDefined();
-            expect(result.bounds.labelMain).toBeTruthy();
+            expect(result.bounds.label).toBeTruthy();
             expect(result.bounds.params).toBeUndefined();
             expect(result.bounds.args).toBeUndefined();
             expect(result.bounds.nesting).toBeUndefined();
@@ -780,12 +780,12 @@ describe('path V2: generateBrickOutline2', () => {
         it('emits bounds for all regions when params, args, and nesting are present', () => {
             const result = generateBrickOutline2({
                 strokeWidth: 0,
-                labelMainDims: { w: 60, h: 20 },
+                labelDims: { w: 60, h: 20 },
                 paramArgDims: [{ param: { w: 40, h: 15 }, arg: { w: 50, h: 30 } }],
                 nestingDims: { w: 50, h: 50 },
             });
             expect(result.bounds).toBeDefined();
-            expect(result.bounds.labelMain).toBeTruthy();
+            expect(result.bounds.label).toBeTruthy();
             expect(result.bounds.params).toHaveLength(1);
             expect(result.bounds.args).toHaveLength(1);
             expect(result.bounds.nesting).toBeTruthy();
@@ -816,7 +816,7 @@ describe('path V2: validity boundaries (documented, not yet enforced)', () => {
         const s = 4;
         const dims = computeDimensions2({
             strokeWidth: s,
-            labelMainDims: { w: 80, h: 20 },
+            labelDims: { w: 80, h: 20 },
             paramArgDims: [],
             nestingDims: { w: 50, h: 50 },
         });

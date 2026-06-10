@@ -155,8 +155,8 @@ export interface BrickOutlineInput2 {
      * Pass 0 for no inset (original geometry).
      */
     strokeWidth: number;
-    /** Dimensions of the main label text area */
-    labelMainDims: Size;
+    /** Dimensions of the label text area */
+    labelDims: Size;
     /** One entry per argument slot; each pairs a parameter label with its argument */
     paramArgDims: {
         /** Dimensions of the parameter label; null if the slot has no label (uses MIN_PARAM_H) */
@@ -182,8 +182,8 @@ export interface BrickOutlineOutput2 {
     height: number;
     /** Bounding rectangles for each layout region */
     bounds: {
-        /** Bounds of the main label area */
-        labelMain: Bounds;
+        /** Bounds of the label area */
+        label: Bounds;
         /** Bounds of each parameter label area; absent when no params are provided */
         params?: Bounds[];
         /** Bounds of each argument area; absent when no args are provided */

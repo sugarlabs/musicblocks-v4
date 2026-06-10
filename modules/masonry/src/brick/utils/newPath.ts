@@ -30,8 +30,8 @@ const NEST_INDENT = 16;
 // ── Minimums ──
 /** Minimum total outer width of the brick */
 const MIN_WIDTH = 100;
-/** Minimum height of the main label content */
-const MIN_LABEL_MAIN_H = 20;
+/** Minimum height of the label content */
+const MIN_LABEL_H = 20;
 /** Minimum height of the nesting cavity */
 const MIN_NEST_HEIGHT = 40;
 /** Minimum height reserved for a null param slot */
@@ -152,7 +152,7 @@ export function computeDimensions2(input: BrickOutlineInput2): ComputedDimension
     const headWidth =
         strokeWidth / 2 +
         HEAD_PAD_X1 +
-        input.labelMainDims.w +
+        input.labelDims.w +
         labelParamGutter +
         maxParamWidth +
         HEAD_PAD_X2 +
@@ -176,7 +176,7 @@ export function computeDimensions2(input: BrickOutlineInput2): ComputedDimension
     const headHeightByLabel =
         strokeWidth / 2 +
         HEAD_PAD_Y1 +
-        Math.max(input.labelMainDims.h, MIN_LABEL_MAIN_H) +
+        Math.max(input.labelDims.h, MIN_LABEL_H) +
         HEAD_PAD_Y2 +
         strokeWidth / 2;
     const headHeightByParams =
@@ -350,11 +350,11 @@ function generateBounds(
 ): BrickOutlineOutput2['bounds'] {
     const strokeWidth = input.strokeWidth;
 
-    const labelMain: Bounds = {
+    const label: Bounds = {
         x: strokeWidth / 2 + HEAD_PAD_X1,
         y: strokeWidth / 2 + HEAD_PAD_Y1,
-        w: input.labelMainDims.w,
-        h: Math.max(input.labelMainDims.h, MIN_LABEL_MAIN_H),
+        w: input.labelDims.w,
+        h: Math.max(input.labelDims.h, MIN_LABEL_H),
     };
 
     let nesting: Bounds | undefined;
@@ -392,7 +392,7 @@ function generateBounds(
     }
 
     return {
-        labelMain,
+        label,
         params: params.length > 0 ? params : undefined,
         args: args.length > 0 ? args : undefined,
         nesting,

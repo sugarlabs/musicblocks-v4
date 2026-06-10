@@ -19,10 +19,10 @@ export function PathBrickView({ input }: { input: BrickOutlineInput2 }) {
       <>
         {/* Primary label */}
         <rect
-          x={bounds.labelMain.x}
-          y={bounds.labelMain.y}
-          width={bounds.labelMain.w}
-          height={bounds.labelMain.h}
+          x={bounds.label.x}
+          y={bounds.label.y}
+          width={bounds.label.w}
+          height={bounds.label.h}
           fill="#ffcccc"
         />
 

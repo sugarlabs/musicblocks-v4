@@ -73,7 +73,7 @@
     "vite": "^6.3.5",
     "vite-plugin-compression": "^0.5.1",
     "vite-plugin-ejs": "^1.7.0",
-    "vite-plugin-eslint": "^1.8.1",
+    "vite-plugin-eslint2": "^5.1.0",
     "vite-plugin-pwa": "^1.0.0",
     "vitest": "^3.2.3"
   },

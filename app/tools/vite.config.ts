@@ -7,7 +7,7 @@ import react from '@vitejs/plugin-react';
 import { ViteEjsPlugin as ejs } from 'vite-plugin-ejs';
 import { VitePWA as pwa } from 'vite-plugin-pwa';
 import compression from 'vite-plugin-compression';
-import eslint from 'vite-plugin-eslint';
+import eslint from 'vite-plugin-eslint2';
 import { visualizer } from 'rollup-plugin-visualizer';
 
 import { parse as parseJsonc } from 'jsonc-parser';

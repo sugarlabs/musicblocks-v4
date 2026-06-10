@@ -1,9 +1,6 @@
-// ────────────────────────── Types ──────────────────────────
+import type { BrickOutlineInput2, BrickOutlineOutput2, Size } from '../../@types/brick';
 
-interface Size {
-    w: number;
-    h: number;
-}
+// ────────────────────────── Types ──────────────────────────
 
 interface Point {
     x: number;
@@ -17,55 +14,10 @@ export interface BrickOutlineInput {
     nestings: Size[];
 }
 
-export interface BrickOutlineInput2 {
-    /**
-     * Stroke width of the outline. The outline is drawn inset by `strokeWidth / 2`
-     * so the stroke stays inside the reported width/height instead of being clipped.
-     * Pass 0 for no inset (original geometry).
-     */
-    strokeWidth: number;
-    /** Dimensions of the main label text area */
-    labelMainDims: Size;
-    /** One entry per argument slot; each pairs a parameter label with its argument */
-    paramArgDims: {
-        /** Dimensions of the parameter label; null if the slot has no label (uses MIN_PARAM_H) */
-        param: Size | null;
-        /** Dimensions of the argument area; null if the slot has no argument (uses MIN_ARG_H) */
-        arg: Size | null;
-    }[];
-    /**
-     * Dimensions of the nested content area.
-     * - `undefined` — no nesting, tail is not rendered
-     * - `null` — nesting exists but content dimensions are unknown; falls back to MIN_NEST_HEIGHT
-     * - `Size` — nesting exists with known content dimensions
-     */
-    nestingDims?: Size | null;
-}
-
 export interface BrickOutlineOutput {
     path: string;
     width: number;
     height: number;
-}
-
-export interface BrickOutlineOutput2 {
-    /** SVG path string tracing the brick outline */
-    path: string;
-    /** Total outer width of the brick */
-    width: number;
-    /** Total outer height of the brick */
-    height: number;
-    /** Debug overlay rectangles for each layout region; only present when showMarkers is true */
-    markers?: {
-        /** Rect covering the main label area */
-        labelMain: string;
-        /** Rects covering each parameter label area; absent when no params are provided */
-        labelParams?: string[];
-        /** Rects covering each argument area; absent when no args are provided */
-        args?: string[];
-        /** Rect covering the nesting cavity; absent when there is no nesting */
-        nesting?: string;
-    };
 }
 
 // ────────────────────────── Constants ──────────────────────────

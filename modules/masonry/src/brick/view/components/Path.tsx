@@ -1,4 +1,5 @@
-import { generateBrickOutline2, type BrickOutlineInput2 } from '../../utils/newPath';
+import type { BrickOutlineInput2 } from '../../../@types/brick';
+import { generateBrickOutline2 } from '../../utils/newPath';
 
 export function PathBrickView({ input }: { input: BrickOutlineInput2 }) {
   const maxArgW = Math.max(0, ...input.paramArgDims.map((p) => p.arg?.w ?? 0));

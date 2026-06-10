@@ -1,10 +1,12 @@
+import type { BrickOutlineInput } from '../newPath';
+import type { BrickOutlineInput2 } from '../../../@types/brick';
+
 import {
     generateBrickOutline,
     computeDimensions,
     generateBrickOutline2,
     computeDimensions2,
 } from '../newPath';
-import type { BrickOutlineInput, BrickOutlineInput2 } from '../newPath';
 
 // ────────────────────────── Helpers ──────────────────────────
 

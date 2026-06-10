@@ -7,7 +7,6 @@
         "./.storybook/**/*.tsx"
     ],
     "compilerOptions": {
-        "baseUrl": ".",
         "paths": {
             "@/*": [
                 "./src/*"

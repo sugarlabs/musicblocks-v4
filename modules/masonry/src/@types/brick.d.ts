@@ -192,3 +192,8 @@ export interface BrickOutlineOutput2 {
         nesting?: Bounds;
     };
 }
+
+export interface BrickViewProps {
+    /** Display text content of the brick label */
+    label: string;
+}

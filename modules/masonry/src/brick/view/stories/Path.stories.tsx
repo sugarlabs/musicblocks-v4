@@ -18,6 +18,7 @@ type Story = StoryObj<typeof PathBrickView>;
 export const JustLabel: Story = {
   args: {
     input: {
+      strokeWidth: 4,
       labelMainDims: { w: 120, h: 20 },
       paramArgDims: [],
     },
@@ -27,6 +28,7 @@ export const JustLabel: Story = {
 export const LabelArgNoParam: Story = {
   args: {
     input: {
+      strokeWidth: 4,
       labelMainDims: { w: 120, h: 20 },
       paramArgDims: [{ param: null, arg: { w: 100, h: 40 } }],
     },
@@ -36,6 +38,7 @@ export const LabelArgNoParam: Story = {
 export const LabelArgWithParam: Story = {
   args: {
     input: {
+      strokeWidth: 4,
       labelMainDims: { w: 120, h: 20 },
       paramArgDims: [{ param: { w: 80, h: 15 }, arg: { w: 100, h: 40 } }],
     },
@@ -45,6 +48,7 @@ export const LabelArgWithParam: Story = {
 export const LabelMixedParamArgs: Story = {
   args: {
     input: {
+      strokeWidth: 4,
       labelMainDims: { w: 120, h: 20 },
       paramArgDims: [
         { param: { w: 100, h: 15 }, arg: { w: 100, h: 40 } },
@@ -58,7 +62,8 @@ export const LabelMixedParamArgs: Story = {
 
 // ── Nesting variants (label + 2 args each with their param) ──
 
-const nestingBase: Pick<BrickOutlineInput2, 'labelMainDims' | 'paramArgDims'> = {
+const nestingBase: Pick<BrickOutlineInput2, 'strokeWidth' | 'labelMainDims' | 'paramArgDims'> = {
+  strokeWidth: 4,
   labelMainDims: { w: 120, h: 20 },
   paramArgDims: [
     { param: { w: 80, h: 15 }, arg: { w: 100, h: 40 } },

@@ -3,8 +3,7 @@ import { generateBrickOutline2 } from '../../utils/newPath';
 
 export function PathBrickView({ input }: { input: BrickOutlineInput2 }) {
   const maxArgW = Math.max(0, ...input.paramArgDims.map((p) => p.arg?.w ?? 0));
-  const { width, height, path, markers } = generateBrickOutline2(input, true);
-  const strokeWidth = input.strokeWidth ?? 0;
+  const { width, height, path, bounds } = generateBrickOutline2(input);
 
   return (
     <svg
@@ -12,29 +11,49 @@ export function PathBrickView({ input }: { input: BrickOutlineInput2 }) {
       width={width + maxArgW}
       height={height}
       viewBox={`0 0 ${width + maxArgW} ${height}`}
-      style={{ backgroundColor: '#eee' }}
+      style={{ backgroundColor: '#e4e4e4' }}
     >
-      {/* Outer brick: grey fill, grey stroke */}
-      <path d={path} fill="#bbb" stroke="#555" strokeWidth={strokeWidth} />
+      <path d={path} fill="#70a1ff" stroke="#3867d6" strokeWidth={input.strokeWidth} />
 
-      {markers && (
-        <>
-          {/* Main label (interior content) */}
-          <path d={markers?.labelMain} fill="#00f" />
+      {/* Debug overlay: visualises the markers */}
+      <>
+        {/* Primary label */}
+        <rect
+          x={bounds.labelMain.x}
+          y={bounds.labelMain.y}
+          width={bounds.labelMain.w}
+          height={bounds.labelMain.h}
+          fill="#ffcccc"
+        />
 
-          {/* Param labels (interior content) */}
-          {markers?.labelParams?.map((d, i) => <path key={i} d={d} fill="#ff0" />)}
+        {/* Per-parameter label areas (optional) — one rect per param name slot */}
+        {bounds.params?.map((b, i) => (
+          <rect key={i} x={b.x} y={b.y} width={b.w} height={b.h} fill="#ffda79" />
+        ))}
 
-          {/* Each arg is its own brick: filled with its colour (inside reference) plus a
-              darker stroke, so it reads as a distinct brick not overlapping the parent. */}
-          {markers?.args?.map((d, i) => (
-            <path key={i} d={d} fill={i % 2 === 0 ? '#f80' : '#f0f'} />
-          ))}
+        {/* Per-argument slot areas */}
+        {bounds.args?.map((b, i) => (
+          <rect
+            key={i}
+            x={b.x}
+            y={b.y}
+            width={b.w}
+            height={b.h}
+            fill={i % 2 === 0 ? '#26de819f' : '#20bf6b9f'}
+          />
+        ))}
 
-          {/* Nested child brick: green fill (inside reference) with a darker green stroke */}
-          {markers?.nesting && <path d={markers.nesting} fill="#0f0" />}
-        </>
-      )}
+        {/* Nesting (clamp) area — present only on bricks that wrap inner blocks */}
+        {bounds.nesting && (
+          <rect
+            x={bounds.nesting.x}
+            y={bounds.nesting.y}
+            width={bounds.nesting.w}
+            height={bounds.nesting.h}
+            fill="#a5b1c27f"
+          />
+        )}
+      </>
     </svg>
   );
 }

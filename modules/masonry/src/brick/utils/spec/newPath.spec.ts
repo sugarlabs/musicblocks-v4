@@ -763,31 +763,32 @@ describe('path V2: generateBrickOutline2', () => {
         });
     });
 
-    describe('markers', () => {
-        it('omits markers unless requested', () => {
+    describe('bounds', () => {
+        it('always emits bounds with labelMain; omits params, args, nesting when absent', () => {
             const result = generateBrickOutline2({
                 strokeWidth: 0,
                 labelMainDims: { w: 60, h: 20 },
                 paramArgDims: [],
             });
-            expect(result.markers).toBeUndefined();
+            expect(result.bounds).toBeDefined();
+            expect(result.bounds.labelMain).toBeTruthy();
+            expect(result.bounds.params).toBeUndefined();
+            expect(result.bounds.args).toBeUndefined();
+            expect(result.bounds.nesting).toBeUndefined();
         });
 
-        it('emits the requested marker regions', () => {
-            const result = generateBrickOutline2(
-                {
-                    strokeWidth: 0,
-                    labelMainDims: { w: 60, h: 20 },
-                    paramArgDims: [{ param: { w: 40, h: 15 }, arg: { w: 50, h: 30 } }],
-                    nestingDims: { w: 50, h: 50 },
-                },
-                true,
-            );
-            expect(result.markers).toBeDefined();
-            expect(result.markers!.labelMain).toBeTruthy();
-            expect(result.markers!.labelParams).toHaveLength(1);
-            expect(result.markers!.args).toHaveLength(1);
-            expect(result.markers!.nesting).toBeTruthy();
+        it('emits bounds for all regions when params, args, and nesting are present', () => {
+            const result = generateBrickOutline2({
+                strokeWidth: 0,
+                labelMainDims: { w: 60, h: 20 },
+                paramArgDims: [{ param: { w: 40, h: 15 }, arg: { w: 50, h: 30 } }],
+                nestingDims: { w: 50, h: 50 },
+            });
+            expect(result.bounds).toBeDefined();
+            expect(result.bounds.labelMain).toBeTruthy();
+            expect(result.bounds.params).toHaveLength(1);
+            expect(result.bounds.args).toHaveLength(1);
+            expect(result.bounds.nesting).toBeTruthy();
         });
     });
 });

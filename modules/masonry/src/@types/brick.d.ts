@@ -137,6 +137,17 @@ export interface Size {
     h: number;
 }
 
+/** 2D coordinate of a point in the SVG canvas */
+export interface Point {
+    /** X coordinate in pixels, measured from the left */
+    x: number;
+    /** Y coordinate in pixels, measured from the top */
+    y: number;
+}
+
+/** Bounding rectangle of a layout region: position and size */
+export interface Bounds extends Size, Point {}
+
 export interface BrickOutlineInput2 {
     /**
      * Stroke width of the outline. The outline is drawn inset by `strokeWidth / 2`
@@ -169,15 +180,15 @@ export interface BrickOutlineOutput2 {
     width: number;
     /** Total outer height of the brick */
     height: number;
-    /** Debug overlay rectangles for each layout region; only present when showMarkers is true */
-    markers?: {
-        /** Rect covering the main label area */
-        labelMain: string;
-        /** Rects covering each parameter label area; absent when no params are provided */
-        labelParams?: string[];
-        /** Rects covering each argument area; absent when no args are provided */
-        args?: string[];
-        /** Rect covering the nesting cavity; absent when there is no nesting */
-        nesting?: string;
+    /** Bounding rectangles for each layout region */
+    bounds: {
+        /** Bounds of the main label area */
+        labelMain: Bounds;
+        /** Bounds of each parameter label area; absent when no params are provided */
+        params?: Bounds[];
+        /** Bounds of each argument area; absent when no args are provided */
+        args?: Bounds[];
+        /** Bounds of the nesting cavity; absent when there is no nesting */
+        nesting?: Bounds;
     };
 }

@@ -1,11 +1,12 @@
-import type { BrickOutlineInput2, BrickOutlineOutput2, Size } from '../../@types/brick';
+import type {
+    Bounds,
+    BrickOutlineInput2,
+    BrickOutlineOutput2,
+    Point,
+    Size,
+} from '../../@types/brick';
 
 // ────────────────────────── Types ──────────────────────────
-
-interface Point {
-    x: number;
-    y: number;
-}
 
 export interface BrickOutlineInput {
     mainLabel: Size;
@@ -340,66 +341,61 @@ function segTailStepBottom(): string[] {
     return [`h ${-TAIL_STEP_W}`];
 }
 
-function generateMarkers(
+function generateBounds(
     input: BrickOutlineInput2,
     width: number,
     headHeight: number,
     nestHeight: number,
     hasNesting: boolean,
-): BrickOutlineOutput2['markers'] {
+): BrickOutlineOutput2['bounds'] {
     const strokeWidth = input.strokeWidth;
 
-    const mainLabelRect = [
-        `M ${strokeWidth / 2 + HEAD_PAD_X1} ${strokeWidth / 2 + HEAD_PAD_Y1}`,
-        `h ${input.labelMainDims.w}`,
-        `v ${input.labelMainDims.h}`,
-        `h ${-input.labelMainDims.w}`,
-        'Z',
-    ].join(' ');
+    const labelMain: Bounds = {
+        x: strokeWidth / 2 + HEAD_PAD_X1,
+        y: strokeWidth / 2 + HEAD_PAD_Y1,
+        w: input.labelMainDims.w,
+        h: Math.max(input.labelMainDims.h, MIN_LABEL_MAIN_H),
+    };
 
-    let nestingRect: string | undefined;
+    let nesting: Bounds | undefined;
     if (hasNesting) {
-        const nestingW = input.nestingDims?.w ?? 0;
-        nestingRect = [
-            `M ${TAIL_INDENT_W + strokeWidth / 2 + strokeWidth / 2} ${headHeight}`,
-            `h ${nestingW}`,
-            `v ${nestHeight}`,
-            `h ${-nestingW}`,
-            'Z',
-        ].join(' ');
+        nesting = {
+            x: TAIL_INDENT_W + strokeWidth / 2 + strokeWidth / 2,
+            y: headHeight,
+            w: input.nestingDims?.w ?? 0,
+            h: Math.max(nestHeight, MIN_NEST_HEIGHT),
+        };
     }
 
-    const paramRects: string[] = [];
-    const argRectList: string[] = [];
+    const params: Bounds[] = [];
+    const args: Bounds[] = [];
     let y = 0;
 
     for (const { param, arg } of input.paramArgDims) {
-        const rowH = arg?.h ?? MIN_ARG_H;
+        const rowH = Math.max(arg?.h ?? 0, MIN_ARG_H);
 
         if (arg !== null) {
-            argRectList.push(
-                [`M ${width} ${y}`, `h ${arg.w}`, `v ${arg.h}`, `h ${-arg.w}`, 'Z'].join(' '),
-            );
+            args.push({ x: width, y, w: arg.w, h: rowH });
         }
 
         if (param !== null) {
-            const paramY = y + (rowH - param.h) / 2;
-            const x = width - strokeWidth / 2 - HEAD_PAD_X2 - param.w;
-            paramRects.push(
-                [`M ${x} ${paramY}`, `h ${param.w}`, `v ${param.h}`, `h ${-param.w}`, 'Z'].join(
-                    ' ',
-                ),
-            );
+            const paramH = Math.max(param.h, MIN_PARAM_H);
+            params.push({
+                x: width - strokeWidth / 2 - HEAD_PAD_X2 - param.w,
+                y: y + (rowH - paramH) / 2,
+                w: param.w,
+                h: paramH,
+            });
         }
 
         y += rowH;
     }
 
     return {
-        labelMain: mainLabelRect,
-        labelParams: paramRects.length > 0 ? paramRects : undefined,
-        args: argRectList.length > 0 ? argRectList : undefined,
-        nesting: nestingRect,
+        labelMain,
+        params: params.length > 0 ? params : undefined,
+        args: args.length > 0 ? args : undefined,
+        nesting,
     };
 }
 
@@ -407,14 +403,11 @@ function generateMarkers(
  * Generates a brick outline SVG path from its inner dimension properties.
  *
  * @param input - The dimensions of the brick's inner elements
- * @param showMarkers - Whether to include marker elements for debugging layout
- * @returns The SVG path string and computed outer dimensions
+ * @returns The SVG path string, computed outer dimensions, and layout bounds
  */
-export function generateBrickOutline2(
-    input: BrickOutlineInput2,
-    showMarkers: boolean = false,
-): BrickOutlineOutput2 {
+export function generateBrickOutline2(input: BrickOutlineInput2): BrickOutlineOutput2 {
     const { width, height, headHeight, nestHeight } = computeDimensions2(input);
+
     const hasNesting = input.nestingDims !== undefined;
     const strokeWidth = input.strokeWidth;
 
@@ -439,9 +432,8 @@ export function generateBrickOutline2(
           ];
 
     const path = segments.join(' ');
-    const markers = showMarkers
-        ? generateMarkers(input, width, headHeight, nestHeight, hasNesting)
-        : undefined;
 
-    return { path, width, height, markers };
+    const bounds = generateBounds(input, width, headHeight, nestHeight, hasNesting);
+
+    return { path, width, height, bounds };
 }

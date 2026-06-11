@@ -1,39 +1,97 @@
-import { generateBrickOutline2, type BrickOutlineInput2 } from '../../utils/newPath';
+import type { BrickOutlineInput2 } from '../../../@types/brick';
+import { createBrickOutlineGenerator } from '../../utils/newPath';
+
+const SCALE = 2.25;
+
+const pxToSvg = (px: number) => px / SCALE;
+const svgToPx = (u: number) => u * SCALE;
+
+const generateBrickOutline = createBrickOutlineGenerator({
+  minWidth: pxToSvg(120),
+  minLabelHeight: pxToSvg(20),
+  minNestHeight: pxToSvg(40),
+  minParamHeight: pxToSvg(20),
+  minArgHeight: pxToSvg(40),
+});
 
 export function PathBrickView({ input }: { input: BrickOutlineInput2 }) {
   const maxArgW = Math.max(0, ...input.paramArgDims.map((p) => p.arg?.w ?? 0));
-  const { width, height, path, markers } = generateBrickOutline2(input, true);
-  const strokeWidth = input.strokeWidth ?? 0;
+  const { width, height, path, bounds } = generateBrickOutline({
+    strokeWidth: pxToSvg(input.strokeWidth),
+    labelDims: { w: pxToSvg(input.labelDims.w), h: pxToSvg(input.labelDims.h) },
+    paramArgDims: input.paramArgDims.map((p) => ({
+      param: p.param ? { w: pxToSvg(p.param.w), h: pxToSvg(p.param.h) } : null,
+      arg: p.arg ? { w: pxToSvg(p.arg.w), h: pxToSvg(p.arg.h) } : null,
+    })),
+    nestingDims:
+      input.nestingDims !== undefined
+        ? input.nestingDims !== null
+          ? { w: pxToSvg(input.nestingDims.w), h: pxToSvg(input.nestingDims.h) }
+          : null
+        : undefined,
+  });
 
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={width + maxArgW}
-      height={height}
-      viewBox={`0 0 ${width + maxArgW} ${height}`}
-      style={{ backgroundColor: '#eee' }}
+      width={svgToPx(width) + maxArgW}
+      height={svgToPx(height)}
+      style={{ backgroundColor: '#e4e4e4' }}
     >
-      {/* Outer brick: grey fill, grey stroke */}
-      <path d={path} fill="#bbb" stroke="#555" strokeWidth={strokeWidth} />
+      <path
+        d={path}
+        transform={`scale(${SCALE})`}
+        fill="#70a1ff"
+        stroke="#3867d6"
+        strokeWidth={pxToSvg(input.strokeWidth)}
+      />
 
-      {markers && (
-        <>
-          {/* Main label (interior content) */}
-          <path d={markers?.labelMain} fill="#00f" />
+      {/* Debug overlay: visualises the markers */}
+      <>
+        {/* Primary label */}
+        <rect
+          x={svgToPx(bounds.label.x)}
+          y={svgToPx(bounds.label.y)}
+          width={svgToPx(bounds.label.w)}
+          height={svgToPx(bounds.label.h)}
+          fill="#ffcccc"
+        />
 
-          {/* Param labels (interior content) */}
-          {markers?.labelParams?.map((d, i) => <path key={i} d={d} fill="#ff0" />)}
+        {/* Per-parameter label areas (optional) — one rect per param name slot */}
+        {bounds.params?.map((b, i) => (
+          <rect
+            key={i}
+            x={svgToPx(b.x)}
+            y={svgToPx(b.y)}
+            width={svgToPx(b.w)}
+            height={svgToPx(b.h)}
+            fill="#ffda79"
+          />
+        ))}
 
-          {/* Each arg is its own brick: filled with its colour (inside reference) plus a
-              darker stroke, so it reads as a distinct brick not overlapping the parent. */}
-          {markers?.args?.map((d, i) => (
-            <path key={i} d={d} fill={i % 2 === 0 ? '#f80' : '#f0f'} />
-          ))}
+        {/* Per-argument slot areas */}
+        {bounds.args?.map((b, i) => (
+          <rect
+            key={i}
+            x={svgToPx(b.x)}
+            y={svgToPx(b.y)}
+            width={svgToPx(b.w)}
+            height={svgToPx(b.h)}
+            fill={i % 2 === 0 ? '#26de819f' : '#20bf6b9f'}
+          />
+        ))}
 
-          {/* Nested child brick: green fill (inside reference) with a darker green stroke */}
-          {markers?.nesting && <path d={markers.nesting} fill="#0f0" />}
-        </>
-      )}
+        {/* Nesting (clamp) area — present only on bricks that wrap inner blocks */}
+        {bounds.nesting && (
+          <rect
+            x={svgToPx(bounds.nesting.x)}
+            y={svgToPx(bounds.nesting.y)}
+            width={svgToPx(bounds.nesting.w)}
+            height={svgToPx(bounds.nesting.h)}
+            fill="#a5b1c27f"
+          />
+        )}
+      </>
     </svg>
   );
 }

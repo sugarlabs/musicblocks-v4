@@ -127,3 +127,88 @@ export interface IBrickCompound extends IBrick {
      */
     setBoundingBoxNest(extent: TExtent[]): void;
 }
+
+// -------------------------------------------------------------------------------------------------
+
+export interface Size {
+    /** Width in pixels */
+    w: number;
+    /** Height in pixels */
+    h: number;
+}
+
+/** 2D coordinate of a point in the SVG canvas */
+export interface Point {
+    /** X coordinate in pixels, measured from the left */
+    x: number;
+    /** Y coordinate in pixels, measured from the top */
+    y: number;
+}
+
+/** Bounding rectangle of a layout region: position and size */
+export interface Bounds extends Size, Point {}
+
+export interface BrickOutlineInput2 {
+    /**
+     * Stroke width of the outline. The outline is drawn inset by `strokeWidth / 2`
+     * so the stroke stays inside the reported width/height instead of being clipped.
+     * Pass 0 for no inset (original geometry).
+     */
+    strokeWidth: number;
+    /** Dimensions of the label text area */
+    labelDims: Size;
+    /** One entry per argument slot; each pairs a parameter label with its argument */
+    paramArgDims: {
+        /** Dimensions of the parameter label; null if the slot has no label (uses MIN_PARAM_H) */
+        param: Size | null;
+        /** Dimensions of the argument area; null if the slot has no argument (uses MIN_ARG_H) */
+        arg: Size | null;
+    }[];
+    /**
+     * Dimensions of the nested content area.
+     * - `undefined` — no nesting, tail is not rendered
+     * - `null` — nesting exists but content dimensions are unknown; falls back to MIN_NEST_HEIGHT
+     * - `Size` — nesting exists with known content dimensions
+     */
+    nestingDims?: Size | null;
+}
+
+export interface BrickOutlineOutput2 {
+    /** SVG path string tracing the brick outline */
+    path: string;
+    /** Total outer width of the brick */
+    width: number;
+    /** Total outer height of the brick */
+    height: number;
+    /** Bounding rectangles for each layout region */
+    bounds: {
+        /** Bounds of the label area */
+        label: Bounds;
+        /** Bounds of each parameter label area; absent when no params are provided */
+        params?: Bounds[];
+        /** Bounds of each argument area; absent when no args are provided */
+        args?: Bounds[];
+        /** Bounds of the nesting cavity; absent when there is no nesting */
+        nesting?: Bounds;
+    };
+}
+
+export interface BrickViewProps {
+    /** Display text content of the brick label */
+    label: string;
+    /** Controls brick size and font scaling; defaults to 1 */
+    scaleLevel?: 1 | 2 | 3;
+}
+
+export interface BrickMinimums {
+    /** Minimum total outer width of the brick */
+    minWidth: number;
+    /** Minimum height of the label content area */
+    minLabelHeight: number;
+    /** Minimum height of the nesting cavity */
+    minNestHeight: number;
+    /** Minimum height of a parameter label slot */
+    minParamHeight: number;
+    /** Minimum height of an argument slot */
+    minArgHeight: number;
+}

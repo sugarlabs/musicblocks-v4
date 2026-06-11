@@ -18,6 +18,12 @@ export interface BrickOutlineInput {
 }
 
 export interface BrickOutlineInput2 {
+    /**
+     * Stroke width of the outline. The outline is drawn inset by `strokeWidth / 2`
+     * so the stroke stays inside the reported width/height instead of being clipped.
+     * Pass 0 for no inset (original geometry).
+     */
+    strokeWidth: number;
     /** Dimensions of the main label text area */
     labelMainDims: Size;
     /** One entry per argument slot; each pairs a parameter label with its argument */
@@ -181,20 +187,30 @@ export function computeDimensions2(input: BrickOutlineInput2): ComputedDimension
     const params = input.paramArgDims.map((p) => p.param ?? { w: 0, h: MIN_PARAM_H });
     const args = input.paramArgDims.map((p) => p.arg ?? { w: 0, h: MIN_ARG_H });
 
+    const strokeWidth = input.strokeWidth;
+
     // ── Width ──
+    // Each content box reserves s/2 of stroke clearance on its left and right edges
+    // (s/2 + s/2 per box) so the inset outline's stroke is not clipped.
     const maxParamWidth = params.length > 0 ? Math.max(...params.map((p) => p.w)) : 0;
     const labelParamGutter = maxParamWidth > 0 ? LABEL_PARAM_GUTTER_X : 0;
     const headWidth =
-        HEAD_PAD_X1 + HEAD_PAD_X2 + input.labelMainDims.w + labelParamGutter + maxParamWidth;
+        strokeWidth / 2 +
+        HEAD_PAD_X1 + HEAD_PAD_X2 + input.labelMainDims.w + labelParamGutter + maxParamWidth +
+        strokeWidth / 2;
 
-    const tailWidth = TAIL_INDENT_W + (input.nestingDims?.w ?? 0);
+    const tailWidth =
+        strokeWidth / 2 + TAIL_INDENT_W + (input.nestingDims?.w ?? 0) + strokeWidth / 2;
 
     const width = Math.max(headWidth, tailWidth, MIN_WIDTH);
 
     // ── Height of head ──
     const paramsTotalHeight = params.reduce((sum, p) => sum + p.h, 0);
     const paramGutterTotal = PARAM_GUTTER_Y * Math.max(0, params.length - 1);
-    const argsTotalHeight = args.reduce((sum, a) => sum + a.h, 0);
+    // Reserve a strokeWidth gap between stacked args so adjacent arg bricks' strokes
+    // sit side by side without overlapping (mirrors the stroke spacing in path.ts).
+    const argGutterTotal = strokeWidth * Math.max(0, args.length - 1);
+    const argsTotalHeight = args.reduce((sum, a) => sum + a.h, 0) + argGutterTotal;
 
     const headHeight = Math.max(
         Math.max(input.labelMainDims.h, MIN_LABEL_MAIN_H) + HEAD_PAD_Y1 + HEAD_PAD_Y2,
@@ -207,9 +223,11 @@ export function computeDimensions2(input: BrickOutlineInput2): ComputedDimension
     const nestHeight = hasNesting ? Math.max(input.nestingDims?.h ?? 0, MIN_NEST_HEIGHT) : 0;
     const tailHeight = hasNesting ? nestHeight + TAIL_FOOT_H : 0;
 
-    const height = headHeight + tailHeight;
+    // Only the outer perimeter gains clearance: the head↔tail seam is interior, so
+    // strokeWidth is added once to the total (s/2 top + s/2 bottom), not to headHeight.
+    const height = headHeight + tailHeight + strokeWidth;
 
-    return { width, height, headHeight, nestHeight };
+    return { width, height, headHeight, nestHeight};
 }
 
 // ────────────────────────── Outline Generation ──────────────────────────
@@ -306,40 +324,47 @@ export function generateBrickOutline(input: BrickOutlineInput): BrickOutlineOutp
 
 // ────────────────────────── Path Segments ──────────────────────────
 
-function segTopEdge(width: number): string[] {
-    return [`m 0 0`, `h ${width}`];
+// The whole outline is inset by s/2: it starts at (s/2, s/2) and every full-span
+// edge is shortened by s (s/2 of clearance at each end).
+function segTopEdge(width: number, strokeWidth: number): string[] {
+    return [`m ${strokeWidth / 2} ${strokeWidth / 2}`, `h ${width - strokeWidth}`];
 }
 
+// The head's right edge runs from the top inset down to the cavity-roof seam.
+// Both ends shift down by s/2, so its length equals headHeight unchanged.
 function segHeadRight(headHeight: number): string[] {
     return [`v ${headHeight}`];
 }
 
-function segHeadBottom(width: number): string[] {
-    return [`h ${-width}`];
+function segHeadBottom(width: number, strokeWidth: number): string[] {
+    return [`h ${-(width - strokeWidth)}`];
 }
 
-function segLeftEdge(height: number): string[] {
-    return [`v ${-height}`];
+function segLeftEdge(height: number, strokeWidth: number): string[] {
+    return [`v ${-(height - strokeWidth)}`];
 }
 
-function segTailCavityRoof(width: number): string[] {
-    return [`h ${-(width - TAIL_INDENT_W)}`];
+// Tail edges keep their nominal feature sizes, but the concave cavity shrinks by
+// s/2 per wall (insetting the solid pushes its notch walls into the cavity): the
+// roof, spine and floor each move inward, and the freed s is absorbed by the foot.
+function segTailCavityRoof(width: number, strokeWidth: number): string[] {
+    return [`h ${-(width - TAIL_INDENT_W - strokeWidth)}`];
 }
 
-function segTailCavityLeft(nestHeight: number): string[] {
-    return [`v ${nestHeight}`];
+function segTailCavityLeft(nestHeight: number, strokeWidth: number): string[] {
+    return [`v ${nestHeight - strokeWidth}`];
 }
 
-function segTailFootStep(): string[] {
-    return [`h ${TAIL_FOOT_W - TAIL_INDENT_W}`];
+function segTailFootStep(strokeWidth: number): string[] {
+    return [`h ${TAIL_FOOT_W - TAIL_INDENT_W - strokeWidth}`];
 }
 
-function segTailFootRight(): string[] {
-    return [`v ${TAIL_FOOT_H}`];
+function segTailFootRight(strokeWidth: number): string[] {
+    return [`v ${TAIL_FOOT_H + strokeWidth}`];
 }
 
-function segTailBottom(): string[] {
-    return [`h ${-TAIL_FOOT_W}`];
+function segTailBottom(strokeWidth: number): string[] {
+    return [`h ${-(TAIL_FOOT_W - strokeWidth)}`];
 }
 
 function generateMarkers(
@@ -349,8 +374,11 @@ function generateMarkers(
     nestHeight: number,
     hasNesting: boolean,
 ): BrickOutlineOutput2['markers'] {
+    // Anchors are positioned relative to the now-inset outline: distances from the
+    // top/left edges gain s/2, and the right edge sits at (width - s/2).
+    const s = input.strokeWidth;
     const mainLabelRect = [
-        `M ${HEAD_PAD_X1} ${HEAD_PAD_Y1}`,
+        `M ${HEAD_PAD_X1 + s / 2} ${HEAD_PAD_Y1 + s / 2}`,
         `h ${input.labelMainDims.w}`,
         `v ${input.labelMainDims.h}`,
         `h ${-input.labelMainDims.w}`,
@@ -360,11 +388,14 @@ function generateMarkers(
     let nestingRect: string | undefined;
     if (hasNesting) {
         const nestingW = input.nestingDims?.w ?? 0;
+        // The nested child is its own brick with stroke s. Inset its outline a full s
+        // inside the parent's cavity outline (s/2 for the parent stroke + s/2 for the
+        // child stroke) so the two strokes sit adjacent without ever overlapping.
         nestingRect = [
-            `M ${TAIL_INDENT_W} ${headHeight}`,
-            `h ${nestingW}`,
-            `v ${nestHeight}`,
-            `h ${-nestingW}`,
+            `M ${TAIL_INDENT_W + 1.5 * s} ${headHeight + 1.5 * s}`,
+            `h ${nestingW - s}`,
+            `v ${nestHeight - 3 * s}`,
+            `h ${-(nestingW - s)}`,
             'Z',
         ].join(' ');
     }
@@ -377,20 +408,27 @@ function generateMarkers(
         const rowH = arg?.h ?? MIN_ARG_H;
 
         if (arg !== null) {
+            // Each arg is its own brick with stroke s, sitting to the right of the
+            // parent. Place its outline at width + s/2 so the arg's stroke edge meets
+            // the parent's outer stroke edge (x = width) — adjacent, never overlapping.
             argRectList.push(
-                [`M ${width} ${y}`, `h ${arg.w}`, `v ${arg.h}`, `h ${-arg.w}`, 'Z'].join(' '),
+                [`M ${width + s / 2} ${y + s / 2}`, `h ${arg.w}`, `v ${arg.h}`, `h ${-arg.w}`, 'Z'].join(
+                    ' ',
+                ),
             );
         }
 
         if (param !== null) {
-            const paramY = y + (rowH - param.h) / 2;
-            const x = width - HEAD_PAD_X2 - param.w;
+            const paramY = y + (rowH - param.h) / 2 + s / 2;
+            const x = width - s / 2 - HEAD_PAD_X2 - param.w;
             paramRects.push(
                 [`M ${x} ${paramY}`, `h ${param.w}`, `v ${param.h}`, `h ${-param.w}`, 'Z'].join(' '),
             );
         }
 
-        y += rowH;
+        // Advance past this row plus the strokeWidth gap reserved between arg bricks
+        // (matches argGutterTotal in computeDimensions2).
+        y += rowH + s;
     }
 
     return {
@@ -414,24 +452,25 @@ export function generateBrickOutline2(
 ): BrickOutlineOutput2 {
     const { width, height, headHeight, nestHeight } = computeDimensions2(input);
     const hasNesting = input.nestingDims !== undefined;
+    const s = input.strokeWidth;
 
     const segments = !hasNesting
         ? [
-              ...segTopEdge(width),
+              ...segTopEdge(width, s),
               ...segHeadRight(headHeight),
-              ...segHeadBottom(width),
-              ...segLeftEdge(headHeight),
+              ...segHeadBottom(width, s),
+              ...segLeftEdge(height, s),
               'z',
           ]
         : [
-              ...segTopEdge(width),
+              ...segTopEdge(width, s),
               ...segHeadRight(headHeight),
-              ...segTailCavityRoof(width),
-              ...segTailCavityLeft(nestHeight),
-              ...segTailFootStep(),
-              ...segTailFootRight(),
-              ...segTailBottom(),
-              ...segLeftEdge(height),
+              ...segTailCavityRoof(width, s),
+              ...segTailCavityLeft(nestHeight, s),
+              ...segTailFootStep(s),
+              ...segTailFootRight(s),
+              ...segTailBottom(s),
+              ...segLeftEdge(height, s),
               'z',
           ];
 

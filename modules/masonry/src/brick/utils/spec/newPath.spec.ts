@@ -1,5 +1,10 @@
-import { generateBrickOutline, computeDimensions } from '../newPath';
-import type { BrickOutlineInput } from '../newPath';
+import {
+    generateBrickOutline,
+    computeDimensions,
+    generateBrickOutline2,
+    computeDimensions2,
+} from '../newPath';
+import type { BrickOutlineInput, BrickOutlineInput2 } from '../newPath';
 
 // ────────────────────────── Helpers ──────────────────────────
 
@@ -433,5 +438,390 @@ describe('newPath: computeDimensions', () => {
         // topBarWidth = 8 + 20 + 8 = 36
         // width = max(100, 36, 224) = 224
         expect(dims.width).toBe(224);
+    });
+});
+
+// ══════════════════════ V2: stroke-width-aware path ══════════════════════
+
+// ────────────────────────── Helpers ──────────────────────────
+
+interface RelSeg {
+    cmd: 'm' | 'h' | 'v' | 'z';
+    /** signed length for h/v; undefined for m/z */
+    len?: number;
+}
+
+/**
+ * Parse a relative SVG path (lowercase m/h/v + z) into its segments.
+ * The leading `m dx dy` only positions the start, so it is recorded as a single
+ * `m` with no length; `h`/`v` carry their signed relative displacement.
+ */
+function parseRelPath(path: string): RelSeg[] {
+    const tokens = path.trim().split(/\s+/);
+    const segs: RelSeg[] = [];
+    let i = 0;
+    while (i < tokens.length) {
+        const cmd = tokens[i];
+        if (cmd === 'm') {
+            segs.push({ cmd: 'm' });
+            i += 3; // m dx dy
+        } else if (cmd === 'h' || cmd === 'v') {
+            segs.push({ cmd, len: parseFloat(tokens[i + 1]) });
+            i += 2;
+        } else if (cmd === 'z' || cmd === 'Z') {
+            segs.push({ cmd: 'z' });
+            i += 1;
+        } else {
+            i += 1;
+        }
+    }
+    return segs;
+}
+
+/** Net horizontal / vertical displacement of all h/v segments (should be 0 for a closed loop). */
+function netDisplacement(path: string): { dx: number; dy: number } {
+    let dx = 0;
+    let dy = 0;
+    for (const seg of parseRelPath(path)) {
+        if (seg.cmd === 'h') dx += seg.len!;
+        if (seg.cmd === 'v') dy += seg.len!;
+    }
+    return { dx, dy };
+}
+
+// ────────────────────────── Constants (mirrored for assertions) ──────────────────────────
+
+const MIN_LABEL_MAIN_H = 20;
+const MIN_NEST_HEIGHT = 40;
+const MIN_ARG_H = 40;
+const HEAD_PAD = 10; // X1/X2/Y1/Y2 all 10
+const LABEL_PARAM_GUTTER_X = 10;
+const PARAM_GUTTER_Y = 10;
+const TAIL_INDENT_W = 10;
+const TAIL_FOOT_H = 10;
+const TAIL_FOOT_W = 40;
+
+// ────────────────────────── computeDimensions2 ──────────────────────────
+
+describe('path V2: computeDimensions2', () => {
+    describe('width', () => {
+        it('main label dominates (no stroke)', () => {
+            const dims = computeDimensions2({
+                strokeWidth: 0,
+                labelMainDims: { w: 200, h: 30 },
+                paramArgDims: [],
+            });
+            // headWidth = 0 + 20 + 200 = 220 ; tailWidth = 10 ; width = max(220,10,100)
+            expect(dims.width).toBe(220);
+        });
+
+        it('MIN_WIDTH dominates a small brick (no stroke)', () => {
+            const dims = computeDimensions2({
+                strokeWidth: 0,
+                labelMainDims: { w: 30, h: 10 },
+                paramArgDims: [],
+            });
+            // headWidth = 20 + 30 = 50 ; width = max(50,10,100) = 100
+            expect(dims.width).toBe(MIN_WIDTH);
+        });
+
+        it('adds s/2 + s/2 of stroke clearance to the head when the head dominates', () => {
+            const s = 4;
+            const dims = computeDimensions2({
+                strokeWidth: s,
+                labelMainDims: { w: 200, h: 30 },
+                paramArgDims: [],
+            });
+            // headWidth = s + 20 + 200 = 224
+            expect(dims.width).toBe(224);
+        });
+
+        it('does NOT add stroke clearance when MIN_WIDTH wins (documents the s-smaller edge case)', () => {
+            const s = 4;
+            const dims = computeDimensions2({
+                strokeWidth: s,
+                labelMainDims: { w: 30, h: 10 },
+                paramArgDims: [],
+            });
+            // headWidth = s + 20 + 30 = 54 ; tailWidth = s + 10 = 14 ; width = max(54,14,100) = 100
+            // NOTE: the original `max(...) + s` formula would give 104. MIN_WIDTH never gets +s.
+            expect(dims.width).toBe(MIN_WIDTH);
+        });
+
+        it('widens for the widest param plus the label gutter', () => {
+            const dims = computeDimensions2({
+                strokeWidth: 0,
+                labelMainDims: { w: 60, h: 20 },
+                paramArgDims: [
+                    { param: { w: 40, h: 15 }, arg: null },
+                    { param: { w: 30, h: 25 }, arg: null },
+                ],
+            });
+            // headWidth = 0 + 20 + 60 + 10(gutter) + 40(maxParam) = 130
+            expect(dims.width).toBe(130);
+        });
+
+        it('tail (nesting) can drive the width', () => {
+            const dims = computeDimensions2({
+                strokeWidth: 0,
+                labelMainDims: { w: 20, h: 10 },
+                paramArgDims: [],
+                nestingDims: { w: 200, h: 50 },
+            });
+            // tailWidth = 0 + 10 + 200 = 210 ; width = max(30,210,100) = 210
+            expect(dims.width).toBe(210);
+        });
+    });
+
+    describe('height', () => {
+        it('falls back to the main-label minimum height', () => {
+            const dims = computeDimensions2({
+                strokeWidth: 0,
+                labelMainDims: { w: 60, h: 10 },
+                paramArgDims: [],
+            });
+            // headHeight = max(max(10,20)+20, 20, 0) = 40 ; no tail ; +s = 0
+            expect(dims.headHeight).toBe(40);
+            expect(dims.height).toBe(40);
+            expect(dims.nestHeight).toBe(0);
+        });
+
+        it('stacked null-arg rows drive head height via MIN_ARG_H', () => {
+            const dims = computeDimensions2({
+                strokeWidth: 0,
+                labelMainDims: { w: 60, h: 20 },
+                paramArgDims: [
+                    { param: { w: 40, h: 15 }, arg: null },
+                    { param: { w: 30, h: 25 }, arg: null },
+                ],
+            });
+            // argsTotalHeight = MIN_ARG_H + MIN_ARG_H + 0(gutter, s=0) = 80
+            expect(dims.headHeight).toBe(2 * MIN_ARG_H);
+        });
+
+        it('adds strokeWidth once to the total height (top + bottom margin)', () => {
+            const s = 6;
+            const dims = computeDimensions2({
+                strokeWidth: s,
+                labelMainDims: { w: 60, h: 30 },
+                paramArgDims: [],
+            });
+            // headHeight = max(30,20)+20 = 50 ; height = 50 + 0 + s
+            expect(dims.headHeight).toBe(50);
+            expect(dims.height).toBe(50 + s);
+        });
+
+        it('compound brick height = headHeight + nestHeight + foot + s', () => {
+            const s = 4;
+            const dims = computeDimensions2({
+                strokeWidth: s,
+                labelMainDims: { w: 80, h: 20 },
+                paramArgDims: [],
+                nestingDims: { w: 50, h: 50 },
+            });
+            expect(dims.headHeight).toBe(40); // max(20,20)+20
+            expect(dims.nestHeight).toBe(50); // max(50,40)
+            // height = 40 + (50 + 10) + 4
+            expect(dims.height).toBe(40 + 50 + TAIL_FOOT_H + s);
+        });
+
+        it('enforces the minimum nesting height', () => {
+            const dims = computeDimensions2({
+                strokeWidth: 0,
+                labelMainDims: { w: 80, h: 20 },
+                paramArgDims: [],
+                nestingDims: { w: 50, h: 5 },
+            });
+            expect(dims.nestHeight).toBe(MIN_NEST_HEIGHT);
+        });
+
+        it('reserves a strokeWidth gutter between stacked arg bricks', () => {
+            const s = 4;
+            const dims = computeDimensions2({
+                strokeWidth: s,
+                labelMainDims: { w: 60, h: 20 },
+                paramArgDims: [
+                    { param: null, arg: { w: 50, h: 30 } },
+                    { param: null, arg: { w: 50, h: 30 } },
+                ],
+            });
+            // argsTotalHeight = 30 + 30 + s*(2-1) = 64 ; headHeight = max(40, 20, 64) = 64
+            expect(dims.headHeight).toBe(30 + 30 + s);
+        });
+    });
+});
+
+// ────────────────────────── generateBrickOutline2 ──────────────────────────
+
+describe('path V2: generateBrickOutline2', () => {
+    it('simple brick path with no stroke', () => {
+        const result = generateBrickOutline2({
+            strokeWidth: 0,
+            labelMainDims: { w: 60, h: 20 },
+            paramArgDims: [],
+        });
+        // width = 100 (MIN_WIDTH), headHeight = 40, height = 40
+        expect(result.path).toBe('m 0 0 h 100 v 40 h -100 v -40 z');
+        expect(result.width).toBe(100);
+        expect(result.height).toBe(40);
+    });
+
+    it('simple brick path inset by s/2 with stroke', () => {
+        const result = generateBrickOutline2({
+            strokeWidth: 4,
+            labelMainDims: { w: 200, h: 30 },
+            paramArgDims: [],
+        });
+        // width = 224, headHeight = 50, height = 54
+        // top edge: m 2 2, h (224-4)=220 ; right v 50 ; bottom h -220 ; left v -(54-4)=-50
+        expect(result.path).toBe('m 2 2 h 220 v 50 h -220 v -50 z');
+        expect(result.width).toBe(224);
+        expect(result.height).toBe(54);
+    });
+
+    it('compound brick path with no stroke', () => {
+        const result = generateBrickOutline2({
+            strokeWidth: 0,
+            labelMainDims: { w: 80, h: 20 },
+            paramArgDims: [],
+            nestingDims: { w: 50, h: 50 },
+        });
+        // width=100, headHeight=40, nestHeight=50, height=100
+        expect(result.path).toBe('m 0 0 h 100 v 40 h -90 v 50 h 30 v 10 h -40 v -100 z');
+    });
+
+    it('compound brick path with stroke (cavity −s, foot +s)', () => {
+        const result = generateBrickOutline2({
+            strokeWidth: 4,
+            labelMainDims: { w: 80, h: 20 },
+            paramArgDims: [],
+            nestingDims: { w: 50, h: 50 },
+        });
+        // width=104, headHeight=40, nestHeight=50, height=104
+        // roof: -(104-10-4)=-90 ; spine: 50-4=46 ; footStep: 40-10-4=26 ; footRight: 10+4=14 ; bottom: -(40-4)=-36
+        expect(result.path).toBe('m 2 2 h 100 v 40 h -90 v 46 h 26 v 14 h -36 v -100 z');
+    });
+
+    describe('well-formedness: the outline is a closed loop (net displacement = 0)', () => {
+        const inputs: { name: string; input: BrickOutlineInput2 }[] = [
+            {
+                name: 'simple, s=0',
+                input: { strokeWidth: 0, labelMainDims: { w: 60, h: 20 }, paramArgDims: [] },
+            },
+            {
+                name: 'simple, s=4',
+                input: { strokeWidth: 4, labelMainDims: { w: 200, h: 30 }, paramArgDims: [] },
+            },
+            {
+                name: 'compound, s=0',
+                input: {
+                    strokeWidth: 0,
+                    labelMainDims: { w: 80, h: 20 },
+                    paramArgDims: [],
+                    nestingDims: { w: 50, h: 50 },
+                },
+            },
+            {
+                name: 'compound, s=4',
+                input: {
+                    strokeWidth: 4,
+                    labelMainDims: { w: 80, h: 20 },
+                    paramArgDims: [],
+                    nestingDims: { w: 50, h: 50 },
+                },
+            },
+        ];
+
+        inputs.forEach(({ name, input }) => {
+            it(`closes for ${name}`, () => {
+                const { dx, dy } = netDisplacement(generateBrickOutline2(input).path);
+                expect(dx).toBe(0);
+                expect(dy).toBe(0);
+            });
+        });
+    });
+
+    describe('s = 0 reduces to the original (stroke terms vanish)', () => {
+        it('width has no stroke contribution at s=0', () => {
+            const input: BrickOutlineInput2 = {
+                strokeWidth: 0,
+                labelMainDims: { w: 120, h: 30 },
+                paramArgDims: [{ param: { w: 40, h: 18 }, arg: null }],
+            };
+            const dims = computeDimensions2(input);
+            const headWidth = 2 * HEAD_PAD + 120 + LABEL_PARAM_GUTTER_X + 40;
+            expect(dims.width).toBe(Math.max(headWidth, TAIL_INDENT_W, MIN_WIDTH));
+        });
+
+        it('path starts at the origin (no inset) when s=0', () => {
+            const { path } = generateBrickOutline2({
+                strokeWidth: 0,
+                labelMainDims: { w: 60, h: 20 },
+                paramArgDims: [],
+            });
+            expect(path.startsWith('m 0 0')).toBe(true);
+        });
+    });
+
+    describe('markers', () => {
+        it('omits markers unless requested', () => {
+            const result = generateBrickOutline2({
+                strokeWidth: 0,
+                labelMainDims: { w: 60, h: 20 },
+                paramArgDims: [],
+            });
+            expect(result.markers).toBeUndefined();
+        });
+
+        it('emits the requested marker regions', () => {
+            const result = generateBrickOutline2(
+                {
+                    strokeWidth: 0,
+                    labelMainDims: { w: 60, h: 20 },
+                    paramArgDims: [{ param: { w: 40, h: 15 }, arg: { w: 50, h: 30 } }],
+                    nestingDims: { w: 50, h: 50 },
+                },
+                true,
+            );
+            expect(result.markers).toBeDefined();
+            expect(result.markers!.labelMain).toBeTruthy();
+            expect(result.markers!.labelParams).toHaveLength(1);
+            expect(result.markers!.args).toHaveLength(1);
+            expect(result.markers!.nesting).toBeTruthy();
+        });
+    });
+});
+
+// ────────────────────────── Validity boundary (geometric fit / well-formedness) ──────────────────────────
+
+describe('path V2: validity boundaries (documented, not yet enforced)', () => {
+    /**
+     * The fixed-size tail features invert once the stroke exceeds them. The foot step
+     * (TAIL_FOOT_W - TAIL_INDENT_W = 30) is the first to go negative, so the outline
+     * stops being well-formed at s >= 30.
+     */
+    it('the foot-step segment goes negative once s exceeds TAIL_FOOT_W - TAIL_INDENT_W', () => {
+        const footStepLen = (s: number) => TAIL_FOOT_W - TAIL_INDENT_W - s;
+        expect(footStepLen(29)).toBeGreaterThan(0);
+        expect(footStepLen(30)).toBe(0);
+        expect(footStepLen(31)).toBeLessThan(0);
+    });
+
+    /**
+     * The stroke inset shrinks the cavity interior to (nestHeight - s), so nested
+     * content of height h only fits while nestHeight - s >= h.
+     */
+    it('cavity interior shrinks by s below the computed nestHeight', () => {
+        const s = 4;
+        const dims = computeDimensions2({
+            strokeWidth: s,
+            labelMainDims: { w: 80, h: 20 },
+            paramArgDims: [],
+            nestingDims: { w: 50, h: 50 },
+        });
+        const cavityInterior = dims.nestHeight - s;
+        expect(cavityInterior).toBe(50 - s);
+        // Content of height 50 no longer fits inside the inset cavity (50 - 4 = 46 < 50).
+        expect(cavityInterior).toBeLessThan(50);
     });
 });

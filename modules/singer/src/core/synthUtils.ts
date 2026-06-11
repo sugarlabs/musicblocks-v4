@@ -67,7 +67,11 @@ export default class SynthUtils implements ISynthUtils {
         this.playerSynths = new Map();
 
         this.builtinSynths.set('electronic synth', new Tone.PolySynth(Tone.Synth).toDestination());
-        /** TODO: Add other builtin synths, e.g. noise, sin, etc. */
+        this.builtinSynths.set('fm synth', new Tone.PolySynth(Tone.FMSynth).toDestination());
+        this.builtinSynths.set('am synth', new Tone.PolySynth(Tone.AMSynth).toDestination());
+        this.builtinSynths.set('pluck synth', new Tone.PolySynth(Tone.PluckSynth).toDestination());
+        this.builtinSynths.set('membrane synth', new Tone.PolySynth(Tone.MembraneSynth).toDestination());
+        this.builtinSynths.set('noise synth', new Tone.PolySynth(Tone.NoiseSynth).toDestination());
 
         /**
          * We enable a few samples by default.

@@ -30,7 +30,7 @@ export const LabelArgNoParam: Story = {
     input: {
       strokeWidth: 4,
       labelMainDims: { w: 120, h: 20 },
-      paramArgDims: [{ param: null, arg: { w: 100, h: 40 } }],
+      paramArgDims: [{ param: null, arg: { w: 100, h: 44 } }],
     },
   },
 };
@@ -40,7 +40,7 @@ export const LabelArgWithParam: Story = {
     input: {
       strokeWidth: 4,
       labelMainDims: { w: 120, h: 20 },
-      paramArgDims: [{ param: { w: 80, h: 15 }, arg: { w: 100, h: 40 } }],
+      paramArgDims: [{ param: { w: 80, h: 15 }, arg: { w: 100, h: 44 } }],
     },
   },
 };
@@ -51,7 +51,7 @@ export const LabelMixedParamArgs: Story = {
       strokeWidth: 4,
       labelMainDims: { w: 120, h: 20 },
       paramArgDims: [
-        { param: { w: 100, h: 15 }, arg: { w: 100, h: 40 } },
+        { param: { w: 100, h: 15 }, arg: { w: 100, h: 44 } },
         { param: { w: 60, h: 15 }, arg: null },
         { param: { w: 80, h: 15 }, arg: { w: 120, h: 80 } },
         { param: null, arg: { w: 80, h: 60 } },
@@ -66,8 +66,8 @@ const nestingBase: Pick<BrickOutlineInput2, 'strokeWidth' | 'labelMainDims' | 'p
   strokeWidth: 4,
   labelMainDims: { w: 120, h: 20 },
   paramArgDims: [
-    { param: { w: 80, h: 15 }, arg: { w: 100, h: 40 } },
-    { param: { w: 60, h: 15 }, arg: { w: 80, h: 40 } },
+    { param: { w: 80, h: 15 }, arg: { w: 100, h: 44 } },
+    { param: { w: 60, h: 15 }, arg: { w: 80, h: 44 } },
   ],
 };
 

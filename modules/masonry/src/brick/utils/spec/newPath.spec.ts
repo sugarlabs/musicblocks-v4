@@ -491,12 +491,10 @@ function netDisplacement(path: string): { dx: number; dy: number } {
 
 // ────────────────────────── Constants (mirrored for assertions) ──────────────────────────
 
-const MIN_LABEL_MAIN_H = 20;
 const MIN_NEST_HEIGHT = 40;
 const MIN_ARG_H = 40;
 const HEAD_PAD = 10; // X1/X2/Y1/Y2 all 10
 const LABEL_PARAM_GUTTER_X = 10;
-const PARAM_GUTTER_Y = 10;
 const TAIL_INDENT_W = 10;
 const TAIL_FOOT_H = 10;
 const TAIL_FOOT_W = 40;
@@ -606,9 +604,9 @@ describe('path V2: computeDimensions2', () => {
                 labelMainDims: { w: 60, h: 30 },
                 paramArgDims: [],
             });
-            // headHeight = max(30,20)+20 = 50 ; height = 50 + 0 + s
-            expect(dims.headHeight).toBe(50);
-            expect(dims.height).toBe(50 + s);
+            // headHeight = s/2 + HEAD_PAD_Y1 + max(30,20) + HEAD_PAD_Y2 + s/2 = 3+10+30+10+3 = 56
+            expect(dims.headHeight).toBe(56);
+            expect(dims.height).toBe(56); // headHeight + 0 (no nesting)
         });
 
         it('compound brick height = headHeight + nestHeight + foot + s', () => {
@@ -619,10 +617,10 @@ describe('path V2: computeDimensions2', () => {
                 paramArgDims: [],
                 nestingDims: { w: 50, h: 50 },
             });
-            expect(dims.headHeight).toBe(40); // max(20,20)+20
+            expect(dims.headHeight).toBe(44); // s/2 + HEAD_PAD_Y1 + max(20,20) + HEAD_PAD_Y2 + s/2
             expect(dims.nestHeight).toBe(50); // max(50,40)
-            // height = 40 + (50 + 10) + 4
-            expect(dims.height).toBe(40 + 50 + TAIL_FOOT_H + s);
+            // height = headHeight + (nestHeight + s/2 + TAIL_FOOT_H + s/2)
+            expect(dims.height).toBe(44 + 50 + TAIL_FOOT_H + s);
         });
 
         it('enforces the minimum nesting height', () => {
@@ -661,7 +659,7 @@ describe('path V2: generateBrickOutline2', () => {
             paramArgDims: [],
         });
         // width = 100 (MIN_WIDTH), headHeight = 40, height = 40
-        expect(result.path).toBe('m 0 0 h 100 v 40 h -100 v -40 z');
+        expect(result.path).toBe('M 0 0 h 100 v 40 h -100 v -40 z');
         expect(result.width).toBe(100);
         expect(result.height).toBe(40);
     });
@@ -672,9 +670,9 @@ describe('path V2: generateBrickOutline2', () => {
             labelMainDims: { w: 200, h: 30 },
             paramArgDims: [],
         });
-        // width = 224, headHeight = 50, height = 54
-        // top edge: m 2 2, h (224-4)=220 ; right v 50 ; bottom h -220 ; left v -(54-4)=-50
-        expect(result.path).toBe('m 2 2 h 220 v 50 h -220 v -50 z');
+        // width = 224, headHeight = 54 (includes s), height = 54
+        // M s/2 s/2 ; h (224-4)=220 ; v headHeight-4=50 ; h -220 ; v -50
+        expect(result.path).toBe('M 2 2 h 220 v 50 h -220 v -50 z');
         expect(result.width).toBe(224);
         expect(result.height).toBe(54);
     });
@@ -687,7 +685,7 @@ describe('path V2: generateBrickOutline2', () => {
             nestingDims: { w: 50, h: 50 },
         });
         // width=100, headHeight=40, nestHeight=50, height=100
-        expect(result.path).toBe('m 0 0 h 100 v 40 h -90 v 50 h 30 v 10 h -40 v -100 z');
+        expect(result.path).toBe('M 0 0 h 100 v 40 h -90 v 50 h 30 v 10 h -40 v -100 z');
     });
 
     it('compound brick path with stroke (cavity −s, foot +s)', () => {
@@ -697,9 +695,9 @@ describe('path V2: generateBrickOutline2', () => {
             paramArgDims: [],
             nestingDims: { w: 50, h: 50 },
         });
-        // width=104, headHeight=40, nestHeight=50, height=104
-        // roof: -(104-10-4)=-90 ; spine: 50-4=46 ; footStep: 40-10-4=26 ; footRight: 10+4=14 ; bottom: -(40-4)=-36
-        expect(result.path).toBe('m 2 2 h 100 v 40 h -90 v 46 h 26 v 14 h -36 v -100 z');
+        // width=104, headHeight=44, nestHeight=50, height=108
+        // M s/2 s/2 ; top: 104-4=100 ; head: 44-4=40 ; roof: -(104-10-4)=-90 ; spine: 50+4=54 ; foot: 30 ; step: 10 ; bottom: -40 ; left: -(108-4)=-104
+        expect(result.path).toBe('M 2 2 h 100 v 40 h -90 v 54 h 30 v 10 h -40 v -104 z');
     });
 
     describe('well-formedness: the outline is a closed loop (net displacement = 0)', () => {
@@ -759,7 +757,7 @@ describe('path V2: generateBrickOutline2', () => {
                 labelMainDims: { w: 60, h: 20 },
                 paramArgDims: [],
             });
-            expect(path.startsWith('m 0 0')).toBe(true);
+            expect(path.startsWith('M 0 0')).toBe(true);
         });
     });
 

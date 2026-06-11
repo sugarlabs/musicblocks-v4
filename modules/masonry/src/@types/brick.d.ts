@@ -196,4 +196,19 @@ export interface BrickOutlineOutput2 {
 export interface BrickViewProps {
     /** Display text content of the brick label */
     label: string;
+    /** Controls brick size and font scaling; defaults to 1 */
+    scaleLevel?: 1 | 2 | 3;
+}
+
+export interface BrickMinimums {
+    /** Minimum total outer width of the brick */
+    minWidth: number;
+    /** Minimum height of the label content area */
+    minLabelHeight: number;
+    /** Minimum height of the nesting cavity */
+    minNestHeight: number;
+    /** Minimum height of a parameter label slot */
+    minParamHeight: number;
+    /** Minimum height of an argument slot */
+    minArgHeight: number;
 }

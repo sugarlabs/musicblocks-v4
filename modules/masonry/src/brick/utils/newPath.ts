@@ -1,5 +1,6 @@
 import type {
     Bounds,
+    BrickMinimums,
     BrickOutlineInput2,
     BrickOutlineOutput2,
     Point,
@@ -23,45 +24,35 @@ export interface BrickOutlineOutput {
 
 // ────────────────────────── Constants ──────────────────────────
 
+const MIN_WIDTH = 100;
 const MIN_HEIGHT = 40;
+const MIN_NEST_HEIGHT = 40;
 const PADDING = 8;
 const NEST_INDENT = 16;
 
-// ── Minimums ──
-/** Minimum total outer width of the brick */
-const MIN_WIDTH = 100;
-/** Minimum height of the label content */
-const MIN_LABEL_H = 20;
-/** Minimum height of the nesting cavity */
-const MIN_NEST_HEIGHT = 40;
-/** Minimum height reserved for a null param slot */
-const MIN_PARAM_H = 15;
-/** Minimum height reserved for a null arg slot */
-const MIN_ARG_H = 40;
-
 // ── Head padding ──
 /** Distance from the top edge of the head to its inner content */
-const HEAD_PAD_Y1 = 10;
+const HEAD_PAD_Y1 = 4;
 /** Distance from the bottom edge of the head to its inner content */
-const HEAD_PAD_Y2 = 10;
+const HEAD_PAD_Y2 = 4;
 /** Distance from the left edge of the head to its inner content */
-const HEAD_PAD_X1 = 10;
+const HEAD_PAD_X1 = 7;
 /** Distance from the right edge of the head to its inner content */
-const HEAD_PAD_X2 = 10;
+const HEAD_PAD_X2 = 7;
 
 // ── Gutters ──
 /** Horizontal gap between the main label and the parameter labels */
 const LABEL_PARAM_GUTTER_X = 10;
 /** Vertical gap between stacked parameter labels */
-const PARAM_GUTTER_Y = 10;
+const PARAM_GUTTER_Y = 8;
 
 // ── Tail ──
 /** Horizontal width of the tail's indent that forms the nesting cavity notch */
-const TAIL_INDENT_W = 10;
+const TAIL_INDENT_W = 6;
 /** Total width of the closing step at the bottom of the tail */
-const TAIL_STEP_W = 40;
+const TAIL_STEP_W = 30;
 /** Height of the closing step at the bottom of the tail */
-const TAIL_STEP_H = 10;
+const TAIL_STEP_H = 6;
 
 // ────────────────────────── Dimension Calculation ──────────────────────────
 
@@ -136,9 +127,13 @@ export function computeDimensions(input: BrickOutlineInput): ComputedDimensions 
     return { width, height, topBarHeight, nestHeight, footerHeight, footerWidth };
 }
 
-export function computeDimensions2(input: BrickOutlineInput2): ComputedDimensions2 {
-    const params = input.paramArgDims.map((p) => p.param ?? { w: 0, h: MIN_PARAM_H });
-    const args = input.paramArgDims.map((p) => p.arg ?? { w: 0, h: MIN_ARG_H });
+export function computeDimensions2(
+    input: BrickOutlineInput2,
+    minimums: BrickMinimums,
+): ComputedDimensions2 {
+    const { minWidth, minLabelHeight, minNestHeight, minParamHeight, minArgHeight } = minimums;
+    const params = input.paramArgDims.map((p) => p.param ?? { w: 0, h: minParamHeight });
+    const args = input.paramArgDims.map((p) => p.arg ?? { w: 0, h: minArgHeight });
 
     // SVG strokes straddle the path line — s/2 bleeds outside on each side;
     // every segment includes s/2 at both ends so the stroke isn't clipped.
@@ -165,7 +160,7 @@ export function computeDimensions2(input: BrickOutlineInput2): ComputedDimension
 
     const tailWidth = Math.max(tailIndentWidth, tailStepWidth);
 
-    const width = Math.max(headWidth, tailWidth, MIN_WIDTH);
+    const width = Math.max(headWidth, tailWidth, minWidth);
 
     // ── Height ──
 
@@ -176,7 +171,7 @@ export function computeDimensions2(input: BrickOutlineInput2): ComputedDimension
     const headHeightByLabel =
         strokeWidth / 2 +
         HEAD_PAD_Y1 +
-        Math.max(input.labelDims.h, MIN_LABEL_H) +
+        Math.max(input.labelDims.h, minLabelHeight) +
         HEAD_PAD_Y2 +
         strokeWidth / 2;
     const headHeightByParams =
@@ -194,7 +189,7 @@ export function computeDimensions2(input: BrickOutlineInput2): ComputedDimension
 
     // ── Tail ──
     const hasNesting = input.nestingDims !== undefined;
-    const nestHeight = hasNesting ? Math.max(input.nestingDims?.h ?? 0, MIN_NEST_HEIGHT) : 0;
+    const nestHeight = hasNesting ? Math.max(input.nestingDims?.h ?? 0, minNestHeight) : 0;
     const tailHeight = hasNesting
         ? nestHeight + strokeWidth / 2 + TAIL_STEP_H + strokeWidth / 2
         : 0;
@@ -347,14 +342,16 @@ function generateBounds(
     headHeight: number,
     nestHeight: number,
     hasNesting: boolean,
+    minimums: BrickMinimums,
 ): BrickOutlineOutput2['bounds'] {
+    const { minLabelHeight, minNestHeight, minParamHeight, minArgHeight } = minimums;
     const strokeWidth = input.strokeWidth;
 
     const label: Bounds = {
         x: strokeWidth / 2 + HEAD_PAD_X1,
         y: strokeWidth / 2 + HEAD_PAD_Y1,
         w: input.labelDims.w,
-        h: Math.max(input.labelDims.h, MIN_LABEL_H),
+        h: Math.max(input.labelDims.h, minLabelHeight),
     };
 
     let nesting: Bounds | undefined;
@@ -363,7 +360,7 @@ function generateBounds(
             x: TAIL_INDENT_W + strokeWidth / 2 + strokeWidth / 2,
             y: headHeight,
             w: input.nestingDims?.w ?? 0,
-            h: Math.max(nestHeight, MIN_NEST_HEIGHT),
+            h: Math.max(nestHeight, minNestHeight),
         };
     }
 
@@ -372,14 +369,14 @@ function generateBounds(
     let y = 0;
 
     for (const { param, arg } of input.paramArgDims) {
-        const rowH = Math.max(arg?.h ?? 0, MIN_ARG_H);
+        const rowH = Math.max(arg?.h ?? 0, minArgHeight);
 
         if (arg !== null) {
             args.push({ x: width, y, w: arg.w, h: rowH });
         }
 
         if (param !== null) {
-            const paramH = Math.max(param.h, MIN_PARAM_H);
+            const paramH = Math.max(param.h, minParamHeight);
             params.push({
                 x: width - strokeWidth / 2 - HEAD_PAD_X2 - param.w,
                 y: y + (rowH - paramH) / 2,
@@ -400,40 +397,53 @@ function generateBounds(
 }
 
 /**
- * Generates a brick outline SVG path from its inner dimension properties.
+ * Creates a reusable brick outline generator bound to the given size minimums.
  *
- * @param input - The dimensions of the brick's inner elements
- * @returns The SVG path string, computed outer dimensions, and layout bounds
+ * Minimums are fixed at creation time so the generator can be memoized and
+ * called cheaply on every render.
+ *
+ * @param minimums - SVG-unit floor dimensions for width, heights, and slots.
+ * @returns Generator that produces an SVG path and layout bounds for one brick.
  */
-export function generateBrickOutline2(input: BrickOutlineInput2): BrickOutlineOutput2 {
-    const { width, height, headHeight, nestHeight } = computeDimensions2(input);
+export function createBrickOutlineGenerator(
+    minimums: BrickMinimums,
+): (input: BrickOutlineInput2) => BrickOutlineOutput2 {
+    /**
+     * Computes the SVG path and layout bounds for a single brick frame.
+     *
+     * @param input - Stroke width, label/param/arg dimensions, optional nesting.
+     * @returns SVG path string, outer frame dimensions, and content-region bounds.
+     */
+    return (input: BrickOutlineInput2): BrickOutlineOutput2 => {
+        const { width, height, headHeight, nestHeight } = computeDimensions2(input, minimums);
 
-    const hasNesting = input.nestingDims !== undefined;
-    const strokeWidth = input.strokeWidth;
+        const hasNesting = input.nestingDims !== undefined;
+        const strokeWidth = input.strokeWidth;
 
-    const segments = !hasNesting
-        ? [
-              ...segTopEdge(width, strokeWidth),
-              ...segHeadRight(headHeight, strokeWidth),
-              ...segHeadBottom(width, strokeWidth),
-              ...segLeftEdge(height, strokeWidth),
-              'z',
-          ]
-        : [
-              ...segTopEdge(width, strokeWidth),
-              ...segHeadRight(headHeight, strokeWidth),
-              ...segTailCavityRoof(width, strokeWidth),
-              ...segTailCavityLeft(nestHeight, strokeWidth),
-              ...segTailFoot(),
-              ...segTailStepRight(),
-              ...segTailStepBottom(),
-              ...segLeftEdge(height, strokeWidth),
-              'z',
-          ];
+        const segments = !hasNesting
+            ? [
+                  ...segTopEdge(width, strokeWidth),
+                  ...segHeadRight(headHeight, strokeWidth),
+                  ...segHeadBottom(width, strokeWidth),
+                  ...segLeftEdge(height, strokeWidth),
+                  'z',
+              ]
+            : [
+                  ...segTopEdge(width, strokeWidth),
+                  ...segHeadRight(headHeight, strokeWidth),
+                  ...segTailCavityRoof(width, strokeWidth),
+                  ...segTailCavityLeft(nestHeight, strokeWidth),
+                  ...segTailFoot(),
+                  ...segTailStepRight(),
+                  ...segTailStepBottom(),
+                  ...segLeftEdge(height, strokeWidth),
+                  'z',
+              ];
 
-    const path = segments.join(' ');
+        const path = segments.join(' ');
 
-    const bounds = generateBounds(input, width, headHeight, nestHeight, hasNesting);
+        const bounds = generateBounds(input, width, headHeight, nestHeight, hasNesting, minimums);
 
-    return { path, width, height, bounds };
+        return { path, width, height, bounds };
+    };
 }

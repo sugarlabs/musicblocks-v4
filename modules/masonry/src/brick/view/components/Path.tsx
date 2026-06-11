@@ -1,44 +1,82 @@
 import type { BrickOutlineInput2 } from '../../../@types/brick';
-import { generateBrickOutline2 } from '../../utils/newPath';
+import { createBrickOutlineGenerator } from '../../utils/newPath';
+
+const SCALE = 2.25;
+
+const pxToSvg = (px: number) => px / SCALE;
+const svgToPx = (u: number) => u * SCALE;
+
+const generateBrickOutline = createBrickOutlineGenerator({
+  minWidth: pxToSvg(120),
+  minLabelHeight: pxToSvg(20),
+  minNestHeight: pxToSvg(40),
+  minParamHeight: pxToSvg(20),
+  minArgHeight: pxToSvg(40),
+});
 
 export function PathBrickView({ input }: { input: BrickOutlineInput2 }) {
   const maxArgW = Math.max(0, ...input.paramArgDims.map((p) => p.arg?.w ?? 0));
-  const { width, height, path, bounds } = generateBrickOutline2(input);
+  const { width, height, path, bounds } = generateBrickOutline({
+    strokeWidth: pxToSvg(input.strokeWidth),
+    labelDims: { w: pxToSvg(input.labelDims.w), h: pxToSvg(input.labelDims.h) },
+    paramArgDims: input.paramArgDims.map((p) => ({
+      param: p.param ? { w: pxToSvg(p.param.w), h: pxToSvg(p.param.h) } : null,
+      arg: p.arg ? { w: pxToSvg(p.arg.w), h: pxToSvg(p.arg.h) } : null,
+    })),
+    nestingDims:
+      input.nestingDims !== undefined
+        ? input.nestingDims !== null
+          ? { w: pxToSvg(input.nestingDims.w), h: pxToSvg(input.nestingDims.h) }
+          : null
+        : undefined,
+  });
 
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={width + maxArgW}
-      height={height}
-      viewBox={`0 0 ${width + maxArgW} ${height}`}
+      width={svgToPx(width) + maxArgW}
+      height={svgToPx(height)}
       style={{ backgroundColor: '#e4e4e4' }}
     >
-      <path d={path} fill="#70a1ff" stroke="#3867d6" strokeWidth={input.strokeWidth} />
+      <path
+        d={path}
+        transform={`scale(${SCALE})`}
+        fill="#70a1ff"
+        stroke="#3867d6"
+        strokeWidth={pxToSvg(input.strokeWidth)}
+      />
 
       {/* Debug overlay: visualises the markers */}
       <>
         {/* Primary label */}
         <rect
-          x={bounds.label.x}
-          y={bounds.label.y}
-          width={bounds.label.w}
-          height={bounds.label.h}
+          x={svgToPx(bounds.label.x)}
+          y={svgToPx(bounds.label.y)}
+          width={svgToPx(bounds.label.w)}
+          height={svgToPx(bounds.label.h)}
           fill="#ffcccc"
         />
 
         {/* Per-parameter label areas (optional) — one rect per param name slot */}
         {bounds.params?.map((b, i) => (
-          <rect key={i} x={b.x} y={b.y} width={b.w} height={b.h} fill="#ffda79" />
+          <rect
+            key={i}
+            x={svgToPx(b.x)}
+            y={svgToPx(b.y)}
+            width={svgToPx(b.w)}
+            height={svgToPx(b.h)}
+            fill="#ffda79"
+          />
         ))}
 
         {/* Per-argument slot areas */}
         {bounds.args?.map((b, i) => (
           <rect
             key={i}
-            x={b.x}
-            y={b.y}
-            width={b.w}
-            height={b.h}
+            x={svgToPx(b.x)}
+            y={svgToPx(b.y)}
+            width={svgToPx(b.w)}
+            height={svgToPx(b.h)}
             fill={i % 2 === 0 ? '#26de819f' : '#20bf6b9f'}
           />
         ))}
@@ -46,10 +84,10 @@ export function PathBrickView({ input }: { input: BrickOutlineInput2 }) {
         {/* Nesting (clamp) area — present only on bricks that wrap inner blocks */}
         {bounds.nesting && (
           <rect
-            x={bounds.nesting.x}
-            y={bounds.nesting.y}
-            width={bounds.nesting.w}
-            height={bounds.nesting.h}
+            x={svgToPx(bounds.nesting.x)}
+            y={svgToPx(bounds.nesting.y)}
+            width={svgToPx(bounds.nesting.w)}
+            height={svgToPx(bounds.nesting.h)}
             fill="#a5b1c27f"
           />
         )}

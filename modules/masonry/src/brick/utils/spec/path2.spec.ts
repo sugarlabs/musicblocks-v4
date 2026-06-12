@@ -1,4 +1,4 @@
-import type { BrickOutlineInput } from '../newPath';
+import type { BrickOutlineInput } from '../path2';
 import type { BrickOutlineInput2 } from '../../../@types/brick';
 
 import type { BrickMinimums } from '../../../@types/brick';
@@ -8,7 +8,7 @@ import {
     computeDimensions,
     createBrickOutlineGenerator,
     computeDimensions2,
-} from '../newPath';
+} from '../path2';
 
 const MINIMUMS: BrickMinimums = {
     minWidth: 120,

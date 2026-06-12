@@ -1,5 +1,6 @@
 import type { BrickOutlineInput2 } from '../../../@types/brick';
-import { createBrickOutlineGenerator } from '../../utils/newPath';
+
+import { createBrickOutlineGenerator } from '../../utils/path2';
 
 const SCALE = 2.25;
 

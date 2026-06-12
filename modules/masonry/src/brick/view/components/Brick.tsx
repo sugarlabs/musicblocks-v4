@@ -2,7 +2,7 @@ import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import type { Bounds, BrickViewProps, Size } from '../../../@types/brick';
 
-import { createBrickOutlineGenerator } from '../../utils/newPath';
+import { createBrickOutlineGenerator } from '../../utils/path2';
 
 const STROKE_WIDTH = 2;
 

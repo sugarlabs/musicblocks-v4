@@ -3,7 +3,7 @@ import type {
     BrickMinimums,
     BrickOutlineInput2,
     BrickOutlineOutput2,
-} from '../../@types/brick';
+} from '@masonry/@types/brick';
 
 // ────────────────────────── Constants ────────────────────────────────────────────────────────────
 

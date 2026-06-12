@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import type { BrickOutlineInput2 } from '@masonry/@types/brick';
+
 import { PathBrickView } from '../components/Path';
-import type { BrickOutlineInput2 } from '../../../@types/brick';
 
 const meta: Meta<typeof PathBrickView> = {
   title: 'Bricks/Path',

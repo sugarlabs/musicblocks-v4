@@ -1,6 +1,6 @@
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import type { Bounds, BrickViewProps, Size } from '@masonry/@types/brick';
 
-import type { Bounds, BrickViewProps, Size } from '../../../@types/brick';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { SCALE_LEVEL_CONFIG } from '../../utils/constants';
 import { createBrickOutlineGenerator } from '../../utils/path2';

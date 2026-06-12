@@ -35,6 +35,8 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
     // Pass through notch flags (default false when absent)
     topNotch: input.topNotch,
     bottomNotch: input.bottomNotch,
+    nestedTopNotch: input.nestedTopNotch,
+    nestedBottomNotch: input.nestedBottomNotch,
   });
 
   // ── Notch protrusion padding ──

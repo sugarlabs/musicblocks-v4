@@ -175,6 +175,10 @@ export interface BrickOutlineInput {
     topNotch?: boolean;
     /** Whether to draw a bottom notch (protruding tab). Defaults to false. */
     bottomNotch?: boolean;
+    /** Whether to draw a nested-top notch (smaller tab on cavity roof). Only used with nesting. */
+    nestedTopNotch?: boolean;
+    /** Whether to draw a nested-bottom notch (full-size groove on cavity floor). Only used with nesting. */
+    nestedBottomNotch?: boolean;
 }
 
 export interface BrickOutlineOutput {
@@ -199,6 +203,10 @@ export interface BrickOutlineOutput {
     topNotchDepth: number;
     /** Downward protrusion distance of the bottom notch. */
     bottomNotchDepth: number;
+    /** Always 0 (nested-top tab goes inward into cavity). */
+    nestedTopNotchDepth: number;
+    /** Downward protrusion of nested-bottom groove into the foot. */
+    nestedBottomNotchDepth: number;
 }
 
 export interface BrickViewProps {

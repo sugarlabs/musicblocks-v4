@@ -89,7 +89,7 @@ export const NestingWide: Story = {
 // The top notch is strokeWidth smaller than the bottom notch so they
 // interlock properly when bricks are stacked.
 
-/** Simple brick with only a top notch protruding upward */
+/** Brick without nesting with only a top notch protruding upward */
 export const TopNotchOnly: Story = {
   args: {
     input: {
@@ -102,7 +102,7 @@ export const TopNotchOnly: Story = {
   },
 };
 
-/** Simple brick with only a bottom notch protruding downward */
+/** Brick without nesting with only a bottom notch protruding downward */
 export const BottomNotchOnly: Story = {
   args: {
     input: {
@@ -115,7 +115,7 @@ export const BottomNotchOnly: Story = {
   },
 };
 
-/** Simple brick with both notches — centres should be vertically aligned */
+/** Brick without nesting with both notches — centres should be vertically aligned */
 export const BothNotches: Story = {
   args: {
     input: {
@@ -141,7 +141,6 @@ export const BothNotchesWideStroke: Story = {
   },
 };
 
-/** Compound brick (nesting) with both notches */
 export const NestingWithNotches: Story = {
   args: {
     input: {
@@ -149,6 +148,78 @@ export const NestingWithNotches: Story = {
       nestingDims: { w: 120, h: 120 },
       topNotch: true,
       bottomNotch: true,
+    },
+  },
+};
+
+// ── Nested notch variants ──
+// These stories demonstrate the nested-top / nested-bottom notch connectors
+// that appear on the cavity roof and floor of nesting bricks.
+
+/** Nesting brick with only a nested-top notch (smaller tab on cavity roof) */
+export const NestedTopNotchOnly: Story = {
+  args: {
+    input: {
+      ...nestingBase,
+      nestingDims: { w: 120, h: 120 },
+      nestedTopNotch: true,
+      nestedBottomNotch: false,
+    },
+  },
+};
+
+/** Nesting brick with only a nested-bottom notch (full-size groove on cavity floor) */
+export const NestedBottomNotchOnly: Story = {
+  args: {
+    input: {
+      ...nestingBase,
+      nestingDims: { w: 120, h: 120 },
+      nestedTopNotch: false,
+      nestedBottomNotch: true,
+    },
+  },
+};
+
+/** Nesting brick with both nested notches — centres should align from tail indent */
+export const BothNestedNotches: Story = {
+  args: {
+    input: {
+      ...nestingBase,
+      nestingDims: { w: 120, h: 120 },
+      nestedTopNotch: true,
+      nestedBottomNotch: true,
+    },
+  },
+};
+
+/** Nesting brick with ALL four notches (top, bottom, nestedTop, nestedBottom) */
+export const AllNotches: Story = {
+  args: {
+    input: {
+      ...nestingBase,
+      nestingDims: { w: 120, h: 120 },
+      topNotch: true,
+      bottomNotch: true,
+      nestedTopNotch: true,
+      nestedBottomNotch: true,
+    },
+  },
+};
+
+/** All notches with a wider stroke to see the size differences */
+export const AllNotchesWideStroke: Story = {
+  args: {
+    input: {
+      strokeWidth: 4,
+      labelDims: { w: 120, h: 20 },
+      paramArgDims: [
+        { param: { w: 80, h: 20 }, arg: { w: 100, h: 40 } },
+      ],
+      nestingDims: { w: 120, h: 120 },
+      topNotch: true,
+      bottomNotch: true,
+      nestedTopNotch: true,
+      nestedBottomNotch: true,
     },
   },
 };

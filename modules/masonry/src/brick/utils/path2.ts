@@ -41,7 +41,13 @@ export const NOTCH_WIDTH = 10;
 /** Base depth of the notch groove / tab in SVG units (must be <= HEAD_PAD_Y1) */
 export const NOTCH_DEPTH = 2;
 /** Left edge offset for the top notch (bottom notch aligns to this centre) */
+<<<<<<< HEAD:modules/masonry/src/brick/utils/path2.ts
 export const NOTCH_OFFSET_X = 8;
+=======
+const NOTCH_OFFSET_X = 8;
+/** Left edge offset for nested notches, measured from TAIL_INDENT_W */
+const NESTED_NOTCH_OFFSET_X = 8;
+>>>>>>> 5641eca (feat(masonry) : Add nestedTopNotch and  nestedBottomNotch):modules/masonry/src/brick/utils/newPath.ts
 
 // ────────────────────────── Dimension Calculation ──────────────────────────
 
@@ -168,7 +174,7 @@ function segHeadRight(headHeight: number, strokeWidth: number): string[] {
 }
 
 /**
- * Bottom edge of the head (used for simple / non-compound bricks), right → left.
+ * Bottom edge of the head (used for bricks without nesting), right → left.
  * Draws a downward tab (hasBottomNotch), reduced in width by 2*s to fit the top groove.
  *
  * @param width          - Total outer width of the brick
@@ -209,10 +215,44 @@ function segLeftEdge(height: number, strokeWidth: number): string[] {
     return [`v ${-(height - strokeWidth / 2 - strokeWidth / 2)}`];
 }
 
-function segTailCavityRoof(width: number, strokeWidth: number): string[] {
-    // Cavity walls each inset s/2 inward; the freed s is absorbed into the step height.
-    const span = width - TAIL_INDENT_W - strokeWidth / 2 - strokeWidth / 2;
-    return [`h ${-span}`];
+/**
+ * Cavity roof segment, right → left.
+ * Draws a smaller tab (hasNestedTopNotch) protruding DOWN into the cavity.
+ *
+ * @param width              - Total outer width of the brick
+ * @param strokeWidth        - Stroke width in SVG units
+ * @param hasNestedTopNotch  - Whether to draw the nested-top notch tab
+ */
+function segTailCavityRoof(width: number, strokeWidth: number, hasNestedTopNotch: boolean): string[] {
+    const s = strokeWidth;
+    const span = width - TAIL_INDENT_W - s / 2 - s / 2;
+
+    // No nested notch — single flat span
+    if (!hasNestedTopNotch) {
+        return [`h ${-span}`];
+    }
+
+    // Nested-top is the SMALLER tab: width reduced by 2*s for interlocking
+    const tabWidth = NOTCH_WIDTH - 2 * s;
+    const tabDepth = NOTCH_DEPTH;
+
+    // Guard: if strokeWidth makes the width non-positive, fall back to flat
+    if (tabWidth <= 0) {
+        return [`h ${-span}`];
+    }
+
+    // Going RIGHT → LEFT along the cavity roof
+    // Tab left edge at absolute x = TAIL_INDENT_W + NESTED_NOTCH_OFFSET_X + s
+    const flatBefore = span - (NESTED_NOTCH_OFFSET_X + NOTCH_WIDTH - s);
+    const flatAfter  = NESTED_NOTCH_OFFSET_X + s;
+
+    return [
+        `h ${-flatBefore}`,    // LEFT — flat run to tab right edge
+        `v ${tabDepth}`,       // DOWN — tab protrudes into cavity
+        `h ${-tabWidth}`,      // LEFT — across the tab
+        `v ${-tabDepth}`,      // UP   — back to roof level
+        `h ${-flatAfter}`,     // LEFT — flat run to cavity left wall
+    ];
 }
 
 function segTailCavityLeft(nestHeight: number, strokeWidth: number): string[] {
@@ -220,8 +260,38 @@ function segTailCavityLeft(nestHeight: number, strokeWidth: number): string[] {
     return [`v ${nestHeight + strokeWidth / 2 + strokeWidth / 2}`];
 }
 
-function segTailFoot(): string[] {
-    return [`h ${TAIL_STEP_W - TAIL_INDENT_W}`];
+/**
+ * Cavity foot segment, left → right.
+ * Draws a full-size groove (hasNestedBottomNotch) going DOWN into the foot.
+ *
+ * @param strokeWidth           - Stroke width in SVG units
+ * @param hasNestedBottomNotch  - Whether to draw the nested-bottom notch groove
+ */
+function segTailFoot(strokeWidth: number, hasNestedBottomNotch: boolean): string[] {
+    const s = strokeWidth;
+    const span = TAIL_STEP_W - TAIL_INDENT_W;
+
+    // No nested notch — single flat span
+    if (!hasNestedBottomNotch) {
+        return [`h ${span}`];
+    }
+
+    // Nested-bottom is the FULL-SIZE groove: NOTCH_WIDTH × NOTCH_DEPTH
+    const grooveWidth = NOTCH_WIDTH;
+    const grooveDepth = NOTCH_DEPTH;
+
+    // Going LEFT → RIGHT along the cavity floor
+    // Groove left edge at absolute x = TAIL_INDENT_W + NESTED_NOTCH_OFFSET_X
+    const flatBefore = NESTED_NOTCH_OFFSET_X;
+    const flatAfter  = span - NESTED_NOTCH_OFFSET_X - NOTCH_WIDTH;
+
+    return [
+        `h ${flatBefore}`,     // RIGHT — flat run to groove left edge
+        `v ${grooveDepth}`,    // DOWN  — groove into the foot
+        `h ${grooveWidth}`,    // RIGHT — across the groove
+        `v ${-grooveDepth}`,   // UP    — back to floor level
+        `h ${flatAfter}`,      // RIGHT — flat run to step right wall
+    ];
 }
 
 function segTailStepRight(): string[] {
@@ -229,7 +299,7 @@ function segTailStepRight(): string[] {
 }
 
 /**
- * Bottom of the tail step (compound bricks only), right → left.
+ * Bottom of the tail step (nesting bricks only), right → left.
  * Draws a downward tab similar to segHeadBottom.
  *
  * @param hasBottomNotch - Whether to draw the bottom notch tab
@@ -356,14 +426,19 @@ export function createBrickOutlineGenerator(
         // ── Resolve notch flags (default: no notches) ──
         const hasTopNotch = input.topNotch ?? false;
         const hasBottomNotch = input.bottomNotch ?? false;
+        // Nested notches only apply when there is nesting
+        const hasNestedTopNotch = hasNesting && (input.nestedTopNotch ?? false);
+        const hasNestedBottomNotch = hasNesting && (input.nestedBottomNotch ?? false);
 
         // ── Compute notch protrusion depths (for SVG viewBox sizing) ──
         const topNotchDepth = 0; // Inward groove; no extra top space needed
         const bottomNotchDepth = hasBottomNotch ? NOTCH_DEPTH : 0;
+        const nestedTopNotchDepth = 0; // Tab goes inward into cavity
+        const nestedBottomNotchDepth = 0; // Groove goes into foot (no external protrusion)
 
         // ── Build the SVG path segments ──
-        // Simple brick: top → right → bottom → left → close
-        // Compound brick: top → right → cavityRoof → cavityLeft → foot → stepRight → stepBottom → left → close
+        // Brick without nesting: top → right → bottom → left → close
+        // Nesting brick: top → right → cavityRoof → cavityLeft → foot → stepRight → stepBottom → left → close
         const segments = !hasNesting
             ? [
                 ...segTopEdge(width, strokeWidth, hasTopNotch),
@@ -375,9 +450,9 @@ export function createBrickOutlineGenerator(
             : [
                 ...segTopEdge(width, strokeWidth, hasTopNotch),
                 ...segHeadRight(headHeight, strokeWidth),
-                ...segTailCavityRoof(width, strokeWidth),
+                ...segTailCavityRoof(width, strokeWidth, hasNestedTopNotch),
                 ...segTailCavityLeft(nestHeight, strokeWidth),
-                ...segTailFoot(),
+                ...segTailFoot(strokeWidth, hasNestedBottomNotch),
                 ...segTailStepRight(),
                 ...segTailStepBottom(hasBottomNotch, strokeWidth),
                 ...segLeftEdge(height, strokeWidth),
@@ -388,6 +463,6 @@ export function createBrickOutlineGenerator(
 
         const bounds = generateBounds(input, width, headHeight, nestHeight, hasNesting, minimums);
 
-        return { path, width, height, bounds, topNotchDepth, bottomNotchDepth };
+        return { path, width, height, bounds, topNotchDepth, bottomNotchDepth, nestedTopNotchDepth, nestedBottomNotchDepth };
     };
 }

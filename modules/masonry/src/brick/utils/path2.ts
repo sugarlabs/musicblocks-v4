@@ -31,7 +31,19 @@ export const TAIL_STEP_W = 30;
 /** Height of the closing step at the bottom of the tail */
 export const TAIL_STEP_H = 6;
 
-// ────────────────────────── Dimension Calculation ────────────────────────────────────────────────
+// ── Notch geometry ──
+// Top notch is a full-size downward groove.
+// Bottom notch is a smaller downward tab (width reduced by 2*s for interlocking).
+// Both notch centres align at x = NOTCH_OFFSET_X + NOTCH_WIDTH / 2.
+
+/** Base width of the top notch (full-size groove) in SVG units */
+export const NOTCH_WIDTH = 10;
+/** Base depth of the notch groove / tab in SVG units (must be <= HEAD_PAD_Y1) */
+export const NOTCH_DEPTH = 2;
+/** Left edge offset for the top notch (bottom notch aligns to this centre) */
+export const NOTCH_OFFSET_X = 8;
+
+// ────────────────────────── Dimension Calculation ──────────────────────────
 
 interface ComputedDimensions {
     /** Total outer width of the brick */
@@ -118,11 +130,36 @@ export function computeDimensions(
 
 // ────────────────────────── Path Segments ────────────────────────────────────────────────────────
 
-function segTopEdge(width: number, strokeWidth: number): string[] {
-    // All segments inset by s/2: outline starts at (s/2, s/2); full-span edges lose s/2 at each end.
+/**
+ * Top edge of the brick, left → right.
+ * Draws a downward groove (hasTopNotch) for interlocking with bricks above.
+ *
+ * @param width       - Total outer width of the brick
+ * @param strokeWidth - Stroke width in SVG units
+ * @param hasTopNotch - Whether to draw the top notch groove
+ */
+function segTopEdge(width: number, strokeWidth: number, hasTopNotch: boolean): string[] {
+    const s = strokeWidth;
+
+    // ── No notch — single flat span, inset by s/2 at each end ──
+    if (!hasTopNotch) {
+        return [
+            `M ${s / 2} ${s / 2}`,
+            `h ${width - s}`,
+        ];
+    }
+
+    // ── Positioning ──
+    const flatBefore = NOTCH_OFFSET_X - s / 2;
+    const flatAfter = width - s / 2 - NOTCH_OFFSET_X - NOTCH_WIDTH;
+
     return [
-        `M ${strokeWidth / 2} ${strokeWidth / 2}`,
-        `h ${width - strokeWidth / 2 - strokeWidth / 2}`,
+        `M ${s / 2} ${s / 2}`,
+        `h ${flatBefore}`,        // flat run to notch left edge
+        `v ${NOTCH_DEPTH}`,       // DOWN — groove into the brick
+        `h ${NOTCH_WIDTH}`,       // RIGHT — across the groove
+        `v ${-NOTCH_DEPTH}`,      // UP   — back to top edge level
+        `h ${flatAfter}`,         // flat run to right end
     ];
 }
 
@@ -130,8 +167,42 @@ function segHeadRight(headHeight: number, strokeWidth: number): string[] {
     return [`v ${headHeight - strokeWidth / 2 - strokeWidth / 2}`];
 }
 
-function segHeadBottom(width: number, strokeWidth: number): string[] {
-    return [`h ${-(width - strokeWidth / 2 - strokeWidth / 2)}`];
+/**
+ * Bottom edge of the head (used for simple / non-compound bricks), right → left.
+ * Draws a downward tab (hasBottomNotch), reduced in width by 2*s to fit the top groove.
+ *
+ * @param width          - Total outer width of the brick
+ * @param strokeWidth    - Stroke width in SVG units
+ * @param hasBottomNotch - Whether to draw the bottom notch tab
+ */
+function segHeadBottom(width: number, strokeWidth: number, hasBottomNotch: boolean): string[] {
+    const s = strokeWidth;
+
+    // ── No notch — single flat span going left ──
+    if (!hasBottomNotch) {
+        return [`h ${-(width - s)}`];
+    }
+
+    // ── Bottom notch dimensions ──
+    const botNotchWidth = NOTCH_WIDTH - 2 * s;
+    const botNotchDepth = NOTCH_DEPTH;
+
+    // Guard: if strokeWidth makes the width non-positive, fall back to flat
+    if (botNotchWidth <= 0) {
+        return [`h ${-(width - s)}`];
+    }
+
+    // ── With bottom notch (going RIGHT → LEFT) ──
+    const flatBefore = width - NOTCH_OFFSET_X - NOTCH_WIDTH + s / 2;
+    const flatAfter = NOTCH_OFFSET_X + s / 2;
+
+    return [
+        `h ${-flatBefore}`,        // LEFT — flat run to notch right edge
+        `v ${botNotchDepth}`,      // DOWN — protrude below the bottom edge
+        `h ${-botNotchWidth}`,     // LEFT — across the notch tab
+        `v ${-botNotchDepth}`,     // UP   — back to bottom edge level
+        `h ${-flatAfter}`,         // LEFT — flat run to left end
+    ];
 }
 
 function segLeftEdge(height: number, strokeWidth: number): string[] {
@@ -157,8 +228,41 @@ function segTailStepRight(): string[] {
     return [`v ${TAIL_STEP_H}`];
 }
 
-function segTailStepBottom(): string[] {
-    return [`h ${-TAIL_STEP_W}`];
+/**
+ * Bottom of the tail step (compound bricks only), right → left.
+ * Draws a downward tab similar to segHeadBottom.
+ *
+ * @param hasBottomNotch - Whether to draw the bottom notch tab
+ * @param strokeWidth    - Stroke width in SVG units
+ */
+function segTailStepBottom(hasBottomNotch: boolean, strokeWidth: number): string[] {
+    const s = strokeWidth;
+
+    // ── No notch — single flat span going left ──
+    if (!hasBottomNotch) {
+        return [`h ${-TAIL_STEP_W}`];
+    }
+
+    // ── Bottom notch dimensions (strokeWidth narrower, same depth) ──
+    const botNotchWidth = NOTCH_WIDTH - 2 * s;
+    const botNotchDepth = NOTCH_DEPTH;
+
+    // Guard: if strokeWidth makes the width non-positive, fall back to flat
+    if (botNotchWidth <= 0) {
+        return [`h ${-TAIL_STEP_W}`];
+    }
+
+    // ── With bottom notch (going RIGHT → LEFT) ──
+    const flatBefore = TAIL_STEP_W - NOTCH_OFFSET_X - NOTCH_WIDTH + 1.5 * s;
+    const flatAfter = NOTCH_OFFSET_X + s / 2;
+
+    return [
+        `h ${-flatBefore}`,        // LEFT — flat run to notch right edge
+        `v ${botNotchDepth}`,      // DOWN — protrude below the bottom edge
+        `h ${-botNotchWidth}`,     // LEFT — across the notch tab
+        `v ${-botNotchDepth}`,     // UP   — back to bottom edge level
+        `h ${-flatAfter}`,         // LEFT — flat run to left end
+    ];
 }
 
 function generateBounds(
@@ -238,8 +342,10 @@ export function createBrickOutlineGenerator(
     /**
      * Computes the SVG path and layout bounds for a single brick frame.
      *
-     * @param input - Stroke width, label/param/arg dimensions, optional nesting.
-     * @returns SVG path string, outer frame dimensions, and content-region bounds.
+     * @param input - Stroke width, label/param/arg dimensions, optional nesting,
+     *               and optional topNotch / bottomNotch flags.
+     * @returns SVG path string, outer frame dimensions, content-region bounds,
+     *          and notch protrusion depths (for SVG viewBox sizing).
      */
     return (input: BrickOutlineInput): BrickOutlineOutput => {
         const { width, height, headHeight, nestHeight } = computeDimensions(input, minimums);
@@ -247,30 +353,41 @@ export function createBrickOutlineGenerator(
         const hasNesting = input.nestingDims !== undefined;
         const strokeWidth = input.strokeWidth;
 
+        // ── Resolve notch flags (default: no notches) ──
+        const hasTopNotch = input.topNotch ?? false;
+        const hasBottomNotch = input.bottomNotch ?? false;
+
+        // ── Compute notch protrusion depths (for SVG viewBox sizing) ──
+        const topNotchDepth = 0; // Inward groove; no extra top space needed
+        const bottomNotchDepth = hasBottomNotch ? NOTCH_DEPTH : 0;
+
+        // ── Build the SVG path segments ──
+        // Simple brick: top → right → bottom → left → close
+        // Compound brick: top → right → cavityRoof → cavityLeft → foot → stepRight → stepBottom → left → close
         const segments = !hasNesting
             ? [
-                  ...segTopEdge(width, strokeWidth),
-                  ...segHeadRight(headHeight, strokeWidth),
-                  ...segHeadBottom(width, strokeWidth),
-                  ...segLeftEdge(height, strokeWidth),
-                  'z',
-              ]
+                ...segTopEdge(width, strokeWidth, hasTopNotch),
+                ...segHeadRight(headHeight, strokeWidth),
+                ...segHeadBottom(width, strokeWidth, hasBottomNotch),
+                ...segLeftEdge(height, strokeWidth),
+                'z',
+            ]
             : [
-                  ...segTopEdge(width, strokeWidth),
-                  ...segHeadRight(headHeight, strokeWidth),
-                  ...segTailCavityRoof(width, strokeWidth),
-                  ...segTailCavityLeft(nestHeight, strokeWidth),
-                  ...segTailFoot(),
-                  ...segTailStepRight(),
-                  ...segTailStepBottom(),
-                  ...segLeftEdge(height, strokeWidth),
-                  'z',
-              ];
+                ...segTopEdge(width, strokeWidth, hasTopNotch),
+                ...segHeadRight(headHeight, strokeWidth),
+                ...segTailCavityRoof(width, strokeWidth),
+                ...segTailCavityLeft(nestHeight, strokeWidth),
+                ...segTailFoot(),
+                ...segTailStepRight(),
+                ...segTailStepBottom(hasBottomNotch, strokeWidth),
+                ...segLeftEdge(height, strokeWidth),
+                'z',
+            ];
 
         const path = segments.join(' ');
 
         const bounds = generateBounds(input, width, headHeight, nestHeight, hasNesting, minimums);
 
-        return { path, width, height, bounds };
+        return { path, width, height, bounds, topNotchDepth, bottomNotchDepth };
     };
 }

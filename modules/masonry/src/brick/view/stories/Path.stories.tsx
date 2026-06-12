@@ -83,3 +83,72 @@ export const NestingNarrow: Story = {
 export const NestingWide: Story = {
   args: { input: { ...nestingBase, nestingDims: { w: 300, h: 120 } } },
 };
+
+// ── Notch variants ──
+// These stories demonstrate the top / bottom notch connector tabs.
+// The top notch is strokeWidth smaller than the bottom notch so they
+// interlock properly when bricks are stacked.
+
+/** Simple brick with only a top notch protruding upward */
+export const TopNotchOnly: Story = {
+  args: {
+    input: {
+      strokeWidth: 2,
+      labelDims: { w: 60, h: 20 },
+      paramArgDims: [],
+      topNotch: true,
+      bottomNotch: false,
+    },
+  },
+};
+
+/** Simple brick with only a bottom notch protruding downward */
+export const BottomNotchOnly: Story = {
+  args: {
+    input: {
+      strokeWidth: 2,
+      labelDims: { w: 60, h: 20 },
+      paramArgDims: [],
+      topNotch: false,
+      bottomNotch: true,
+    },
+  },
+};
+
+/** Simple brick with both notches — centres should be vertically aligned */
+export const BothNotches: Story = {
+  args: {
+    input: {
+      strokeWidth: 2,
+      labelDims: { w: 60, h: 20 },
+      paramArgDims: [],
+      topNotch: true,
+      bottomNotch: true,
+    },
+  },
+};
+
+/** Both notches with a wider stroke to see the size difference */
+export const BothNotchesWideStroke: Story = {
+  args: {
+    input: {
+      strokeWidth: 4,
+      labelDims: { w: 80, h: 20 },
+      paramArgDims: [],
+      topNotch: true,
+      bottomNotch: true,
+    },
+  },
+};
+
+/** Compound brick (nesting) with both notches */
+export const NestingWithNotches: Story = {
+  args: {
+    input: {
+      ...nestingBase,
+      nestingDims: { w: 120, h: 120 },
+      topNotch: true,
+      bottomNotch: true,
+    },
+  },
+};

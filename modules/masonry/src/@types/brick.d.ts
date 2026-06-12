@@ -171,6 +171,10 @@ export interface BrickOutlineInput {
      * - `Size` — nesting exists with known content dimensions
      */
     nestingDims?: Size | null;
+    /** Whether to draw a top notch (downward groove). Defaults to false. */
+    topNotch?: boolean;
+    /** Whether to draw a bottom notch (protruding tab). Defaults to false. */
+    bottomNotch?: boolean;
 }
 
 export interface BrickOutlineOutput {
@@ -191,6 +195,10 @@ export interface BrickOutlineOutput {
         /** Bounds of the nesting cavity; absent when there is no nesting */
         nesting?: Bounds;
     };
+    /** Always 0 (top notch goes inward). */
+    topNotchDepth: number;
+    /** Downward protrusion distance of the bottom notch. */
+    bottomNotchDepth: number;
 }
 
 export interface BrickViewProps {
@@ -198,6 +206,10 @@ export interface BrickViewProps {
     label: string;
     /** Controls brick size and font scaling; defaults to 1 */
     scaleLevel?: 1 | 2 | 3;
+    /** Whether to draw a top notch (downward groove from top edge). Defaults to false. */
+    topNotch?: boolean;
+    /** Whether to draw a bottom notch (tab protruding below bottom edge). Defaults to false. */
+    bottomNotch?: boolean;
 }
 
 export interface BrickMinimums {

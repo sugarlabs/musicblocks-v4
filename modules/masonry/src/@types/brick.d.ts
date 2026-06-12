@@ -148,7 +148,7 @@ export interface Point {
 /** Bounding rectangle of a layout region: position and size */
 export interface Bounds extends Size, Point {}
 
-export interface BrickOutlineInput2 {
+export interface BrickOutlineInput {
     /**
      * Stroke width of the outline. The outline is drawn inset by `strokeWidth / 2`
      * so the stroke stays inside the reported width/height instead of being clipped.
@@ -173,7 +173,7 @@ export interface BrickOutlineInput2 {
     nestingDims?: Size | null;
 }
 
-export interface BrickOutlineOutput2 {
+export interface BrickOutlineOutput {
     /** SVG path string tracing the brick outline */
     path: string;
     /** Total outer width of the brick */

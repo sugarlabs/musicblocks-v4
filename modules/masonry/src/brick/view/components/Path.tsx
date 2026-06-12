@@ -41,7 +41,7 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
 
   // ── Notch protrusion padding ──
   // Only bottom notch protrudes, requiring extra SVG height.
-  const topPad = svgToPx(topNotchDepth);    // always 0 (kept for symmetry)
+  const topPad = svgToPx(topNotchDepth); // always 0 (kept for symmetry)
   const bottomPad = svgToPx(bottomNotchDepth);
 
   return (

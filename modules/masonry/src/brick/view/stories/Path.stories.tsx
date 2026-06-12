@@ -212,9 +212,7 @@ export const AllNotchesWideStroke: Story = {
     input: {
       strokeWidth: 4,
       labelDims: { w: 120, h: 20 },
-      paramArgDims: [
-        { param: { w: 80, h: 20 }, arg: { w: 100, h: 40 } },
-      ],
+      paramArgDims: [{ param: { w: 80, h: 20 }, arg: { w: 100, h: 40 } }],
       nestingDims: { w: 120, h: 120 },
       topNotch: true,
       bottomNotch: true,

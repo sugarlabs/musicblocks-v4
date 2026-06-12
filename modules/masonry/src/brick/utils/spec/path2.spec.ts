@@ -394,6 +394,51 @@ describe('path V2: generateBrickOutline2', () => {
     });
 });
 
+// ────────────────────────── Notches ──────────────────────────────────────────────────────────────
+
+describe('path V2: notches', () => {
+    const baseInput: BrickOutlineInput = {
+        strokeWidth: 2,
+        labelDims: { w: 80, h: 20 },
+        paramArgDims: [],
+    };
+
+    it('outputs zero depths when no notches are specified', () => {
+        const result = generateBrickOutline2(baseInput);
+        expect(result.topNotchDepth).toBe(0);
+        expect(result.bottomNotchDepth).toBe(0);
+        expect(result.nestedTopNotchDepth).toBe(0);
+        expect(result.nestedBottomNotchDepth).toBe(0);
+    });
+
+    it('outputs correct depths for top and bottom notches', () => {
+        const result = generateBrickOutline2({ ...baseInput, topNotch: true, bottomNotch: true });
+        expect(result.topNotchDepth).toBe(0); // top notch is an inward groove
+        expect(result.bottomNotchDepth).toBe(2); // NOTCH_DEPTH
+    });
+
+    it('outputs correct depths for nested notches on a nesting brick', () => {
+        const result = generateBrickOutline2({
+            ...baseInput,
+            nestingDims: { w: 50, h: 50 },
+            nestedTopNotch: true,
+            nestedBottomNotch: true,
+        });
+        expect(result.nestedTopNotchDepth).toBe(0); // inward into cavity
+        expect(result.nestedBottomNotchDepth).toBe(0); // inward into foot
+    });
+
+    it('ignores nested notches if there is no nesting', () => {
+        const result = generateBrickOutline2({
+            ...baseInput,
+            nestedTopNotch: true,
+            nestedBottomNotch: true,
+        });
+        expect(result.nestedTopNotchDepth).toBe(0);
+        expect(result.nestedBottomNotchDepth).toBe(0);
+    });
+});
+
 // ────────────────────────── Validity Boundaries ──────────────────────────────────────────────────
 
 describe('path V2: validity boundaries (documented, not yet enforced)', () => {

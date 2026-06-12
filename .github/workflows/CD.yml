@@ -19,7 +19,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: ./.github/actions/setup
+      - name: Setup Node.js and install dependencies
+        uses: ./.github/actions/setup
 
       - name: Build for Production
         run: npm run build:gh

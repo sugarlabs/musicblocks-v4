@@ -1,12 +1,12 @@
 name: Setup
-description: Setup Node.js 22 with npm cache and install dependencies
+description: Setup Node.js 24 with npm cache and install dependencies
 
 runs:
   using: composite
   steps:
     - uses: actions/setup-node@v4
       with:
-        node-version: '22'
+        node-version: '24'
         registry-url: 'https://npm.pkg.github.com'
         cache: 'npm'
 

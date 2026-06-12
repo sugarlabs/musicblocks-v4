@@ -39,8 +39,10 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
       xmlns="http://www.w3.org/2000/svg"
       width={svgToPx(width) + maxArgW}
       height={svgToPx(height)}
-      style={{ backgroundColor: '#e4e4e4' }}
     >
+      {/* Debug underlay: brick bounding box */}
+      <rect x={0} y={0} width={svgToPx(width)} height={svgToPx(height)} fill="#efe4e4" />
+
       <path
         d={path}
         transform={`scale(${SCALE})`}

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import type { BrickOutlineInput2 } from '@masonry/@types/brick';
+import type { BrickOutlineInput } from '@masonry/@types/brick';
 
 import { PathBrickView } from '../components/Path';
 
@@ -63,7 +63,7 @@ export const LabelMixedParamArgs: Story = {
 
 // ── Nesting variants (label + 2 args each with their param) ──
 
-const nestingBase: Pick<BrickOutlineInput2, 'strokeWidth' | 'labelDims' | 'paramArgDims'> = {
+const nestingBase: Pick<BrickOutlineInput, 'strokeWidth' | 'labelDims' | 'paramArgDims'> = {
   strokeWidth: 2,
   labelDims: { w: 120, h: 20 },
   paramArgDims: [

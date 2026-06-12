@@ -1,8 +1,8 @@
 import type {
     Bounds,
     BrickMinimums,
-    BrickOutlineInput2,
-    BrickOutlineOutput2,
+    BrickOutlineInput,
+    BrickOutlineOutput,
 } from '@masonry/@types/brick';
 
 // ────────────────────────── Constants ────────────────────────────────────────────────────────────
@@ -33,7 +33,7 @@ export const TAIL_STEP_H = 6;
 
 // ────────────────────────── Dimension Calculation ────────────────────────────────────────────────
 
-interface ComputedDimensions2 {
+interface ComputedDimensions {
     /** Total outer width of the brick */
     width: number;
     /** Total outer height of the brick (headHeight + tailHeight) */
@@ -44,10 +44,10 @@ interface ComputedDimensions2 {
     nestHeight: number;
 }
 
-export function computeDimensions2(
-    input: BrickOutlineInput2,
+export function computeDimensions(
+    input: BrickOutlineInput,
     minimums: BrickMinimums,
-): ComputedDimensions2 {
+): ComputedDimensions {
     const { minWidth, minLabelHeight, minNestHeight, minParamHeight, minArgHeight } = minimums;
     const params = input.paramArgDims.map((p) => p.param ?? { w: 0, h: minParamHeight });
     const args = input.paramArgDims.map((p) => p.arg ?? { w: 0, h: minArgHeight });
@@ -162,13 +162,13 @@ function segTailStepBottom(): string[] {
 }
 
 function generateBounds(
-    input: BrickOutlineInput2,
+    input: BrickOutlineInput,
     width: number,
     headHeight: number,
     nestHeight: number,
     hasNesting: boolean,
     minimums: BrickMinimums,
-): BrickOutlineOutput2['bounds'] {
+): BrickOutlineOutput['bounds'] {
     const { minLabelHeight, minNestHeight, minParamHeight, minArgHeight } = minimums;
     const strokeWidth = input.strokeWidth;
 
@@ -234,15 +234,15 @@ function generateBounds(
  */
 export function createBrickOutlineGenerator(
     minimums: BrickMinimums,
-): (input: BrickOutlineInput2) => BrickOutlineOutput2 {
+): (input: BrickOutlineInput) => BrickOutlineOutput {
     /**
      * Computes the SVG path and layout bounds for a single brick frame.
      *
      * @param input - Stroke width, label/param/arg dimensions, optional nesting.
      * @returns SVG path string, outer frame dimensions, and content-region bounds.
      */
-    return (input: BrickOutlineInput2): BrickOutlineOutput2 => {
-        const { width, height, headHeight, nestHeight } = computeDimensions2(input, minimums);
+    return (input: BrickOutlineInput): BrickOutlineOutput => {
+        const { width, height, headHeight, nestHeight } = computeDimensions(input, minimums);
 
         const hasNesting = input.nestingDims !== undefined;
         const strokeWidth = input.strokeWidth;

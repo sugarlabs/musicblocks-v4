@@ -1,4 +1,4 @@
-import type { BrickOutlineInput2 } from '@masonry/@types/brick';
+import type { BrickOutlineInput } from '@masonry/@types/brick';
 
 import { SCALE_LEVEL_CONFIG } from '../../utils/constants';
 import { createBrickOutlineGenerator } from '../../utils/path2';
@@ -17,7 +17,7 @@ const generateBrickOutline = createBrickOutlineGenerator({
   minArgHeight: pxToSvg(SCALE_LEVEL_CONFIG[SCALE_LEVEL].minArgNestHeight),
 });
 
-export function PathBrickView({ input }: { input: BrickOutlineInput2 }) {
+export function PathBrickView({ input }: { input: BrickOutlineInput }) {
   const maxArgW = Math.max(0, ...input.paramArgDims.map((p) => p.arg?.w ?? 0));
   const { width, height, path, bounds } = generateBrickOutline({
     strokeWidth: pxToSvg(input.strokeWidth),

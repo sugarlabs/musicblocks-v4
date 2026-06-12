@@ -1,4 +1,4 @@
-import type { BrickMinimums, BrickOutlineInput2 } from '@masonry/@types/brick';
+import type { BrickMinimums, BrickOutlineInput } from '@masonry/@types/brick';
 
 import {
     HEAD_PAD_X1,
@@ -8,7 +8,7 @@ import {
     TAIL_STEP_H,
     TAIL_STEP_W,
     createBrickOutlineGenerator,
-    computeDimensions2,
+    computeDimensions,
 } from '../path2';
 
 const MINIMUMS: BrickMinimums = {
@@ -67,12 +67,12 @@ function netDisplacement(path: string): { dx: number; dy: number } {
     return { dx, dy };
 }
 
-// ────────────────────────── computeDimensions2 ───────────────────────────────────────────────────
+// ────────────────────────── computeDimensions ────────────────────────────────────────────────────
 
-describe('path V2: computeDimensions2', () => {
+describe('path V2: computeDimensions', () => {
     describe('width', () => {
         it('main label dominates (no stroke)', () => {
-            const dims = computeDimensions2(
+            const dims = computeDimensions(
                 {
                     strokeWidth: 0,
                     labelDims: { w: 200, h: 30 },
@@ -85,7 +85,7 @@ describe('path V2: computeDimensions2', () => {
         });
 
         it('MIN_WIDTH dominates a small brick (no stroke)', () => {
-            const dims = computeDimensions2(
+            const dims = computeDimensions(
                 {
                     strokeWidth: 0,
                     labelDims: { w: 30, h: 10 },
@@ -99,7 +99,7 @@ describe('path V2: computeDimensions2', () => {
 
         it('adds s/2 + s/2 of stroke clearance to the head when the head dominates', () => {
             const s = 4;
-            const dims = computeDimensions2(
+            const dims = computeDimensions(
                 {
                     strokeWidth: s,
                     labelDims: { w: 200, h: 30 },
@@ -113,7 +113,7 @@ describe('path V2: computeDimensions2', () => {
 
         it('does NOT add stroke clearance when MIN_WIDTH wins (documents the s-smaller edge case)', () => {
             const s = 4;
-            const dims = computeDimensions2(
+            const dims = computeDimensions(
                 {
                     strokeWidth: s,
                     labelDims: { w: 30, h: 10 },
@@ -126,7 +126,7 @@ describe('path V2: computeDimensions2', () => {
         });
 
         it('widens for the widest param plus the label gutter', () => {
-            const dims = computeDimensions2(
+            const dims = computeDimensions(
                 {
                     strokeWidth: 0,
                     labelDims: { w: 60, h: 20 },
@@ -142,7 +142,7 @@ describe('path V2: computeDimensions2', () => {
         });
 
         it('tail (nesting) can drive the width', () => {
-            const dims = computeDimensions2(
+            const dims = computeDimensions(
                 {
                     strokeWidth: 0,
                     labelDims: { w: 20, h: 10 },
@@ -158,7 +158,7 @@ describe('path V2: computeDimensions2', () => {
 
     describe('height', () => {
         it('falls back to the main-label minimum height', () => {
-            const dims = computeDimensions2(
+            const dims = computeDimensions(
                 {
                     strokeWidth: 0,
                     labelDims: { w: 60, h: 10 },
@@ -173,7 +173,7 @@ describe('path V2: computeDimensions2', () => {
         });
 
         it('stacked null-arg rows drive head height via MIN_ARG_H', () => {
-            const dims = computeDimensions2(
+            const dims = computeDimensions(
                 {
                     strokeWidth: 0,
                     labelDims: { w: 60, h: 20 },
@@ -190,7 +190,7 @@ describe('path V2: computeDimensions2', () => {
 
         it('adds strokeWidth once to the total height (top + bottom margin)', () => {
             const s = 6;
-            const dims = computeDimensions2(
+            const dims = computeDimensions(
                 {
                     strokeWidth: s,
                     labelDims: { w: 60, h: 30 },
@@ -205,7 +205,7 @@ describe('path V2: computeDimensions2', () => {
 
         it('compound brick height = headHeight + nestHeight + foot + s', () => {
             const s = 4;
-            const dims = computeDimensions2(
+            const dims = computeDimensions(
                 {
                     strokeWidth: s,
                     labelDims: { w: 80, h: 20 },
@@ -221,7 +221,7 @@ describe('path V2: computeDimensions2', () => {
         });
 
         it('enforces the minimum nesting height', () => {
-            const dims = computeDimensions2(
+            const dims = computeDimensions(
                 {
                     strokeWidth: 0,
                     labelDims: { w: 80, h: 20 },
@@ -235,7 +235,7 @@ describe('path V2: computeDimensions2', () => {
 
         it('no gutter between stacked arg bricks (args supply their own spacing)', () => {
             const s = 4;
-            const dims = computeDimensions2(
+            const dims = computeDimensions(
                 {
                     strokeWidth: s,
                     labelDims: { w: 60, h: 20 },
@@ -304,7 +304,7 @@ describe('path V2: generateBrickOutline2', () => {
     });
 
     describe('well-formedness: the outline is a closed loop (net displacement = 0)', () => {
-        const inputs: { name: string; input: BrickOutlineInput2 }[] = [
+        const inputs: { name: string; input: BrickOutlineInput }[] = [
             {
                 name: 'simple, s=0',
                 input: { strokeWidth: 0, labelDims: { w: 60, h: 20 }, paramArgDims: [] },
@@ -344,12 +344,12 @@ describe('path V2: generateBrickOutline2', () => {
 
     describe('s = 0 reduces to the original (stroke terms vanish)', () => {
         it('width has no stroke contribution at s=0', () => {
-            const input: BrickOutlineInput2 = {
+            const input: BrickOutlineInput = {
                 strokeWidth: 0,
                 labelDims: { w: 120, h: 30 },
                 paramArgDims: [{ param: { w: 40, h: 18 }, arg: null }],
             };
-            const dims = computeDimensions2(input, MINIMUMS);
+            const dims = computeDimensions(input, MINIMUMS);
             const headWidth = HEAD_PAD_X1 + 120 + LABEL_PARAM_GUTTER_X + 40 + HEAD_PAD_X2;
             expect(dims.width).toBe(Math.max(headWidth, TAIL_STEP_W, MINIMUMS.minWidth));
         });
@@ -415,7 +415,7 @@ describe('path V2: validity boundaries (documented, not yet enforced)', () => {
      */
     it('cavity interior shrinks by s below the computed nestHeight', () => {
         const s = 4;
-        const dims = computeDimensions2(
+        const dims = computeDimensions(
             {
                 strokeWidth: s,
                 labelDims: { w: 80, h: 20 },

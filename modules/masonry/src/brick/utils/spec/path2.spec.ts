@@ -2,7 +2,16 @@ import type { BrickOutlineInput2 } from '../../../@types/brick';
 
 import type { BrickMinimums } from '../../../@types/brick';
 
-import { createBrickOutlineGenerator, computeDimensions2 } from '../path2';
+import {
+    HEAD_PAD_X1,
+    HEAD_PAD_X2,
+    LABEL_PARAM_GUTTER_X,
+    TAIL_INDENT_W,
+    TAIL_STEP_H,
+    TAIL_STEP_W,
+    createBrickOutlineGenerator,
+    computeDimensions2,
+} from '../path2';
 
 const MINIMUMS: BrickMinimums = {
     minWidth: 120,
@@ -59,17 +68,6 @@ function netDisplacement(path: string): { dx: number; dy: number } {
     }
     return { dx, dy };
 }
-
-// ────────────────────────── Constants (mirrored for assertions) ──────────────────────────────────
-
-const MIN_NEST_HEIGHT = 40;
-const MIN_ARG_H = 40;
-const HEAD_PAD_X1 = 7;
-const HEAD_PAD_X2 = 7;
-const LABEL_PARAM_GUTTER_X = 10;
-const TAIL_INDENT_W = 6;
-const TAIL_STEP_H = 6;
-const TAIL_STEP_W = 30;
 
 // ────────────────────────── computeDimensions2 ───────────────────────────────────────────────────
 
@@ -188,8 +186,8 @@ describe('path V2: computeDimensions2', () => {
                 },
                 MINIMUMS,
             );
-            // argsTotalHeight = MIN_ARG_H + MIN_ARG_H + 0(gutter, s=0) = 80
-            expect(dims.headHeight).toBe(2 * MIN_ARG_H);
+            // argsTotalHeight = minArgHeight + minArgHeight + 0(gutter, s=0) = 80
+            expect(dims.headHeight).toBe(2 * MINIMUMS.minArgHeight);
         });
 
         it('adds strokeWidth once to the total height (top + bottom margin)', () => {
@@ -234,7 +232,7 @@ describe('path V2: computeDimensions2', () => {
                 },
                 MINIMUMS,
             );
-            expect(dims.nestHeight).toBe(MIN_NEST_HEIGHT);
+            expect(dims.nestHeight).toBe(MINIMUMS.minNestHeight);
         });
 
         it('no gutter between stacked arg bricks (args supply their own spacing)', () => {

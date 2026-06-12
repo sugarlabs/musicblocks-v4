@@ -2,37 +2,10 @@ import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import type { Bounds, BrickViewProps, Size } from '../../../@types/brick';
 
+import { SCALE_LEVEL_CONFIG } from '../../utils/constants';
 import { createBrickOutlineGenerator } from '../../utils/path2';
 
 const STROKE_WIDTH = 2;
-
-const SCALE_LEVEL_CONFIG = {
-  1: {
-    brickScale: 1,
-    minWidth: 80,
-    minArgNestHeight: 24,
-    minLabelParamHeight: 14,
-    fontSize: 12,
-    lineHeight: 14,
-  },
-  2: {
-    brickScale: 1.5,
-    minWidth: 100,
-    minArgNestHeight: 32,
-    minLabelParamHeight: 18,
-    fontSize: 14,
-    lineHeight: 18,
-  },
-  3: {
-    brickScale: 2.25,
-    minWidth: 120,
-    minArgNestHeight: 40,
-    minLabelParamHeight: 20,
-    fontSize: 16,
-    lineHeight: 20,
-  },
-} as const;
-
 const DEFAULT_SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
 
 export function BrickView(props: BrickViewProps) {

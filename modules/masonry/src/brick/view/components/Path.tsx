@@ -1,18 +1,20 @@
 import type { BrickOutlineInput2 } from '../../../@types/brick';
 
+import { SCALE_LEVEL_CONFIG } from '../../utils/constants';
 import { createBrickOutlineGenerator } from '../../utils/path2';
 
-const SCALE = 2.25;
+const SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 3;
+const SCALE = SCALE_LEVEL_CONFIG[SCALE_LEVEL].brickScale;
 
 const pxToSvg = (px: number) => px / SCALE;
 const svgToPx = (u: number) => u * SCALE;
 
 const generateBrickOutline = createBrickOutlineGenerator({
-  minWidth: pxToSvg(120),
-  minLabelHeight: pxToSvg(20),
-  minNestHeight: pxToSvg(40),
-  minParamHeight: pxToSvg(20),
-  minArgHeight: pxToSvg(40),
+  minWidth: pxToSvg(SCALE_LEVEL_CONFIG[SCALE_LEVEL].minWidth),
+  minLabelHeight: pxToSvg(SCALE_LEVEL_CONFIG[SCALE_LEVEL].minLabelParamHeight),
+  minNestHeight: pxToSvg(SCALE_LEVEL_CONFIG[SCALE_LEVEL].minArgNestHeight),
+  minParamHeight: pxToSvg(SCALE_LEVEL_CONFIG[SCALE_LEVEL].minLabelParamHeight),
+  minArgHeight: pxToSvg(SCALE_LEVEL_CONFIG[SCALE_LEVEL].minArgNestHeight),
 });
 
 export function PathBrickView({ input }: { input: BrickOutlineInput2 }) {

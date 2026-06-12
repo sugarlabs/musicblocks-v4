@@ -9,27 +9,27 @@ import type {
 
 // ── Head padding ──
 /** Distance from the top edge of the head to its inner content */
-const HEAD_PAD_Y1 = 4;
+export const HEAD_PAD_Y1 = 4;
 /** Distance from the bottom edge of the head to its inner content */
-const HEAD_PAD_Y2 = 4;
+export const HEAD_PAD_Y2 = 4;
 /** Distance from the left edge of the head to its inner content */
-const HEAD_PAD_X1 = 7;
+export const HEAD_PAD_X1 = 7;
 /** Distance from the right edge of the head to its inner content */
-const HEAD_PAD_X2 = 7;
+export const HEAD_PAD_X2 = 7;
 
 // ── Gutters ──
 /** Horizontal gap between the main label and the parameter labels */
-const LABEL_PARAM_GUTTER_X = 10;
+export const LABEL_PARAM_GUTTER_X = 10;
 /** Vertical gap between stacked parameter labels */
-const PARAM_GUTTER_Y = 8;
+export const PARAM_GUTTER_Y = 8;
 
 // ── Tail ──
 /** Horizontal width of the tail's indent that forms the nesting cavity notch */
-const TAIL_INDENT_W = 6;
+export const TAIL_INDENT_W = 6;
 /** Total width of the closing step at the bottom of the tail */
-const TAIL_STEP_W = 30;
+export const TAIL_STEP_W = 30;
 /** Height of the closing step at the bottom of the tail */
-const TAIL_STEP_H = 6;
+export const TAIL_STEP_H = 6;
 
 // ────────────────────────── Dimension Calculation ────────────────────────────────────────────────
 

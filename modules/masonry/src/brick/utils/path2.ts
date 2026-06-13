@@ -31,6 +31,19 @@ export const TAIL_STEP_W = 30;
 /** Height of the closing step at the bottom of the tail */
 export const TAIL_STEP_H = 6;
 
+// ── Right notch ──
+// A concave groove on the right edge that receives a side-attached arg's tab.
+// Profile (top → bottom): flat → small lip arc → semicircle → small lip arc → flat.
+// The lip arcs round the corners where the vertical edge meets the semicircle; their
+// radius scales with the stroke (3s/2) so the flare stays proportional as the stroke
+// changes. The semicircle radius is a fixed constant.
+
+/** Radius of the semicircular groove on the right edge */
+export const NOTCH_RADIUS = 4;
+/** Gap from the top of an argument slot down to its notch centre (shared by the right
+ * grooves and the left tab, so they stay aligned). */
+export const NOTCH_OFFSET = 9;
+
 // ────────────────────────── Dimension Calculation ────────────────────────────────────────────────
 
 interface ComputedDimensions {
@@ -126,16 +139,130 @@ function segTopEdge(width: number, strokeWidth: number): string[] {
     ];
 }
 
-function segHeadRight(headHeight: number, strokeWidth: number): string[] {
-    return [`v ${headHeight - strokeWidth / 2 - strokeWidth / 2}`];
+/**
+ * Right edge of the head, top → bottom.
+ * Draws a concave semicircular groove (hasRightNotch) for a side-attached arg.
+ *
+ * @param headHeight    - Height of the head section
+ * @param strokeWidth   - Stroke width in SVG units
+ * @param hasRightNotch - Whether to cut the right notch groove
+ */
+/**
+ * Right edge of the head, top → bottom.
+ * Draws one concave semicircular groove per entry in `notchCentres` (each value is
+ * the absolute y of a notch centre), with flat runs between them.
+ *
+ * Each groove is built from its centre outwards, one portion at a time:
+ *   flat run → lip arc → semicircle → lip arc → flat run.
+ *
+ * @param headHeight   - Height of the head section
+ * @param strokeWidth  - Stroke width in SVG units
+ * @param notchCentres - Absolute y positions (top → bottom) of each groove centre
+ */
+function segHeadRight(headHeight: number, strokeWidth: number, notchCentres: number[]): string[] {
+    const s = strokeWidth;
+
+    // The edge runs between the two corners, each inset by s/2 so the stroke isn't clipped.
+    const edgeStart = s / 2; // top-right corner (pen arrives here)
+    const edgeEnd = headHeight - s / 2; // bottom-right corner
+
+    // ── No notches — single straight run ──
+    if (notchCentres.length === 0) {
+        return [`v ${edgeEnd - edgeStart}`];
+    }
+
+    const r = NOTCH_RADIUS; // semicircle (groove) radius
+    const lip = (3 * s) / 2; // small flare arc radius, proportional to the stroke
+
+    const segs: string[] = [];
+    let pen = edgeStart; // current y of the pen, travelling downwards
+
+    for (const centre of notchCentres) {
+        // Build the notch span from its centre, one portion above and below:
+        //   centre        — the notch centre
+        //   semicircleTop — one radius above the centre
+        //   notchTop      — one lip arc above the semicircle (where the groove begins)
+        const semicircleTop = centre - r;
+        const notchTop = semicircleTop - lip;
+        // ...and symmetrically downwards (where the groove ends):
+        const semicircleBottom = centre + r;
+        const notchBottom = semicircleBottom + lip;
+
+        // Skip a notch that would overlap the previous one or run past the bottom corner,
+        // so the path stays continuous instead of self-crossing.
+        if (notchTop < pen || notchBottom > edgeEnd) {
+            continue;
+        }
+
+        // 1. flat run down to where the groove begins
+        const flatBefore = notchTop - pen;
+        segs.push(`v ${flatBefore}`);
+        // 2. lip arc: peel the edge inwards (−x) into the groove
+        segs.push(`a ${lip} ${lip} 0 0 1 ${-lip} ${lip}`);
+        // 3. semicircle: the concave groove dipping into the brick (−x)
+        segs.push(`a ${r} ${r} 0 0 0 0 ${2 * r}`);
+        // 4. lip arc: bring the edge back out to the straight line
+        segs.push(`a ${lip} ${lip} 0 0 1 ${lip} ${lip}`);
+
+        pen = notchBottom;
+    }
+
+    // 5. remaining flat run down to the bottom corner
+    segs.push(`v ${edgeEnd - pen}`);
+    return segs;
 }
 
 function segHeadBottom(width: number, strokeWidth: number): string[] {
     return [`h ${-(width - strokeWidth / 2 - strokeWidth / 2)}`];
 }
 
-function segLeftEdge(height: number, strokeWidth: number): string[] {
-    return [`v ${-(height - strokeWidth / 2 - strokeWidth / 2)}`];
+/**
+ * Left edge of the brick, bottom → top.
+ * Draws the single convex semicircular tab (at `tabCentre`) where this brick plugs into
+ * its parent, bulging OUT of the brick (−x). The tab radius is one stroke width smaller
+ * than the groove (NOTCH_RADIUS) so the wider groove receives it cleanly, and the
+ * protrusion is deliberately NOT added to the brick's width/height.
+ *
+ * Mirrors segHeadRight but travels bottom → top, so each portion's displacement is
+ * negative and the semicircle bulges out instead of cutting in.
+ *
+ * @param height       - Total outer height of the brick
+ * @param strokeWidth  - Stroke width in SVG units
+ * @param tabCentre    - Absolute y of the tab centre, or null for a plain edge
+ */
+function segLeftEdge(height: number, strokeWidth: number, tabCentre: number | null): string[] {
+    const s = strokeWidth;
+
+    // The edge runs between the two corners, each inset by s/2; travelled upward.
+    const edgeStart = height - s / 2; // bottom-left corner (pen arrives here)
+    const edgeEnd = s / 2; // top-left corner
+
+    // Tab radius = groove radius minus one stroke width, so the wider groove (drawn at
+    // NOTCH_RADIUS) receives this tab cleanly once both strokes are accounted for.
+    const r = NOTCH_RADIUS - s;
+    const lip = (3 * s) / 2; // small flare arc radius, proportional to the stroke (same as the groove's lip)
+
+    // ── No tab (none requested, or the stroke shrank it away) — single straight run up ──
+    if (tabCentre === null || r <= 0) {
+        return [`v ${-(edgeStart - edgeEnd)}`];
+    }
+
+    // Build the tab span from its centre: one lip arc + one radius on each side.
+    const notchBottom = tabCentre + r + lip; // where the tab begins (lower, reached first)
+    const notchTop = tabCentre - r - lip; // where the tab ends (upper)
+
+    // Fall back to a straight edge if the tab wouldn't fit between the two corners.
+    if (notchBottom > edgeStart || notchTop < edgeEnd) {
+        return [`v ${-(edgeStart - edgeEnd)}`];
+    }
+
+    return [
+        `v ${-(edgeStart - notchBottom)}`, // 1. flat run up to where the tab begins
+        `a ${lip} ${lip} 0 0 0 ${-lip} ${-lip}`, // 2. lip arc: peel the edge outwards (−x)
+        `a ${r} ${r} 0 0 1 0 ${-2 * r}`, // 3. semicircle: the convex tab bulging out (−x)
+        `a ${lip} ${lip} 0 0 0 ${lip} ${-lip}`, // 4. lip arc: bring the edge back in
+        `v ${-(notchTop - edgeEnd)}`, // 5. remaining flat run up to the top-left corner
+    ];
 }
 
 function segTailCavityRoof(width: number, strokeWidth: number): string[] {
@@ -172,11 +299,14 @@ function generateBounds(
     const { minLabelHeight, minNestHeight, minParamHeight, minArgHeight } = minimums;
     const strokeWidth = input.strokeWidth;
 
+    // Centre the label on the notch line (NOTCH_OFFSET below the top) so the label
+    // lines up with the connection point. For a label-only head this is also its centre.
+    const labelH = Math.max(input.labelDims.h, minLabelHeight);
     const label: Bounds = {
         x: strokeWidth / 2 + HEAD_PAD_X1,
-        y: strokeWidth / 2 + HEAD_PAD_Y1,
+        y: NOTCH_OFFSET - labelH / 2,
         w: input.labelDims.w,
-        h: Math.max(input.labelDims.h, minLabelHeight),
+        h: labelH,
     };
 
     let nesting: Bounds | undefined;
@@ -247,23 +377,49 @@ export function createBrickOutlineGenerator(
         const hasNesting = input.nestingDims !== undefined;
         const strokeWidth = input.strokeWidth;
 
+        const wantLeft = input.leftNotch ?? false;
+
+        // Constant gap from the top of an argument slot down to that slot's notch centre.
+        const offset = NOTCH_OFFSET;
+
+        // ── Right edge: one groove per argument slot ──
+        // The presence of an argument is the signal — no separate flag is needed. Walk the
+        // slots top → bottom, tracking each slot's top edge. A groove's centre is that slot
+        // top plus the constant offset, so every groove stays the same distance below where
+        // the previous argument ended (independent of arg heights).
+        const rightCentres: number[] = [];
+        let slotTop = 0;
+        for (const { arg } of input.paramArgDims) {
+            const rowH = Math.max(arg?.h ?? 0, minimums.minArgHeight);
+            if (arg !== null) {
+                const centre = slotTop + offset;
+                rightCentres.push(centre);
+            }
+            slotTop += rowH;
+        }
+
+        // ── Left edge: a single tab where this brick plugs into its parent ──
+        // Aligned with the TOP right groove: the first slot's top is 0, so its centre is
+        // just the offset — independent of the argument count.
+        const leftTabCentre = wantLeft ? offset : null;
+
         const segments = !hasNesting
             ? [
                   ...segTopEdge(width, strokeWidth),
-                  ...segHeadRight(headHeight, strokeWidth),
+                  ...segHeadRight(headHeight, strokeWidth, rightCentres),
                   ...segHeadBottom(width, strokeWidth),
-                  ...segLeftEdge(height, strokeWidth),
+                  ...segLeftEdge(height, strokeWidth, leftTabCentre),
                   'z',
               ]
             : [
                   ...segTopEdge(width, strokeWidth),
-                  ...segHeadRight(headHeight, strokeWidth),
+                  ...segHeadRight(headHeight, strokeWidth, rightCentres),
                   ...segTailCavityRoof(width, strokeWidth),
                   ...segTailCavityLeft(nestHeight, strokeWidth),
                   ...segTailFoot(),
                   ...segTailStepRight(),
                   ...segTailStepBottom(),
-                  ...segLeftEdge(height, strokeWidth),
+                  ...segLeftEdge(height, strokeWidth, leftTabCentre),
                   'z',
               ];
 
@@ -271,6 +427,13 @@ export function createBrickOutlineGenerator(
 
         const bounds = generateBounds(input, width, headHeight, nestHeight, hasNesting, minimums);
 
-        return { path, width, height, bounds };
+        // How far the left tabs protrude beyond the brick's left edge (x = 0).
+        // Reported separately so renderers can give it a viewing gutter WITHOUT it
+        // counting toward width/height (which would push connected bricks apart).
+        const tabRadius = NOTCH_RADIUS - strokeWidth;
+        const lip = (3 * strokeWidth) / 2;
+        const leftNotchDepth = leftTabCentre !== null && tabRadius > 0 ? lip + tabRadius : 0;
+
+        return { path, width, height, bounds, leftNotchDepth };
     };
 }

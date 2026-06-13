@@ -3,17 +3,21 @@
   "version": "4.2.0",
   "description": "A complete overhaul of Music Blocks",
   "private": true,
+  "license": "AGPL-3.0",
+  "author": "Anindya Kundu <anindya.k22@outlook.com> (https://github.com/meganindya/)",
+  "keywords": [
+    "musicblocks"
+  ],
+  "homepage": "https://sugarlabs.github.io/musicblocks-v4",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sugarlabs/musicblocks-v4.git"
   },
-  "homepage": "https://sugarlabs.github.io/musicblocks-v4",
-  "keywords": [
-    "musicblocks"
-  ],
-  "author": "Anindya Kundu <anindya.k22@outlook.com> (https://github.com/meganindya/)",
-  "license": "AGPL-3.0",
   "module": "true",
+  "engines": {
+    "node": ">=24",
+    "npm": ">=11"
+  },
   "scripts": {
     "serve": "lerna --scope @sugarlabs/mb4-app run serve",
     "build": "lerna --scope @sugarlabs/mb4-app run build",
@@ -26,6 +30,29 @@
     "lint": "lerna run lint && markdownlint -i '**/node_modules/**' . && textlint '**/*.md'",
     "test": "lerna run test",
     "coverage": "./coverage.sh"
+  },
+  "workspaces": [
+    "lib/assets",
+    "lib/config",
+    "lib/events",
+    "lib/i18n",
+    "lib/transport",
+    "lib/view",
+    "lib/components",
+    "modules/code-builder",
+    "modules/editor",
+    "modules/menu",
+    "modules/painter",
+    "modules/singer",
+    "modules/masonry",
+    "modules/program",
+    "modules/runtime",
+    "app"
+  ],
+  "dependencies": {
+    "lodash.clonedeep": "^4.5.0",
+    "quadtree-lib": "^1.0.9",
+    "recoil": "^0.7.7"
   },
   "devDependencies": {
     "@storybook/addon-essentials": "^8.6.14",
@@ -76,28 +103,5 @@
     "vite-plugin-eslint2": "^5.1.0",
     "vite-plugin-pwa": "^1.0.0",
     "vitest": "^3.2.3"
-  },
-  "workspaces": [
-    "lib/assets",
-    "lib/config",
-    "lib/events",
-    "lib/i18n",
-    "lib/transport",
-    "lib/view",
-    "lib/components",
-    "modules/code-builder",
-    "modules/editor",
-    "modules/menu",
-    "modules/painter",
-    "modules/singer",
-    "modules/masonry",
-    "modules/program",
-    "modules/runtime",
-    "app"
-  ],
-  "dependencies": {
-    "lodash.clonedeep": "^4.5.0",
-    "quadtree-lib": "^1.0.9",
-    "recoil": "^0.7.7"
   }
 }

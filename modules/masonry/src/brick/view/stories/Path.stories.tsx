@@ -132,8 +132,13 @@ export const BothNotches: Story = {
 export const BothNotchesWideStroke: Story = {
   args: {
     input: {
-      strokeWidth: 4,
-      labelDims: { w: 80, h: 20 },
+      strokeWidth: 3,
+
+      labelDims: {
+        w: 80,
+        h: 20,
+      },
+
       paramArgDims: [],
       topNotch: true,
       bottomNotch: true,
@@ -210,10 +215,32 @@ export const AllNotches: Story = {
 export const AllNotchesWideStroke: Story = {
   args: {
     input: {
-      strokeWidth: 4,
-      labelDims: { w: 120, h: 20 },
-      paramArgDims: [{ param: { w: 80, h: 20 }, arg: { w: 100, h: 40 } }],
-      nestingDims: { w: 120, h: 120 },
+      strokeWidth: 3,
+
+      labelDims: {
+        w: 120,
+        h: 20,
+      },
+
+      paramArgDims: [
+        {
+          param: {
+            w: 80,
+            h: 20,
+          },
+
+          arg: {
+            w: 100,
+            h: 40,
+          },
+        },
+      ],
+
+      nestingDims: {
+        w: 120,
+        h: 120,
+      },
+
       topNotch: true,
       bottomNotch: true,
       nestedTopNotch: true,

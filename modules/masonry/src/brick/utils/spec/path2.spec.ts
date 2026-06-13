@@ -166,7 +166,7 @@ describe('path V2: computeDimensions', () => {
                 },
                 MINIMUMS,
             );
-            // headHeight = HEAD_PAD_Y1 + max(10,20) + HEAD_PAD_Y2 = 28 ; no tail
+            // headHeight = HEAD_PAD_Y1 + max(10,20) + HEAD_PAD_Y2 = 5 + 20 + 3 = 28
             expect(dims.headHeight).toBe(28);
             expect(dims.height).toBe(28);
             expect(dims.nestHeight).toBe(0);
@@ -198,7 +198,6 @@ describe('path V2: computeDimensions', () => {
                 },
                 MINIMUMS,
             );
-            // headHeight = s/2 + HEAD_PAD_Y1 + max(30,20) + HEAD_PAD_Y2 + s/2 = 3+4+30+4+3 = 44
             expect(dims.headHeight).toBe(44);
             expect(dims.height).toBe(44); // headHeight + 0 (no nesting)
         });
@@ -216,8 +215,8 @@ describe('path V2: computeDimensions', () => {
             );
             expect(dims.headHeight).toBe(32); // s/2 + HEAD_PAD_Y1 + max(20,20) + HEAD_PAD_Y2 + s/2
             expect(dims.nestHeight).toBe(50); // max(50,40)
-            // height = headHeight + (nestHeight + s/2 + TAIL_STEP_H + s/2)
-            expect(dims.height).toBe(32 + 50 + TAIL_STEP_H + s);
+            // height = headHeight + (nestHeight + s/2 + TAIL_STEP_H + s/2) = 32 + (50 + 2 + TAIL_STEP_H + 2) = 92
+            expect(dims.height).toBe(32 + 50 + 4 + TAIL_STEP_H);
         });
 
         it('enforces the minimum nesting height', () => {
@@ -246,8 +245,8 @@ describe('path V2: computeDimensions', () => {
                 },
                 MINIMUMS,
             );
-            // argsTotalHeight = 30 + 30 = 60 ; no gutter added (args account for their own strokes)
-            expect(dims.headHeight).toBe(30 + 30);
+            // argsTotalHeight = 60, but headHeightByParams now dominates: 2(s/2) + 5(pad) + 40(minParams) + 8(gutter) + 3(pad) + 2(s/2) = 60
+            expect(dims.headHeight).toBe(60);
         });
     });
 });
@@ -299,7 +298,7 @@ describe('path V2: generateBrickOutline2', () => {
             nestingDims: { w: 50, h: 50 },
         });
         // width=120, headHeight=32, nestHeight=50, height=92
-        // M s/2 s/2 ; top: 120-4=116 ; head: 32-4=28 ; roof: -(120-6-4)=-110 ; spine: 50+4=54 ; foot: 24 ; step: 6 ; bottom: -30 ; left: -(92-4)=-88
+        // M s/2 s/2 ; top: 120-4=116 ; head: 32-4=28 ; roof: -(120-6-2)= -110 ; left: 50+4=54 ; foot: 30-6 = 24 ; step: 6
         expect(result.path).toBe('M 2 2 h 116 v 28 h -110 v 54 h 24 v 6 h -30 v -88 z');
     });
 
@@ -414,7 +413,7 @@ describe('path V2: notches', () => {
     it('outputs correct depths for top and bottom notches', () => {
         const result = generateBrickOutline2({ ...baseInput, topNotch: true, bottomNotch: true });
         expect(result.topNotchDepth).toBe(0); // top notch is an inward groove
-        expect(result.bottomNotchDepth).toBe(2); // NOTCH_DEPTH
+        expect(result.bottomNotchDepth).toBe(2); // tabWidth / 2
     });
 
     it('outputs correct depths for nested notches on a nesting brick', () => {

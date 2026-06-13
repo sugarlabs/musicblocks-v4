@@ -19,7 +19,7 @@ const generateBrickOutline = createBrickOutlineGenerator({
 
 export function PathBrickView({ input }: { input: BrickOutlineInput }) {
   const maxArgW = Math.max(0, ...input.paramArgDims.map((p) => p.arg?.w ?? 0));
-  const { width, height, path, bounds, topNotchDepth, bottomNotchDepth } = generateBrickOutline({
+  const { width, height, path, bounds, topNotchDepth } = generateBrickOutline({
     strokeWidth: pxToSvg(input.strokeWidth),
     labelDims: { w: pxToSvg(input.labelDims.w), h: pxToSvg(input.labelDims.h) },
     paramArgDims: input.paramArgDims.map((p) => ({
@@ -40,15 +40,13 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
   });
 
   // ── Notch protrusion padding ──
-  // Only bottom notch protrudes, requiring extra SVG height.
   const topPad = svgToPx(topNotchDepth); // always 0 (kept for symmetry)
-  const bottomPad = svgToPx(bottomNotchDepth);
 
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width={svgToPx(width) + maxArgW}
-      height={svgToPx(height) + topPad + bottomPad}
+      height={svgToPx(height)}
       style={{ overflow: 'visible' }}
     >
       {/* Debug underlay: brick bounding box */}

@@ -42,11 +42,11 @@ v14.1.0
 
 ### With Docker
 
-This project development tools have been containerized using [**docker**](https://www.docker.com/).
-Therefore, to use an execution sandbox, it requires **docker** to be installed on the development
+This project development tools have been containerized using [**Docker**](https://www.docker.com/).
+Therefore, to use an execution sandbox, it requires **Docker** to be installed on the development
 machine.
 
-1. Setup _docker_.
+1. Setup _Docker_.
 
     - For _Linux_, [install _Docker Engine_](https://docs.docker.com/engine/install/). You'll also
     need to [install _Docker Compose_](https://docs.docker.com/compose/install/).
@@ -62,7 +62,7 @@ Windows) this repository using
     git clone https://github.com/sugarlabs/musicblocks-v4.git
     ```
 
-4. Build _docker image_ and launch _docker network_.
+4. Build _Docker image_ and launch _Docker network_.
 
     _**Note:**_ A
     [built initial development image](https://github.com/sugarlabs/musicblocks-v4/pkgs/container/musicblocks/16217005?tag=4-dev)
@@ -74,7 +74,7 @@ Windows) this repository using
     docker pull ghcr.io/sugarlabs/musicblocks:4-dev
     ```
 
-    Nagivate inside the project directory and launch the _docker network_ using
+    Nagivate inside the project directory and launch the _Docker network_ using
 
     ```bash
     docker-compose up -d
@@ -87,9 +87,9 @@ Windows) this repository using
     ```
 
     If you haven't pulled the image from the _GitHub Container Registry_ (_GHCR_), it'll first build
-    the image using the `Dockerfile`, then launch the _docker network_. If an image already exists
+    the image using the `Dockerfile`, then launch the _Docker network_. If an image already exists
     locally, it'll not be rebuilt. To force a rebuild from the `Dockerfile` before launching the
-    _docker network_, add the `--build` flag.
+    _Docker network_, add the `--build` flag.
 
 5. In a second terminal, run
 
@@ -97,7 +97,7 @@ Windows) this repository using
     docker attach musicblocks-4-dev
     ```
 
-    The _Alpine shell_ in the _docker container_ named _musicblocks-4-dev_ is spawned and standard
+    The _Alpine shell_ in the _Docker container_ named _musicblocks-4-dev_ is spawned and standard
     input/output is connected to the terminal.
 
 6. _**Node.js**_ (_Node.js Runtime_), _**npm**_ (_Node.js Package Manager_), _**tsc**_ (_TypeScript
@@ -118,7 +118,7 @@ Windows) this repository using
     v14.1.0
     ```
 
-7. To shut down the _docker network_, run (in the terminal where you ran `docker-compose up -d` or
+7. To shut down the _Docker network_, run (in the terminal where you ran `docker-compose up -d` or
 `docker compose up -d`)
 
     ```bash

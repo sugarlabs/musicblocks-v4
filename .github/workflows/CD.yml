@@ -15,20 +15,12 @@ jobs:
 
     steps:
       - name: Checkout the code base
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js 22.x
-        uses: actions/setup-node@v3
-        with:
-          node-version: '22'
-
-      - name: Install dependencies
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
-          npm ci
-          rm -rf .npmrc
+      - name: Setup Node.js and install dependencies
+        uses: ./.github/actions/setup
 
       - name: Build for Production
         run: npm run build:gh

@@ -4,6 +4,8 @@ import {
     HEAD_PAD_X1,
     HEAD_PAD_X2,
     LABEL_PARAM_GUTTER_X,
+    NOTCH_RADIUS,
+    NOTCH_OFFSET,
     TAIL_INDENT_W,
     TAIL_STEP_H,
     TAIL_STEP_W,
@@ -472,5 +474,218 @@ describe('path V2: validity boundaries (documented, not yet enforced)', () => {
         expect(cavityInterior).toBe(50 - s);
         // Content of height 50 no longer fits inside the inset cavity (50 - 4 = 46 < 50).
         expect(cavityInterior).toBeLessThan(50);
+    });
+});
+
+// ────────────────────────── Notches ──────────────────────────────────────────────────────────────
+
+interface ArcSeg {
+    rx: number;
+    sweep: number;
+    dx: number;
+    dy: number;
+}
+
+/** Extract every elliptical-arc (`a rx ry rot large sweep dx dy`) segment from a path. */
+function parseArcs(path: string): ArcSeg[] {
+    const tokens = path.trim().split(/\s+/);
+    const arcs: ArcSeg[] = [];
+    for (let i = 0; i < tokens.length; i++) {
+        if (tokens[i] === 'a') {
+            arcs.push({
+                rx: parseFloat(tokens[i + 1]),
+                sweep: parseFloat(tokens[i + 5]),
+                dx: parseFloat(tokens[i + 6]),
+                dy: parseFloat(tokens[i + 7]),
+            });
+        }
+    }
+    return arcs;
+}
+
+/** Net displacement of the whole path, INCLUDING arc segments (0,0 for a closed loop). */
+function netDisplacementFull(path: string): { dx: number; dy: number } {
+    const tokens = path.trim().split(/\s+/);
+    let dx = 0;
+    let dy = 0;
+    for (let i = 0; i < tokens.length; i++) {
+        const cmd = tokens[i];
+        if (cmd === 'h') dx += parseFloat(tokens[i + 1]);
+        else if (cmd === 'v') dy += parseFloat(tokens[i + 1]);
+        else if (cmd === 'a') {
+            dx += parseFloat(tokens[i + 6]);
+            dy += parseFloat(tokens[i + 7]);
+        }
+    }
+    return { dx, dy };
+}
+
+/**
+ * Absolute y of each semicircle centre for notches of the given radius, by walking the
+ * path. A semicircle's dy spans its full diameter, so its centre is at y + dy/2.
+ */
+function semicircleCentresY(path: string, radius: number): number[] {
+    const tokens = path.trim().split(/\s+/);
+    let y = 0;
+    const centres: number[] = [];
+    for (let i = 0; i < tokens.length; i++) {
+        const cmd = tokens[i];
+        if (cmd === 'M' || cmd === 'm') {
+            y = parseFloat(tokens[i + 2]);
+        } else if (cmd === 'v') {
+            y += parseFloat(tokens[i + 1]);
+        } else if (cmd === 'a') {
+            const rx = parseFloat(tokens[i + 1]);
+            const dy = parseFloat(tokens[i + 7]);
+            if (Math.abs(rx - radius) < 1e-9) centres.push(y + dy / 2);
+            y += dy;
+        }
+    }
+    return centres;
+}
+
+const oneArg = { param: null, arg: { w: 50, h: 40 } };
+
+describe('path V2: notches', () => {
+    it('draws no arcs when there are no args and no left tab', () => {
+        const r = generateBrickOutline2({
+            strokeWidth: 2,
+            labelDims: { w: 60, h: 20 },
+            paramArgDims: [],
+        });
+        expect(parseArcs(r.path)).toHaveLength(0);
+        expect(r.leftNotchDepth).toBe(0);
+    });
+
+    it('right grooves follow the args: one groove per argument slot, no flag needed', () => {
+        const r = generateBrickOutline2({
+            strokeWidth: 2,
+            labelDims: { w: 60, h: 20 },
+            paramArgDims: [oneArg, oneArg, oneArg],
+        });
+        const grooves = parseArcs(r.path).filter((a) => a.rx === NOTCH_RADIUS);
+        expect(grooves).toHaveLength(3);
+    });
+
+    it('left notch: exactly one tab, radius = NOTCH_RADIUS - strokeWidth', () => {
+        const s = 2;
+        const r = generateBrickOutline2({
+            strokeWidth: s,
+            labelDims: { w: 60, h: 20 },
+            paramArgDims: [oneArg, oneArg, oneArg],
+            leftNotch: true,
+        });
+        const tabs = parseArcs(r.path).filter((a) => a.rx === NOTCH_RADIUS - s);
+        expect(tabs).toHaveLength(1);
+        // The groove is wider than the tab so it receives it cleanly.
+        expect(NOTCH_RADIUS - s).toBeLessThan(NOTCH_RADIUS);
+    });
+
+    it('left tab is excluded from width/height but reported via leftNotchDepth', () => {
+        const base: BrickOutlineInput = {
+            strokeWidth: 2,
+            labelDims: { w: 60, h: 20 },
+            paramArgDims: [oneArg, oneArg],
+            nestingDims: { w: 80, h: 80 },
+        };
+        const off = generateBrickOutline2(base);
+        const on = generateBrickOutline2({ ...base, leftNotch: true });
+
+        expect(on.width).toBe(off.width);
+        expect(on.height).toBe(off.height);
+        expect(off.leftNotchDepth).toBe(0);
+        expect(on.leftNotchDepth).toBeGreaterThan(0);
+        // The reported depth is the lip plus the (reduced) tab radius.
+        // lip = 3s/2 (s = 2), tab radius = NOTCH_RADIUS - s.
+        expect(on.leftNotchDepth).toBeCloseTo((3 * 2) / 2 + (NOTCH_RADIUS - 2));
+    });
+
+    it('right grooves do not change width/height (concave, cut inward)', () => {
+        const input: BrickOutlineInput = {
+            strokeWidth: 2,
+            labelDims: { w: 60, h: 20 },
+            paramArgDims: [oneArg, oneArg],
+        };
+        const r = generateBrickOutline2(input);
+        const dims = computeDimensions(input, MINIMUMS);
+        // Grooves are concave, so the outline's size still matches the raw dimensions.
+        expect(r.width).toBe(dims.width);
+        expect(r.height).toBe(dims.height);
+    });
+
+    it('left tab centre aligns with the top right groove (both at NOTCH_OFFSET)', () => {
+        const s = 2;
+        const r = generateBrickOutline2({
+            strokeWidth: s,
+            labelDims: { w: 60, h: 20 },
+            paramArgDims: [oneArg, oneArg, oneArg],
+            leftNotch: true,
+        });
+        const grooveCentres = semicircleCentresY(r.path, NOTCH_RADIUS);
+        const tabCentres = semicircleCentresY(r.path, NOTCH_RADIUS - s);
+
+        expect(tabCentres).toHaveLength(1);
+        expect(grooveCentres[0]).toBeCloseTo(NOTCH_OFFSET);
+        expect(tabCentres[0]).toBeCloseTo(grooveCentres[0]);
+    });
+
+    it('groove centres anchor to each arg slot top + offset (handles uneven heights)', () => {
+        // Slot tops: 0, 40, 100 -> centres: 9, 49, 109 (with NOTCH_OFFSET = 9).
+        const r = generateBrickOutline2({
+            strokeWidth: 2,
+            labelDims: { w: 60, h: 20 },
+            paramArgDims: [
+                { param: null, arg: { w: 50, h: 40 } },
+                { param: null, arg: { w: 50, h: 60 } },
+                { param: null, arg: { w: 50, h: 40 } },
+            ],
+        });
+        const centres = semicircleCentresY(r.path, NOTCH_RADIUS);
+        expect(centres[0]).toBeCloseTo(0 + NOTCH_OFFSET);
+        expect(centres[1]).toBeCloseTo(40 + NOTCH_OFFSET);
+        expect(centres[2]).toBeCloseTo(40 + 60 + NOTCH_OFFSET);
+    });
+
+    it('the label is centred on the notch line', () => {
+        const r = generateBrickOutline2({
+            strokeWidth: 2,
+            labelDims: { w: 60, h: 20 },
+            paramArgDims: [oneArg],
+        });
+        const labelCentreY = r.bounds.label.y + r.bounds.label.h / 2;
+        expect(labelCentreY).toBeCloseTo(NOTCH_OFFSET);
+    });
+
+    it('the outline still closes (net displacement = 0) with notches on', () => {
+        const simple = generateBrickOutline2({
+            strokeWidth: 2,
+            labelDims: { w: 60, h: 20 },
+            paramArgDims: [oneArg, oneArg, oneArg],
+            leftNotch: true,
+        });
+        const compound = generateBrickOutline2({
+            strokeWidth: 2,
+            labelDims: { w: 60, h: 20 },
+            paramArgDims: [oneArg, oneArg],
+            nestingDims: { w: 80, h: 80 },
+            leftNotch: true,
+        });
+        for (const r of [simple, compound]) {
+            const { dx, dy } = netDisplacementFull(r.path);
+            expect(dx).toBeCloseTo(0);
+            expect(dy).toBeCloseTo(0);
+        }
+    });
+
+    it('draws no tab when the stroke shrinks the tab radius to zero', () => {
+        // tab radius = NOTCH_RADIUS - strokeWidth; a stroke == NOTCH_RADIUS zeroes it.
+        const noTab = generateBrickOutline2({
+            strokeWidth: NOTCH_RADIUS,
+            labelDims: { w: 60, h: 20 },
+            paramArgDims: [oneArg],
+            leftNotch: true,
+        });
+        expect(parseArcs(noTab.path)).toHaveLength(0);
+        expect(noTab.leftNotchDepth).toBe(0);
     });
 });

@@ -175,10 +175,6 @@ export interface BrickOutlineInput {
     topNotch?: boolean;
     /** Whether to draw a bottom notch (protruding tab). Defaults to false. */
     bottomNotch?: boolean;
-    /** Whether to draw a nested-top notch (smaller tab on cavity roof). Only used with nesting. */
-    nestedTopNotch?: boolean;
-    /** Whether to draw a nested-bottom notch (full-size groove on cavity floor). Only used with nesting. */
-    nestedBottomNotch?: boolean;
     /**
      * Whether to draw the convex semicircular tab on the left edge (where this brick plugs
      * into its parent). The tab protrusion is intentionally excluded from width/height;
@@ -205,20 +201,6 @@ export interface BrickOutlineOutput {
         /** Bounds of the nesting cavity; absent when there is no nesting */
         nesting?: Bounds;
     };
-    /** Always 0 (top notch goes inward). */
-    topNotchDepth: number;
-    /** Downward protrusion distance of the bottom notch. */
-    bottomNotchDepth: number;
-    /** Always 0 (nested-top tab goes inward into cavity). */
-    nestedTopNotchDepth: number;
-    /** Downward protrusion of nested-bottom groove into the foot. */
-    nestedBottomNotchDepth: number;
-    /**
-     * How far the left-edge tabs protrude beyond the brick's left edge (x = 0), in SVG
-     * units. Excluded from width/height by design; renderers may use it as a viewing
-     * gutter so the tabs aren't clipped. 0 when there are no left tabs.
-     */
-    leftNotchDepth: number;
 }
 
 export interface BrickViewProps {

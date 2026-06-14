@@ -400,20 +400,10 @@ function segLeftEdge(height: number, strokeWidth: number, tabCentre: number | nu
  *
  * @param width              - Total outer width of the brick
  * @param strokeWidth        - Stroke width in SVG units
- * @param hasNestedTopNotch  - Whether to draw the nested-top notch tab
  */
-function segTailCavityRoof(
-    width: number,
-    strokeWidth: number,
-    hasNestedTopNotch: boolean,
-): string[] {
+function segTailCavityRoof(width: number, strokeWidth: number): string[] {
     const s = strokeWidth;
     const span = width - TAIL_INDENT_W - s / 2 - s / 2;
-
-    // No nested notch — single flat span
-    if (!hasNestedTopNotch) {
-        return [`h ${-span}`];
-    }
 
     // Nested-top is the SMALLER tab: width reduced by 2*s for interlocking
     const tabWidth = NOTCH_WIDTH - 2 * s;
@@ -447,20 +437,14 @@ function segTailCavityLeft(nestHeight: number, strokeWidth: number): string[] {
 
 /**
  * Cavity foot segment, left → right.
- * Draws a full-size arc groove (hasNestedBottomNotch) cutting DOWN into the foot.
+ * Draws a full-size arc groove cutting DOWN into the foot.
  * Full-size so it receives the inner brick's bottom tab.
  *
- * @param _strokeWidth          - Stroke width in SVG units (unused; groove is full-size)
- * @param hasNestedBottomNotch  - Whether to draw the nested-bottom notch groove
+ * @param strokeWidth          - Stroke width in SVG units (unused; groove is full-size)
  */
-function segTailFoot(strokeWidth: number, hasNestedBottomNotch: boolean): string[] {
+function segTailFoot(strokeWidth: number): string[] {
     const s = strokeWidth;
     const span = TAIL_STEP_W - TAIL_INDENT_W;
-
-    // No nested notch — single flat span
-    if (!hasNestedBottomNotch) {
-        return [`h ${span}`];
-    }
 
     // Left → Right along cavity floor.
     // +s/2 offsets the nested notch to align with the inserted inner brick.
@@ -610,17 +594,6 @@ export function createBrickOutlineGenerator(
         // ── Resolve notch flags (default: no notches) ──
         const hasTopNotch = input.topNotch ?? false;
         const hasBottomNotch = input.bottomNotch ?? false;
-        // Nested notches only apply when there is nesting
-        const hasNestedTopNotch = hasNesting && (input.nestedTopNotch ?? false);
-        const hasNestedBottomNotch = hasNesting && (input.nestedBottomNotch ?? false);
-
-        // ── Compute notch protrusion depths (for SVG viewBox sizing) ──
-        const tabWidth = NOTCH_WIDTH - 2 * strokeWidth;
-        const canDrawTab = tabWidth > 0;
-        const topNotchDepth = 0; // Inward groove; no extra top space needed
-        const bottomNotchDepth = hasBottomNotch && canDrawTab ? tabWidth / 2 : 0;
-        const nestedTopNotchDepth = 0; // Tab goes inward into cavity
-        const nestedBottomNotchDepth = 0; // Groove goes into foot (no external protrusion)
 
         const wantLeft = input.leftNotch ?? false;
 
@@ -657,41 +630,29 @@ export function createBrickOutlineGenerator(
                   ...segHeadRight(headHeight, strokeWidth, rightCentres),
                   ...segHeadBottom(width, strokeWidth, hasBottomNotch),
                   ...segLeftEdge(height, strokeWidth, leftTabCentre),
-                  'z',
+                  'Z',
               ]
             : [
                   ...segTopEdge(width, strokeWidth, hasTopNotch),
                   ...segHeadRight(headHeight, strokeWidth, rightCentres),
-                  ...segTailCavityRoof(width, strokeWidth, hasNestedTopNotch),
+                  ...segTailCavityRoof(width, strokeWidth),
                   ...segTailCavityLeft(nestHeight, strokeWidth),
-                  ...segTailFoot(strokeWidth, hasNestedBottomNotch),
+                  ...segTailFoot(strokeWidth),
                   ...segTailStepRight(),
                   ...segTailStepBottom(hasBottomNotch, strokeWidth),
                   ...segLeftEdge(height, strokeWidth, leftTabCentre),
-                  'z',
+                  'Z',
               ];
 
         const path = segments.join(' ');
 
         const bounds = generateBounds(input, width, headHeight, nestHeight, hasNesting, minimums);
 
-        // How far the left tabs protrude beyond the brick's left edge (x = 0).
-        // Reported separately so renderers can give it a viewing gutter WITHOUT it
-        // counting toward width/height (which would push connected bricks apart).
-        const tabRadius = NOTCH_RADIUS - strokeWidth;
-        const lip = (3 * strokeWidth) / 2;
-        const leftNotchDepth = leftTabCentre !== null && tabRadius > 0 ? lip + tabRadius : 0;
-
         return {
             path,
             width,
             height,
             bounds,
-            topNotchDepth,
-            bottomNotchDepth,
-            nestedTopNotchDepth,
-            nestedBottomNotchDepth,
-            leftNotchDepth,
         };
     };
 }

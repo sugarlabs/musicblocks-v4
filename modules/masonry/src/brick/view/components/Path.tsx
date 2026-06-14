@@ -19,7 +19,7 @@ const generateBrickOutline = createBrickOutlineGenerator({
 
 export function PathBrickView({ input }: { input: BrickOutlineInput }) {
   const maxArgW = Math.max(0, ...input.paramArgDims.map((p) => p.arg?.w ?? 0));
-  const { width, height, path, bounds, leftNotchDepth } = generateBrickOutline({
+  const { width, height, path, bounds, topNotchDepth, leftNotchDepth } = generateBrickOutline({
     strokeWidth: pxToSvg(input.strokeWidth),
     labelDims: { w: pxToSvg(input.labelDims.w), h: pxToSvg(input.labelDims.h) },
     paramArgDims: input.paramArgDims.map((p) => ({
@@ -32,8 +32,16 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
           ? { w: pxToSvg(input.nestingDims.w), h: pxToSvg(input.nestingDims.h) }
           : null
         : undefined,
+    // Pass through notch flags (default false when absent)
+    topNotch: input.topNotch,
+    bottomNotch: input.bottomNotch,
+    nestedTopNotch: input.nestedTopNotch,
+    nestedBottomNotch: input.nestedBottomNotch,
     leftNotch: input.leftNotch,
   });
+
+  // ── Notch protrusion padding ──
+  const topPad = svgToPx(topNotchDepth); // always 0 (kept for symmetry)
 
   // Viewing gutter so left-edge tabs (which protrude past x=0 and are excluded from
   // width by design) aren't clipped. Purely visual — does not change brick dimensions.
@@ -44,65 +52,68 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
       xmlns="http://www.w3.org/2000/svg"
       width={svgToPx(width) + maxArgW + leftPad}
       height={svgToPx(height)}
+      style={{ overflow: 'visible' }}
     >
-      <g transform={`translate(${leftPad}, 0)`}>
+      
       {/* Debug underlay: brick bounding box */}
       <rect x={0} y={0} width={svgToPx(width)} height={svgToPx(height)} fill="#efe4e4" />
 
-      <path
-        d={path}
-        transform={`scale(${SCALE})`}
-        fill="#70a1ff"
-        stroke="#3867d6"
-        strokeWidth={pxToSvg(input.strokeWidth)}
-      />
-
-      {/* Debug overlay: visualises the markers */}
-      <>
-        {/* Primary label */}
-        <rect
-          x={svgToPx(bounds.label.x)}
-          y={svgToPx(bounds.label.y)}
-          width={svgToPx(bounds.label.w)}
-          height={svgToPx(bounds.label.h)}
-          fill="#ffcccc"
+      {/* topPad is 0 but kept for consistency */}
+      <g transform={`translate(${leftPad}, ${topPad})`}>
+        <path
+          d={path}
+          transform={`scale(${SCALE})`}
+          fill="#70a1ff"
+          stroke="#3867d6"
+          strokeWidth={pxToSvg(input.strokeWidth)}
         />
 
-        {/* Per-parameter label areas (optional) — one rect per param name slot */}
-        {bounds.params?.map((b, i) => (
+        {/* Debug overlay: visualises the markers */}
+        <>
+          {/* Primary label */}
           <rect
-            key={i}
-            x={svgToPx(b.x)}
-            y={svgToPx(b.y)}
-            width={svgToPx(b.w)}
-            height={svgToPx(b.h)}
-            fill="#ffda79"
+            x={svgToPx(bounds.label.x)}
+            y={svgToPx(bounds.label.y)}
+            width={svgToPx(bounds.label.w)}
+            height={svgToPx(bounds.label.h)}
+            fill="#ffcccc"
           />
-        ))}
 
-        {/* Per-argument slot areas */}
-        {bounds.args?.map((b, i) => (
-          <rect
-            key={i}
-            x={svgToPx(b.x)}
-            y={svgToPx(b.y)}
-            width={svgToPx(b.w)}
-            height={svgToPx(b.h)}
-            fill={i % 2 === 0 ? '#26de819f' : '#20bf6b9f'}
-          />
-        ))}
+          {/* Per-parameter label areas (optional) — one rect per param name slot */}
+          {bounds.params?.map((b, i) => (
+            <rect
+              key={i}
+              x={svgToPx(b.x)}
+              y={svgToPx(b.y)}
+              width={svgToPx(b.w)}
+              height={svgToPx(b.h)}
+              fill="#ffda79"
+            />
+          ))}
 
-        {/* Nesting (clamp) area — present only on bricks that wrap inner blocks */}
-        {bounds.nesting && (
-          <rect
-            x={svgToPx(bounds.nesting.x)}
-            y={svgToPx(bounds.nesting.y)}
-            width={svgToPx(bounds.nesting.w)}
-            height={svgToPx(bounds.nesting.h)}
-            fill="#a5b1c27f"
-          />
-        )}
-      </>
+          {/* Per-argument slot areas */}
+          {bounds.args?.map((b, i) => (
+            <rect
+              key={i}
+              x={svgToPx(b.x)}
+              y={svgToPx(b.y)}
+              width={svgToPx(b.w)}
+              height={svgToPx(b.h)}
+              fill={i % 2 === 0 ? '#26de819f' : '#20bf6b9f'}
+            />
+          ))}
+
+          {/* Nesting (clamp) area — present only on bricks that wrap inner blocks */}
+          {bounds.nesting && (
+            <rect
+              x={svgToPx(bounds.nesting.x)}
+              y={svgToPx(bounds.nesting.y)}
+              width={svgToPx(bounds.nesting.w)}
+              height={svgToPx(bounds.nesting.h)}
+              fill="#a5b1c27f"
+            />
+          )}
+        </>
       </g>
     </svg>
   );

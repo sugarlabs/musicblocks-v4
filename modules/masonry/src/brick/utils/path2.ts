@@ -37,20 +37,21 @@ export const TAIL_STEP_H = 6;
 // Groove (TopNotch / NestedBottomNotch) = full-size inward cut (width = NOTCH_WIDTH)
 // Tab    (BottomNotch / NestedTopNotch)  = smaller outward protrusion (width = NOTCH_WIDTH - 2*s)
 //
-// Both notch centres align at x = NOTCH_CENTER_X
+// Both notch centres align at x = NOTCH_OFFSET_X
 // Tab width shrinks by s on each side (2*s total) for interlocking
 // Groove uses the full NOTCH_WIDTH
-// Outer corner radius is NOTCH_CORNER_RADIUS, inner corner is sharp (0)
+// The lip is the small quarter-circle that flares each side into the semicircle
+// (radius NOTCH_LIP_RADIUS); the inner corner is sharp (0)
 // Sweep flags control convexity/concavity
 
 /** Base width of the notch opening in SVG units */
 export const NOTCH_WIDTH = 8;
-/** Corner radius for the quarter-circle transitions at each side of the notch */
-export const NOTCH_CORNER_RADIUS = 1;
-/** Absolute center for the top/bottom notch from the brick's left edge */
-export const NOTCH_CENTER_X = 12;
-/** Absolute center for nested notches, measured from TAIL_INDENT_W */
-export const NESTED_NOTCH_CENTER_X = 12;
+/** Radius of the small lip arc that flares each side of the notch into the semicircle */
+export const NOTCH_LIP_RADIUS = 1;
+/** Offset along x from the brick's left edge to the top/bottom notch centre */
+export const NOTCH_OFFSET_X = 12;
+/** Offset along x to nested notch centres, measured from TAIL_INDENT_W */
+export const NESTED_NOTCH_OFFSET_X = 12;
 
 // ────────────────────────── Dimension Calculation ──────────────────────────
 
@@ -206,13 +207,13 @@ function segTopEdge(width: number, strokeWidth: number, hasTopNotch: boolean): s
     // flatBefore: horizontal run from the starting M position to the notch left edge
     // flatAfter:  horizontal run from the notch right edge to the brick's right edge
     const r = NOTCH_WIDTH / 2;
-    const flatBefore = NOTCH_CENTER_X - r - s / 2;
-    const flatAfter = width - s / 2 - NOTCH_CENTER_X - r;
+    const flatBefore = NOTCH_OFFSET_X - r - s / 2;
+    const flatAfter = width - s / 2 - NOTCH_OFFSET_X - r;
 
     return [
         `M ${s / 2} ${s / 2}`,
         `h ${flatBefore}`, // RIGHT — flat run to groove left edge
-        ...arcGroove(NOTCH_WIDTH, NOTCH_CORNER_RADIUS), // Arc groove
+        ...arcGroove(NOTCH_WIDTH, NOTCH_LIP_RADIUS), // Arc groove
         `h ${flatAfter}`, // RIGHT — flat run to brick right edge
     ];
 }
@@ -251,12 +252,12 @@ function segHeadBottom(width: number, strokeWidth: number, hasBottomNotch: boole
     // flatBefore: from the brick's right edge to the tab's right edge
     // flatAfter:  from the tab's left edge to the brick's left edge
     const r = NOTCH_WIDTH / 2;
-    const flatBefore = width - NOTCH_CENTER_X - r + s / 2;
-    const flatAfter = NOTCH_CENTER_X - r + s / 2;
+    const flatBefore = width - NOTCH_OFFSET_X - r + s / 2;
+    const flatAfter = NOTCH_OFFSET_X - r + s / 2;
 
     return [
         `h ${-flatBefore}`, // LEFT — flat run to tab right edge
-        ...arcTab(tabWidth, NOTCH_CORNER_RADIUS), // Arc tab
+        ...arcTab(tabWidth, NOTCH_LIP_RADIUS), // Arc tab
         `h ${-flatAfter}`, // LEFT — flat run to brick left edge
     ];
 }
@@ -301,13 +302,13 @@ function segTailCavityRoof(
     // flatAfter:  from the tab's left edge to the cavity left wall
     // Add s/2 because the inner brick's visual offset starts at TAIL_INDENT_W + s, but the cavity wall path is at TAIL_INDENT_W + s/2
     const r = NOTCH_WIDTH / 2;
-    const offset = NESTED_NOTCH_CENTER_X - r + s / 2;
+    const offset = NESTED_NOTCH_OFFSET_X - r + s / 2;
     const flatBefore = span - (offset + NOTCH_WIDTH - s);
     const flatAfter = offset + s;
 
     return [
         `h ${-flatBefore}`, // LEFT — flat run to tab right edge
-        ...arcTab(tabWidth, NOTCH_CORNER_RADIUS), // Arc tab
+        ...arcTab(tabWidth, NOTCH_LIP_RADIUS), // Arc tab
         `h ${-flatAfter}`, // LEFT — flat run to cavity left wall
     ];
 }
@@ -337,13 +338,13 @@ function segTailFoot(strokeWidth: number, hasNestedBottomNotch: boolean): string
     // Left → Right along cavity floor.
     // +s/2 offsets the nested notch to align with the inserted inner brick.
     const r = NOTCH_WIDTH / 2;
-    const offset = NESTED_NOTCH_CENTER_X - r + s / 2;
+    const offset = NESTED_NOTCH_OFFSET_X - r + s / 2;
     const flatBefore = offset;
     const flatAfter = span - offset - NOTCH_WIDTH;
 
     return [
         `h ${flatBefore}`, // RIGHT — flat run to groove left edge
-        ...arcGroove(NOTCH_WIDTH, NOTCH_CORNER_RADIUS), // Arc groove
+        ...arcGroove(NOTCH_WIDTH, NOTCH_LIP_RADIUS), // Arc groove
         `h ${flatAfter}`, // RIGHT — flat run to step right wall
     ];
 }
@@ -376,14 +377,14 @@ function segTailStepBottom(hasBottomNotch: boolean, strokeWidth: number): string
     }
 
     // ── With bottom notch (Right → Left) ──
-    // Absolute center is NOTCH_CENTER_X, adjusting for the TAIL_STEP_W inward shift.
+    // Absolute center is NOTCH_OFFSET_X, adjusting for the TAIL_STEP_W inward shift.
     const r = NOTCH_WIDTH / 2;
-    const flatBefore = TAIL_STEP_W - NOTCH_CENTER_X - r + 1.5 * s;
-    const flatAfter = NOTCH_CENTER_X - r + s / 2;
+    const flatBefore = TAIL_STEP_W - NOTCH_OFFSET_X - r + 1.5 * s;
+    const flatAfter = NOTCH_OFFSET_X - r + s / 2;
 
     return [
         `h ${-flatBefore}`, // LEFT — flat run to tab right edge
-        ...arcTab(tabWidth, NOTCH_CORNER_RADIUS), // Arc tab
+        ...arcTab(tabWidth, NOTCH_LIP_RADIUS), // Arc tab
         `h ${-flatAfter}`, // LEFT — flat run to step left wall
     ];
 }

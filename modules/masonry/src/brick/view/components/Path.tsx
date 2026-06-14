@@ -19,7 +19,7 @@ const generateBrickOutline = createBrickOutlineGenerator({
 
 export function PathBrickView({ input }: { input: BrickOutlineInput }) {
   const maxArgW = Math.max(0, ...input.paramArgDims.map((p) => p.arg?.w ?? 0));
-  const { width, height, path, bounds } = generateBrickOutline({
+  const { width, height, path, bounds, leftNotchDepth } = generateBrickOutline({
     strokeWidth: pxToSvg(input.strokeWidth),
     labelDims: { w: pxToSvg(input.labelDims.w), h: pxToSvg(input.labelDims.h) },
     paramArgDims: input.paramArgDims.map((p) => ({
@@ -32,14 +32,20 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
           ? { w: pxToSvg(input.nestingDims.w), h: pxToSvg(input.nestingDims.h) }
           : null
         : undefined,
+    leftNotch: input.leftNotch,
   });
+
+  // Viewing gutter so left-edge tabs (which protrude past x=0 and are excluded from
+  // width by design) aren't clipped. Purely visual — does not change brick dimensions.
+  const leftPad = svgToPx(leftNotchDepth);
 
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={svgToPx(width) + maxArgW}
+      width={svgToPx(width) + maxArgW + leftPad}
       height={svgToPx(height)}
     >
+      <g transform={`translate(${leftPad}, 0)`}>
       {/* Debug underlay: brick bounding box */}
       <rect x={0} y={0} width={svgToPx(width)} height={svgToPx(height)} fill="#efe4e4" />
 
@@ -97,6 +103,7 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
           />
         )}
       </>
+      </g>
     </svg>
   );
 }

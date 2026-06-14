@@ -59,8 +59,8 @@ specific implementations.
 
 - **`BrickModelStatement`**: Extends `BrickModelInstruction` for statement bricks.
   - **Abstract Methods:**
-    - `get connPointsFixed(): Record<'insTop' | 'insBottom', { extent: TExtent; coords: TCoords }>` -
-    Returns fixed connection points for insertion points.
+    - `get connPointsFixed(): Record<'insTop' | 'insBottom',
+    { extent: TExtent; coords: TCoords }>` - Returns fixed connection points for insertion points.
     - `get renderProps(): TBrickRenderPropsStatement` - Returns properties required to render the
     statement brick.
 
@@ -71,7 +71,8 @@ specific implementations.
     - `get connPointsFixed():
     Record<'insTop' | 'insBottom' | 'insNest', { extent: TExtent; coords: TCoords }>` - Returns fixed
     connection points for block insertion.
-    - `get renderProps(): TBrickRenderPropsBlock` - Returns properties required to render the block brick.
+    - `get renderProps(): TBrickRenderPropsBlock` - Returns properties required to render the block
+    brick.
     - `setBoundingBoxNest(extent: TExtent): void` - Sets the bounding box for the nested elements.
 
 ## 2. **Concrete Classes**

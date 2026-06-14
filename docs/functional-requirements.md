@@ -54,13 +54,13 @@ The following sections provide a **detailed list of functional requirements** an
 | **1-6, 18 (Build Programs)**  | Construct and organize programs                                  |
 | **6, 10 (Artworks)**          | Empower users to create and visualize art programmatically.      |
 | **7, 9, 22, 26, 28 (Bricks)** | Create, modify, categorize, and search bricks.                   |
-| **8, 14, 30 (WS Viewing)**    | Adapt the workspace to user preferences for comfort and productivity.|
+| **8, 14, 30 (WS Viewing)**    | Adapt workspace for user preferences, comfort, and productivity. |
 | **11, 29 (Run Program)**      | Run, stop, and run step-by-step through programs                 |
-| **12, 19, 20, 21 (Save)**     | Ensure users can save, export, and access projects across formats/devices.|
-| **12, 31 (Save/Merge)**       | Save, load, merge and create new projects.                        |
-| **13, 23 (Show Info)**        | Help users track progress and learn through statistics and guides.|
-| **15 (Language)**             | Broaden app accessibility for non-English speakers.             |
-| **16, 17 (CRUD on Bricks)**   | CRUD operation to minimize friction from mistakes and streamline editing.|
+| **12, 19, 20, 21 (Save)**     | Save, export, and access projects across formats and devices.    |
+| **12, 31 (Save/Merge)**       | Save, load, merge and create new projects.                       |
+| **13, 23 (Show Info)**        | Help users track progress and learn via statistics and guides.   |
+| **15 (Language)**             | Broaden app accessibility for non-English speakers.              |
+| **16, 17 (CRUD on Bricks)**   | CRUD operations to minimize friction and streamline editing.     |
 | **24 (Modes)**                | Cater to diverse skill levels with tailored interfaces.          |
 | **25 (Configurations)**       | Allow users to tailor the app to their workflow and hardware.    |
 | **27 (Text Editor)**          | Support both visual and traditional coding preferences.          |

@@ -54,12 +54,12 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
       height={svgToPx(height)}
       style={{ overflow: 'visible' }}
     >
-      <g transform={`translate(${leftPad}, 0)`}>
+      
       {/* Debug underlay: brick bounding box */}
       <rect x={0} y={0} width={svgToPx(width)} height={svgToPx(height)} fill="#efe4e4" />
 
       {/* topPad is 0 but kept for consistency */}
-      <g transform={`translate(0, ${topPad})`}>
+      <g transform={`translate(${leftPad}, ${topPad})`}>
         <path
           d={path}
           transform={`scale(${SCALE})`}

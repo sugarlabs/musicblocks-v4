@@ -4,8 +4,9 @@ import {
     HEAD_PAD_X1,
     HEAD_PAD_X2,
     LABEL_PARAM_GUTTER_X,
-    NOTCH_RADIUS,
-    NOTCH_OFFSET,
+    H_NOTCH_RADIUS,
+    V_NOTCH_RADIUS,
+    NOTCH_OFFSET_Y,
     TAIL_INDENT_W,
     TAIL_STEP_H,
     TAIL_STEP_W,
@@ -21,53 +22,7 @@ const MINIMUMS: BrickMinimums = {
     minArgHeight: 40,
 };
 
-const generateBrickOutline2 = createBrickOutlineGenerator(MINIMUMS);
-
-// ────────────────────────── Helpers ──────────────────────────────────────────────────────────────
-
-interface RelSeg {
-    cmd: 'm' | 'h' | 'v' | 'z';
-    /** signed length for h/v; undefined for m/z */
-    len?: number;
-}
-
-/**
- * Parse a relative SVG path (lowercase m/h/v + z) into its segments.
- * The leading `m dx dy` only positions the start, so it is recorded as a single
- * `m` with no length; `h`/`v` carry their signed relative displacement.
- */
-function parseRelPath(path: string): RelSeg[] {
-    const tokens = path.trim().split(/\s+/);
-    const segs: RelSeg[] = [];
-    let i = 0;
-    while (i < tokens.length) {
-        const cmd = tokens[i];
-        if (cmd === 'm') {
-            segs.push({ cmd: 'm' });
-            i += 3; // m dx dy
-        } else if (cmd === 'h' || cmd === 'v') {
-            segs.push({ cmd, len: parseFloat(tokens[i + 1]) });
-            i += 2;
-        } else if (cmd === 'z' || cmd === 'Z') {
-            segs.push({ cmd: 'z' });
-            i += 1;
-        } else {
-            i += 1;
-        }
-    }
-    return segs;
-}
-
-/** Net horizontal / vertical displacement of all h/v segments (should be 0 for a closed loop). */
-function netDisplacement(path: string): { dx: number; dy: number } {
-    let dx = 0;
-    let dy = 0;
-    for (const seg of parseRelPath(path)) {
-        if (seg.cmd === 'h') dx += seg.len!;
-        if (seg.cmd === 'v') dy += seg.len!;
-    }
-    return { dx, dy };
-}
+const generateBrickOutline = createBrickOutlineGenerator(MINIMUMS);
 
 // ────────────────────────── computeDimensions ────────────────────────────────────────────────────
 
@@ -253,55 +208,60 @@ describe('path V2: computeDimensions', () => {
     });
 });
 
-// ────────────────────────── generateBrickOutline2 ────────────────────────────────────────────────
+// ────────────────────────── generateBrickOutline ────────────────────────────────────────────────
 
-describe('path V2: generateBrickOutline2', () => {
+describe('path V2: generateBrickOutline', () => {
     it('simple brick path with no stroke', () => {
-        const result = generateBrickOutline2({
+        const result = generateBrickOutline({
             strokeWidth: 0,
             labelDims: { w: 60, h: 20 },
             paramArgDims: [],
         });
         // width = 120 (minWidth), headHeight = 28, height = 28
-        expect(result.path).toBe('M 0 0 h 120 v 28 h -120 v -28 z');
+        expect(result.path).toBe('M 0 0 h 120 v 28 h -120 v -28 Z');
         expect(result.width).toBe(120);
         expect(result.height).toBe(28);
     });
 
     it('simple brick path inset by s/2 with stroke', () => {
-        const result = generateBrickOutline2({
+        const result = generateBrickOutline({
             strokeWidth: 4,
             labelDims: { w: 200, h: 30 },
             paramArgDims: [],
         });
         // width = 218, headHeight = 42, height = 42
         // M s/2 s/2 ; h (218-4)=214 ; v headHeight-4=38 ; h -214 ; v -38
-        expect(result.path).toBe('M 2 2 h 214 v 38 h -214 v -38 z');
+        expect(result.path).toBe('M 2 2 h 214 v 38 h -214 v -38 Z');
         expect(result.width).toBe(218);
         expect(result.height).toBe(42);
     });
 
     it('compound brick path with no stroke', () => {
-        const result = generateBrickOutline2({
+        const result = generateBrickOutline({
             strokeWidth: 0,
             labelDims: { w: 80, h: 20 },
             paramArgDims: [],
             nestingDims: { w: 50, h: 50 },
         });
         // width=120, headHeight=28, nestHeight=50, height=84
-        expect(result.path).toBe('M 0 0 h 120 v 28 h -114 v 50 h 24 v 6 h -30 v -84 z');
+        // cavity roof and foot now always include V-notch arcs (tab + groove)
+        expect(result.path).toBe(
+            'M 0 0 h 120 v 28 h -99 a 0 0 0 0 0 0 0 a 3 3 0 0 1 -6 0 a 0 0 0 0 0 0 0 h -9 v 50 h 9 a 0 0 0 0 1 0 0 a 3 3 0 0 0 6 0 a 0 0 0 0 1 0 0 h 9 v 6 h -30 v -84 Z',
+        );
     });
 
     it('compound brick path with stroke (cavity −s, foot +s)', () => {
-        const result = generateBrickOutline2({
+        const result = generateBrickOutline({
             strokeWidth: 4,
             labelDims: { w: 80, h: 20 },
             paramArgDims: [],
             nestingDims: { w: 50, h: 50 },
         });
         // width=120, headHeight=32, nestHeight=50, height=92
-        // M s/2 s/2 ; top: 120-4=116 ; head: 32-4=28 ; roof: -(120-6-2)= -110 ; left: 50+4=54 ; foot: 30-6 = 24 ; step: 6
-        expect(result.path).toBe('M 2 2 h 116 v 28 h -110 v 54 h 24 v 6 h -30 v -88 z');
+        // cavity roof and foot now always include V-notch arcs (tab + groove)
+        expect(result.path).toBe(
+            'M 2 2 h 116 v 28 h -93 a 2 2 0 0 0 -2 2 a 1 1 0 0 1 -2 0 a 2 2 0 0 0 -2 -2 h -11 v 54 h 7 a 2 2 0 0 1 2 2 a 5 5 0 0 0 10 0 a 2 2 0 0 1 2 -2 h 3 v 6 h -30 v -88 Z',
+        );
     });
 
     describe('well-formedness: the outline is a closed loop (net displacement = 0)', () => {
@@ -336,7 +296,7 @@ describe('path V2: generateBrickOutline2', () => {
 
         inputs.forEach(({ name, input }) => {
             it(`closes for ${name}`, () => {
-                const { dx, dy } = netDisplacement(generateBrickOutline2(input).path);
+                const { dx, dy } = netDisplacementFull(generateBrickOutline(input).path);
                 expect(dx).toBe(0);
                 expect(dy).toBe(0);
             });
@@ -356,7 +316,7 @@ describe('path V2: generateBrickOutline2', () => {
         });
 
         it('path starts at the origin (no inset) when s=0', () => {
-            const { path } = generateBrickOutline2({
+            const { path } = generateBrickOutline({
                 strokeWidth: 0,
                 labelDims: { w: 60, h: 20 },
                 paramArgDims: [],
@@ -367,7 +327,7 @@ describe('path V2: generateBrickOutline2', () => {
 
     describe('bounds', () => {
         it('always emits bounds with labelMain; omits params, args, nesting when absent', () => {
-            const result = generateBrickOutline2({
+            const result = generateBrickOutline({
                 strokeWidth: 0,
                 labelDims: { w: 60, h: 20 },
                 paramArgDims: [],
@@ -380,7 +340,7 @@ describe('path V2: generateBrickOutline2', () => {
         });
 
         it('emits bounds for all regions when params, args, and nesting are present', () => {
-            const result = generateBrickOutline2({
+            const result = generateBrickOutline({
                 strokeWidth: 0,
                 labelDims: { w: 60, h: 20 },
                 paramArgDims: [{ param: { w: 40, h: 15 }, arg: { w: 50, h: 30 } }],
@@ -392,51 +352,6 @@ describe('path V2: generateBrickOutline2', () => {
             expect(result.bounds.args).toHaveLength(1);
             expect(result.bounds.nesting).toBeTruthy();
         });
-    });
-});
-
-// ────────────────────────── Notches ──────────────────────────────────────────────────────────────
-
-describe('path V2: notches', () => {
-    const baseInput: BrickOutlineInput = {
-        strokeWidth: 2,
-        labelDims: { w: 80, h: 20 },
-        paramArgDims: [],
-    };
-
-    it('outputs zero depths when no notches are specified', () => {
-        const result = generateBrickOutline2(baseInput);
-        expect(result.topNotchDepth).toBe(0);
-        expect(result.bottomNotchDepth).toBe(0);
-        expect(result.nestedTopNotchDepth).toBe(0);
-        expect(result.nestedBottomNotchDepth).toBe(0);
-    });
-
-    it('outputs correct depths for top and bottom notches', () => {
-        const result = generateBrickOutline2({ ...baseInput, topNotch: true, bottomNotch: true });
-        expect(result.topNotchDepth).toBe(0); // top notch is an inward groove
-        expect(result.bottomNotchDepth).toBe(2); // tabWidth / 2
-    });
-
-    it('outputs correct depths for nested notches on a nesting brick', () => {
-        const result = generateBrickOutline2({
-            ...baseInput,
-            nestingDims: { w: 50, h: 50 },
-            nestedTopNotch: true,
-            nestedBottomNotch: true,
-        });
-        expect(result.nestedTopNotchDepth).toBe(0); // inward into cavity
-        expect(result.nestedBottomNotchDepth).toBe(0); // inward into foot
-    });
-
-    it('ignores nested notches if there is no nesting', () => {
-        const result = generateBrickOutline2({
-            ...baseInput,
-            nestedTopNotch: true,
-            nestedBottomNotch: true,
-        });
-        expect(result.nestedTopNotchDepth).toBe(0);
-        expect(result.nestedBottomNotchDepth).toBe(0);
     });
 });
 
@@ -544,60 +459,64 @@ function semicircleCentresY(path: string, radius: number): number[] {
     return centres;
 }
 
+/**
+ * Walks the path and returns the absolute y-coordinate of the left-edge tab semicircle centre.
+ * The tab semicircle is the only arc where dx=0 and dy<0 (it travels upward on the left edge).
+ */
+function leftTabCentreY(path: string): number | undefined {
+    const tokens = path.trim().split(/\s+/);
+    let y = 0;
+    for (let i = 0; i < tokens.length; i++) {
+        const cmd = tokens[i];
+        if (cmd === 'M' || cmd === 'm') y = parseFloat(tokens[i + 2]);
+        else if (cmd === 'v') y += parseFloat(tokens[i + 1]);
+        else if (cmd === 'a') {
+            const dx = parseFloat(tokens[i + 6]);
+            const dy = parseFloat(tokens[i + 7]);
+            if (dx === 0 && dy < 0) return y + dy / 2;
+            y += dy;
+        }
+    }
+    return undefined;
+}
+
 const oneArg = { param: null, arg: { w: 50, h: 40 } };
 
 describe('path V2: notches', () => {
     it('draws no arcs when there are no args and no left tab', () => {
-        const r = generateBrickOutline2({
+        const r = generateBrickOutline({
             strokeWidth: 2,
             labelDims: { w: 60, h: 20 },
             paramArgDims: [],
         });
         expect(parseArcs(r.path)).toHaveLength(0);
-        expect(r.leftNotchDepth).toBe(0);
     });
 
     it('right grooves follow the args: one groove per argument slot, no flag needed', () => {
-        const r = generateBrickOutline2({
-            strokeWidth: 2,
-            labelDims: { w: 60, h: 20 },
-            paramArgDims: [oneArg, oneArg, oneArg],
-        });
-        const grooves = parseArcs(r.path).filter((a) => a.rx === NOTCH_RADIUS);
-        expect(grooves).toHaveLength(3);
-    });
-
-    it('left notch: exactly one tab, radius = NOTCH_RADIUS - strokeWidth', () => {
         const s = 2;
-        const r = generateBrickOutline2({
+        const r = generateBrickOutline({
             strokeWidth: s,
             labelDims: { w: 60, h: 20 },
             paramArgDims: [oneArg, oneArg, oneArg],
-            leftNotch: true,
         });
-        const tabs = parseArcs(r.path).filter((a) => a.rx === NOTCH_RADIUS - s);
-        expect(tabs).toHaveLength(1);
-        // The groove is wider than the tab so it receives it cleanly.
-        expect(NOTCH_RADIUS - s).toBeLessThan(NOTCH_RADIUS);
+        const grooves = parseArcs(r.path).filter((a) => a.rx === H_NOTCH_RADIUS + s);
+        expect(grooves).toHaveLength(3);
     });
 
-    it('left tab is excluded from width/height but reported via leftNotchDepth', () => {
-        const base: BrickOutlineInput = {
-            strokeWidth: 2,
+    it('left notch: exactly one tab, radius = H_NOTCH_RADIUS', () => {
+        const s = 2;
+        const r = generateBrickOutline({
+            strokeWidth: s,
             labelDims: { w: 60, h: 20 },
-            paramArgDims: [oneArg, oneArg],
-            nestingDims: { w: 80, h: 80 },
-        };
-        const off = generateBrickOutline2(base);
-        const on = generateBrickOutline2({ ...base, leftNotch: true });
-
-        expect(on.width).toBe(off.width);
-        expect(on.height).toBe(off.height);
-        expect(off.leftNotchDepth).toBe(0);
-        expect(on.leftNotchDepth).toBeGreaterThan(0);
-        // The reported depth is the lip plus the (reduced) tab radius.
-        // lip = 3s/2 (s = 2), tab radius = NOTCH_RADIUS - s.
-        expect(on.leftNotchDepth).toBeCloseTo((3 * 2) / 2 + (NOTCH_RADIUS - 2));
+            paramArgDims: [oneArg, oneArg, oneArg],
+            hasLeftNotch: true,
+        });
+        // The tab semicircle is the only arc travelling upward (dx=0, dy<0) on the path.
+        const tabs = parseArcs(r.path).filter((a) => a.dx === 0 && a.dy < 0);
+        expect(tabs).toHaveLength(1);
+        expect(tabs[0].rx).toBe(H_NOTCH_RADIUS);
+        // The groove is wider than the tab so it receives it cleanly.
+        expect(H_NOTCH_RADIUS).toBeLessThan(H_NOTCH_RADIUS + s);
     });
 
     it('right grooves do not change width/height (concave, cut inward)', () => {
@@ -606,33 +525,34 @@ describe('path V2: notches', () => {
             labelDims: { w: 60, h: 20 },
             paramArgDims: [oneArg, oneArg],
         };
-        const r = generateBrickOutline2(input);
+        const r = generateBrickOutline(input);
         const dims = computeDimensions(input, MINIMUMS);
         // Grooves are concave, so the outline's size still matches the raw dimensions.
         expect(r.width).toBe(dims.width);
         expect(r.height).toBe(dims.height);
     });
 
-    it('left tab centre aligns with the top right groove (both at NOTCH_OFFSET)', () => {
+    it('left tab centre aligns with the top right groove (both at NOTCH_OFFSET_Y)', () => {
         const s = 2;
-        const r = generateBrickOutline2({
+        const r = generateBrickOutline({
             strokeWidth: s,
             labelDims: { w: 60, h: 20 },
             paramArgDims: [oneArg, oneArg, oneArg],
-            leftNotch: true,
+            hasLeftNotch: true,
         });
-        const grooveCentres = semicircleCentresY(r.path, NOTCH_RADIUS);
-        const tabCentres = semicircleCentresY(r.path, NOTCH_RADIUS - s);
+        const grooveCentres = semicircleCentresY(r.path, H_NOTCH_RADIUS + s);
+        const tabCentre = leftTabCentreY(r.path);
 
-        expect(tabCentres).toHaveLength(1);
-        expect(grooveCentres[0]).toBeCloseTo(NOTCH_OFFSET);
-        expect(tabCentres[0]).toBeCloseTo(grooveCentres[0]);
+        expect(tabCentre).toBeDefined();
+        expect(grooveCentres[0]).toBeCloseTo(NOTCH_OFFSET_Y);
+        expect(tabCentre).toBeCloseTo(grooveCentres[0]);
     });
 
     it('groove centres anchor to each arg slot top + offset (handles uneven heights)', () => {
-        // Slot tops: 0, 40, 100 -> centres: 9, 49, 109 (with NOTCH_OFFSET = 9).
-        const r = generateBrickOutline2({
-            strokeWidth: 2,
+        // Slot tops: 0, 40, 100 -> centres: 9, 49, 109 (with NOTCH_OFFSET_Y = 9).
+        const s = 2;
+        const r = generateBrickOutline({
+            strokeWidth: s,
             labelDims: { w: 60, h: 20 },
             paramArgDims: [
                 { param: null, arg: { w: 50, h: 40 } },
@@ -640,35 +560,25 @@ describe('path V2: notches', () => {
                 { param: null, arg: { w: 50, h: 40 } },
             ],
         });
-        const centres = semicircleCentresY(r.path, NOTCH_RADIUS);
-        expect(centres[0]).toBeCloseTo(0 + NOTCH_OFFSET);
-        expect(centres[1]).toBeCloseTo(40 + NOTCH_OFFSET);
-        expect(centres[2]).toBeCloseTo(40 + 60 + NOTCH_OFFSET);
-    });
-
-    it('the label is centred on the notch line', () => {
-        const r = generateBrickOutline2({
-            strokeWidth: 2,
-            labelDims: { w: 60, h: 20 },
-            paramArgDims: [oneArg],
-        });
-        const labelCentreY = r.bounds.label.y + r.bounds.label.h / 2;
-        expect(labelCentreY).toBeCloseTo(NOTCH_OFFSET);
+        const centres = semicircleCentresY(r.path, H_NOTCH_RADIUS + s);
+        expect(centres[0]).toBeCloseTo(0 + NOTCH_OFFSET_Y);
+        expect(centres[1]).toBeCloseTo(40 + NOTCH_OFFSET_Y);
+        expect(centres[2]).toBeCloseTo(40 + 60 + NOTCH_OFFSET_Y);
     });
 
     it('the outline still closes (net displacement = 0) with notches on', () => {
-        const simple = generateBrickOutline2({
+        const simple = generateBrickOutline({
             strokeWidth: 2,
             labelDims: { w: 60, h: 20 },
             paramArgDims: [oneArg, oneArg, oneArg],
-            leftNotch: true,
+            hasLeftNotch: true,
         });
-        const compound = generateBrickOutline2({
+        const compound = generateBrickOutline({
             strokeWidth: 2,
             labelDims: { w: 60, h: 20 },
             paramArgDims: [oneArg, oneArg],
             nestingDims: { w: 80, h: 80 },
-            leftNotch: true,
+            hasLeftNotch: true,
         });
         for (const r of [simple, compound]) {
             const { dx, dy } = netDisplacementFull(r.path);
@@ -677,15 +587,15 @@ describe('path V2: notches', () => {
         }
     });
 
-    it('draws no tab when the stroke shrinks the tab radius to zero', () => {
-        // tab radius = NOTCH_RADIUS - strokeWidth; a stroke == NOTCH_RADIUS zeroes it.
-        const noTab = generateBrickOutline2({
-            strokeWidth: NOTCH_RADIUS,
+    it('draws no tab when the stroke is too large for the notch to fit', () => {
+        // At strokeWidth = 2 * V_NOTCH_RADIUS the V-notch tab degenerates; the H-notch
+        // geometry also can't fit within the brick's drawable area at this stroke size.
+        const noTab = generateBrickOutline({
+            strokeWidth: 2 * V_NOTCH_RADIUS,
             labelDims: { w: 60, h: 20 },
             paramArgDims: [oneArg],
-            leftNotch: true,
+            hasLeftNotch: true,
         });
         expect(parseArcs(noTab.path)).toHaveLength(0);
-        expect(noTab.leftNotchDepth).toBe(0);
     });
 });

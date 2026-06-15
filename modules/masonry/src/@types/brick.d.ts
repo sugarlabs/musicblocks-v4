@@ -172,19 +172,11 @@ export interface BrickOutlineInput {
      */
     nestingDims?: Size | null;
     /** Whether to draw a top notch (downward groove). Defaults to false. */
-    topNotch?: boolean;
+    hasTopNotch?: boolean;
     /** Whether to draw a bottom notch (protruding tab). Defaults to false. */
-    bottomNotch?: boolean;
-    /** Whether to draw a nested-top notch (smaller tab on cavity roof). Only used with nesting. */
-    nestedTopNotch?: boolean;
-    /** Whether to draw a nested-bottom notch (full-size groove on cavity floor). Only used with nesting. */
-    nestedBottomNotch?: boolean;
-    /**
-     * Whether to draw the convex semicircular tab on the left edge (where this brick plugs
-     * into its parent). The tab protrusion is intentionally excluded from width/height;
-     * defaults to false. The right-edge grooves need no flag — they follow the arguments.
-     */
-    leftNotch?: boolean;
+    hasBottomNotch?: boolean;
+    /** Whether to draw a left notch (convex tab where this brick plugs into its parent). Defaults to false. */
+    hasLeftNotch?: boolean;
 }
 
 export interface BrickOutlineOutput {
@@ -205,20 +197,6 @@ export interface BrickOutlineOutput {
         /** Bounds of the nesting cavity; absent when there is no nesting */
         nesting?: Bounds;
     };
-    /** Always 0 (top notch goes inward). */
-    topNotchDepth: number;
-    /** Downward protrusion distance of the bottom notch. */
-    bottomNotchDepth: number;
-    /** Always 0 (nested-top tab goes inward into cavity). */
-    nestedTopNotchDepth: number;
-    /** Downward protrusion of nested-bottom groove into the foot. */
-    nestedBottomNotchDepth: number;
-    /**
-     * How far the left-edge tabs protrude beyond the brick's left edge (x = 0), in SVG
-     * units. Excluded from width/height by design; renderers may use it as a viewing
-     * gutter so the tabs aren't clipped. 0 when there are no left tabs.
-     */
-    leftNotchDepth: number;
 }
 
 export interface BrickViewProps {
@@ -226,10 +204,6 @@ export interface BrickViewProps {
     label: string;
     /** Controls brick size and font scaling; defaults to 1 */
     scaleLevel?: 1 | 2 | 3;
-    /** Whether to draw a top notch (downward groove from top edge). Defaults to false. */
-    topNotch?: boolean;
-    /** Whether to draw a bottom notch (tab protruding below bottom edge). Defaults to false. */
-    bottomNotch?: boolean;
 }
 
 export interface BrickMinimums {

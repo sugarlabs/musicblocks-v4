@@ -172,15 +172,11 @@ export interface BrickOutlineInput {
      */
     nestingDims?: Size | null;
     /** Whether to draw a top notch (downward groove). Defaults to false. */
-    topNotch?: boolean;
+    hasTopNotch?: boolean;
     /** Whether to draw a bottom notch (protruding tab). Defaults to false. */
-    bottomNotch?: boolean;
-    /**
-     * Whether to draw the convex semicircular tab on the left edge (where this brick plugs
-     * into its parent). The tab protrusion is intentionally excluded from width/height;
-     * defaults to false. The right-edge grooves need no flag — they follow the arguments.
-     */
-    leftNotch?: boolean;
+    hasBottomNotch?: boolean;
+    /** Whether to draw a left notch (convex tab where this brick plugs into its parent). Defaults to false. */
+    hasLeftNotch?: boolean;
 }
 
 export interface BrickOutlineOutput {
@@ -208,10 +204,6 @@ export interface BrickViewProps {
     label: string;
     /** Controls brick size and font scaling; defaults to 1 */
     scaleLevel?: 1 | 2 | 3;
-    /** Whether to draw a top notch (downward groove from top edge). Defaults to false. */
-    topNotch?: boolean;
-    /** Whether to draw a bottom notch (tab protruding below bottom edge). Defaults to false. */
-    bottomNotch?: boolean;
 }
 
 export interface BrickMinimums {

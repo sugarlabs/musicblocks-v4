@@ -32,10 +32,9 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
           ? { w: pxToSvg(input.nestingDims.w), h: pxToSvg(input.nestingDims.h) }
           : null
         : undefined,
-    // Pass through notch flags (default false when absent)
-    topNotch: input.topNotch,
-    bottomNotch: input.bottomNotch,
-    leftNotch: input.leftNotch,
+    hasTopNotch: input.hasTopNotch,
+    hasBottomNotch: input.hasBottomNotch,
+    hasLeftNotch: input.hasLeftNotch,
   });
 
   return (

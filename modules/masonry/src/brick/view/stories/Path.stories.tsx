@@ -25,7 +25,7 @@ function RightNotchPlaygroundView({
   arg5Height,
   argWidth,
   strokeWidth,
-  leftNotch,
+  hasLeftNotch,
 }: {
   argCount: number;
   arg1Height: number;
@@ -35,7 +35,7 @@ function RightNotchPlaygroundView({
   arg5Height: number;
   argWidth: number;
   strokeWidth: number;
-  leftNotch: boolean;
+  hasLeftNotch: boolean;
 }) {
   // One height per argument, so each slot can be sized independently.
   const heights = [arg1Height, arg2Height, arg3Height, arg4Height, arg5Height];
@@ -50,7 +50,7 @@ function RightNotchPlaygroundView({
         labelDims: { w: 120, h: 20 },
         paramArgDims,
         nestingDims: { w: 120, h: 120 },
-        leftNotch,
+        hasLeftNotch,
       }}
     />
   );
@@ -138,8 +138,8 @@ export const TopNotchOnly: Story = {
       strokeWidth: 2,
       labelDims: { w: 60, h: 20 },
       paramArgDims: [],
-      topNotch: true,
-      bottomNotch: false,
+      hasTopNotch: true,
+      hasBottomNotch: false,
     },
   },
 };
@@ -151,8 +151,8 @@ export const BottomNotchOnly: Story = {
       strokeWidth: 2,
       labelDims: { w: 60, h: 20 },
       paramArgDims: [],
-      topNotch: false,
-      bottomNotch: true,
+      hasTopNotch: false,
+      hasBottomNotch: true,
     },
   },
 };
@@ -164,8 +164,8 @@ export const BothNotches: Story = {
       strokeWidth: 2,
       labelDims: { w: 60, h: 20 },
       paramArgDims: [],
-      topNotch: true,
-      bottomNotch: true,
+      hasTopNotch: true,
+      hasBottomNotch: true,
     },
   },
 };
@@ -182,8 +182,8 @@ export const BothNotchesWideStroke: Story = {
       },
 
       paramArgDims: [],
-      topNotch: true,
-      bottomNotch: true,
+      hasTopNotch: true,
+      hasBottomNotch: true,
     },
   },
 };
@@ -193,8 +193,8 @@ export const NestingWithNotches: Story = {
     input: {
       ...nestingBase,
       nestingDims: { w: 120, h: 120 },
-      topNotch: true,
-      bottomNotch: true,
+      hasTopNotch: true,
+      hasBottomNotch: true,
     },
   },
 };
@@ -209,8 +209,6 @@ export const NestedTopNotchOnly: Story = {
     input: {
       ...nestingBase,
       nestingDims: { w: 120, h: 120 },
-      nestedTopNotch: true,
-      nestedBottomNotch: false,
     },
   },
 };
@@ -221,8 +219,6 @@ export const NestedBottomNotchOnly: Story = {
     input: {
       ...nestingBase,
       nestingDims: { w: 120, h: 120 },
-      nestedTopNotch: false,
-      nestedBottomNotch: true,
     },
   },
 };
@@ -233,8 +229,6 @@ export const BothNestedNotches: Story = {
     input: {
       ...nestingBase,
       nestingDims: { w: 120, h: 120 },
-      nestedTopNotch: true,
-      nestedBottomNotch: true,
     },
   },
 };
@@ -245,10 +239,8 @@ export const AllNotches: Story = {
     input: {
       ...nestingBase,
       nestingDims: { w: 120, h: 120 },
-      topNotch: true,
-      bottomNotch: true,
-      nestedTopNotch: true,
-      nestedBottomNotch: true,
+      hasTopNotch: true,
+      hasBottomNotch: true,
     },
   },
 };
@@ -283,10 +275,8 @@ export const AllNotchesWideStroke: Story = {
         h: 120,
       },
 
-      topNotch: true,
-      bottomNotch: true,
-      nestedTopNotch: true,
-      nestedBottomNotch: true,
+      hasTopNotch: true,
+      hasBottomNotch: true,
     },
   },
 };
@@ -335,7 +325,7 @@ export const RightNotchPlayground: StoryObj<typeof RightNotchPlaygroundView> = {
     arg5Height: 40,
     argWidth: 100,
     strokeWidth: 2,
-    leftNotch: true,
+    hasLeftNotch: true,
   },
   argTypes: {
     argCount: { control: { type: 'range', min: 0, max: 5, step: 1 } },
@@ -346,7 +336,7 @@ export const RightNotchPlayground: StoryObj<typeof RightNotchPlaygroundView> = {
     arg5Height: { control: { type: 'range', min: 20, max: 120, step: 5 } },
     argWidth: { control: { type: 'range', min: 40, max: 160, step: 10 } },
     strokeWidth: { control: { type: 'range', min: 1, max: 6, step: 1 } },
-    leftNotch: { control: 'boolean' },
+    hasLeftNotch: { control: 'boolean' },
   },
   render: (args) => <RightNotchPlaygroundView {...args} />,
 };

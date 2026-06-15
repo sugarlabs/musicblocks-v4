@@ -32,25 +32,20 @@ export const TAIL_STEP_W = 30;
 export const TAIL_STEP_H = 6;
 
 // ── Notch geometry ──
-// Groove (TopNotch / NestedBottomNotch) = full-size inward cut (width = NOTCH_WIDTH)
-// Tab    (BottomNotch / NestedTopNotch) = smaller outward protrusion (width = NOTCH_WIDTH - 2*s)
-// Lip = small quarter-circle that rounds each notch entry/exit corner
+// V-notches (top/bottom/nested horizontal edges): U-shaped groove or tab.
+// H-notches (left/right vertical edges): semicircular groove or tab.
+// Convex (tab) uses the radius constant directly.
+// Concave (groove) = tab radius + strokeWidth, accounting for SVG stroke bleed on each side.
+// Lip arc radii are derived from strokeWidth at each call site.
 
-/** Base width of the notch opening in SVG units */
-export const NOTCH_WIDTH = 8;
-/** Corner radius at each notch entry/exit */
-export const NOTCH_LIP_RADIUS = 1;
-/** Offset along x to all vertical notch centres — top/bottom notches measured from the brick's
- *  left edge; nested notches measured from TAIL_INDENT_W. Identical by design so notches align. */
+/** Tab radius for V-notches (top/bottom/nested edges). Groove radius = V_NOTCH_RADIUS + strokeWidth. */
+export const V_NOTCH_RADIUS = 3;
+/** x-offset from the left edge (or TAIL_INDENT_W for nested notches) to a V-notch centre. */
 export const NOTCH_OFFSET_X = 12;
 
-// ── Right notch ──
-// Profile (top → bottom): flat → lip arc → semicircle → lip arc → flat.
-
-/** Radius of the semicircular groove on the right edge */
-export const NOTCH_RADIUS = 4;
-/** Gap from the top of an argument slot down to its notch centre (shared by the right
- * grooves and the left tab, so they stay aligned). */
+/** Tab radius for H-notches (left/right side edges). Groove radius = H_NOTCH_RADIUS + strokeWidth. */
+export const H_NOTCH_RADIUS = 3;
+/** y-offset from the top of an arg slot down to an H-notch centre. */
 export const NOTCH_OFFSET_Y = 9;
 
 // ────────────────────────── Dimension Calculation ────────────────────────────────────────────────
@@ -161,31 +156,32 @@ function computeArgNotchCentreYs(
 // ────────────────────────── Arc Helpers ──────────────────────────────────────────────────────────
 
 /** Inward U-shape groove arc (left → right). Used by top notch and nested bottom notch. */
-function buildVGroove(): string[] {
-    const w = NOTCH_WIDTH;
-    const effectiveR = Math.min(NOTCH_LIP_RADIUS, w / 2);
-    const R = (w - 2 * effectiveR) / 2;
+function buildVGroove(strokeWidth: number): string[] {
+    const grooveR = V_NOTCH_RADIUS + strokeWidth;
+    const lip = strokeWidth / 2;
+    const R = grooveR - lip;
     return [
         // Quarter-arc: horizontal (left) → vertical (down). CW
-        `a ${effectiveR} ${effectiveR} 0 0 1 ${effectiveR} ${effectiveR}`,
+        `a ${lip} ${lip} 0 0 1 ${lip} ${lip}`,
         // Semicircle: vertical (down) → vertical (up). CCW (U-shape)
-        `a ${R} ${R} 0 0 0 ${w - 2 * effectiveR} 0`,
+        `a ${R} ${R} 0 0 0 ${2 * R} 0`,
         // Quarter-arc: vertical (up) → horizontal (right). CW
-        `a ${effectiveR} ${effectiveR} 0 0 1 ${effectiveR} ${-effectiveR}`,
+        `a ${lip} ${lip} 0 0 1 ${lip} ${-lip}`,
     ];
 }
 
 /** Outward U-shape tab arc (right → left). Used by bottom notch and nested top notch. */
-function buildVTab(w: number): string[] {
-    const effectiveR = Math.min(NOTCH_LIP_RADIUS, w / 2);
-    const R = (w - 2 * effectiveR) / 2;
+function buildVTab(strokeWidth: number): string[] {
+    const tabR = V_NOTCH_RADIUS;
+    const lip = strokeWidth / 2;
+    const R = tabR - lip;
     return [
         // Quarter-arc: horizontal (right) → vertical (down). CCW
-        `a ${effectiveR} ${effectiveR} 0 0 0 ${-effectiveR} ${effectiveR}`,
+        `a ${lip} ${lip} 0 0 0 ${-lip} ${lip}`,
         // Semicircle: vertical (down) → vertical (up). CW (U-shape)
-        `a ${R} ${R} 0 0 1 ${-(w - 2 * effectiveR)} 0`,
+        `a ${R} ${R} 0 0 1 ${-2 * R} 0`,
         // Quarter-arc: vertical (up) → horizontal (left). CCW
-        `a ${effectiveR} ${effectiveR} 0 0 0 ${-effectiveR} ${-effectiveR}`,
+        `a ${lip} ${lip} 0 0 0 ${-lip} ${-lip}`,
     ];
 }
 
@@ -208,14 +204,14 @@ function segTopEdge(strokeWidth: number, width: number, hasTopNotch: boolean): s
 
     // flatBefore: horizontal run from the starting M position to the notch left edge
     // flatAfter:  horizontal run from the notch right edge to the brick's right edge
-    const r = NOTCH_WIDTH / 2;
-    const flatBefore = NOTCH_OFFSET_X - r - strokeWidth / 2;
-    const flatAfter = width - strokeWidth / 2 - NOTCH_OFFSET_X - r;
+    const grooveR = V_NOTCH_RADIUS + strokeWidth;
+    const flatBefore = NOTCH_OFFSET_X - grooveR - strokeWidth / 2;
+    const flatAfter = width - NOTCH_OFFSET_X - grooveR - strokeWidth / 2;
 
     return [
         `M ${strokeWidth / 2} ${strokeWidth / 2}`,
         `h ${flatBefore}`, // flat run to groove left edge
-        ...buildVGroove(),
+        ...buildVGroove(strokeWidth),
         `h ${flatAfter}`, // flat run to brick right edge
     ];
 }
@@ -239,7 +235,7 @@ function segHeadRight(strokeWidth: number, headHeight: number, notchCentres: num
         return [`v ${edgeEnd - edgeStart}`];
     }
 
-    const r = NOTCH_RADIUS; // semicircle (groove) radius
+    const grooveR = H_NOTCH_RADIUS + strokeWidth;
     const lip = (3 * strokeWidth) / 2; // small flare arc radius, proportional to the stroke
 
     const segs: string[] = [];
@@ -250,10 +246,10 @@ function segHeadRight(strokeWidth: number, headHeight: number, notchCentres: num
         //   centre        — the notch centre
         //   semicircleTop — one radius above the centre
         //   notchTop      — one lip arc above the semicircle (where the groove begins)
-        const semicircleTop = centre - r;
+        const semicircleTop = centre - grooveR;
         const notchTop = semicircleTop - lip;
         // ...and symmetrically downwards (where the groove ends):
-        const semicircleBottom = centre + r;
+        const semicircleBottom = centre + grooveR;
         const notchBottom = semicircleBottom + lip;
 
         // Skip a notch that would overlap the previous one or run past the bottom corner,
@@ -268,7 +264,7 @@ function segHeadRight(strokeWidth: number, headHeight: number, notchCentres: num
         // 2. lip arc: peel the edge inwards (−x)
         segs.push(`a ${lip} ${lip} 0 0 1 ${-lip} ${lip}`);
         // 3. semicircle: the concave groove dipping into the brick (−x)
-        segs.push(`a ${r} ${r} 0 0 0 0 ${2 * r}`);
+        segs.push(`a ${grooveR} ${grooveR} 0 0 0 0 ${2 * grooveR}`);
         // 4. lip arc: bring the edge back out
         segs.push(`a ${lip} ${lip} 0 0 1 ${lip} ${lip}`);
 
@@ -295,22 +291,16 @@ function segHeadBottom(strokeWidth: number, width: number, hasBottomNotch: boole
         return [`h ${-(width - strokeWidth)}`];
     }
 
-    // Tab is narrower than the groove by strokeWidth on each side for stroke interlocking
-    const tabWidth = NOTCH_WIDTH - 2 * strokeWidth;
-
-    if (tabWidth <= 0) {
+    if (strokeWidth >= 2 * V_NOTCH_RADIUS) {
         return [`h ${-(width - strokeWidth)}`];
     }
 
-    // flatBefore: from the brick's right edge to the tab's right edge
-    // flatAfter:  from the tab's left edge to the brick's left edge
-    const r = NOTCH_WIDTH / 2;
-    const flatBefore = width - NOTCH_OFFSET_X - r + strokeWidth / 2;
-    const flatAfter = NOTCH_OFFSET_X - r + strokeWidth / 2;
+    const flatBefore = width - NOTCH_OFFSET_X - V_NOTCH_RADIUS - strokeWidth / 2;
+    const flatAfter = NOTCH_OFFSET_X - V_NOTCH_RADIUS - strokeWidth / 2;
 
     return [
         `h ${-flatBefore}`, // flat run to tab right edge
-        ...buildVTab(tabWidth),
+        ...buildVTab(strokeWidth),
         `h ${-flatAfter}`, // flat run to brick left edge
     ];
 }
@@ -318,7 +308,7 @@ function segHeadBottom(strokeWidth: number, width: number, hasBottomNotch: boole
 /**
  * Left edge of the brick, bottom → top.
  * Draws a single smaller convex tab (hasLeftNotch) protruding OUTWARD from the brick (−x).
- * Radius is reduced by one stroke width from NOTCH_RADIUS so the parent's right groove receives it cleanly.
+ * Tab radius is H_NOTCH_RADIUS; the parent's right groove uses H_NOTCH_RADIUS + strokeWidth.
  *
  * @param strokeWidth   - Stroke width in SVG units
  * @param height        - Total outer height of the brick
@@ -329,19 +319,15 @@ function segLeftEdge(strokeWidth: number, height: number, hasLeftNotch: boolean)
     const edgeStart = height - strokeWidth / 2; // bottom-left corner (pen arrives here)
     const edgeEnd = strokeWidth / 2; // top-left corner
 
-    // Tab radius = groove radius minus one stroke width, so the wider groove (drawn at
-    // NOTCH_RADIUS) receives this tab cleanly once both strokes are accounted for.
-    const r = NOTCH_RADIUS - strokeWidth;
-    const lip = (3 * strokeWidth) / 2; // flare arc radius, proportional to the stroke
+    const tabR = H_NOTCH_RADIUS;
+    const lip = (3 * strokeWidth) / 2;
 
-    // No tab (none requested, or the stroke shrank it away) — single straight run up.
-    if (!hasLeftNotch || r <= 0) {
+    if (!hasLeftNotch) {
         return [`v ${-(edgeStart - edgeEnd)}`];
     }
 
-    // Build the tab span from its centre: one lip arc + one radius on each side.
-    const notchBottom = NOTCH_OFFSET_Y + r + lip; // where the tab begins (lower, reached first)
-    const notchTop = NOTCH_OFFSET_Y - r - lip; // where the tab ends (upper)
+    const notchBottom = NOTCH_OFFSET_Y + tabR + lip;
+    const notchTop = NOTCH_OFFSET_Y - tabR - lip;
 
     // Fall back to a straight edge if the tab wouldn't fit between the two corners.
     if (notchBottom > edgeStart || notchTop < edgeEnd) {
@@ -351,7 +337,7 @@ function segLeftEdge(strokeWidth: number, height: number, hasLeftNotch: boolean)
     return [
         `v ${-(edgeStart - notchBottom)}`, // 1. flat run up to where the tab begins
         `a ${lip} ${lip} 0 0 0 ${-lip} ${-lip}`, // 2. lip arc: peel the edge outwards (−x)
-        `a ${r} ${r} 0 0 1 0 ${-2 * r}`, // 3. semicircle: the convex tab bulging out (−x)
+        `a ${tabR} ${tabR} 0 0 1 0 ${-2 * tabR}`, // 3. semicircle: the convex tab bulging out (−x)
         `a ${lip} ${lip} 0 0 0 ${lip} ${-lip}`, // 4. lip arc: bring the edge back in
         `v ${-(notchTop - edgeEnd)}`, // 5. remaining flat run up to the top-left corner
     ];
@@ -368,26 +354,18 @@ function segLeftEdge(strokeWidth: number, height: number, hasLeftNotch: boolean)
 function segTailCavityRoof(strokeWidth: number, width: number): string[] {
     const span = width - TAIL_INDENT_W - strokeWidth;
 
-    // Nested-top is the SMALLER tab: width reduced by 2*strokeWidth for interlocking
-    const tabWidth = NOTCH_WIDTH - 2 * strokeWidth;
-
-    if (tabWidth <= 0) {
+    if (strokeWidth >= 2 * V_NOTCH_RADIUS) {
         return [`h ${-span}`];
     }
 
-    // Tab left edge at absolute x = TAIL_INDENT_W + NOTCH_OFFSET_X + strokeWidth
-    // flatBefore: from the cavity right wall to the tab's right edge
-    // flatAfter:  from the tab's left edge to the cavity left wall
-    // Add strokeWidth/2 because the inner brick's visual offset starts at TAIL_INDENT_W + strokeWidth,
-    // but the cavity wall path is at TAIL_INDENT_W + strokeWidth/2
-    const r = NOTCH_WIDTH / 2;
-    const offset = NOTCH_OFFSET_X - r + strokeWidth / 2;
-    const flatBefore = span - (offset + NOTCH_WIDTH - strokeWidth);
-    const flatAfter = offset + strokeWidth;
+    // Tab centre aligns with the inner brick's top/bottom notch centre.
+    const flatBefore =
+        width - TAIL_INDENT_W - NOTCH_OFFSET_X - V_NOTCH_RADIUS - (3 * strokeWidth) / 2;
+    const flatAfter = NOTCH_OFFSET_X - V_NOTCH_RADIUS + strokeWidth / 2;
 
     return [
         `h ${-flatBefore}`, // flat run to tab right edge
-        ...buildVTab(tabWidth),
+        ...buildVTab(strokeWidth),
         `h ${-flatAfter}`, // flat run to cavity left wall
     ];
 }
@@ -407,15 +385,12 @@ function segTailCavityLeft(strokeWidth: number, nestHeight: number): string[] {
 function segTailFoot(strokeWidth: number): string[] {
     const span = TAIL_STEP_W - TAIL_INDENT_W;
 
-    // +strokeWidth/2 offsets the nested notch to align with the inserted inner brick.
-    const r = NOTCH_WIDTH / 2;
-    const offset = NOTCH_OFFSET_X - r + strokeWidth / 2;
-    const flatBefore = offset;
-    const flatAfter = span - offset - NOTCH_WIDTH;
+    const flatBefore = NOTCH_OFFSET_X - V_NOTCH_RADIUS - strokeWidth / 2;
+    const flatAfter = span - NOTCH_OFFSET_X - V_NOTCH_RADIUS - (3 * strokeWidth) / 2;
 
     return [
         `h ${flatBefore}`, // flat run to groove left edge
-        ...buildVGroove(),
+        ...buildVGroove(strokeWidth),
         `h ${flatAfter}`, // flat run to step right wall
     ];
 }
@@ -437,21 +412,16 @@ function segTailStepBottom(strokeWidth: number, hasBottomNotch: boolean): string
         return [`h ${-TAIL_STEP_W}`];
     }
 
-    // Tab is narrower than the groove by strokeWidth on each side for stroke interlocking
-    const tabWidth = NOTCH_WIDTH - 2 * strokeWidth;
-
-    if (tabWidth <= 0) {
+    if (strokeWidth >= 2 * V_NOTCH_RADIUS) {
         return [`h ${-TAIL_STEP_W}`];
     }
 
-    // Absolute center is NOTCH_OFFSET_X, adjusting for the TAIL_STEP_W inward shift.
-    const r = NOTCH_WIDTH / 2;
-    const flatBefore = TAIL_STEP_W - NOTCH_OFFSET_X - r + 1.5 * strokeWidth;
-    const flatAfter = NOTCH_OFFSET_X - r + strokeWidth / 2;
+    const flatBefore = TAIL_STEP_W - NOTCH_OFFSET_X - V_NOTCH_RADIUS + strokeWidth / 2;
+    const flatAfter = NOTCH_OFFSET_X - V_NOTCH_RADIUS - strokeWidth / 2;
 
     return [
         `h ${-flatBefore}`, // flat run to tab right edge
-        ...buildVTab(tabWidth),
+        ...buildVTab(strokeWidth),
         `h ${-flatAfter}`, // flat run to step left wall
     ];
 }

@@ -14,48 +14,6 @@ const meta: Meta<typeof PathBrickView> = {
 export default meta;
 type Story = StoryObj<typeof PathBrickView>;
 
-// ── Interactive playground: drive arg count / height from Storybook controls ──
-
-function RightNotchPlaygroundView({
-  argCount,
-  arg1Height,
-  arg2Height,
-  arg3Height,
-  arg4Height,
-  arg5Height,
-  argWidth,
-  strokeWidth,
-  hasLeftNotch,
-}: {
-  argCount: number;
-  arg1Height: number;
-  arg2Height: number;
-  arg3Height: number;
-  arg4Height: number;
-  arg5Height: number;
-  argWidth: number;
-  strokeWidth: number;
-  hasLeftNotch: boolean;
-}) {
-  // One height per argument, so each slot can be sized independently.
-  const heights = [arg1Height, arg2Height, arg3Height, arg4Height, arg5Height];
-  const paramArgDims = Array.from({ length: argCount }, (_, i) => ({
-    param: null,
-    arg: { w: argWidth, h: heights[i] },
-  }));
-  return (
-    <PathBrickView
-      input={{
-        strokeWidth,
-        labelDims: { w: 120, h: 20 },
-        paramArgDims,
-        nestingDims: { w: 120, h: 120 },
-        hasLeftNotch,
-      }}
-    />
-  );
-}
-
 // ── No nesting ──
 
 export const JustLabel: Story = {
@@ -127,195 +85,73 @@ export const NestingWide: Story = {
 };
 
 // ── Notch variants ──
-// These stories demonstrate the top / bottom notch connector tabs.
-// The top notch is strokeWidth smaller than the bottom notch so they
-// interlock properly when bricks are stacked.
 
-/** Brick without nesting with only a top notch protruding upward */
+const notchBase: Pick<BrickOutlineInput, 'strokeWidth' | 'labelDims' | 'paramArgDims'> = {
+  strokeWidth: 2,
+  labelDims: { w: 120, h: 20 },
+  paramArgDims: [
+    { param: { w: 80, h: 20 }, arg: { w: 100, h: 40 } },
+    { param: { w: 60, h: 20 }, arg: { w: 80, h: 40 } },
+  ],
+};
+
+export const TopBottomNotches: Story = {
+  args: {
+    input: {
+      ...notchBase,
+      nestingDims: { w: 120, h: 120 },
+      hasTopNotch: true,
+      hasBottomNotch: true,
+    },
+  },
+};
+
 export const TopNotchOnly: Story = {
   args: {
     input: {
-      strokeWidth: 2,
-      labelDims: { w: 60, h: 20 },
-      paramArgDims: [],
+      ...notchBase,
+      nestingDims: { w: 120, h: 120 },
       hasTopNotch: true,
-      hasBottomNotch: false,
     },
   },
 };
 
-/** Brick without nesting with only a bottom notch protruding downward */
 export const BottomNotchOnly: Story = {
   args: {
     input: {
-      strokeWidth: 2,
-      labelDims: { w: 60, h: 20 },
-      paramArgDims: [],
-      hasTopNotch: false,
+      ...notchBase,
+      nestingDims: { w: 120, h: 120 },
       hasBottomNotch: true,
     },
   },
 };
 
-/** Brick without nesting with both notches — centres should be vertically aligned */
-export const BothNotches: Story = {
+export const LeftNotchOnly: Story = {
   args: {
     input: {
-      strokeWidth: 2,
-      labelDims: { w: 60, h: 20 },
-      paramArgDims: [],
-      hasTopNotch: true,
-      hasBottomNotch: true,
+      ...notchBase,
+      hasLeftNotch: true,
     },
   },
 };
 
-/** Both notches with a wider stroke to see the size difference */
-export const BothNotchesWideStroke: Story = {
-  args: {
-    input: {
-      strokeWidth: 3,
+// ── Interactive playground: drive arg count / height from Storybook controls ──
 
-      labelDims: {
-        w: 80,
-        h: 20,
-      },
-
-      paramArgDims: [],
-      hasTopNotch: true,
-      hasBottomNotch: true,
-    },
-  },
-};
-
-export const NestingWithNotches: Story = {
-  args: {
-    input: {
-      ...nestingBase,
-      nestingDims: { w: 120, h: 120 },
-      hasTopNotch: true,
-      hasBottomNotch: true,
-    },
-  },
-};
-
-// ── Nested notch variants ──
-// These stories demonstrate the nested-top / nested-bottom notch connectors
-// that appear on the cavity roof and floor of nesting bricks.
-
-/** Nesting brick with only a nested-top notch (smaller tab on cavity roof) */
-export const NestedTopNotchOnly: Story = {
-  args: {
-    input: {
-      ...nestingBase,
-      nestingDims: { w: 120, h: 120 },
-    },
-  },
-};
-
-/** Nesting brick with only a nested-bottom notch (full-size groove on cavity floor) */
-export const NestedBottomNotchOnly: Story = {
-  args: {
-    input: {
-      ...nestingBase,
-      nestingDims: { w: 120, h: 120 },
-    },
-  },
-};
-
-/** Nesting brick with both nested notches — centres should align from tail indent */
-export const BothNestedNotches: Story = {
-  args: {
-    input: {
-      ...nestingBase,
-      nestingDims: { w: 120, h: 120 },
-    },
-  },
-};
-
-/** Nesting brick with ALL four notches (top, bottom, nestedTop, nestedBottom) */
-export const AllNotches: Story = {
-  args: {
-    input: {
-      ...nestingBase,
-      nestingDims: { w: 120, h: 120 },
-      hasTopNotch: true,
-      hasBottomNotch: true,
-    },
-  },
-};
-
-/** All notches with a wider stroke to see the size differences */
-export const AllNotchesWideStroke: Story = {
-  args: {
-    input: {
-      strokeWidth: 3,
-
-      labelDims: {
-        w: 120,
-        h: 20,
-      },
-
-      paramArgDims: [
-        {
-          param: {
-            w: 80,
-            h: 20,
-          },
-
-          arg: {
-            w: 100,
-            h: 40,
-          },
-        },
-      ],
-
-      nestingDims: {
-        w: 120,
-        h: 120,
-      },
-
-      hasTopNotch: true,
-      hasBottomNotch: true,
-    },
-  },
-};
-
-// ── Right notch (nested brick, one groove per arg) ──
-
-export const NestingRightNotch: Story = {
-  args: {
-    input: {
-      strokeWidth: 2,
-      labelDims: { w: 120, h: 20 },
-      paramArgDims: [
-        { param: null, arg: { w: 100, h: 40 } },
-        { param: null, arg: { w: 100, h: 40 } },
-      ],
-      nestingDims: { w: 120, h: 120 },
-    },
-  },
-};
-
-// Three args with different heights — each notch must anchor to its own slot.
-export const NestingRightNotch3Args: Story = {
-  args: {
-    input: {
-      strokeWidth: 2,
-      labelDims: { w: 120, h: 20 },
-      paramArgDims: [
-        { param: null, arg: { w: 100, h: 40 } },
-        { param: null, arg: { w: 100, h: 80 } },
-        { param: null, arg: { w: 100, h: 40 } },
-      ],
-      nestingDims: { w: 120, h: 120 },
-    },
-  },
+type RightNotchPlaygroundArgs = {
+  argCount: number;
+  arg1Height: number;
+  arg2Height: number;
+  arg3Height: number;
+  arg4Height: number;
+  arg5Height: number;
+  argWidth: number;
+  strokeWidth: number;
+  hasLeftNotch: boolean;
 };
 
 // Drag the sliders: change how many args exist and how tall they are, and watch
 // the right-edge notches re-align (one groove per arg, anchored to its slot top).
-export const RightNotchPlayground: StoryObj<typeof RightNotchPlaygroundView> = {
+export const RightNotchPlayground: StoryObj<RightNotchPlaygroundArgs> = {
   args: {
     argCount: 3,
     arg1Height: 40,
@@ -338,5 +174,29 @@ export const RightNotchPlayground: StoryObj<typeof RightNotchPlaygroundView> = {
     strokeWidth: { control: { type: 'range', min: 1, max: 6, step: 1 } },
     hasLeftNotch: { control: 'boolean' },
   },
-  render: (args) => <RightNotchPlaygroundView {...args} />,
+  render: (props) => {
+    // One height per argument, so each slot can be sized independently.
+    const heights = [
+      props.arg1Height,
+      props.arg2Height,
+      props.arg3Height,
+      props.arg4Height,
+      props.arg5Height,
+    ];
+    const paramArgDims = Array.from({ length: props.argCount }, (_, i) => ({
+      param: null,
+      arg: { w: props.argWidth, h: heights[i] },
+    }));
+    return (
+      <PathBrickView
+        input={{
+          strokeWidth: props.strokeWidth,
+          labelDims: { w: 120, h: 20 },
+          paramArgDims,
+          nestingDims: { w: 120, h: 120 },
+          hasLeftNotch: props.hasLeftNotch,
+        }}
+      />
+    );
+  },
 };

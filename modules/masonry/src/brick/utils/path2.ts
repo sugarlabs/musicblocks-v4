@@ -172,9 +172,9 @@ function buildVGroove(strokeWidth: number): string[] {
 
 /** Outward U-shape tab arc (right → left). Used by bottom notch and nested top notch. */
 function buildVTab(strokeWidth: number): string[] {
-    const tabR = V_NOTCH_RADIUS;
-    const lip = strokeWidth / 2;
-    const R = tabR - lip;
+
+    const lip = (3 * strokeWidth) / 2;
+    const R = V_NOTCH_RADIUS - strokeWidth / 2;
     return [
         // Quarter-arc: horizontal (right) → vertical (down). CCW
         `a ${lip} ${lip} 0 0 0 ${-lip} ${lip}`,
@@ -295,8 +295,8 @@ function segHeadBottom(strokeWidth: number, width: number, hasBottomNotch: boole
         return [`h ${-(width - strokeWidth)}`];
     }
 
-    const flatBefore = width - NOTCH_OFFSET_X - V_NOTCH_RADIUS - strokeWidth / 2;
-    const flatAfter = NOTCH_OFFSET_X - V_NOTCH_RADIUS - strokeWidth / 2;
+    const flatBefore = width - NOTCH_OFFSET_X - V_NOTCH_RADIUS - (3 * strokeWidth) / 2;
+    const flatAfter = NOTCH_OFFSET_X - V_NOTCH_RADIUS - (3 * strokeWidth) / 2;
 
     return [
         `h ${-flatBefore}`, // flat run to tab right edge
@@ -360,8 +360,8 @@ function segTailCavityRoof(strokeWidth: number, width: number): string[] {
 
     // Tab centre aligns with the inner brick's top/bottom notch centre.
     const flatBefore =
-        width - TAIL_INDENT_W - NOTCH_OFFSET_X - V_NOTCH_RADIUS - (3 * strokeWidth) / 2;
-    const flatAfter = NOTCH_OFFSET_X - V_NOTCH_RADIUS + strokeWidth / 2;
+        width - TAIL_INDENT_W - NOTCH_OFFSET_X - V_NOTCH_RADIUS - (5 * strokeWidth) / 2;
+    const flatAfter = NOTCH_OFFSET_X - V_NOTCH_RADIUS - strokeWidth / 2;
 
     return [
         `h ${-flatBefore}`, // flat run to tab right edge
@@ -416,8 +416,8 @@ function segTailStepBottom(strokeWidth: number, hasBottomNotch: boolean): string
         return [`h ${-TAIL_STEP_W}`];
     }
 
-    const flatBefore = TAIL_STEP_W - NOTCH_OFFSET_X - V_NOTCH_RADIUS + strokeWidth / 2;
-    const flatAfter = NOTCH_OFFSET_X - V_NOTCH_RADIUS - strokeWidth / 2;
+    const flatBefore = TAIL_STEP_W - NOTCH_OFFSET_X - V_NOTCH_RADIUS - strokeWidth / 2;
+    const flatAfter = NOTCH_OFFSET_X - V_NOTCH_RADIUS - (3 * strokeWidth) / 2;
 
     return [
         `h ${-flatBefore}`, // flat run to tab right edge

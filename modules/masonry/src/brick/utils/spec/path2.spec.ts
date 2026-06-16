@@ -260,7 +260,7 @@ describe('path V2: generateBrickOutline', () => {
         // width=120, headHeight=32, nestHeight=50, height=92
         // cavity roof and foot now always include V-notch arcs (tab + groove)
         expect(result.path).toBe(
-            'M 2 2 h 116 v 28 h -93 a 2 2 0 0 0 -2 2 a 1 1 0 0 1 -2 0 a 2 2 0 0 0 -2 -2 h -11 v 54 h 7 a 2 2 0 0 1 2 2 a 5 5 0 0 0 10 0 a 2 2 0 0 1 2 -2 h 3 v 6 h -30 v -88 Z',
+            'M 2 2 h 116 v 28 h -89 a 6 6 0 0 0 -6 6 a 1 1 0 0 1 -2 0 a 6 6 0 0 0 -6 -6 h -7 v 54 h 7 a 2 2 0 0 1 2 2 a 5 5 0 0 0 10 0 a 2 2 0 0 1 2 -2 h 3 v 6 h -30 v -88 Z',
         );
     });
 

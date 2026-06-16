@@ -20,6 +20,6 @@
     "p5": "^1.4.1"
   },
   "devDependencies": {
-    "@types/p5": "^1.4.2"
+    "@types/p5": "^1.7.7"
   }
 }

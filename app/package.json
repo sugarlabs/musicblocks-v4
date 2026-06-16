@@ -30,6 +30,6 @@
   },
   "devDependencies": {
     "gh-pages": "^6.3.0",
-    "jsonc-parser": "^3.2.0"
+    "jsonc-parser": "^3.3.1"
   }
 }

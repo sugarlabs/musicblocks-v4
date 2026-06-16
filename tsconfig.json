@@ -3,7 +3,6 @@
     "target": "es2024",
     "lib": [
       "dom",
-      "dom.iterable",
       "esnext"
     ],
     "allowJs": true,
@@ -29,7 +28,7 @@
    */
   "ts-node": {
     "compilerOptions": {
-      "module": "UMD"
+      "module": "commonjs"
     }
   }
 }

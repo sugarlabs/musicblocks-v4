@@ -5,7 +5,6 @@
         "./**/*.tsx"
     ],
     "compilerOptions": {
-        "baseUrl": ".",
         "paths": {
             "@/*": [
                 "./src/*"

@@ -499,7 +499,7 @@ describe('path V2: notches', () => {
             labelDims: { w: 60, h: 20 },
             paramArgDims: [oneArg, oneArg, oneArg],
         });
-        const grooves = parseArcs(r.path).filter((a) => a.rx === H_NOTCH_RADIUS + s);
+        const grooves = parseArcs(r.path).filter((a) => a.rx === H_NOTCH_RADIUS + s / 2);
         expect(grooves).toHaveLength(3);
     });
 
@@ -514,9 +514,9 @@ describe('path V2: notches', () => {
         // The tab semicircle is the only arc travelling upward (dx=0, dy<0) on the path.
         const tabs = parseArcs(r.path).filter((a) => a.dx === 0 && a.dy < 0);
         expect(tabs).toHaveLength(1);
-        expect(tabs[0].rx).toBe(H_NOTCH_RADIUS);
+        expect(tabs[0].rx).toBe(H_NOTCH_RADIUS - s / 2);
         // The groove is wider than the tab so it receives it cleanly.
-        expect(H_NOTCH_RADIUS).toBeLessThan(H_NOTCH_RADIUS + s);
+        expect(H_NOTCH_RADIUS - s / 2).toBeLessThan(H_NOTCH_RADIUS + s / 2);
     });
 
     it('right grooves do not change width/height (concave, cut inward)', () => {
@@ -540,7 +540,7 @@ describe('path V2: notches', () => {
             paramArgDims: [oneArg, oneArg, oneArg],
             hasLeftNotch: true,
         });
-        const grooveCentres = semicircleCentresY(r.path, H_NOTCH_RADIUS + s);
+        const grooveCentres = semicircleCentresY(r.path, H_NOTCH_RADIUS + s / 2);
         const tabCentre = leftTabCentreY(r.path);
 
         expect(tabCentre).toBeDefined();
@@ -560,7 +560,7 @@ describe('path V2: notches', () => {
                 { param: null, arg: { w: 50, h: 40 } },
             ],
         });
-        const centres = semicircleCentresY(r.path, H_NOTCH_RADIUS + s);
+        const centres = semicircleCentresY(r.path, H_NOTCH_RADIUS + s / 2);
         expect(centres[0]).toBeCloseTo(0 + NOTCH_OFFSET_Y);
         expect(centres[1]).toBeCloseTo(40 + NOTCH_OFFSET_Y);
         expect(centres[2]).toBeCloseTo(40 + 60 + NOTCH_OFFSET_Y);

@@ -235,7 +235,7 @@ function segHeadRight(strokeWidth: number, headHeight: number, notchCentres: num
         return [`v ${edgeEnd - edgeStart}`];
     }
 
-    const grooveR = H_NOTCH_RADIUS + strokeWidth;
+    const grooveR = H_NOTCH_RADIUS + strokeWidth / 2;
     const lip = strokeWidth / 2; // small flare arc radius, proportional to the stroke
 
     const segs: string[] = [];
@@ -319,7 +319,7 @@ function segLeftEdge(strokeWidth: number, height: number, hasLeftNotch: boolean)
     const edgeStart = height - strokeWidth / 2; // bottom-left corner (pen arrives here)
     const edgeEnd = strokeWidth / 2; // top-left corner
 
-    const tabR = H_NOTCH_RADIUS;
+    const tabR = H_NOTCH_RADIUS - strokeWidth / 2;
     const lip = (3 * strokeWidth) / 2;
 
     if (!hasLeftNotch) {

@@ -7,6 +7,7 @@ import {
     H_NOTCH_RADIUS,
     V_NOTCH_RADIUS,
     NOTCH_OFFSET_Y,
+    CORNER_RADIUS,
     TAIL_INDENT_W,
     TAIL_STEP_H,
     TAIL_STEP_W,
@@ -217,8 +218,10 @@ describe('path V2: generateBrickOutline', () => {
             labelDims: { w: 60, h: 20 },
             paramArgDims: [],
         });
-        // width = 120 (minWidth), headHeight = 28, height = 28
-        expect(result.path).toBe('M 0 0 h 120 v 28 h -120 v -28 Z');
+        // width = 120 (minWidth), headHeight = 28, height = 28; corners rounded by CORNER_RADIUS.
+        expect(result.path).toBe(
+            'M 3 0 h 114 a 3 3 0 0 1 3 3 v 22 a 3 3 0 0 1 -3 3 h -114 a 3 3 0 0 1 -3 -3 v -22 a 3 3 0 0 1 3 -3 Z',
+        );
         expect(result.width).toBe(120);
         expect(result.height).toBe(28);
     });
@@ -229,9 +232,11 @@ describe('path V2: generateBrickOutline', () => {
             labelDims: { w: 200, h: 30 },
             paramArgDims: [],
         });
-        // width = 218, headHeight = 42, height = 42
-        // M s/2 s/2 ; h (218-4)=214 ; v headHeight-4=38 ; h -214 ; v -38
-        expect(result.path).toBe('M 2 2 h 214 v 38 h -214 v -38 Z');
+        // width = 218, headHeight = 42, height = 42; inset by s/2, corners rounded by CORNER_RADIUS.
+        // M (s/2+cr) s/2 ; h (218-4-2*3)=208 ; corner ; v (42-4-2*3)=32 ; ...
+        expect(result.path).toBe(
+            'M 5 2 h 208 a 3 3 0 0 1 3 3 v 32 a 3 3 0 0 1 -3 3 h -208 a 3 3 0 0 1 -3 -3 v -32 a 3 3 0 0 1 3 -3 Z',
+        );
         expect(result.width).toBe(218);
         expect(result.height).toBe(42);
     });
@@ -244,9 +249,10 @@ describe('path V2: generateBrickOutline', () => {
             nestingDims: { w: 50, h: 50 },
         });
         // width=120, headHeight=28, nestHeight=50, height=84
-        // cavity roof and foot now always include V-notch arcs (tab + groove)
+        // cavity roof and foot always include V-notch arcs (tab + groove); corners rounded,
+        // with the two concave cavity corners a stroke-width larger.
         expect(result.path).toBe(
-            'M 0 0 h 120 v 28 h -99 a 0 0 0 0 0 0 0 a 3 3 0 0 1 -6 0 a 0 0 0 0 0 0 0 h -9 v 50 h 9 a 0 0 0 0 1 0 0 a 3 3 0 0 0 6 0 a 0 0 0 0 1 0 0 h 9 v 6 h -30 v -84 Z',
+            'M 3 0 h 114 a 3 3 0 0 1 3 3 v 22 a 3 3 0 0 1 -3 3 h -96 a 0 0 0 0 0 0 0 a 3 3 0 0 1 -3 3 a 3 3 0 0 1 -3 -3 a 0 0 0 0 0 0 0 h -6 a 3 3 0 0 0 -3 3 v 44 a 3 3 0 0 0 3 3 h 6 a 0 0 0 0 0 0 0 a 3 3 0 0 0 3 3 a 3 3 0 0 0 3 -3 a 0 0 0 0 0 0 0 h 6 a 3 3 0 0 1 3 3 v 0 a 3 3 0 0 1 -3 3 h -24 a 3 3 0 0 1 -3 -3 v -78 a 3 3 0 0 1 3 -3 Z',
         );
     });
 
@@ -258,9 +264,10 @@ describe('path V2: generateBrickOutline', () => {
             nestingDims: { w: 50, h: 50 },
         });
         // width=120, headHeight=32, nestHeight=50, height=92
-        // cavity roof and foot now always include V-notch arcs (tab + groove)
+        // cavity roof and foot always include V-notch arcs (tab + groove); corners rounded,
+        // with the two concave cavity corners a stroke-width larger.
         expect(result.path).toBe(
-            'M 2 2 h 116 v 28 h -89 a 6 6 0 0 0 -6 6 a 1 1 0 0 1 -2 0 a 6 6 0 0 0 -6 -6 h -7 v 54 h 7 a 2 2 0 0 1 2 2 a 5 5 0 0 0 10 0 a 2 2 0 0 1 2 -2 h 3 v 6 h -30 v -88 Z',
+            'M 5 2 h 110 a 3 3 0 0 1 3 3 v 22 a 3 3 0 0 1 -3 3 h -86 a 6 6 0 0 0 -6 6 a 1 1 0 0 1 -1 1 a 1 1 0 0 1 -1 -1 a 6 6 0 0 0 -6 -6 h 0 a 7 7 0 0 0 -7 7 v 40 a 7 7 0 0 0 7 7 h 0 a 2 2 0 0 1 2 2 a 5 5 0 0 0 5 5 a 5 5 0 0 0 5 -5 a 2 2 0 0 1 2 -2 h 0 a 3 3 0 0 1 3 3 v 0 a 3 3 0 0 1 -3 3 h -24 a 3 3 0 0 1 -3 -3 v -82 a 3 3 0 0 1 3 -3 Z',
         );
     });
 
@@ -315,13 +322,14 @@ describe('path V2: generateBrickOutline', () => {
             expect(dims.width).toBe(Math.max(headWidth, TAIL_STEP_W, MINIMUMS.minWidth));
         });
 
-        it('path starts at the origin (no inset) when s=0', () => {
+        it('path top edge has no stroke inset when s=0 (only the corner inset remains)', () => {
             const { path } = generateBrickOutline({
                 strokeWidth: 0,
                 labelDims: { w: 60, h: 20 },
                 paramArgDims: [],
             });
-            expect(path.startsWith('M 0 0')).toBe(true);
+            // y = 0 (no stroke inset); x = CORNER_RADIUS, the start of the top edge after the corner.
+            expect(path.startsWith(`M ${CORNER_RADIUS} 0`)).toBe(true);
         });
     });
 
@@ -401,8 +409,32 @@ interface ArcSeg {
     dy: number;
 }
 
-/** Extract every elliptical-arc (`a rx ry rot large sweep dx dy`) segment from a path. */
+/**
+ * Extract every elliptical-arc (`a rx ry rot large sweep dx dy`) segment from a path. Each notch
+ * semicircle is drawn as two equal-radius quarter arcs; this merges that pair back into one arc.
+ */
 function parseArcs(path: string): ArcSeg[] {
+    const tokens = path.trim().split(/\s+/);
+    const arcs: ArcSeg[] = [];
+    for (let i = 0; i < tokens.length; i++) {
+        if (tokens[i] === 'a') {
+            const rx = parseFloat(tokens[i + 1]);
+            const sweep = parseFloat(tokens[i + 5]);
+            let dx = parseFloat(tokens[i + 6]);
+            let dy = parseFloat(tokens[i + 7]);
+            if (tokens[i + 8] === 'a' && Math.abs(parseFloat(tokens[i + 9]) - rx) < 1e-9) {
+                dx += parseFloat(tokens[i + 14]);
+                dy += parseFloat(tokens[i + 15]);
+                i += 8;
+            }
+            arcs.push({ rx, sweep, dx, dy });
+        }
+    }
+    return arcs;
+}
+
+/** Like parseArcs but WITHOUT merging a notch's two halves — exposes each individual quarter arc. */
+function parseArcsRaw(path: string): ArcSeg[] {
     const tokens = path.trim().split(/\s+/);
     const arcs: ArcSeg[] = [];
     for (let i = 0; i < tokens.length; i++) {
@@ -451,7 +483,12 @@ function semicircleCentresY(path: string, radius: number): number[] {
             y += parseFloat(tokens[i + 1]);
         } else if (cmd === 'a') {
             const rx = parseFloat(tokens[i + 1]);
-            const dy = parseFloat(tokens[i + 7]);
+            let dy = parseFloat(tokens[i + 7]);
+            // merge the two quarter-arcs of a notch back into one semicircle
+            if (tokens[i + 8] === 'a' && Math.abs(parseFloat(tokens[i + 9]) - rx) < 1e-9) {
+                dy += parseFloat(tokens[i + 15]);
+                i += 8;
+            }
             if (Math.abs(rx - radius) < 1e-9) centres.push(y + dy / 2);
             y += dy;
         }
@@ -471,8 +508,15 @@ function leftTabCentreY(path: string): number | undefined {
         if (cmd === 'M' || cmd === 'm') y = parseFloat(tokens[i + 2]);
         else if (cmd === 'v') y += parseFloat(tokens[i + 1]);
         else if (cmd === 'a') {
-            const dx = parseFloat(tokens[i + 6]);
-            const dy = parseFloat(tokens[i + 7]);
+            const rx = parseFloat(tokens[i + 1]);
+            let dx = parseFloat(tokens[i + 6]);
+            let dy = parseFloat(tokens[i + 7]);
+            // merge the two quarter-arcs of a notch back into one semicircle
+            if (tokens[i + 8] === 'a' && Math.abs(parseFloat(tokens[i + 9]) - rx) < 1e-9) {
+                dx += parseFloat(tokens[i + 14]);
+                dy += parseFloat(tokens[i + 15]);
+                i += 8;
+            }
             if (dx === 0 && dy < 0) return y + dy / 2;
             y += dy;
         }
@@ -483,13 +527,15 @@ function leftTabCentreY(path: string): number | undefined {
 const oneArg = { param: null, arg: { w: 50, h: 40 } };
 
 describe('path V2: notches', () => {
-    it('draws no arcs when there are no args and no left tab', () => {
+    it('draws no notch arcs when there are no args and no left tab', () => {
         const r = generateBrickOutline({
             strokeWidth: 2,
             labelDims: { w: 60, h: 20 },
             paramArgDims: [],
         });
-        expect(parseArcs(r.path)).toHaveLength(0);
+        // The only arcs are the four rounded corners; there are no notch arcs.
+        const notchArcs = parseArcs(r.path).filter((a) => a.rx !== CORNER_RADIUS);
+        expect(notchArcs).toHaveLength(0);
     });
 
     it('right grooves follow the args: one groove per argument slot, no flag needed', () => {
@@ -596,6 +642,111 @@ describe('path V2: notches', () => {
             paramArgDims: [oneArg],
             hasLeftNotch: true,
         });
-        expect(parseArcs(noTab.path)).toHaveLength(0);
+        // Only the rounded corners remain; no notch (tab/groove) arcs are drawn.
+        const notchArcs = parseArcs(noTab.path).filter((a) => a.rx !== CORNER_RADIUS);
+        expect(notchArcs).toHaveLength(0);
+    });
+
+    it('right groove is split into two equal quarter-arcs, both concave (sweep 0)', () => {
+        const s = 2;
+        const grooveR = H_NOTCH_RADIUS + s / 2;
+        const r = generateBrickOutline({
+            strokeWidth: s,
+            labelDims: { w: 60, h: 20 },
+            paramArgDims: [oneArg],
+        });
+        // One arg → one groove, drawn as two 90° arcs of radius grooveR that each dip inward (−x).
+        const halves = parseArcsRaw(r.path).filter((a) => a.rx === grooveR);
+        expect(halves).toHaveLength(2);
+        expect(halves.every((a) => a.sweep === 0)).toBe(true);
+        expect(halves.every((a) => Math.abs(a.dy) === grooveR)).toBe(true);
+    });
+
+    it('left tab is split into two equal quarter-arcs, both convex (sweep 1)', () => {
+        const s = 2;
+        const tabR = H_NOTCH_RADIUS - s / 2;
+        const r = generateBrickOutline({
+            strokeWidth: s,
+            labelDims: { w: 60, h: 20 },
+            paramArgDims: [oneArg],
+            hasLeftNotch: true,
+        });
+        // The left tab is drawn as two 90° arcs of radius tabR that each bulge outward (−x).
+        const halves = parseArcsRaw(r.path).filter((a) => a.rx === tabR);
+        expect(halves).toHaveLength(2);
+        expect(halves.every((a) => a.sweep === 1)).toBe(true);
+        expect(halves.every((a) => Math.abs(a.dy) === tabR)).toBe(true);
+    });
+});
+
+// ────────────────────────── Corner Radius ──────────────────────────────────────────────────────────
+
+describe('path V2: corner radius', () => {
+    it('rounds all four corners of a simple brick with one convex arc each', () => {
+        const r = generateBrickOutline({
+            strokeWidth: 2,
+            labelDims: { w: 60, h: 20 },
+            paramArgDims: [],
+        });
+        // A simple brick has no notches, so its only arcs are the four corners.
+        const corners = parseArcs(r.path).filter((a) => a.rx === CORNER_RADIUS);
+        expect(corners).toHaveLength(4);
+        // Every outer corner is convex (sweep 1).
+        expect(corners.every((a) => a.sweep === 1)).toBe(true);
+    });
+
+    it('a compound brick rounds the two cavity corners concavely, a stroke-width larger', () => {
+        const s = 2;
+        const r = generateBrickOutline({
+            strokeWidth: s,
+            labelDims: { w: 80, h: 20 },
+            paramArgDims: [],
+            nestingDims: { w: 50, h: 50 },
+        });
+        // 8 corners around the C-shape: 6 convex outer corners at CORNER_RADIUS, plus the two
+        // concave cavity-mouth corners at CORNER_RADIUS + strokeWidth so a nested brick seats
+        // flush inside them.
+        const convex = parseArcs(r.path).filter((a) => a.rx === CORNER_RADIUS && a.sweep === 1);
+        const concave = parseArcs(r.path).filter(
+            (a) => a.rx === CORNER_RADIUS + s && a.sweep === 0,
+        );
+        expect(convex).toHaveLength(6);
+        expect(concave).toHaveLength(2);
+    });
+
+    it('corner radius does not change the reported width/height', () => {
+        const input: BrickOutlineInput = {
+            strokeWidth: 2,
+            labelDims: { w: 60, h: 20 },
+            paramArgDims: [],
+        };
+        const r = generateBrickOutline(input);
+        const dims = computeDimensions(input, MINIMUMS);
+        // Rounding only trims/curves the corners; the outer frame is unchanged.
+        expect(r.width).toBe(dims.width);
+        expect(r.height).toBe(dims.height);
+    });
+
+    it('the outline still closes with corner radius combined with every notch', () => {
+        const simple = generateBrickOutline({
+            strokeWidth: 2,
+            labelDims: { w: 60, h: 20 },
+            paramArgDims: [oneArg, oneArg, oneArg],
+            hasLeftNotch: true,
+        });
+        const compound = generateBrickOutline({
+            strokeWidth: 2,
+            labelDims: { w: 60, h: 20 },
+            paramArgDims: [oneArg, oneArg],
+            nestingDims: { w: 80, h: 80 },
+            hasTopNotch: true,
+            hasBottomNotch: true,
+            hasLeftNotch: true,
+        });
+        for (const r of [simple, compound]) {
+            const { dx, dy } = netDisplacementFull(r.path);
+            expect(dx).toBeCloseTo(0);
+            expect(dy).toBeCloseTo(0);
+        }
     });
 });

@@ -18,6 +18,6 @@
   "dependencies": {
     "@sugarlabs/musicblocks-v4-lib": "^0.2.0",
     "react-aria": "^3.26.0",
-    "zustand": "^4.3.9"
+    "zustand": "^5.0.14"
   }
 }

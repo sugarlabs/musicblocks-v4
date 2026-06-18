@@ -13,6 +13,6 @@
   },
   "dependencies": {
     "@sugarlabs/musicblocks-v4-lib": "^0.2.0",
-    "tone": "^14.7.77"
+    "tone": "^15.1.22"
   }
 }

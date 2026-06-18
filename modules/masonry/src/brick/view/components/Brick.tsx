@@ -23,6 +23,8 @@ export function BrickView(props: BrickViewProps) {
 
   const labelRef = useRef<HTMLParagraphElement>(null);
 
+  const labelText = props.widget.type === 'label' ? props.widget.text : '';
+
   const generateOutline = useMemo(
     () =>
       createBrickOutlineGenerator({
@@ -45,7 +47,7 @@ export function BrickView(props: BrickViewProps) {
 
     const { width, height } = labelElem.getBoundingClientRect();
     setLabelDims({ w: width, h: height });
-  }, [props.label]);
+  }, [labelText]);
 
   // Recompute the brick outline whenever the label dimensions change,
   // i.e. after the measurement effect above has committed its state update.
@@ -101,7 +103,7 @@ export function BrickView(props: BrickViewProps) {
               whiteSpace: 'nowrap',
             }}
           >
-            {props.label}
+            {labelText}
           </p>
         </div>
       </foreignObject>

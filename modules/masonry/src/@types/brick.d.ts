@@ -199,13 +199,6 @@ export interface BrickOutlineOutput {
     };
 }
 
-export interface BrickViewProps {
-    /** Display text content of the brick label */
-    label: string;
-    /** Controls brick size and font scaling; defaults to 1 */
-    scaleLevel?: 1 | 2 | 3;
-}
-
 export interface BrickMinimums {
     /** Minimum total outer width of the brick */
     minWidth: number;
@@ -218,3 +211,96 @@ export interface BrickMinimums {
     /** Minimum height of an argument slot */
     minArgHeight: number;
 }
+
+// -------------------------------------------------------------------------------------------------
+
+/** Display widgets — represent the brick's identity/operation; used by all brick kinds. */
+type WidgetDisplay =
+    /** Text label identifying the brick, with an optional icon glyph. */
+    | { type: 'label'; text: string; glyph?: { name: string; color: string } }
+    /** Static image representing the brick's identity. */
+    | { type: 'graphic'; src: string }
+    /** Selector for choosing a structural variant of the brick (e.g. which operator or loop type). */
+    | { type: 'variant'; options: string[]; value: string };
+
+/** Interactive input widgets — exclusively for value-kind bricks. */
+type WidgetInput =
+    /** Freeform text input. */
+    | { type: 'textbox'; value: string; maxLength?: number }
+    /** Numeric input with optional bounds and increment step. */
+    | { type: 'numberbox'; value: number; min?: number; max?: number; step?: number }
+    /** Boolean on/off toggle with optional state labels. */
+    | { type: 'toggle'; value: boolean; labels?: { on: string; off: string } }
+    /** Range slider; min and max are required, step defaults to 1. */
+    | { type: 'slider'; value: number; min: number; max: number; step?: number }
+    /** Selection from a fixed set of value options. */
+    | { type: 'select'; options: string[]; value: string };
+
+/** A pair of a parameter label and its argument slot. */
+interface ParamArgPair {
+    /** Parameter label; omitted if the slot has no label. */
+    param?: string;
+    /** Dimensions of the argument slot; null if the slot is empty. */
+    argDims: Size | null;
+}
+
+/** Props shared by every brick kind. */
+interface BrickViewPropsBase {
+    /** Colors used in the default (non-highlighted, non-selected) render state. */
+    colorsDefault: {
+        background: string;
+        foreground: string;
+        border: string;
+    };
+    /** Tooltip text displayed on hover. */
+    tooltipText: string;
+    /** Controls brick size and font scaling; defaults to 2. */
+    scaleLevel?: 1 | 2 | 3;
+
+    // TODO: colorsHighlight — colors to use when the brick is in highlighted state (mirrors colorsDefault shape)
+    // TODO: shadow — brick drop-shadow spec (e.g. offset, blur, color)
+}
+
+/** A terminal value brick — literal, variable, constant, or input widget. */
+export interface ValueBrickViewProps extends BrickViewPropsBase {
+    kind: 'value';
+    widget: WidgetDisplay | WidgetInput;
+}
+
+/** A value-producing brick with one or more argument slots — operator, function call, etc. */
+export interface ExpressionBrickViewProps extends BrickViewPropsBase {
+    kind: 'expression';
+    widget: WidgetDisplay;
+    /** At least one param/arg pair is required. */
+    paramArgs: [ParamArgPair, ...ParamArgPair[]];
+}
+
+/** An executable brick that participates in a sequence — statement, block, loop, conditional, etc. */
+export interface StatementBrickViewProps extends BrickViewPropsBase {
+    kind: 'statement';
+    widget: WidgetDisplay;
+    /** Omitted if the brick has no param/arg slots. */
+    paramArgs?: ParamArgPair[];
+    /**
+     * Nesting cavity configuration. Omit entirely if the brick has no cavity.
+     *   dims: null — cavity exists but content size is unknown; falls back to minimum height
+     *   dims: Size — cavity exists with known content dimensions
+     * isFolded collapses the cavity to zero height when true; defaults to false.
+     */
+    nesting?: {
+        dims: Size | null;
+        isFolded: boolean;
+    };
+    /** Whether this brick connects to the preceding brick in a sequence. */
+    hasConnectionPrev?: boolean;
+    /** Whether this brick connects to the following brick in a sequence. */
+    hasConnectionNext?: boolean;
+
+    // TODO: hasSwitchButton — renders a button to swap to an alternate brick type
+}
+
+/** Discriminated union over all brick kinds; narrow via `kind`. */
+export type BrickViewProps =
+    | ValueBrickViewProps
+    | ExpressionBrickViewProps
+    | StatementBrickViewProps;

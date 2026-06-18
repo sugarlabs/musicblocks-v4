@@ -1,18 +1,17 @@
-import { ReportHandler } from 'web-vitals';
-
+import type { Metric } from 'web-vitals';
 /**
  * If you want to start measuring performance in your app, pass a function to log results
  * (e.g.: reportWebVitals(console.log))
  * @param onPerfEntry
  */
-export function reportWebVitals(onPerfEntry?: ReportHandler): void {
+export function reportWebVitals(onPerfEntry?: (metric: Metric) => void): void {
     if (onPerfEntry && onPerfEntry instanceof Function) {
-        import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
-            getCLS(onPerfEntry);
-            getFID(onPerfEntry);
-            getFCP(onPerfEntry);
-            getLCP(onPerfEntry);
-            getTTFB(onPerfEntry);
+        import('web-vitals').then(({ onCLS, onFCP, onINP, onLCP, onTTFB }) => {
+            onCLS(onPerfEntry);
+            onFCP(onPerfEntry);
+            onINP(onPerfEntry);
+            onLCP(onPerfEntry);
+            onTTFB(onPerfEntry);
         });
     }
 }

@@ -27,12 +27,19 @@ export type BrickViewFixedProps =
 
 const STROKE_WIDTH = 2;
 const DEFAULT_SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
+// Param labels render smaller than the main label so the brick's identity
+// (the label) stays dominant while params read as secondary detail.
+const PARAM_FONT_SCALE = 0.8;
 // Use a stable reference for empty parameter arrays to prevent unnecessary re-renders.
 const EMPTY_PARAM_ARGS: ParamArgPair[] = [];
 
 export function BrickViewFixed(props: BrickViewFixedProps) {
   const { brickScale, minWidth, minArgNestHeight, minLabelParamHeight, fontSize, lineHeight } =
     SCALE_LEVEL_CONFIG[props.scaleLevel ?? DEFAULT_SCALE_LEVEL];
+
+  // Param labels share the main label's color but render at a smaller size.
+  const paramFontSize = Math.round(fontSize * PARAM_FONT_SCALE);
+  const paramLineHeight = Math.round(lineHeight * PARAM_FONT_SCALE);
 
   const pxToSvg = useCallback((px: number) => px / brickScale, [brickScale]);
   const svgToPx = useCallback((u: number) => u * brickScale, [brickScale]);
@@ -275,9 +282,11 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
                 style={{
                   maxWidth: 'unset',
                   margin: 0,
-                  fontSize,
-                  lineHeight: `${lineHeight}px`,
+                  // Smaller than the main label so params read as secondary.
+                  fontSize: paramFontSize,
+                  lineHeight: `${paramLineHeight}px`,
                   whiteSpace: 'nowrap',
+                  // Same color as the main label, sitting next to the arg notch.
                   color: props.colorsDefault.foreground,
                 }}
               >

@@ -304,3 +304,9 @@ export type BrickViewProps =
     | ValueBrickViewProps
     | ExpressionBrickViewProps
     | StatementBrickViewProps;
+
+/** Props for the `BrickViewFixed` sub-component: like `BrickViewProps`, but a value brick's widget is display-only (no input widget). */
+export type BrickViewFixedProps =
+    | (Omit<ValueBrickViewProps, 'widget'> & { widget: WidgetDisplay })
+    | ExpressionBrickViewProps
+    | StatementBrickViewProps;

@@ -557,9 +557,12 @@ function generateBounds(
 
         if (param !== null) {
             const paramH = Math.max(param.h, minParamHeight);
+            // Centre the param label on its arg notch (NOTCH_OFFSET_Y below the row top);
+            // fall back to centring within the row when the slot has no arg (no notch).
+            const paramCentreY = arg !== null ? NOTCH_OFFSET_Y : rowH / 2;
             params.push({
                 x: width - strokeWidth / 2 - HEAD_PAD_X2 - param.w,
-                y: y + (rowH - paramH) / 2,
+                y: y + paramCentreY - paramH / 2,
                 w: param.w,
                 h: paramH,
             });

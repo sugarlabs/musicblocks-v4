@@ -203,8 +203,8 @@ describe('path V2: computeDimensions', () => {
                 },
                 MINIMUMS,
             );
-            // argsTotalHeight = 60, but headHeightByParams now dominates: 2(s/2) + 5(pad) + 40(minParams) + 8(gutter) + 3(pad) + 2(s/2) = 60
-            expect(dims.headHeight).toBe(60);
+            // Each arg row is enforced to at least minArgHeight (40), so total = 40 + 40 = 80.
+            expect(dims.headHeight).toBe(80);
         });
     });
 });

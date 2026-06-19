@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import '../tailwind.css';
 import '../src/palette/palette.css';
 import App from './App';
 import { RecoilRoot } from 'recoil';

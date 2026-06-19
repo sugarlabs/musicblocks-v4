@@ -1,4 +1,5 @@
 import '@res/scss/base.scss';
+import '../tailwind.css';
 
 export const parameters = {
     actions: {

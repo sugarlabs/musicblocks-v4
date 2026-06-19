@@ -1,0 +1,292 @@
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+
+import type {
+  Bounds,
+  ExpressionBrickViewProps,
+  Size,
+  StatementBrickViewProps,
+  ValueBrickViewProps,
+  ParamArgPair,
+} from '@masonry/@types/brick';
+
+import { SCALE_LEVEL_CONFIG } from '../../utils/constants';
+import { createBrickOutlineGenerator } from '../../utils/path2';
+
+// Ensure the widget is exclusively of type WidgetDisplay (no input widgets and no variant)
+type WidgetDisplay =
+  | { type: 'label'; text: string; glyph?: { name: string; color: string } }
+  | { type: 'graphic'; src: string };
+
+// Utility to explicitly strip out tooltipText from inherited types
+type OmitTooltip<T> = Omit<T, 'tooltipText'>;
+
+export type BrickViewFixedProps =
+  | (OmitTooltip<Omit<ValueBrickViewProps, 'widget'>> & { widget: WidgetDisplay })
+  | OmitTooltip<ExpressionBrickViewProps>
+  | OmitTooltip<StatementBrickViewProps>;
+
+const STROKE_WIDTH = 2;
+const DEFAULT_SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
+// Use a stable reference for empty parameter arrays to prevent unnecessary re-renders.
+const EMPTY_PARAM_ARGS: ParamArgPair[] = [];
+
+export function BrickViewFixed(props: BrickViewFixedProps) {
+  const { brickScale, minWidth, minArgNestHeight, minLabelParamHeight, fontSize, lineHeight } =
+    SCALE_LEVEL_CONFIG[props.scaleLevel ?? DEFAULT_SCALE_LEVEL];
+
+  const pxToSvg = useCallback((px: number) => px / brickScale, [brickScale]);
+  const svgToPx = useCallback((u: number) => u * brickScale, [brickScale]);
+
+  const [path, setPath] = useState('');
+  const [dims, setDims] = useState<Size>({ w: 0, h: 0 });
+
+  const [labelDims, setLabelDims] = useState<Size>({ w: 0, h: 0 });
+  const [labelBounds, setLabelBounds] = useState<Bounds>({ x: 0, y: 0, w: 0, h: 0 });
+
+  // For parameter labels
+  const paramArgs = 'paramArgs' in props ? (props.paramArgs ?? EMPTY_PARAM_ARGS) : EMPTY_PARAM_ARGS;
+  const [paramDimsList, setParamDimsList] = useState<Size[]>(paramArgs.map(() => ({ w: 0, h: 0 })));
+  const [paramBoundsList, setParamBoundsList] = useState<Bounds[]>([]);
+
+  const labelRef = useRef<HTMLParagraphElement>(null);
+  const paramRefs = useRef<(HTMLParagraphElement | null)[]>([]);
+
+  const isLabelWidget = props.widget.type === 'label';
+  const labelText = props.widget.type === 'label' ? props.widget.text : '';
+
+  const generateOutline = useMemo(
+    () =>
+      createBrickOutlineGenerator({
+        minWidth: pxToSvg(minWidth),
+        minLabelHeight: pxToSvg(minLabelParamHeight),
+        minNestHeight: pxToSvg(minArgNestHeight),
+        minParamHeight: pxToSvg(minLabelParamHeight),
+        minArgHeight: pxToSvg(minArgNestHeight),
+      }),
+    [minWidth, minLabelParamHeight, minArgNestHeight, pxToSvg],
+  );
+
+  // Layout Effect 1: Measures the actual rendered DOM text dimensions.
+  // Dependencies include fontSize and lineHeight so that scaleLevel changes correctly recalculate width/height.
+  useLayoutEffect(() => {
+    let changed = false;
+
+    // Measure main label
+    let newLabelDims = { w: 0, h: 0 };
+    if (labelRef.current) {
+      const { width, height } = labelRef.current.getBoundingClientRect();
+      if (width !== labelDims.w || height !== labelDims.h) {
+        newLabelDims = { w: width, h: height };
+        changed = true;
+      } else {
+        newLabelDims = labelDims;
+      }
+    }
+
+    // Measure param labels
+    const newParamDimsList = [...paramDimsList];
+    paramRefs.current.forEach((el, i) => {
+      if (el) {
+        const { width, height } = el.getBoundingClientRect();
+        if (width !== newParamDimsList[i]?.w || height !== newParamDimsList[i]?.h) {
+          newParamDimsList[i] = { w: width, h: height };
+          changed = true;
+        }
+      }
+    });
+
+    if (changed) {
+      setLabelDims(newLabelDims);
+      setParamDimsList(newParamDimsList);
+    }
+  }, [labelText, paramArgs.length, labelDims, paramDimsList, fontSize, lineHeight]);
+
+  const hasConnectionPrev = 'hasConnectionPrev' in props ? props.hasConnectionPrev : false;
+  const hasConnectionNext = 'hasConnectionNext' in props ? props.hasConnectionNext : false;
+  const nesting = 'nesting' in props ? props.nesting : undefined;
+  const paramArgsString = JSON.stringify(paramArgs);
+
+  useLayoutEffect(() => {
+    let nestingDims;
+    let hasTopNotch = false;
+    let hasBottomNotch = false;
+    let hasLeftNotch = false;
+
+    if (props.kind === 'value') {
+      hasLeftNotch = true;
+    } else if (props.kind === 'expression') {
+      hasLeftNotch = true;
+    }
+
+    if (props.kind === 'statement') {
+      hasTopNotch = hasConnectionPrev ?? false;
+      hasBottomNotch = hasConnectionNext ?? false;
+      if (nesting) {
+        // If the nesting cavity is folded, we pass undefined to path2.ts
+        // so it omits the cavity entirely and draws a flush, solid block.
+        nestingDims = nesting.isFolded ? undefined : nesting.dims;
+      }
+    }
+
+    const {
+      width,
+      height,
+      path: generatedPath,
+      bounds,
+    } = generateOutline({
+      strokeWidth: pxToSvg(STROKE_WIDTH),
+      labelDims: { w: pxToSvg(labelDims.w), h: pxToSvg(labelDims.h) },
+      paramArgDims: paramArgs.map((pa, i) => ({
+        param: pa.param
+          ? { w: pxToSvg(paramDimsList[i]?.w ?? 0), h: pxToSvg(paramDimsList[i]?.h ?? 0) }
+          : null,
+        arg: pa.argDims ? { w: pxToSvg(pa.argDims.w), h: pxToSvg(pa.argDims.h) } : null,
+      })),
+      nestingDims: nestingDims
+        ? nestingDims === null
+          ? null
+          : { w: pxToSvg(nestingDims.w), h: pxToSvg(nestingDims.h) }
+        : undefined,
+      hasTopNotch,
+      hasBottomNotch,
+      hasLeftNotch,
+    });
+
+    setPath(generatedPath);
+    setDims({ w: width, h: height });
+
+    setLabelBounds({
+      x: svgToPx(bounds.label.x),
+      y: svgToPx(bounds.label.y),
+      w: svgToPx(bounds.label.w),
+      h: svgToPx(bounds.label.h),
+    });
+
+    if (bounds.params) {
+      setParamBoundsList(
+        bounds.params.map((b) => ({
+          x: svgToPx(b.x),
+          y: svgToPx(b.y),
+          w: svgToPx(b.w),
+          h: svgToPx(b.h),
+        })),
+      );
+    }
+  }, [
+    props.kind,
+    hasConnectionPrev,
+    hasConnectionNext,
+    nesting,
+    labelDims,
+    paramDimsList,
+    generateOutline,
+    svgToPx,
+    pxToSvg,
+    paramArgs,
+    paramArgsString,
+  ]);
+
+  const maxArgW = Math.max(0, ...paramArgs.map((p) => p.argDims?.w ?? 0));
+
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={svgToPx(dims.w) + maxArgW}
+      height={svgToPx(dims.h)}
+      style={{ overflow: 'visible' }}
+    >
+      <path
+        d={path}
+        transform={`scale(${brickScale})`}
+        fill={props.colorsDefault.background}
+        stroke={props.colorsDefault.border}
+        strokeWidth={pxToSvg(STROKE_WIDTH)}
+      />
+
+      {/* Main Widget */}
+      {isLabelWidget && (
+        <foreignObject
+          x={labelBounds.x}
+          y={labelBounds.y}
+          width={labelBounds.w || 9999}
+          height={labelBounds.h || 9999}
+        >
+          <div
+            style={{
+              width: labelBounds.w,
+              height: labelBounds.h,
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            <p
+              ref={labelRef}
+              style={{
+                maxWidth: 'unset',
+                margin: 0,
+                fontSize,
+                lineHeight: `${lineHeight}px`,
+                whiteSpace: 'nowrap',
+                color: props.colorsDefault.foreground,
+              }}
+            >
+              {labelText}
+            </p>
+          </div>
+        </foreignObject>
+      )}
+
+      {props.widget.type === 'graphic' && (
+        <image
+          href={props.widget.src}
+          x={labelBounds.x}
+          y={labelBounds.y}
+          width={labelBounds.w}
+          height={labelBounds.h}
+          preserveAspectRatio="xMidYMid meet"
+        />
+      )}
+
+      {/* Parameters */}
+      {paramBoundsList.map((bounds, i) => {
+        const paramText = paramArgs[i]?.param;
+        if (!paramText) return null;
+
+        return (
+          <foreignObject
+            key={i}
+            x={bounds.x}
+            y={bounds.y}
+            width={bounds.w || 9999}
+            height={bounds.h || 9999}
+          >
+            <div
+              style={{
+                width: bounds.w,
+                height: bounds.h,
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <p
+                ref={(el) => {
+                  paramRefs.current[i] = el;
+                }}
+                style={{
+                  maxWidth: 'unset',
+                  margin: 0,
+                  fontSize,
+                  lineHeight: `${lineHeight}px`,
+                  whiteSpace: 'nowrap',
+                  color: props.colorsDefault.foreground,
+                }}
+              >
+                {paramText}
+              </p>
+            </div>
+          </foreignObject>
+        );
+      })}
+    </svg>
+  );
+}

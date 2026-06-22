@@ -1,0 +1,21 @@
+/** @type {import("prettier").Config} */
+export default {
+    printWidth: 100,
+    tabWidth: 4,
+    useTabs: false,
+    semi: true,
+    singleQuote: true,
+    quoteProps: 'consistent',
+    trailingComma: 'all',
+    bracketSpacing: true,
+    arrowParens: 'always',
+    endOfLine: 'lf',
+    overrides: [
+        {
+            files: ['*.json', '*.jsonc', '*.yml', '*.html', '*.css', '*.scss', '*.tsx'],
+            options: {
+                tabWidth: 2,
+            },
+        },
+    ],
+};

@@ -61,10 +61,7 @@ interface ComputedDimensions {
     nestHeight: number;
 }
 
-export function computeDimensions(
-    input: BrickOutlineInput,
-    minimums: BrickMinimums,
-): ComputedDimensions {
+function computeDimensions(input: BrickOutlineInput, minimums: BrickMinimums): ComputedDimensions {
     const { minWidth, minLabelHeight, minNestHeight, minParamHeight, minArgHeight } = minimums;
     const params = input.paramArgDims.map((p) => p.param ?? { w: 0, h: minParamHeight });
     const args = input.paramArgDims.map((p) => p.arg ?? { w: 0, h: minArgHeight });
@@ -169,7 +166,8 @@ function arc(end: RelPoint, centre: RelPoint): string {
 
 /** Inward U-shape groove arc (left → right). Used by top notch and nested bottom notch. */
 function buildVGroove(strokeWidth: number): string[] {
-    const grooveR = V_NOTCH_RADIUS + strokeWidth;
+    // Nominal groove radius = tab radius + the tab's stroke bleed (s/2) + the groove's own stroke bleed (s/2).
+    const grooveR = V_NOTCH_RADIUS + strokeWidth / 2 + strokeWidth / 2;
     const lip = strokeWidth / 2;
     const R = grooveR - lip;
     return [
@@ -222,7 +220,8 @@ function segTopEdge(strokeWidth: number, width: number, hasTopNotch: boolean): s
 
     // flatBefore: horizontal run from the starting M position to the notch left edge
     // flatAfter:  horizontal run from the notch right edge to the rounded top-right corner
-    const grooveR = V_NOTCH_RADIUS + strokeWidth;
+    // Nominal groove radius = tab radius + the tab's stroke bleed (s/2) + the groove's own stroke bleed (s/2).
+    const grooveR = V_NOTCH_RADIUS + strokeWidth / 2 + strokeWidth / 2;
     const flatBefore = NOTCH_OFFSET_X - grooveR - strokeWidth / 2 - CORNER_RADIUS;
     const flatAfter = width - NOTCH_OFFSET_X - grooveR - strokeWidth / 2 - CORNER_RADIUS;
 
@@ -257,8 +256,10 @@ function segHeadRight(strokeWidth: number, headHeight: number, notchCentres: num
         return [`v ${edgeEnd - edgeStart}`, corner];
     }
 
-    const grooveR = H_NOTCH_RADIUS + strokeWidth / 2;
+    // Nominal groove radius = tab radius + the tab's stroke bleed (s/2) + the groove's own stroke bleed (s/2).
+    const grooveR = H_NOTCH_RADIUS + strokeWidth / 2 + strokeWidth / 2;
     const lip = strokeWidth / 2; // small flare arc radius, proportional to the stroke
+    const R = grooveR - lip; // drawn semicircle radius after the lip flare
 
     const segs: string[] = [];
     let pen = edgeStart; // current y of the pen, travelling downwards
@@ -268,10 +269,10 @@ function segHeadRight(strokeWidth: number, headHeight: number, notchCentres: num
         //   centre        — the notch centre
         //   semicircleTop — one radius above the centre
         //   notchTop      — one lip arc above the semicircle (where the groove begins)
-        const semicircleTop = centre - grooveR;
+        const semicircleTop = centre - R;
         const notchTop = semicircleTop - lip;
         // ...and symmetrically downwards (where the groove ends):
-        const semicircleBottom = centre + grooveR;
+        const semicircleBottom = centre + R;
         const notchBottom = semicircleBottom + lip;
 
         // Skip a notch that would overlap the previous one or run past the bottom corner,
@@ -286,8 +287,8 @@ function segHeadRight(strokeWidth: number, headHeight: number, notchCentres: num
         // 2. lip arc: peel the edge inwards (−x)
         segs.push(arc({ x: -lip, y: lip }, { x: 0, y: lip }));
         // 3. semicircle: the concave groove dipping into the brick (−x)
-        segs.push(arc({ x: -grooveR, y: grooveR }, { x: -grooveR, y: 0 }));
-        segs.push(arc({ x: grooveR, y: grooveR }, { x: 0, y: grooveR }));
+        segs.push(arc({ x: -R, y: R }, { x: -R, y: 0 }));
+        segs.push(arc({ x: R, y: R }, { x: 0, y: R }));
         // 4. lip arc: bring the edge back out
         segs.push(arc({ x: lip, y: lip }, { x: lip, y: 0 }));
 

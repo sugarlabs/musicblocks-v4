@@ -82,10 +82,10 @@ describe('path V2: generateBrickOutline (integration)', () => {
             paramArgDims: [],
         });
         expect(result.path).toBe(
-            'M 3 0 h 114 a 3 3 0 0 1 3 3 v 22 a 3 3 0 0 1 -3 3 h -114 a 3 3 0 0 1 -3 -3 v -22 a 3 3 0 0 1 3 -3 Z',
+            'M 4 0 h 112 a 4 4 0 0 1 4 4 v 24 a 4 4 0 0 1 -4 4 h -112 a 4 4 0 0 1 -4 -4 v -24 a 4 4 0 0 1 4 -4 Z',
         );
         expect(result.width).toBe(120);
-        expect(result.height).toBe(28);
+        expect(result.height).toBe(32);
     });
 
     it('simple brick path inset by s/2 with stroke', () => {
@@ -95,10 +95,10 @@ describe('path V2: generateBrickOutline (integration)', () => {
             paramArgDims: [],
         });
         expect(result.path).toBe(
-            'M 5 2 h 208 a 3 3 0 0 1 3 3 v 32 a 3 3 0 0 1 -3 3 h -208 a 3 3 0 0 1 -3 -3 v -32 a 3 3 0 0 1 3 -3 Z',
+            'M 6 2 h 216 a 4 4 0 0 1 4 4 v 34 a 4 4 0 0 1 -4 4 h -216 a 4 4 0 0 1 -4 -4 v -34 a 4 4 0 0 1 4 -4 Z',
         );
-        expect(result.width).toBe(218);
-        expect(result.height).toBe(42);
+        expect(result.width).toBe(228);
+        expect(result.height).toBe(46);
     });
 
     it('compound brick path with no stroke', () => {
@@ -109,7 +109,7 @@ describe('path V2: generateBrickOutline (integration)', () => {
             nestingDims: { w: 50, h: 50 },
         });
         expect(result.path).toBe(
-            'M 3 0 h 114 a 3 3 0 0 1 3 3 v 22 a 3 3 0 0 1 -3 3 h -96 a 0 0 0 0 0 0 0 a 3 3 0 0 1 -3 3 a 3 3 0 0 1 -3 -3 a 0 0 0 0 0 0 0 h -6 a 3 3 0 0 0 -3 3 v 44 a 3 3 0 0 0 3 3 h 6 a 0 0 0 0 0 0 0 a 3 3 0 0 0 3 3 a 3 3 0 0 0 3 -3 a 0 0 0 0 0 0 0 h 6 a 3 3 0 0 1 3 3 v 0 a 3 3 0 0 1 -3 3 h -24 a 3 3 0 0 1 -3 -3 v -78 a 3 3 0 0 1 3 -3 Z',
+            'M 4 0 h 112 a 4 4 0 0 1 4 4 v 24 a 4 4 0 0 1 -4 4 h -86 a 0 0 0 0 0 0 0 a 4 4 0 0 1 -4 4 a 4 4 0 0 1 -4 -4 a 0 0 0 0 0 0 0 h -10 a 4 4 0 0 0 -4 4 v 42 a 4 4 0 0 0 4 4 h 10 a 0 0 0 0 0 0 0 a 4 4 0 0 0 4 4 a 4 4 0 0 0 4 -4 a 0 0 0 0 0 0 0 h 14 a 4 4 0 0 1 4 4 v 4 a 4 4 0 0 1 -4 4 h -40 a 4 4 0 0 1 -4 -4 v -86 a 4 4 0 0 1 4 -4 Z',
         );
     });
 
@@ -121,7 +121,7 @@ describe('path V2: generateBrickOutline (integration)', () => {
             nestingDims: { w: 50, h: 50 },
         });
         expect(result.path).toBe(
-            'M 5 2 h 110 a 3 3 0 0 1 3 3 v 22 a 3 3 0 0 1 -3 3 h -86 a 6 6 0 0 0 -6 6 a 1 1 0 0 1 -1 1 a 1 1 0 0 1 -1 -1 a 6 6 0 0 0 -6 -6 h 0 a 7 7 0 0 0 -7 7 v 40 a 7 7 0 0 0 7 7 h 0 a 2 2 0 0 1 2 2 a 5 5 0 0 0 5 5 a 5 5 0 0 0 5 -5 a 2 2 0 0 1 2 -2 h 0 a 3 3 0 0 1 3 3 v 0 a 3 3 0 0 1 -3 3 h -24 a 3 3 0 0 1 -3 -3 v -82 a 3 3 0 0 1 3 -3 Z',
+            'M 6 2 h 108 a 4 4 0 0 1 4 4 v 24 a 4 4 0 0 1 -4 4 h -76 a 6 6 0 0 0 -6 6 a 2 2 0 0 1 -2 2 a 2 2 0 0 1 -2 -2 a 6 6 0 0 0 -6 -6 h -4 a 8 8 0 0 0 -8 8 v 38 a 8 8 0 0 0 8 8 h 4 a 2 2 0 0 1 2 2 a 6 6 0 0 0 6 6 a 6 6 0 0 0 6 -6 a 2 2 0 0 1 2 -2 h 8 a 4 4 0 0 1 4 4 v 4 a 4 4 0 0 1 -4 4 h -40 a 4 4 0 0 1 -4 -4 v -90 a 4 4 0 0 1 4 -4 Z',
         );
     });
 
@@ -191,7 +191,7 @@ describe('path V2: generateBrickOutline (integration)', () => {
         });
 
         it('the left tab centre aligns with the first right groove, both at NOTCH_OFFSET_Y', () => {
-            const s = 2;
+            const s = 4;
             const r = generateBrickOutline({
                 strokeWidth: s,
                 labelDims: { w: 60, h: 20 },
@@ -249,9 +249,9 @@ describe('path V2: generateBrickOutline (integration)', () => {
     describe('validity boundaries (documented, not yet enforced)', () => {
         it('the foot-step segment goes negative once s exceeds TAIL_STEP_W - TAIL_INDENT_W', () => {
             const footStepLen = (s: number) => TAIL_STEP_W - TAIL_INDENT_W - s;
-            expect(footStepLen(23)).toBeGreaterThan(0);
-            expect(footStepLen(24)).toBe(0);
-            expect(footStepLen(25)).toBeLessThan(0);
+            expect(footStepLen(39)).toBeGreaterThan(0);
+            expect(footStepLen(40)).toBe(0);
+            expect(footStepLen(41)).toBeLessThan(0);
         });
     });
 });

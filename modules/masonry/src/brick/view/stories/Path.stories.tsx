@@ -20,7 +20,7 @@ export const JustLabel: Story = {
   args: {
     input: {
       strokeWidth: 2,
-      labelDims: { w: 60, h: 20 },
+      labelDims: { w: 60, h: 18 },
       paramArgDims: [],
     },
   },
@@ -30,8 +30,8 @@ export const LabelArgNoParam: Story = {
   args: {
     input: {
       strokeWidth: 2,
-      labelDims: { w: 120, h: 20 },
-      paramArgDims: [{ param: null, arg: { w: 100, h: 40 } }],
+      labelDims: { w: 120, h: 18 },
+      paramArgDims: [{ param: null, arg: { w: 100, h: 32 } }],
     },
   },
 };
@@ -40,8 +40,8 @@ export const LabelArgWithParam: Story = {
   args: {
     input: {
       strokeWidth: 2,
-      labelDims: { w: 120, h: 20 },
-      paramArgDims: [{ param: { w: 80, h: 20 }, arg: { w: 100, h: 40 } }],
+      labelDims: { w: 120, h: 18 },
+      paramArgDims: [{ param: { w: 80, h: 18 }, arg: { w: 100, h: 32 } }],
     },
   },
 };
@@ -50,12 +50,12 @@ export const LabelMixedParamArgs: Story = {
   args: {
     input: {
       strokeWidth: 2,
-      labelDims: { w: 120, h: 20 },
+      labelDims: { w: 120, h: 18 },
       paramArgDims: [
-        { param: { w: 100, h: 20 }, arg: { w: 100, h: 40 } },
-        { param: { w: 60, h: 20 }, arg: null },
-        { param: { w: 80, h: 20 }, arg: { w: 120, h: 80 } },
-        { param: null, arg: { w: 80, h: 60 } },
+        { param: { w: 100, h: 18 }, arg: { w: 100, h: 32 } },
+        { param: { w: 60, h: 18 }, arg: null },
+        { param: { w: 80, h: 18 }, arg: { w: 120, h: 64 } },
+        { param: null, arg: { w: 80, h: 48 } },
       ],
     },
   },
@@ -65,10 +65,10 @@ export const LabelMixedParamArgs: Story = {
 
 const nestingBase: Pick<BrickOutlineInput, 'strokeWidth' | 'labelDims' | 'paramArgDims'> = {
   strokeWidth: 2,
-  labelDims: { w: 120, h: 20 },
+  labelDims: { w: 120, h: 18 },
   paramArgDims: [
-    { param: { w: 80, h: 20 }, arg: { w: 100, h: 40 } },
-    { param: { w: 60, h: 20 }, arg: { w: 80, h: 40 } },
+    { param: { w: 80, h: 18 }, arg: { w: 100, h: 32 } },
+    { param: { w: 60, h: 18 }, arg: { w: 80, h: 32 } },
   ],
 };
 
@@ -88,10 +88,10 @@ export const NestingWide: Story = {
 
 const notchBase: Pick<BrickOutlineInput, 'strokeWidth' | 'labelDims' | 'paramArgDims'> = {
   strokeWidth: 2,
-  labelDims: { w: 120, h: 20 },
+  labelDims: { w: 120, h: 18 },
   paramArgDims: [
-    { param: { w: 80, h: 20 }, arg: { w: 100, h: 40 } },
-    { param: { w: 60, h: 20 }, arg: { w: 80, h: 40 } },
+    { param: { w: 80, h: 18 }, arg: { w: 100, h: 32 } },
+    { param: { w: 60, h: 18 }, arg: { w: 80, h: 32 } },
   ],
 };
 
@@ -191,7 +191,7 @@ export const RightNotchPlayground: StoryObj<RightNotchPlaygroundArgs> = {
       <PathBrickView
         input={{
           strokeWidth: props.strokeWidth,
-          labelDims: { w: 120, h: 20 },
+          labelDims: { w: 120, h: 18 },
           paramArgDims,
           nestingDims: { w: 120, h: 120 },
           hasLeftNotch: props.hasLeftNotch,

@@ -4,49 +4,50 @@ import type { Bounds, BrickMinimums, BrickOutlineInput, BrickOutlineOutput } fro
 
 // ── Head padding ──
 /** Distance from the top edge of the head to its inner content */
-export const HEAD_PAD_Y1 = 4;
+export const HEAD_PAD_Y1 = 6;
 /** Distance from the bottom edge of the head to its inner content */
-export const HEAD_PAD_Y2 = 4;
+export const HEAD_PAD_Y2 = 6;
 /** Distance from the left edge of the head to its inner content */
-export const HEAD_PAD_X1 = 7;
+export const HEAD_PAD_X1 = 12;
 /** Distance from the right edge of the head to its inner content */
-export const HEAD_PAD_X2 = 7;
+export const HEAD_PAD_X2 = 12;
 
 // ── Gutters ──
 /** Horizontal gap between the main label and the parameter labels */
-export const LABEL_PARAM_GUTTER_X = 10;
+export const LABEL_PARAM_GUTTER_X = 12;
 /** Vertical gap between stacked parameter labels */
-export const PARAM_GUTTER_Y = 8;
+export const PARAM_GUTTER_Y = 12;
 
 // ── Tail ──
 /** Horizontal width of the tail's indent that forms the nesting cavity notch */
-export const TAIL_INDENT_W = 6;
+export const TAIL_INDENT_W = 8;
 /** Total width of the closing step at the bottom of the tail */
-export const TAIL_STEP_W = 30;
+export const TAIL_STEP_W = 48;
 /** Height of the closing step at the bottom of the tail */
-export const TAIL_STEP_H = 6;
+export const TAIL_STEP_H = 12;
 
 // ── Notch geometry ──
-// V-notches (top/bottom/nested horizontal edges): U-shaped groove or tab.
+// V-notches (top/bottom/nested horizontal edges): semicircular groove or tab.
 // H-notches (left/right vertical edges): semicircular groove or tab.
-// Convex (tab) uses the radius constant directly.
-// Concave (groove) = tab radius + strokeWidth, accounting for SVG stroke bleed on each side.
+// Groove radius = tab radius + strokeWidth (accounts for SVG stroke bleed).
 // Lip arc radii are derived from strokeWidth at each call site.
 
-/** Tab radius for V-notches (top/bottom/nested edges). Groove radius = V_NOTCH_RADIUS + strokeWidth. */
-export const V_NOTCH_RADIUS = 3;
+/** Tab radius for V-notches (top/bottom/nested horizontal edges). */
+export const V_NOTCH_RADIUS = 4;
 /** x-offset from the left edge (or TAIL_INDENT_W for nested notches) to a V-notch centre. */
-export const NOTCH_OFFSET_X = 12;
+export const NOTCH_OFFSET_X = 18;
 
-/** Tab radius for H-notches (left/right side edges). Groove radius = H_NOTCH_RADIUS + strokeWidth. */
-export const H_NOTCH_RADIUS = 3;
+/** Tab radius for H-notches (left/right side edges). */
+export const H_NOTCH_RADIUS = 4;
 /** y-offset from the top of an arg slot down to an H-notch centre. */
-export const NOTCH_OFFSET_Y = 9;
+export const NOTCH_OFFSET_Y = 16;
 
 // ── Corner geometry ──
-// Each edge pulled in by CORNER_RADIUS with a quarter-circle arc; cavity corners use CORNER_RADIUS + strokeWidth. Capped by the left tab: CORNER_RADIUS <= NOTCH_OFFSET_Y - H_NOTCH_RADIUS - (3*s)/2 - s/2.
+// Each edge pulled in by CORNER_RADIUS with a quarter-circle arc.
+// Cavity corners use CORNER_RADIUS + strokeWidth (accounts for SVG stroke bleed).
+
 /** Radius of the brick's rounded outer (convex) corners. */
-export const CORNER_RADIUS = 3;
+export const CORNER_RADIUS = 4;
 
 // ────────────────────────── Dimension Calculation ────────────────────────────────────────────────
 

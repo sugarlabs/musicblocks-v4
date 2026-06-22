@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import type { BrickOutlineInput } from '@masonry/@types/brick';
+import type { BrickOutlineInput } from '@/@types/brick';
 
 import { PathBrickView } from '../components/Path';
 

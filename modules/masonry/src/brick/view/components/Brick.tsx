@@ -1,4 +1,4 @@
-import type { Bounds, BrickViewProps, Size } from '@masonry/@types/brick';
+import type { Bounds, BrickViewProps, Size } from '@/@types/brick';
 
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 

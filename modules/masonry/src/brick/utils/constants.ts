@@ -1,7 +1,7 @@
 // ── Scale levels ──
 export const SCALE_LEVEL_CONFIG = {
     1: {
-        brickScale: 1,
+        brickScale: 0.75,
         minWidth: 80,
         minArgNestHeight: 24,
         minLabelParamHeight: 14,
@@ -9,7 +9,7 @@ export const SCALE_LEVEL_CONFIG = {
         lineHeight: 14,
     },
     2: {
-        brickScale: 1.5,
+        brickScale: 1,
         minWidth: 100,
         minArgNestHeight: 32,
         minLabelParamHeight: 18,
@@ -17,7 +17,7 @@ export const SCALE_LEVEL_CONFIG = {
         lineHeight: 18,
     },
     3: {
-        brickScale: 2.25,
+        brickScale: 1.25,
         minWidth: 120,
         minArgNestHeight: 40,
         minLabelParamHeight: 20,

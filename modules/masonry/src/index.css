@@ -1,1 +1,9 @@
 @import 'tailwindcss';
+
+@utility font-nunito-sans {
+  font-family: 'Nunito Sans Variable', sans-serif !important;
+  font-variation-settings:
+    'YTLC' 505,
+    'opsz' 12,
+    'wdth' 105;
+}

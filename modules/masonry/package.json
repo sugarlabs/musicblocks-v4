@@ -13,6 +13,7 @@
     "playground": "vite playground --host --port 5601"
   },
   "dependencies": {
+    "@fontsource-variable/nunito-sans": "^5.2.7",
     "@react-aria/dnd": "^3.10.1",
     "@react-stately/dnd": "^3.6.0",
     "recoil": "^0.7.7",

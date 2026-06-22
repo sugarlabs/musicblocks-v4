@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import '../src/palette/palette.css';
+import '@/index.css';
+import '@/palette/palette.css';
 import App from './App';
 import { RecoilRoot } from 'recoil';
 

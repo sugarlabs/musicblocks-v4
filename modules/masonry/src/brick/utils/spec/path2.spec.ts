@@ -1,4 +1,4 @@
-import type { BrickMinimums, BrickOutlineInput } from '@masonry/@types/brick';
+import type { BrickMinimums, BrickOutlineInput } from '@/@types/brick';
 
 import {
     HEAD_PAD_X1,

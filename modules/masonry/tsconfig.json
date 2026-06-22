@@ -2,7 +2,8 @@
     "extends": "../../tsconfig.json",
     "include": [
         "./**/*.ts",
-        "./**/*.tsx"
+        "./**/*.tsx",
+        "./.storybook/*.ts"
     ],
     "compilerOptions": {
         "paths": {
@@ -11,9 +12,6 @@
             ],
             "#/@types/*": [
                 "../../@types/*"
-            ],
-            "@masonry/*": [
-                "./src/*"
             ]
         }
     }

@@ -13,12 +13,16 @@
     "playground": "vite playground --host --port 5601"
   },
   "dependencies": {
+    "@fontsource-variable/nunito-sans": "^5.2.7",
     "@react-aria/dnd": "^3.10.1",
     "@react-stately/dnd": "^3.6.0",
     "recoil": "^0.7.7",
     "uuid": "^14.0.0"
   },
   "devDependencies": {
-    "@types/uuid": "^10.0.0"
+    "@tailwindcss/vite": "^4.3.1",
+    "@types/uuid": "^10.0.0",
+    "prettier-plugin-tailwindcss": "^0.8.0",
+    "tailwindcss": "^4.3.1"
   }
 }

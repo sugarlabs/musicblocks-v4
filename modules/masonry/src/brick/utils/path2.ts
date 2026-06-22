@@ -1,9 +1,4 @@
-import type {
-    Bounds,
-    BrickMinimums,
-    BrickOutlineInput,
-    BrickOutlineOutput,
-} from '@masonry/@types/brick';
+import type { Bounds, BrickMinimums, BrickOutlineInput, BrickOutlineOutput } from '@/@types/brick';
 
 // ────────────────────────── Constants ────────────────────────────────────────────────────────────
 

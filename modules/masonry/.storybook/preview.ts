@@ -1,4 +1,5 @@
 import '@res/scss/base.scss';
+import '@/index.css';
 
 export const parameters = {
     actions: {

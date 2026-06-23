@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react';
 
 import { BrickViewFixed } from '../components/BrickViewFixed';
 
+import mouseSvg from '../../../../assets/icons/mouse.svg';
+
 const meta = {
   title: 'BRICKS/BrickViewFixed',
   component: BrickViewFixed,
@@ -19,34 +21,16 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Triadic palette: three hues ~120° apart so the bricks read as clearly
-// distinct, while each pair (background/foreground) clears WCAG AA (≥4.5:1)
-// for legible labels. Border is a darker shade of its background.
-// Triadic palette: three hues ~120° apart so the bricks read as clearly
-// distinct, while each background/foreground pair clears WCAG AA (≥4.5:1)
-// for legible labels. Border is a darker shade of its background.
-const INDIGO = {
-  background: '#4f46e5',
+const colorsDefault = {
+  background: '#3498db',
   foreground: '#ffffff',
-  border: '#4338ca',
-};
-
-const TEAL = {
-  background: '#0d9488',
-  foreground: '#ffffff',
-  border: '#0f766e',
-};
-
-const AMBER = {
-  background: '#f59e0b',
-  foreground: '#1f2937',
-  border: '#d97706',
+  border: '#2980b9',
 };
 
 export const ValueDisplayWidget: Story = {
   args: {
     kind: 'value',
-    colorsDefault: INDIGO,
+    colorsDefault,
     widget: {
       type: 'label',
       text: 'Variable',
@@ -57,7 +41,11 @@ export const ValueDisplayWidget: Story = {
 export const ExpressionWithParams: Story = {
   args: {
     kind: 'expression',
-    colorsDefault: TEAL,
+    colorsDefault: {
+      background: '#2ecc71',
+      foreground: '#ffffff',
+      border: '#27ae60',
+    },
     widget: {
       type: 'label',
       text: 'Add',
@@ -78,10 +66,16 @@ export const ExpressionWithParams: Story = {
 export const StatementWithNesting: Story = {
   args: {
     kind: 'statement',
-    colorsDefault: AMBER,
+    colorsDefault: {
+      background: '#f1c40f',
+      foreground: '#333333',
+      border: '#f39c12',
+    },
     widget: {
       type: 'label',
       text: 'Repeat',
+      glyph: { src: mouseSvg },
+      
     },
     hasConnectionPrev: true,
     hasConnectionNext: true,
@@ -101,7 +95,11 @@ export const StatementWithNesting: Story = {
 export const StatementWithoutNesting: Story = {
   args: {
     kind: 'statement',
-    colorsDefault: INDIGO,
+    colorsDefault: {
+      background: '#9b59b6',
+      foreground: '#ffffff',
+      border: '#8e44ad',
+    },
     widget: {
       type: 'label',
       text: 'Simple Statement',

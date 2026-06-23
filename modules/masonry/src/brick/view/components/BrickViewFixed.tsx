@@ -14,7 +14,7 @@ import { createBrickOutlineGenerator } from '../../utils/path2';
 
 // Ensure the widget is exclusively of type WidgetDisplay (no input widgets and no variant)
 type WidgetDisplay =
-  | { type: 'label'; text: string; glyph?: { name: string; color: string } }
+  | { type: 'label'; text: string; glyph?: { name?: string; src?: string; color?: string } }
   | { type: 'graphic'; src: string };
 
 // Utility to explicitly strip out tooltipText from inherited types
@@ -55,11 +55,12 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
   const [paramDimsList, setParamDimsList] = useState<Size[]>(paramArgs.map(() => ({ w: 0, h: 0 })));
   const [paramBoundsList, setParamBoundsList] = useState<Bounds[]>([]);
 
-  const labelRef = useRef<HTMLParagraphElement>(null);
+  const labelRef = useRef<HTMLDivElement>(null);
   const paramRefs = useRef<(HTMLParagraphElement | null)[]>([]);
 
   const isLabelWidget = props.widget.type === 'label';
   const labelText = props.widget.type === 'label' ? props.widget.text : '';
+  const labelGlyph = props.widget.type === 'label' ? props.widget.glyph : undefined;
 
   const generateOutline = useMemo(
     () =>
@@ -226,19 +227,41 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
               alignItems: 'center',
             }}
           >
-            <p
+            <div
               ref={labelRef}
               style={{
-                maxWidth: 'unset',
-                margin: 0,
-                fontSize,
-                lineHeight: `${lineHeight}px`,
-                whiteSpace: 'nowrap',
-                color: props.colorsDefault.foreground,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                width: 'max-content',
               }}
             >
-              {labelText}
-            </p>
+              <p
+                style={{
+                  maxWidth: 'unset',
+                  margin: 0,
+                  fontSize,
+                  lineHeight: `${lineHeight}px`,
+                  whiteSpace: 'nowrap',
+                  color: props.colorsDefault.foreground,
+                }}
+              >
+                {labelText}
+              </p>
+              {labelGlyph?.src && (
+                <img
+                  src={labelGlyph.src}
+                  alt="glyph"
+                  style={{ width: fontSize, height: fontSize, objectFit: 'contain' }}
+                />
+              )}
+              {labelGlyph?.name && !labelGlyph.src && (
+                <span
+                  className={`glyph-${labelGlyph.name}`}
+                  style={{ color: labelGlyph.color, fontSize }}
+                />
+              )}
+            </div>
           </div>
         </foreignObject>
       )}

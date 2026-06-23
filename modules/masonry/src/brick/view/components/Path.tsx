@@ -81,7 +81,7 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
               height={svgToPx(b.h)}
               fill="#ffda79"
             />
-          ) : null
+          ) : null,
         )}
 
         {/* Per-argument slot areas */}
@@ -95,7 +95,7 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
               height={svgToPx(b.h)}
               fill={i % 2 === 0 ? '#26de819f' : '#20bf6b9f'}
             />
-          ) : null
+          ) : null,
         )}
 
         {/* Nesting (clamp) area — present only on bricks that wrap inner blocks */}

@@ -178,12 +178,14 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
     if (bounds.params) {
       setParamBoundsList(
         bounds.params.map((b) =>
-          b ? {
-            x: svgToPx(b.x),
-            y: svgToPx(b.y),
-            w: svgToPx(b.w),
-            h: svgToPx(b.h),
-          } : null
+          b
+            ? {
+                x: svgToPx(b.x),
+                y: svgToPx(b.y),
+                w: svgToPx(b.w),
+                h: svgToPx(b.h),
+              }
+            : null,
         ),
       );
     }
@@ -199,6 +201,7 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
     pxToSvg,
     paramArgs,
     paramArgsString,
+    minArgNestHeight,
   ]);
 
   const maxArgW = Math.max(0, ...paramArgs.map((p) => p.argDims?.w ?? 0));

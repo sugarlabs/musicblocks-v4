@@ -63,6 +63,30 @@ export const ExpressionWithParams: Story = {
   },
 };
 
+export const StatementWithoutNesting: Story = {
+  args: {
+    kind: 'statement',
+    colorsDefault: {
+      background: '#9b59b6',
+      foreground: '#ffffff',
+      border: '#8e44ad',
+    },
+    widget: {
+      type: 'label',
+      text: 'Simple Statement',
+    },
+    hasConnectionPrev: true,
+    hasConnectionNext: true,
+    paramArgs: [
+      {
+        param: 'delay',
+        argDims: { w: 40, h: 20 },
+      },
+    ],
+    // Omit nesting entirely
+  },
+};
+
 export const StatementWithNesting: Story = {
   args: {
     kind: 'statement',
@@ -92,26 +116,4 @@ export const StatementWithNesting: Story = {
   },
 };
 
-export const StatementWithoutNesting: Story = {
-  args: {
-    kind: 'statement',
-    colorsDefault: {
-      background: '#9b59b6',
-      foreground: '#ffffff',
-      border: '#8e44ad',
-    },
-    widget: {
-      type: 'label',
-      text: 'Simple Statement',
-    },
-    hasConnectionPrev: true,
-    hasConnectionNext: true,
-    paramArgs: [
-      {
-        param: 'delay',
-        argDims: { w: 40, h: 20 },
-      },
-    ],
-    // Omit nesting entirely
-  },
-};
+

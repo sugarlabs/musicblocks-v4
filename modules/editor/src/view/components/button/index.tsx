@@ -9,6 +9,8 @@ import './index.scss';
 let _container: HTMLElement;
 let _svgCode: string;
 let _svgClose: string;
+let editori18: string;
+let closei18: string;
 
 // -- component definition -------------------------------------------------------------------------
 
@@ -23,6 +25,8 @@ export function setup(container: HTMLElement): void {
   _svgCode = injected.assets['image.icon.code'].data;
   _svgClose = injected.assets['image.icon.close'].data;
 
+  editori18 = injected.i18n['editor.editor'];
+  closei18 = injected.i18n['editor.close'];
   setButtonImg('code');
 }
 
@@ -31,5 +35,20 @@ export function setup(container: HTMLElement): void {
  * @param icon icon name
  */
 export function setButtonImg(icon: 'code' | 'cross'): void {
-  _container.innerHTML = icon === 'code' ? _svgCode : _svgClose;
+  if (icon === 'code') {
+    _container.innerHTML = `
+    <p class="menu-btn-label">
+      <span>${editori18}</span>
+    </p>
+        <div className="menu-btn-img">${_svgCode}</div>
+    `;
+  } else {
+    _container.innerHTML = `
+    <p class="menu-btn-label">
+      <span>${closei18}</span>
+    </p>
+        <div className="menu-btn-img">${_svgClose}</div>
+    `;
+    // _container.innerHTML = _svgClose;
+  }
 }

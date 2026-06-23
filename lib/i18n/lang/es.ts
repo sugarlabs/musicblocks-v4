@@ -7,6 +7,8 @@ const strings: TI18nFile = {
     'menu.reset': 'reiniciar',
     'menu.run': 'tocar',
     'menu.stop': 'detener',
+    'editor.editor': 'editor',
+    'editor.close': 'cerrar',
 };
 
 export default strings;

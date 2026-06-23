@@ -111,7 +111,7 @@ Windows) this repository using
     Output should look like
 
     ```bash
-    v16.14.0
+    v20.x.x
     8.3.1
     Version 4.6.2
     v10.6.0

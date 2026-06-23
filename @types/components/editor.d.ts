@@ -2,7 +2,7 @@ import type { TAsset } from '../assets';
 
 export type TInjectedEditor = {
     flags: undefined;
-    i18n: Record<'editor.build' | 'editor.help', string>;
+    i18n: Record<'editor.build' | 'editor.help' | 'editor.close' | 'editor.editor', string>;
     assets: Record<
         | 'image.icon.build'
         | 'image.icon.help'

@@ -13,8 +13,8 @@ RUN npm install -g http-server
 # Install TypeScript compiler
 RUN npm install -g typescript
 
-# Install ts-node (to run/debug .ts files without manual transpiling)
-RUN npm install -g ts-node
+# Install tsx (to run/debug .ts files without manual transpiling)
+RUN npm install -g tsx
 
 # Set /app as working directory (in development mode for mounting source code)
 WORKDIR /app
@@ -28,4 +28,4 @@ EXPOSE 5173 4173
 # Add label for GitHub container registry
 LABEL org.opencontainers.image.description='An initial development image based on the official \
     Node.js (on Alpine LTS) image, and further configured with a HTTP server, TypeScript compiler, \
-    and ts-node. This is merely to provide an execution sandbox and does not contain source files.'
+    and tsx. This is merely to provide an execution sandbox and does not contain source files.'

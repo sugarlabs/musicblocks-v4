@@ -97,7 +97,7 @@
     "textlint-rule-no-dead-link": "^6.2.3",
     "textlint-rule-no-empty-section": "^1.1.0",
     "textlint-rule-terminology": "^5.2.16",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.20.3",
     "typescript": "^6.0.3",
     "vite": "^6.3.5",
     "vite-plugin-compression": "^0.5.1",

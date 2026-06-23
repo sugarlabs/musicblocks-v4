@@ -148,7 +148,11 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
         param: pa.param
           ? { w: pxToSvg(paramDimsList[i]?.w ?? 0), h: pxToSvg(paramDimsList[i]?.h ?? 0) }
           : null,
-        arg: pa.argDims ? { w: pxToSvg(pa.argDims.w), h: pxToSvg(pa.argDims.h) } : null,
+        arg: pa.argDims
+          ? { w: pxToSvg(pa.argDims.w), h: pxToSvg(pa.argDims.h) }
+          : pa.param
+            ? { w: 0, h: pxToSvg(minArgNestHeight) }
+            : null,
       })),
       nestingDims:
         nestingDims !== undefined

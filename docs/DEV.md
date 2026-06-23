@@ -4,8 +4,7 @@
 
 ### Without Docker
 
-This is a _**TypeScript**_ project that uses _**React**_. You'll just need
-_[**Node.js**](https://nodejs.org/en) v16_ and _**npm**_ installed on your development machine.
+This is a _**TypeScript**_ project that uses _**React**_. You'll need Node.js v24+ and npm v11+ installed on your development machine.
 Although, this is sufficient to run, build, and test the project as a whole, you might need some
 extra tools for other development tasks.
 
@@ -24,10 +23,12 @@ npm i -g ts-node
 
 _**Note:**_ Users on _Linux_ and _MacOS_ are required to add a `sudo` before these commands.
 
-Check installation using
-
 ```bash
-node -v && npm -v && tsc -v && ts-node -v && http-server -v
+v16.14.0
+8.3.1
+Version 4.6.2
+v10.6.0
+v14.1.0
 ```
 
 Output should look like

@@ -1,9 +1,9 @@
-import type { BrickOutlineInput } from '@masonry/@types/brick';
+import type { BrickOutlineInput } from '@/@types/brick';
 
 import { SCALE_LEVEL_CONFIG } from '../../utils/constants';
 import { createBrickOutlineGenerator } from '../../utils/path2';
 
-const SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 3;
+const SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
 const SCALE = SCALE_LEVEL_CONFIG[SCALE_LEVEL].brickScale;
 
 const pxToSvg = (px: number) => px / SCALE;
@@ -46,7 +46,7 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
       xmlns="http://www.w3.org/2000/svg"
       width={svgToPx(width) + maxArgW}
       height={svgToPx(height)}
-      style={{ overflow: 'visible' }}
+      className="overflow-visible"
     >
       {/* Debug underlay: brick bounding box */}
       <rect x={0} y={0} width={svgToPx(width)} height={svgToPx(height)} fill="#efe4e4" />

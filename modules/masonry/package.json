@@ -13,12 +13,24 @@
     "playground": "vite playground --host --port 5601"
   },
   "dependencies": {
+    "@base-ui/react": "^1.6.0",
+    "@fontsource-variable/geist": "^5.2.9",
+    "@fontsource-variable/nunito-sans": "^5.2.7",
     "@react-aria/dnd": "^3.10.1",
     "@react-stately/dnd": "^3.6.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.21.0",
     "recoil": "^0.7.7",
+    "shadcn": "^4.11.0",
+    "tailwind-merge": "^3.6.0",
+    "tw-animate-css": "^1.4.0",
     "uuid": "^14.0.0"
   },
   "devDependencies": {
-    "@types/uuid": "^10.0.0"
+    "@tailwindcss/vite": "^4.3.1",
+    "@types/uuid": "^10.0.0",
+    "prettier-plugin-tailwindcss": "^0.8.0",
+    "tailwindcss": "^4.3.1"
   }
 }

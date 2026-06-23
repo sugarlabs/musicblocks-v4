@@ -7,7 +7,7 @@ import type {
   StatementBrickViewProps,
   ValueBrickViewProps,
   ParamArgPair,
-} from '@masonry/@types/brick';
+} from '@/@types/brick';
 
 import { SCALE_LEVEL_CONFIG } from '../../utils/constants';
 import { createBrickOutlineGenerator } from '../../utils/path2';

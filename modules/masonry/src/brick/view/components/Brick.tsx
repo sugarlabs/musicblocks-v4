@@ -1,4 +1,4 @@
-import type { Bounds, BrickViewProps, Size } from '@masonry/@types/brick';
+import type { Bounds, Size, StatementBrickViewProps } from '@/@types/brick';
 
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
@@ -8,7 +8,7 @@ import { createBrickOutlineGenerator } from '../../utils/path2';
 const STROKE_WIDTH = 2;
 const DEFAULT_SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
 
-export function BrickView(props: BrickViewProps) {
+export function BrickView(props: StatementBrickViewProps) {
   const { brickScale, minWidth, minArgNestHeight, minLabelParamHeight, fontSize, lineHeight } =
     SCALE_LEVEL_CONFIG[props.scaleLevel ?? DEFAULT_SCALE_LEVEL];
 
@@ -56,7 +56,9 @@ export function BrickView(props: BrickViewProps) {
       strokeWidth: pxToSvg(STROKE_WIDTH),
       labelDims: { w: pxToSvg(labelDims.w), h: pxToSvg(labelDims.h) },
       paramArgDims: [],
-      nestingDims: null,
+      nestingDims: props.nesting ? props.nesting?.dims : undefined,
+      hasTopNotch: props.hasConnectionPrev,
+      hasBottomNotch: props.hasConnectionNext,
     });
 
     setPath(path);
@@ -67,10 +69,15 @@ export function BrickView(props: BrickViewProps) {
       w: svgToPx(bounds.label.w),
       h: svgToPx(bounds.label.h),
     });
-  }, [labelDims, generateOutline, svgToPx, pxToSvg]);
+  }, [labelDims, generateOutline, svgToPx, pxToSvg, props]);
 
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={svgToPx(dims.w)} height={svgToPx(dims.h)}>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={svgToPx(dims.w)}
+      height={svgToPx(dims.h)}
+      className="overflow-visible"
+    >
       <path
         d={path}
         transform={`scale(${brickScale})`}
@@ -86,21 +93,18 @@ export function BrickView(props: BrickViewProps) {
         height={labelBounds.h || 9999}
       >
         <div
+          className="flex items-center"
           style={{
             width: labelBounds.w,
             height: labelBounds.h,
-            display: 'flex',
-            alignItems: 'center',
           }}
         >
           <p
             ref={labelRef}
+            className="m-0 max-w-[unset] font-sans font-semibold whitespace-nowrap"
             style={{
-              maxWidth: 'unset',
-              margin: 0,
               fontSize,
               lineHeight: `${lineHeight}px`,
-              whiteSpace: 'nowrap',
             }}
           >
             {labelText}

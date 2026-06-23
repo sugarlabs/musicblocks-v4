@@ -2,6 +2,7 @@ import type { UserConfigExport } from 'vite';
 
 import path from 'path';
 import { mergeConfig } from 'vite';
+import tailwindcss from '@tailwindcss/vite';
 
 // -------------------------------------------------------------------------------------------------
 
@@ -25,6 +26,7 @@ export default {
     },
     async viteFinal(config: UserConfigExport) {
         return mergeConfig(config, {
+            plugins: [tailwindcss()],
             resolve: {
                 alias: {
                     '@': resolve('src'),

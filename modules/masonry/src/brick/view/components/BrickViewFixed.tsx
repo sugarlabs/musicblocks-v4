@@ -53,7 +53,7 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
   // For parameter labels
   const paramArgs = 'paramArgs' in props ? (props.paramArgs ?? EMPTY_PARAM_ARGS) : EMPTY_PARAM_ARGS;
   const [paramDimsList, setParamDimsList] = useState<Size[]>(paramArgs.map(() => ({ w: 0, h: 0 })));
-  const [paramBoundsList, setParamBoundsList] = useState<Bounds[]>([]);
+  const [paramBoundsList, setParamBoundsList] = useState<(Bounds | null)[]>([]);
 
   const labelRef = useRef<HTMLDivElement>(null);
   const paramRefs = useRef<(HTMLParagraphElement | null)[]>([]);
@@ -177,12 +177,14 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
 
     if (bounds.params) {
       setParamBoundsList(
-        bounds.params.map((b) => ({
-          x: svgToPx(b.x),
-          y: svgToPx(b.y),
-          w: svgToPx(b.w),
-          h: svgToPx(b.h),
-        })),
+        bounds.params.map((b) =>
+          b ? {
+            x: svgToPx(b.x),
+            y: svgToPx(b.y),
+            w: svgToPx(b.w),
+            h: svgToPx(b.h),
+          } : null
+        ),
       );
     }
   }, [
@@ -285,7 +287,7 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
       {/* Parameters */}
       {paramBoundsList.map((bounds, i) => {
         const paramText = paramArgs[i]?.param;
-        if (!paramText) return null;
+        if (!paramText || !bounds) return null;
 
         return (
           <foreignObject

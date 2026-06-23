@@ -548,8 +548,8 @@ function generateBounds(
         };
     }
 
-    const params: Bounds[] = [];
-    const args: Bounds[] = [];
+    const params: (Bounds | null)[] = [];
+    const args: (Bounds | null)[] = [];
     let y = 0;
 
     for (const { param, arg } of input.paramArgDims) {
@@ -557,6 +557,8 @@ function generateBounds(
 
         if (arg !== null) {
             args.push({ x: width, y, w: arg.w, h: rowH });
+        } else {
+            args.push(null);
         }
 
         if (param !== null) {
@@ -570,6 +572,8 @@ function generateBounds(
                 w: param.w,
                 h: paramH,
             });
+        } else {
+            params.push(null);
         }
 
         y += rowH;
@@ -577,8 +581,8 @@ function generateBounds(
 
     return {
         label,
-        params: params.length > 0 ? params : undefined,
-        args: args.length > 0 ? args : undefined,
+        params: params.some((p) => p !== null) ? params : undefined,
+        args: args.some((a) => a !== null) ? args : undefined,
         nesting,
     };
 }

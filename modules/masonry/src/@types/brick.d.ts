@@ -190,10 +190,10 @@ export interface BrickOutlineOutput {
     bounds: {
         /** Bounds of the label area */
         label: Bounds;
-        /** Bounds of each parameter label area; absent when no params are provided */
-        params?: Bounds[];
-        /** Bounds of each argument area; absent when no args are provided */
-        args?: Bounds[];
+        /** Bounds of each parameter label area; array length matches paramArgDims, with null for absent labels. Absent entirely if no params exist. */
+        params?: (Bounds | null)[];
+        /** Bounds of each argument area; array length matches paramArgDims, with null for absent args. Absent entirely if no args exist. */
+        args?: (Bounds | null)[];
         /** Bounds of the nesting cavity; absent when there is no nesting */
         nesting?: Bounds;
     };

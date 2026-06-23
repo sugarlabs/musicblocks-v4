@@ -24,8 +24,8 @@
     "@sugarlabs/mb4-transport": "*",
     "@sugarlabs/mb4-view": "*",
     "@sugarlabs/musicblocks-v4-lib": "^0.2.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "web-vitals": "^5.3.0"
   },
   "devDependencies": {

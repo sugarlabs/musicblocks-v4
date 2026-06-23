@@ -3,7 +3,7 @@ import type { Bounds, Size, StatementBrickViewProps } from '@/@types/brick';
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { SCALE_LEVEL_CONFIG } from '../../utils/constants';
-import { createBrickOutlineGenerator } from '../../utils/path2';
+import { BrickOutlineGenerator } from '../../utils/path2';
 
 const STROKE_WIDTH = 2;
 const DEFAULT_SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
@@ -25,9 +25,9 @@ export function BrickView(props: StatementBrickViewProps) {
 
   const labelText = props.widget.type === 'label' ? props.widget.text : '';
 
-  const generateOutline = useMemo(
+  const outlineGenerator = useMemo(
     () =>
-      createBrickOutlineGenerator({
+      new BrickOutlineGenerator({
         minWidth: pxToSvg(minWidth),
         minWidgetHeight: pxToSvg(minWidgetParamHeight),
         minParamHeight: pxToSvg(minWidgetParamHeight),
@@ -52,7 +52,7 @@ export function BrickView(props: StatementBrickViewProps) {
   // Recompute the brick outline whenever the label dimensions change,
   // i.e. after the measurement effect above has committed its state update.
   useLayoutEffect(() => {
-    const { width, height, path, bounds } = generateOutline({
+    const { width, height, path, bounds } = outlineGenerator.generate({
       strokeWidth: pxToSvg(STROKE_WIDTH),
       widgetDims: { w: pxToSvg(labelDims.w), h: pxToSvg(labelDims.h) },
       paramArgDims: [],
@@ -69,7 +69,7 @@ export function BrickView(props: StatementBrickViewProps) {
       w: svgToPx(bounds.widget.w),
       h: svgToPx(bounds.widget.h),
     });
-  }, [labelDims, generateOutline, svgToPx, pxToSvg, props]);
+  }, [labelDims, outlineGenerator, svgToPx, pxToSvg, props]);
 
   return (
     <svg

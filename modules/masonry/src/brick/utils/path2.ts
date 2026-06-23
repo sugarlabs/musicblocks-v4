@@ -45,15 +45,22 @@ export const TAIL_STEP_H = 12;
 // Groove radius = tab radius + strokeWidth (accounts for SVG stroke bleed).
 // Lip arc radii are derived from strokeWidth at each call site.
 
-/** Tab radius for V-notches (top/bottom/nested horizontal edges). */
-export const V_NOTCH_RADIUS = 4;
+/** Tab mouth radius for V-notches (top/bottom/nested horizontal edges). */
+export const V_NOTCH_RADIUS = 2;
+/** End-to-end centre-line width for V-notches. */
+export const V_NOTCH_WIDTH = 16;
 /** x-offset from the left edge (or TAIL_INDENT_W for nested notches) to a V-notch centre. */
-export const NOTCH_OFFSET_X = 18;
+export const V_NOTCH_OFFSET_X = 18;
 
-/** Tab radius for H-notches (left/right side edges). */
-export const H_NOTCH_RADIUS = 4;
+/** Tab mouth radius for H-notches (left/right side edges). */
+export const H_NOTCH_RADIUS = 2;
+/** End-to-end centre-line width for H-notches. */
+export const H_NOTCH_WIDTH = 16;
 /** y-offset from the top of an arg slot down to an H-notch centre. */
-export const NOTCH_OFFSET_Y = 16;
+export const H_NOTCH_OFFSET_Y = 16;
+
+export const NOTCH_OFFSET_X = V_NOTCH_OFFSET_X;
+export const NOTCH_OFFSET_Y = H_NOTCH_OFFSET_Y;
 
 // ── Corner geometry ──
 // Each edge pulled in by CORNER_RADIUS with a quarter-circle arc.
@@ -188,11 +195,13 @@ function buildVGroove(strokeWidth: number): string[] {
     const grooveR = V_NOTCH_RADIUS + strokeWidth / 2 + strokeWidth / 2;
     const lip = strokeWidth / 2;
     const R = grooveR - lip;
+    const middle = V_NOTCH_WIDTH - 2 * (lip + R);
     return [
         // Quarter-arc: horizontal (left) → vertical (down). CW
         arc({ x: lip, y: lip }, { x: lip, y: 0 }),
-        // Semicircle: vertical (down) → vertical (up). CCW (U-shape)
+        // Inner curve and straight span: vertical (down) → vertical (up). CCW (U-shape)
         arc({ x: R, y: R }, { x: 0, y: R }),
+        `h ${middle}`,
         arc({ x: R, y: -R }, { x: R, y: 0 }),
         // Quarter-arc: vertical (up) → horizontal (right). CW
         arc({ x: lip, y: -lip }, { x: 0, y: -lip }),
@@ -203,11 +212,13 @@ function buildVGroove(strokeWidth: number): string[] {
 function buildVTab(strokeWidth: number): string[] {
     const lip = (3 * strokeWidth) / 2;
     const R = V_NOTCH_RADIUS - strokeWidth / 2;
+    const middle = V_NOTCH_WIDTH - 2 * (lip + R);
     return [
         // Quarter-arc: horizontal (right) → vertical (down). CCW
         arc({ x: -lip, y: lip }, { x: -lip, y: 0 }),
-        // Semicircle: vertical (down) → vertical (up). CW (U-shape)
+        // Inner curve and straight span: vertical (down) → vertical (up). CW (U-shape)
         arc({ x: -R, y: R }, { x: 0, y: R }),
+        `h ${-middle}`,
         arc({ x: -R, y: -R }, { x: -R, y: 0 }),
         // Quarter-arc: vertical (up) → horizontal (left). CCW
         arc({ x: -lip, y: -lip }, { x: 0, y: -lip }),
@@ -238,10 +249,9 @@ function segTopEdge(strokeWidth: number, width: number, hasTopNotch: boolean): s
 
     // flatBefore: horizontal run from the starting M position to the notch left edge
     // flatAfter:  horizontal run from the notch right edge to the rounded top-right corner
-    // Nominal groove radius = tab radius + the tab's stroke bleed (s/2) + the groove's own stroke bleed (s/2).
-    const grooveR = V_NOTCH_RADIUS + strokeWidth / 2 + strokeWidth / 2;
-    const flatBefore = NOTCH_OFFSET_X - grooveR - strokeWidth / 2 - CORNER_RADIUS;
-    const flatAfter = width - NOTCH_OFFSET_X - grooveR - strokeWidth / 2 - CORNER_RADIUS;
+    const flatBefore = V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 - CORNER_RADIUS;
+    const flatAfter =
+        width - V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 - CORNER_RADIUS;
 
     return [
         start,
@@ -278,6 +288,7 @@ function segHeadRight(strokeWidth: number, headHeight: number, notchCentres: num
     const grooveR = H_NOTCH_RADIUS + strokeWidth / 2 + strokeWidth / 2;
     const lip = strokeWidth / 2; // small flare arc radius, proportional to the stroke
     const R = grooveR - lip; // drawn semicircle radius after the lip flare
+    const middle = H_NOTCH_WIDTH - 2 * (lip + R);
 
     const segs: string[] = [];
     let pen = edgeStart; // current y of the pen, travelling downwards
@@ -287,10 +298,10 @@ function segHeadRight(strokeWidth: number, headHeight: number, notchCentres: num
         //   centre        — the notch centre
         //   semicircleTop — one radius above the centre
         //   notchTop      — one lip arc above the semicircle (where the groove begins)
-        const semicircleTop = centre - R;
+        const semicircleTop = centre - middle / 2 - R;
         const notchTop = semicircleTop - lip;
         // ...and symmetrically downwards (where the groove ends):
-        const semicircleBottom = centre + R;
+        const semicircleBottom = centre + middle / 2 + R;
         const notchBottom = semicircleBottom + lip;
 
         // Skip a notch that would overlap the previous one or run past the bottom corner,
@@ -306,6 +317,7 @@ function segHeadRight(strokeWidth: number, headHeight: number, notchCentres: num
         segs.push(arc({ x: -lip, y: lip }, { x: 0, y: lip }));
         // 3. semicircle: the concave groove dipping into the brick (−x)
         segs.push(arc({ x: -R, y: R }, { x: -R, y: 0 }));
+        segs.push(`v ${middle}`);
         segs.push(arc({ x: R, y: R }, { x: 0, y: R }));
         // 4. lip arc: bring the edge back out
         segs.push(arc({ x: lip, y: lip }, { x: lip, y: 0 }));
@@ -344,8 +356,8 @@ function segHeadBottom(strokeWidth: number, width: number, hasBottomNotch: boole
     }
 
     const flatBefore =
-        width - NOTCH_OFFSET_X - V_NOTCH_RADIUS - (3 * strokeWidth) / 2 - CORNER_RADIUS;
-    const flatAfter = NOTCH_OFFSET_X - V_NOTCH_RADIUS - (3 * strokeWidth) / 2 - CORNER_RADIUS;
+        width - V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 - CORNER_RADIUS;
+    const flatAfter = V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 - CORNER_RADIUS;
 
     return [
         `h ${-flatBefore}`, // flat run to tab right edge
@@ -371,6 +383,7 @@ function segLeftEdge(strokeWidth: number, height: number, hasLeftNotch: boolean)
 
     const tabR = H_NOTCH_RADIUS - strokeWidth / 2;
     const lip = (3 * strokeWidth) / 2;
+    const middle = H_NOTCH_WIDTH - 2 * (lip + tabR);
 
     // Convex top-left corner: end CR right + CR up, curving around a centre CR above.
     const corner = arc({ x: CORNER_RADIUS, y: -CORNER_RADIUS }, { x: 0, y: -CORNER_RADIUS });
@@ -379,8 +392,12 @@ function segLeftEdge(strokeWidth: number, height: number, hasLeftNotch: boolean)
         return [`v ${-(edgeStart - edgeEnd)}`, corner];
     }
 
-    const notchBottom = NOTCH_OFFSET_Y + tabR + lip;
-    const notchTop = NOTCH_OFFSET_Y - tabR - lip;
+    if (strokeWidth >= 2 * H_NOTCH_RADIUS) {
+        return [`v ${-(edgeStart - edgeEnd)}`, corner];
+    }
+
+    const notchBottom = H_NOTCH_OFFSET_Y + middle / 2 + tabR + lip;
+    const notchTop = H_NOTCH_OFFSET_Y - middle / 2 - tabR - lip;
 
     // Fall back to a straight edge if the tab wouldn't fit between the two corners.
     if (notchBottom > edgeStart || notchTop < edgeEnd) {
@@ -391,6 +408,7 @@ function segLeftEdge(strokeWidth: number, height: number, hasLeftNotch: boolean)
         `v ${-(edgeStart - notchBottom)}`, // 1. flat run up to where the tab begins
         arc({ x: -lip, y: -lip }, { x: 0, y: -lip }), // 2. lip arc: peel the edge outwards (−x)
         arc({ x: -tabR, y: -tabR }, { x: -tabR, y: 0 }), // 3. semicircle: the convex tab bulging out (−x)
+        `v ${-middle}`,
         arc({ x: tabR, y: -tabR }, { x: 0, y: -tabR }),
         arc({ x: lip, y: -lip }, { x: lip, y: 0 }), // 4. lip arc: bring the edge back in
         `v ${-(notchTop - edgeEnd)}`, // 5. remaining flat run up to the top-left corner
@@ -427,11 +445,11 @@ function segTailCavityRoof(strokeWidth: number, width: number): string[] {
     const flatBefore =
         width -
         TAIL_INDENT_W -
-        NOTCH_OFFSET_X -
-        V_NOTCH_RADIUS -
-        (5 * strokeWidth) / 2 -
+        V_NOTCH_OFFSET_X -
+        V_NOTCH_WIDTH / 2 -
+        strokeWidth / 2 -
         CORNER_RADIUS;
-    const flatAfter = NOTCH_OFFSET_X - V_NOTCH_RADIUS - strokeWidth / 2 - cavityCornerRadius;
+    const flatAfter = V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 - cavityCornerRadius;
 
     return [
         `h ${-flatBefore}`, // flat run to tab right edge
@@ -470,9 +488,8 @@ function segTailFoot(strokeWidth: number): string[] {
 
     const span = TAIL_STEP_W - TAIL_INDENT_W;
 
-    const flatBefore = NOTCH_OFFSET_X - V_NOTCH_RADIUS - strokeWidth / 2 - cavityCornerRadius;
-    const flatAfter =
-        span - NOTCH_OFFSET_X - V_NOTCH_RADIUS - (3 * strokeWidth) / 2 - CORNER_RADIUS;
+    const flatBefore = V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 - cavityCornerRadius;
+    const flatAfter = span - V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 - CORNER_RADIUS;
 
     // Convex foot → step-right corner: end CR right + CR down, curving around a centre CR to the right.
     const corner = arc({ x: CORNER_RADIUS, y: CORNER_RADIUS }, { x: CORNER_RADIUS, y: 0 });
@@ -514,8 +531,8 @@ function segTailStepBottom(strokeWidth: number, hasBottomNotch: boolean): string
     }
 
     const flatBefore =
-        TAIL_STEP_W - NOTCH_OFFSET_X - V_NOTCH_RADIUS - strokeWidth / 2 - CORNER_RADIUS;
-    const flatAfter = NOTCH_OFFSET_X - V_NOTCH_RADIUS - (3 * strokeWidth) / 2 - CORNER_RADIUS;
+        TAIL_STEP_W - V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 - CORNER_RADIUS;
+    const flatAfter = V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 - CORNER_RADIUS;
 
     return [
         `h ${-flatBefore}`, // flat run to tab right edge

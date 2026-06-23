@@ -132,7 +132,7 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
       if (nesting) {
         // If the nesting cavity is folded, we pass undefined to path2.ts
         // so it omits the cavity entirely and draws a flush, solid block.
-        nestingDims = nesting.isFolded ? undefined : nesting.dims;
+        nestingDims = nesting.isFolded ? undefined : (nesting.dims ?? null);
       }
     }
 
@@ -150,11 +150,12 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
           : null,
         arg: pa.argDims ? { w: pxToSvg(pa.argDims.w), h: pxToSvg(pa.argDims.h) } : null,
       })),
-      nestingDims: nestingDims
-        ? nestingDims === null
-          ? null
-          : { w: pxToSvg(nestingDims.w), h: pxToSvg(nestingDims.h) }
-        : undefined,
+      nestingDims:
+        nestingDims !== undefined
+          ? nestingDims === null
+            ? null
+            : { w: pxToSvg(nestingDims.w), h: pxToSvg(nestingDims.h) }
+          : undefined,
       hasTopNotch,
       hasBottomNotch,
       hasLeftNotch,

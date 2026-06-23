@@ -58,17 +58,18 @@ describe('path V2: bounds', () => {
         expect(bounds.nesting).toBeTruthy();
     });
 
-    it('anchors the arg box to the right edge and centres the param box vertically in its row', () => {
+    it('anchors the arg box to the right edge and centres the param box on its arg notch', () => {
         const { bounds, width } = generateBrickOutline({
             strokeWidth: 0,
             labelDims: { w: 60, h: 20 },
             paramArgDims: [{ param: { w: 40, h: 20 }, arg: { w: 50, h: 60 } }],
         });
         // Arg sits flush against the outer right edge.
-        expect(bounds.args?.[0].x).toBe(width);
-        // Param is right-aligned inside the head and vertically centred in the 60-tall row.
-        expect(bounds.params?.[0].x).toBe(width - HEAD_PAD_X2 - 40);
-        expect(bounds.params?.[0].y).toBe((60 - 20) / 2);
+        expect(bounds.args?.[0]?.x).toBe(width);
+        // Param is right-aligned inside the head and vertically centred on the arg
+        // notch (NOTCH_OFFSET_Y below the row top), not on the row itself.
+        expect(bounds.params?.[0]?.x).toBe(width - HEAD_PAD_X2 - 40);
+        expect(bounds.params?.[0]?.y).toBe(NOTCH_OFFSET_Y - 20 / 2);
     });
 });
 

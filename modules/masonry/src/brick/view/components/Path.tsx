@@ -24,7 +24,11 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
     labelDims: { w: pxToSvg(input.labelDims.w), h: pxToSvg(input.labelDims.h) },
     paramArgDims: input.paramArgDims.map((p) => ({
       param: p.param ? { w: pxToSvg(p.param.w), h: pxToSvg(p.param.h) } : null,
-      arg: p.arg ? { w: pxToSvg(p.arg.w), h: pxToSvg(p.arg.h) } : null,
+      arg: p.arg
+        ? { w: pxToSvg(p.arg.w), h: pxToSvg(p.arg.h) }
+        : p.param
+          ? { w: 0, h: pxToSvg(SCALE_LEVEL_CONFIG[SCALE_LEVEL].minArgNestHeight) }
+          : null,
     })),
     nestingDims:
       input.nestingDims !== undefined
@@ -67,28 +71,32 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
         />
 
         {/* Per-parameter label areas (optional) — one rect per param name slot */}
-        {bounds.params?.map((b, i) => (
-          <rect
-            key={i}
-            x={svgToPx(b.x)}
-            y={svgToPx(b.y)}
-            width={svgToPx(b.w)}
-            height={svgToPx(b.h)}
-            fill="#ffda79"
-          />
-        ))}
+        {bounds.params?.map((b, i) =>
+          b ? (
+            <rect
+              key={i}
+              x={svgToPx(b.x)}
+              y={svgToPx(b.y)}
+              width={svgToPx(b.w)}
+              height={svgToPx(b.h)}
+              fill="#ffda79"
+            />
+          ) : null,
+        )}
 
         {/* Per-argument slot areas */}
-        {bounds.args?.map((b, i) => (
-          <rect
-            key={i}
-            x={svgToPx(b.x)}
-            y={svgToPx(b.y)}
-            width={svgToPx(b.w)}
-            height={svgToPx(b.h)}
-            fill={i % 2 === 0 ? '#26de819f' : '#20bf6b9f'}
-          />
-        ))}
+        {bounds.args?.map((b, i) =>
+          b ? (
+            <rect
+              key={i}
+              x={svgToPx(b.x)}
+              y={svgToPx(b.y)}
+              width={svgToPx(b.w)}
+              height={svgToPx(b.h)}
+              fill={i % 2 === 0 ? '#26de819f' : '#20bf6b9f'}
+            />
+          ) : null,
+        )}
 
         {/* Nesting (clamp) area — present only on bricks that wrap inner blocks */}
         {bounds.nesting && (

@@ -65,7 +65,6 @@ interface ComputedDimensions {
 function computeDimensions(input: BrickOutlineInput, minimums: BrickMinimums): ComputedDimensions {
     const { minWidth, minLabelHeight, minNestHeight, minParamHeight, minArgHeight } = minimums;
     const params = input.paramArgDims.map((p) => p.param ?? { w: 0, h: minParamHeight });
-    const args = input.paramArgDims.map((p) => p.arg ?? { w: 0, h: minArgHeight });
 
     // SVG strokes straddle the path line — s/2 bleeds outside on each side;
     // every segment includes s/2 at both ends so the stroke isn't clipped.
@@ -115,7 +114,12 @@ function computeDimensions(input: BrickOutlineInput, minimums: BrickMinimums): C
         strokeWidth / 2;
     // No stroke clearance or padding — args are slots for external components whose
     // input dims already account for their own strokes, if present.
-    const headHeightByArgs = args.reduce((sum, a) => sum + a.h, 0);
+    // Each row must be at least minArgHeight tall, matching generateBounds and
+    // computeArgNotchCentreYs so the outline is tall enough for every notch.
+    const headHeightByArgs = input.paramArgDims.reduce(
+        (sum, { arg }) => sum + Math.max(arg?.h ?? 0, minArgHeight),
+        0,
+    );
 
     const headHeight = Math.max(headHeightByLabel, headHeightByParams, headHeightByArgs);
 
@@ -541,8 +545,8 @@ function generateBounds(
         };
     }
 
-    const params: Bounds[] = [];
-    const args: Bounds[] = [];
+    const params: (Bounds | null)[] = [];
+    const args: (Bounds | null)[] = [];
     let y = 0;
 
     for (const { param, arg } of input.paramArgDims) {
@@ -550,16 +554,23 @@ function generateBounds(
 
         if (arg !== null) {
             args.push({ x: width, y, w: arg.w, h: rowH });
+        } else {
+            args.push(null);
         }
 
         if (param !== null) {
             const paramH = Math.max(param.h, minParamHeight);
+            // Centre the param label on its arg notch (NOTCH_OFFSET_Y below the row top);
+            // fall back to centring within the row when the slot has no arg (no notch).
+            const paramCentreY = arg !== null ? NOTCH_OFFSET_Y : rowH / 2;
             params.push({
                 x: width - strokeWidth / 2 - HEAD_PAD_X2 - param.w,
-                y: y + (rowH - paramH) / 2,
+                y: y + paramCentreY - paramH / 2,
                 w: param.w,
                 h: paramH,
             });
+        } else {
+            params.push(null);
         }
 
         y += rowH;
@@ -567,8 +578,8 @@ function generateBounds(
 
     return {
         label,
-        params: params.length > 0 ? params : undefined,
-        args: args.length > 0 ? args : undefined,
+        params: params.some((p) => p !== null) ? params : undefined,
+        args: args.some((a) => a !== null) ? args : undefined,
         nesting,
     };
 }

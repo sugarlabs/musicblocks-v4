@@ -13,7 +13,7 @@
     "@sugarlabs/mb4-assets": "*"
   },
   "peerDependencies": {
-    "react": "~18.x",
-    "react-dom": "~18.x"
+    "react": "~19.x",
+    "react-dom": "~19.x"
   }
 }

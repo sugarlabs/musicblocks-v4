@@ -12,8 +12,8 @@
     "playground": "vite playground --host --port 5601"
   },
   "peerDependencies": {
-    "react": "~18.x",
-    "react-dom": "~18.x"
+    "react": "~19.x",
+    "react-dom": "~19.x"
   },
   "dependencies": {
     "@sugarlabs/musicblocks-v4-lib": "^0.2.0",

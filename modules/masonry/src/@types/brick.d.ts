@@ -150,33 +150,35 @@ export interface Bounds extends Size, Point {}
 
 export interface BrickOutlineInput {
     /**
-     * Stroke width of the outline. The outline is drawn inset by `strokeWidth / 2`
-     * so the stroke stays inside the reported width/height instead of being clipped.
-     * Pass 0 for no inset (original geometry).
+     * Stroke width of the outline. SVG strokes are center-aligned on the path, so the path is
+     * drawn inset by `strokeWidth / 2` per side to keep the stroke within the reported dimensions.
      */
     strokeWidth: number;
-    /** Dimensions of the label text area */
-    labelDims: Size;
-    /** One entry per argument slot; each pairs a parameter label with its argument */
+    /** Dimensions of the widget in the brick's primary slot (label, glyph, input control, etc.). */
+    widgetDims: Size;
+    /**
+     * One entry per param/arg slot pair. Omit if the brick has no argument slots.
+     * A right-edge notch is implicitly generated for each entry.
+     */
     paramArgDims: {
-        /** Dimensions of the parameter label; null if the slot has no label (uses MIN_PARAM_H) */
+        /** Dimensions of the parameter label; null if the slot has no label. */
         param: Size | null;
-        /** Dimensions of the argument area; null if the slot has no argument (uses MIN_ARG_H) */
+        /** Dimensions of the argument area; null if the slot is empty. */
         arg: Size | null;
     }[];
     /**
      * Dimensions of the nested content area.
-     * - `undefined` — no nesting, tail is not rendered
-     * - `null` — nesting exists but content dimensions are unknown; falls back to MIN_NEST_HEIGHT
+     * - `undefined` — no nesting; tail is not rendered
+     * - `null` — nesting exists but content size is unknown; falls back to minimum nesting height
      * - `Size` — nesting exists with known content dimensions
      */
     nestingDims?: Size | null;
-    /** Whether to draw a top notch (downward groove). Defaults to false. */
-    hasTopNotch?: boolean;
-    /** Whether to draw a bottom notch (protruding tab). Defaults to false. */
-    hasBottomNotch?: boolean;
-    /** Whether to draw a left notch (convex tab where this brick plugs into its parent). Defaults to false. */
-    hasLeftNotch?: boolean;
+    /** Sequence-in notch: accepts a chain from the preceding brick. Defaults to false. */
+    hasPrevNotch?: boolean;
+    /** Sequence-out notch: chains into the following brick. Defaults to false. */
+    hasNextNotch?: boolean;
+    /** Output notch: plugs into a parent's argument slot. Defaults to false. */
+    hasOutputNotch?: boolean;
 }
 
 export interface BrickOutlineOutput {
@@ -188,13 +190,13 @@ export interface BrickOutlineOutput {
     height: number;
     /** Bounding rectangles for each layout region */
     bounds: {
-        /** Bounds of the label area */
-        label: Bounds;
-        /** Bounds of each parameter label area; array length matches paramArgDims, with null for absent labels. Absent entirely if no params exist. */
+        /** Bounds of the primary widget. */
+        widget: Bounds;
+        /** Bounds of each parameter label; one per slot, null if the slot has no label. */
         params?: (Bounds | null)[];
-        /** Bounds of each argument area; array length matches paramArgDims, with null for absent args. Absent entirely if no args exist. */
+        /** Bounds of each argument area; one per slot, null if the slot is empty. */
         args?: (Bounds | null)[];
-        /** Bounds of the nesting cavity; absent when there is no nesting */
+        /** Bounds of the nesting cavity. */
         nesting?: Bounds;
     };
 }
@@ -202,14 +204,14 @@ export interface BrickOutlineOutput {
 export interface BrickMinimums {
     /** Minimum total outer width of the brick */
     minWidth: number;
-    /** Minimum height of the label content area */
-    minLabelHeight: number;
-    /** Minimum height of the nesting cavity */
-    minNestHeight: number;
+    /** Minimum height of the main widget content area */
+    minWidgetHeight: number;
     /** Minimum height of a parameter label slot */
     minParamHeight: number;
     /** Minimum height of an argument slot */
     minArgHeight: number;
+    /** Minimum height of the nesting cavity */
+    minNestHeight: number;
 }
 
 // -------------------------------------------------------------------------------------------------

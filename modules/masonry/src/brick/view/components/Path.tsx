@@ -11,17 +11,17 @@ const svgToPx = (u: number) => u * SCALE;
 
 const generateBrickOutline = createBrickOutlineGenerator({
   minWidth: pxToSvg(SCALE_LEVEL_CONFIG[SCALE_LEVEL].minWidth),
-  minLabelHeight: pxToSvg(SCALE_LEVEL_CONFIG[SCALE_LEVEL].minLabelParamHeight),
-  minNestHeight: pxToSvg(SCALE_LEVEL_CONFIG[SCALE_LEVEL].minArgNestHeight),
-  minParamHeight: pxToSvg(SCALE_LEVEL_CONFIG[SCALE_LEVEL].minLabelParamHeight),
+  minWidgetHeight: pxToSvg(SCALE_LEVEL_CONFIG[SCALE_LEVEL].minWidgetParamHeight),
+  minParamHeight: pxToSvg(SCALE_LEVEL_CONFIG[SCALE_LEVEL].minWidgetParamHeight),
   minArgHeight: pxToSvg(SCALE_LEVEL_CONFIG[SCALE_LEVEL].minArgNestHeight),
+  minNestHeight: pxToSvg(SCALE_LEVEL_CONFIG[SCALE_LEVEL].minArgNestHeight),
 });
 
 export function PathBrickView({ input }: { input: BrickOutlineInput }) {
   const maxArgW = Math.max(0, ...input.paramArgDims.map((p) => p.arg?.w ?? 0));
   const { width, height, path, bounds } = generateBrickOutline({
     strokeWidth: pxToSvg(input.strokeWidth),
-    labelDims: { w: pxToSvg(input.labelDims.w), h: pxToSvg(input.labelDims.h) },
+    widgetDims: { w: pxToSvg(input.widgetDims.w), h: pxToSvg(input.widgetDims.h) },
     paramArgDims: input.paramArgDims.map((p) => ({
       param: p.param ? { w: pxToSvg(p.param.w), h: pxToSvg(p.param.h) } : null,
       arg: p.arg
@@ -36,9 +36,9 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
           ? { w: pxToSvg(input.nestingDims.w), h: pxToSvg(input.nestingDims.h) }
           : null
         : undefined,
-    hasTopNotch: input.hasTopNotch,
-    hasBottomNotch: input.hasBottomNotch,
-    hasLeftNotch: input.hasLeftNotch,
+    hasPrevNotch: input.hasPrevNotch,
+    hasNextNotch: input.hasNextNotch,
+    hasOutputNotch: input.hasOutputNotch,
   });
 
   return (
@@ -61,12 +61,12 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
 
       {/* Debug overlay: visualises the markers */}
       <>
-        {/* Primary label */}
+        {/* Primary widget */}
         <rect
-          x={svgToPx(bounds.label.x)}
-          y={svgToPx(bounds.label.y)}
-          width={svgToPx(bounds.label.w)}
-          height={svgToPx(bounds.label.h)}
+          x={svgToPx(bounds.widget.x)}
+          y={svgToPx(bounds.widget.y)}
+          width={svgToPx(bounds.widget.w)}
+          height={svgToPx(bounds.widget.h)}
           fill="#ffcccc"
         />
 

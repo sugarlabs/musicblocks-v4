@@ -480,4 +480,3 @@ export class Voice implements IVoice {
         this.playNotes([pitch], noteValue, instrumentName, 0, true);
     }
 }
-

@@ -1,22 +1,11 @@
 {
-    "extends": "../tsconfig.json",
-    "include": [
-        "./**/*.ts",
-        "./**/*.tsx",
-        "./.storybook/**/*.ts",
-        "./.storybook/**/*.tsx"
-    ],
-    "compilerOptions": {
-        "paths": {
-            "@/*": [
-                "./src/*"
-            ],
-            "#/@types/*": [
-                "../@types/*"
-            ],
-            "@res/*": [
-                "../res/*"
-            ]
-        }
+  "extends": "../tsconfig.json",
+  "include": ["./**/*.ts", "./**/*.tsx", "./.storybook/**/*.ts", "./.storybook/**/*.tsx"],
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "#/@types/*": ["../@types/*"],
+      "@res/*": ["../res/*"]
     }
+  }
 }

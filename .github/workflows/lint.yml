@@ -22,5 +22,8 @@ jobs:
       - name: Setup Node.js and install dependencies
         uses: ./.github/actions/setup
 
+      - name: Check formatting (Prettier)
+        run: npm run format:check
+
       - name: Lint files
         run: npm run lint

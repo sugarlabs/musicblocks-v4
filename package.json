@@ -27,9 +27,15 @@
     "visualize": "lerna --scope @sugarlabs/mb4-app run visualize",
     "deploy": "lerna --scope @sugarlabs/mb4-app run deploy",
     "check": "lerna run check",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "lint": "lerna run lint && markdownlint -i '**/node_modules/**' . && textlint '**/*.md'",
     "test": "lerna run test",
-    "coverage": "./coverage.sh"
+    "coverage": "./coverage.sh",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,jsonc,css,scss,html,yml,yaml}": "prettier --write"
   },
   "workspaces": [
     "lib/assets",
@@ -79,8 +85,10 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.1",
     "http-server": "^14.1.1",
+    "husky": "^9.1.7",
     "jsdom": "^29.1.1",
     "lerna": "^9.0.7",
+    "lint-staged": "^16.4.0",
     "markdownlint": "^0.41.0",
     "markdownlint-cli": "^0.49.0",
     "nodemon": "^3.0.0",

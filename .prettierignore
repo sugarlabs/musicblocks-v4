@@ -1,0 +1,22 @@
+# dependencies
+node_modules
+
+# build output
+dist
+build
+storybook
+
+# testing
+coverage
+
+# misc
+.eslintcache
+*.log
+
+# generated / vendored
+package-lock.json
+
+# Markdown is owned by markdownlint + textlint (npm run lint), not Prettier.
+# Prettier's list-indent style conflicts with markdownlint's MD007, so keep
+# Prettier off all markdown to avoid the two tools fighting each other.
+*.md

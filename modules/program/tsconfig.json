@@ -1,16 +1,10 @@
 {
-    "extends": "../../tsconfig.json",
-    "include": [
-        "./**/*.ts"
-    ],
-    "compilerOptions": {
-        "paths": {
-            "@/*": [
-                "./src/*",
-            ],
-            "#/@types/*": [
-                "../../@types/*"
-            ]
-        }
+  "extends": "../../tsconfig.json",
+  "include": ["./**/*.ts"],
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "#/@types/*": ["../../@types/*"]
     }
+  }
 }

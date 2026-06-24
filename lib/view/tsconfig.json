@@ -1,20 +1,11 @@
 {
-    "extends": "../../tsconfig.json",
-    "include": [
-        "./**/*.ts",
-        "./**/*.tsx"
-    ],
-    "compilerOptions": {
-        "paths": {
-            "@/*": [
-                "./src/*"
-            ],
-            "#/@types/*": [
-                "../../@types/*"
-            ],
-            "@res/*": [
-                "../../res/*"
-            ]
-        }
+  "extends": "../../tsconfig.json",
+  "include": ["./**/*.ts", "./**/*.tsx"],
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "#/@types/*": ["../../@types/*"],
+      "@res/*": ["../../res/*"]
     }
+  }
 }

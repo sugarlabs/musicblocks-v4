@@ -388,24 +388,35 @@ export default class CompoundBrick extends BrickModel implements IBrickCompound 
     public setBoundingBoxNest(extents: TExtent[]): void {
         this._bboxNest = extents;
     }
-    
+
     /**
      * Recursively update bounding box and connection points to fit nested children.
      * Call this after all children are attached, before rendering.
      */
-    public updateLayoutWithChildren(nestedChildren: BrickModel[], allNodes: Map<string, ExtendedTowerNode>): void {
+    public updateLayoutWithChildren(
+        nestedChildren: BrickModel[],
+        allNodes: Map<string, ExtendedTowerNode>,
+    ): void {
         if (nestedChildren && nestedChildren.length > 0) {
             let totalHeight = 0;
             let maxWidth = 0;
 
             // Recursively calculate the total height and max width of all descendants
-            const calculateSubtreeDimensions = (children: BrickModel[]): { h: number; w: number } => {
+            const calculateSubtreeDimensions = (
+                children: BrickModel[],
+            ): { h: number; w: number } => {
                 let height = 0;
                 let width = 0;
-                children.forEach(child => {
-                    const childNode = Array.from(allNodes.values()).find(n => n.brick.uuid === child.uuid);
+                children.forEach((child) => {
+                    const childNode = Array.from(allNodes.values()).find(
+                        (n) => n.brick.uuid === child.uuid,
+                    );
                     if (childNode) {
-                        const { w, h } = calculateCompleteSubtreeDimensions(childNode.brick.uuid, allNodes, new Map<string, { w: number; h: number }>());
+                        const { w, h } = calculateCompleteSubtreeDimensions(
+                            childNode.brick.uuid,
+                            allNodes,
+                            new Map<string, { w: number; h: number }>(),
+                        );
                         height += h;
                         width = Math.max(width, w);
                     }
@@ -428,7 +439,7 @@ export default class CompoundBrick extends BrickModel implements IBrickCompound 
     // Helper method to get nested children based on the tower structure
     public getNestedChildren(allNodes: Map<string, ExtendedTowerNode>): BrickModel[] {
         const children: BrickModel[] = [];
-        allNodes.forEach(node => {
+        allNodes.forEach((node) => {
             if (node.parent?.brick.uuid === this.uuid && node.isNested) {
                 children.push(node.brick as BrickModel); // Cast IBrick to BrickModel
             }

@@ -1,10 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2024",
-    "lib": [
-      "dom",
-      "esnext"
-    ],
+    "lib": ["dom", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -18,10 +15,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": [
-      "vite/client",
-      "vitest/globals"
-    ]
+    "types": ["vite/client", "vitest/globals"]
   },
   /**
    * `compilerOptions.module` should be UMD to execute modules with import statements

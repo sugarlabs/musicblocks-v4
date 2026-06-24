@@ -300,14 +300,14 @@ body {
   cursor: grab;
   background: none !important;
   box-shadow: none !important;
-  padding: 5px 0px!important;
+  padding: 5px 0px !important;
 }
 .brick-item:active {
   cursor: grabbing;
 }
 
 .brick-item.dragging svg {
-  filter: drop-shadow(0 4px 2px rgba(0,0,0,0.25));
+  filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.25));
 }
 
 /* Category grid container */

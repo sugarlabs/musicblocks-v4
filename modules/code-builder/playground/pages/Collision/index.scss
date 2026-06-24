@@ -77,7 +77,9 @@
       position: absolute;
       border: 2px solid lime;
       background-color: aliceblue;
-      transition: background-color 0.25s ease, border 0.25s ease;
+      transition:
+        background-color 0.25s ease,
+        border 0.25s ease;
 
       &.collision-space-object-active {
         border: 2px solid gold;

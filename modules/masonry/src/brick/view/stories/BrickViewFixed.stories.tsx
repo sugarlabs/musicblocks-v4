@@ -99,7 +99,6 @@ export const StatementWithNesting: Story = {
       type: 'label',
       text: 'Repeat',
       glyph: { src: mouseSvg },
-      
     },
     hasConnectionPrev: true,
     hasConnectionNext: true,
@@ -115,5 +114,3 @@ export const StatementWithNesting: Story = {
     },
   },
 };
-
-

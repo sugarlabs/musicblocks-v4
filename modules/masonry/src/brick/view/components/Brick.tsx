@@ -9,7 +9,7 @@ const STROKE_WIDTH = 2;
 const DEFAULT_SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
 
 export function BrickView(props: StatementBrickViewProps) {
-  const { brickScale, minWidth, minArgNestHeight, minLabelParamHeight, fontSize, lineHeight } =
+  const { brickScale, minWidth, minArgNestHeight, minWidgetParamHeight, fontSize, lineHeight } =
     SCALE_LEVEL_CONFIG[props.scaleLevel ?? DEFAULT_SCALE_LEVEL];
 
   const pxToSvg = useCallback((px: number) => px / brickScale, [brickScale]);
@@ -29,10 +29,10 @@ export function BrickView(props: StatementBrickViewProps) {
     () =>
       createBrickOutlineGenerator({
         minWidth: pxToSvg(minWidth),
-        minLabelHeight: pxToSvg(minLabelParamHeight),
-        minNestHeight: pxToSvg(minArgNestHeight),
-        minParamHeight: pxToSvg(minLabelParamHeight),
+        minWidgetHeight: pxToSvg(minWidgetParamHeight),
+        minParamHeight: pxToSvg(minWidgetParamHeight),
         minArgHeight: pxToSvg(minArgNestHeight),
+        minNestHeight: pxToSvg(minArgNestHeight),
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
@@ -54,20 +54,20 @@ export function BrickView(props: StatementBrickViewProps) {
   useLayoutEffect(() => {
     const { width, height, path, bounds } = generateOutline({
       strokeWidth: pxToSvg(STROKE_WIDTH),
-      labelDims: { w: pxToSvg(labelDims.w), h: pxToSvg(labelDims.h) },
+      widgetDims: { w: pxToSvg(labelDims.w), h: pxToSvg(labelDims.h) },
       paramArgDims: [],
       nestingDims: props.nesting ? props.nesting?.dims : undefined,
-      hasTopNotch: props.hasConnectionPrev,
-      hasBottomNotch: props.hasConnectionNext,
+      hasPrevNotch: props.hasConnectionPrev,
+      hasNextNotch: props.hasConnectionNext,
     });
 
     setPath(path);
     setDims({ w: width, h: height });
     setLabelBounds({
-      x: svgToPx(bounds.label.x),
-      y: svgToPx(bounds.label.y),
-      w: svgToPx(bounds.label.w),
-      h: svgToPx(bounds.label.h),
+      x: svgToPx(bounds.widget.x),
+      y: svgToPx(bounds.widget.y),
+      w: svgToPx(bounds.widget.w),
+      h: svgToPx(bounds.widget.h),
     });
   }, [labelDims, generateOutline, svgToPx, pxToSvg, props]);
 

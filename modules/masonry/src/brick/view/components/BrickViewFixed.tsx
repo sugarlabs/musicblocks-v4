@@ -34,7 +34,7 @@ const PARAM_FONT_SCALE = 0.8;
 const EMPTY_PARAM_ARGS: ParamArgPair[] = [];
 
 export function BrickViewFixed(props: BrickViewFixedProps) {
-  const { brickScale, minWidth, minArgNestHeight, minLabelParamHeight, fontSize, lineHeight } =
+  const { brickScale, minWidth, minArgNestHeight, minWidgetParamHeight, fontSize, lineHeight } =
     SCALE_LEVEL_CONFIG[props.scaleLevel ?? DEFAULT_SCALE_LEVEL];
 
   // Param labels share the main label's color but render at a smaller size.
@@ -66,12 +66,12 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
     () =>
       createBrickOutlineGenerator({
         minWidth: pxToSvg(minWidth),
-        minLabelHeight: pxToSvg(minLabelParamHeight),
-        minNestHeight: pxToSvg(minArgNestHeight),
-        minParamHeight: pxToSvg(minLabelParamHeight),
+        minWidgetHeight: pxToSvg(minWidgetParamHeight),
+        minParamHeight: pxToSvg(minWidgetParamHeight),
         minArgHeight: pxToSvg(minArgNestHeight),
+        minNestHeight: pxToSvg(minArgNestHeight),
       }),
-    [minWidth, minLabelParamHeight, minArgNestHeight, pxToSvg],
+    [minWidth, minWidgetParamHeight, minArgNestHeight, pxToSvg],
   );
 
   // Layout Effect 1: Measures the actual rendered DOM text dimensions.
@@ -116,19 +116,14 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
 
   useLayoutEffect(() => {
     let nestingDims;
-    let hasTopNotch = false;
-    let hasBottomNotch = false;
-    let hasLeftNotch = false;
+    let hasPrevNotch = false;
+    let hasNextNotch = false;
 
-    if (props.kind === 'value') {
-      hasLeftNotch = true;
-    } else if (props.kind === 'expression') {
-      hasLeftNotch = true;
-    }
+    let hasOutputNotch = props.kind === 'value' || props.kind === 'expression';
 
     if (props.kind === 'statement') {
-      hasTopNotch = hasConnectionPrev ?? false;
-      hasBottomNotch = hasConnectionNext ?? false;
+      hasPrevNotch = hasConnectionPrev ?? false;
+      hasNextNotch = hasConnectionNext ?? false;
       if (nesting) {
         // If the nesting cavity is folded, we pass undefined to path2.ts
         // so it omits the cavity entirely and draws a flush, solid block.
@@ -143,7 +138,7 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
       bounds,
     } = generateOutline({
       strokeWidth: pxToSvg(STROKE_WIDTH),
-      labelDims: { w: pxToSvg(labelDims.w), h: pxToSvg(labelDims.h) },
+      widgetDims: { w: pxToSvg(labelDims.w), h: pxToSvg(labelDims.h) },
       paramArgDims: paramArgs.map((pa, i) => ({
         param: pa.param
           ? { w: pxToSvg(paramDimsList[i]?.w ?? 0), h: pxToSvg(paramDimsList[i]?.h ?? 0) }
@@ -160,19 +155,19 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
             ? null
             : { w: pxToSvg(nestingDims.w), h: pxToSvg(nestingDims.h) }
           : undefined,
-      hasTopNotch,
-      hasBottomNotch,
-      hasLeftNotch,
+      hasPrevNotch,
+      hasNextNotch,
+      hasOutputNotch,
     });
 
     setPath(generatedPath);
     setDims({ w: width, h: height });
 
     setLabelBounds({
-      x: svgToPx(bounds.label.x),
-      y: svgToPx(bounds.label.y),
-      w: svgToPx(bounds.label.w),
-      h: svgToPx(bounds.label.h),
+      x: svgToPx(bounds.widget.x),
+      y: svgToPx(bounds.widget.y),
+      w: svgToPx(bounds.widget.w),
+      h: svgToPx(bounds.widget.h),
     });
 
     if (bounds.params) {

@@ -20,7 +20,7 @@ export const JustLabel: Story = {
   args: {
     input: {
       strokeWidth: 2,
-      labelDims: { w: 60, h: 18 },
+      widgetDims: { w: 60, h: 18 },
       paramArgDims: [],
     },
   },
@@ -30,7 +30,7 @@ export const LabelArgNoParam: Story = {
   args: {
     input: {
       strokeWidth: 2,
-      labelDims: { w: 120, h: 18 },
+      widgetDims: { w: 120, h: 18 },
       paramArgDims: [{ param: null, arg: { w: 100, h: 32 } }],
     },
   },
@@ -40,7 +40,7 @@ export const LabelArgWithParam: Story = {
   args: {
     input: {
       strokeWidth: 2,
-      labelDims: { w: 120, h: 18 },
+      widgetDims: { w: 120, h: 18 },
       paramArgDims: [{ param: { w: 80, h: 18 }, arg: { w: 100, h: 32 } }],
     },
   },
@@ -50,7 +50,7 @@ export const LabelMixedParamArgs: Story = {
   args: {
     input: {
       strokeWidth: 2,
-      labelDims: { w: 120, h: 18 },
+      widgetDims: { w: 120, h: 18 },
       paramArgDims: [
         { param: { w: 100, h: 18 }, arg: { w: 100, h: 32 } },
         { param: { w: 60, h: 18 }, arg: null },
@@ -63,9 +63,9 @@ export const LabelMixedParamArgs: Story = {
 
 // ── Nesting variants (label + 2 args each with their param) ──
 
-const nestingBase: Pick<BrickOutlineInput, 'strokeWidth' | 'labelDims' | 'paramArgDims'> = {
+const nestingBase: Pick<BrickOutlineInput, 'strokeWidth' | 'widgetDims' | 'paramArgDims'> = {
   strokeWidth: 2,
-  labelDims: { w: 120, h: 18 },
+  widgetDims: { w: 120, h: 18 },
   paramArgDims: [
     { param: { w: 80, h: 18 }, arg: { w: 100, h: 32 } },
     { param: { w: 60, h: 18 }, arg: { w: 80, h: 32 } },
@@ -86,9 +86,9 @@ export const NestingWide: Story = {
 
 // ── Notch variants ──
 
-const notchBase: Pick<BrickOutlineInput, 'strokeWidth' | 'labelDims' | 'paramArgDims'> = {
+const notchBase: Pick<BrickOutlineInput, 'strokeWidth' | 'widgetDims' | 'paramArgDims'> = {
   strokeWidth: 2,
-  labelDims: { w: 120, h: 18 },
+  widgetDims: { w: 120, h: 18 },
   paramArgDims: [
     { param: { w: 80, h: 18 }, arg: { w: 100, h: 32 } },
     { param: { w: 60, h: 18 }, arg: { w: 80, h: 32 } },
@@ -100,8 +100,8 @@ export const TopBottomNotches: Story = {
     input: {
       ...notchBase,
       nestingDims: { w: 120, h: 120 },
-      hasTopNotch: true,
-      hasBottomNotch: true,
+      hasPrevNotch: true,
+      hasNextNotch: true,
     },
   },
 };
@@ -111,7 +111,7 @@ export const TopNotchOnly: Story = {
     input: {
       ...notchBase,
       nestingDims: { w: 120, h: 120 },
-      hasTopNotch: true,
+      hasPrevNotch: true,
     },
   },
 };
@@ -121,7 +121,7 @@ export const BottomNotchOnly: Story = {
     input: {
       ...notchBase,
       nestingDims: { w: 120, h: 120 },
-      hasBottomNotch: true,
+      hasNextNotch: true,
     },
   },
 };
@@ -130,7 +130,7 @@ export const LeftNotchOnly: Story = {
   args: {
     input: {
       ...notchBase,
-      hasLeftNotch: true,
+      hasOutputNotch: true,
     },
   },
 };
@@ -146,7 +146,7 @@ type RightNotchPlaygroundArgs = {
   arg5Height: number;
   argWidth: number;
   strokeWidth: number;
-  hasLeftNotch: boolean;
+  hasOutputNotch: boolean;
 };
 
 // Drag the sliders: change how many args exist and how tall they are, and watch
@@ -161,7 +161,7 @@ export const RightNotchPlayground: StoryObj<RightNotchPlaygroundArgs> = {
     arg5Height: 40,
     argWidth: 100,
     strokeWidth: 2,
-    hasLeftNotch: true,
+    hasOutputNotch: true,
   },
   argTypes: {
     argCount: { control: { type: 'range', min: 0, max: 5, step: 1 } },
@@ -172,7 +172,7 @@ export const RightNotchPlayground: StoryObj<RightNotchPlaygroundArgs> = {
     arg5Height: { control: { type: 'range', min: 20, max: 120, step: 5 } },
     argWidth: { control: { type: 'range', min: 40, max: 160, step: 10 } },
     strokeWidth: { control: { type: 'range', min: 1, max: 6, step: 1 } },
-    hasLeftNotch: { control: 'boolean' },
+    hasOutputNotch: { control: 'boolean' },
   },
   render: (props) => {
     // One height per argument, so each slot can be sized independently.
@@ -191,10 +191,10 @@ export const RightNotchPlayground: StoryObj<RightNotchPlaygroundArgs> = {
       <PathBrickView
         input={{
           strokeWidth: props.strokeWidth,
-          labelDims: { w: 120, h: 18 },
+          widgetDims: { w: 120, h: 18 },
           paramArgDims,
           nestingDims: { w: 120, h: 120 },
-          hasLeftNotch: props.hasLeftNotch,
+          hasOutputNotch: props.hasOutputNotch,
         }}
       />
     );

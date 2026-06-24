@@ -1,3 +1,16 @@
+/**
+ * Brick outline geometry utility.
+ *
+ * Translates raw dimension inputs — stroke width, widget size, param/arg slot sizes, and an
+ * optional nesting cavity size — into an SVG path string and a set of layout bounds.
+ *
+ * This module is intentionally agnostic of brick semantics (value, expression, statement).
+ * It only understands geometry; all structural constraints and type rules live upstream.
+ *
+ * The API is two-step by design: `createBrickOutlineGenerator` binds the size minimums once
+ * (making it safe to memoize), and the returned generator is cheap to call on every render.
+ */
+
 import type { Bounds, BrickMinimums, BrickOutlineInput, BrickOutlineOutput } from '@/@types/brick';
 
 // ────────────────────────── Constants ────────────────────────────────────────────────────────────
@@ -13,8 +26,8 @@ export const HEAD_PAD_X1 = 12;
 export const HEAD_PAD_X2 = 12;
 
 // ── Gutters ──
-/** Horizontal gap between the main label and the parameter labels */
-export const LABEL_PARAM_GUTTER_X = 12;
+/** Horizontal gap between the main widget and the parameter labels */
+export const WIDGET_PARAM_GUTTER_X = 12;
 /** Vertical gap between stacked parameter labels */
 export const PARAM_GUTTER_Y = 12;
 
@@ -56,14 +69,14 @@ interface ComputedDimensions {
     width: number;
     /** Total outer height of the brick (headHeight + tailHeight) */
     height: number;
-    /** Height of the top head section containing labels and args */
+    /** Height of the top head section containing main widget, param labels, and args */
     headHeight: number;
     /** Height of the nesting cavity between the head and the tail step; 0 when no nesting */
     nestHeight: number;
 }
 
 function computeDimensions(input: BrickOutlineInput, minimums: BrickMinimums): ComputedDimensions {
-    const { minWidth, minLabelHeight, minNestHeight, minParamHeight, minArgHeight } = minimums;
+    const { minWidth, minWidgetHeight, minNestHeight, minParamHeight, minArgHeight } = minimums;
     const params = input.paramArgDims.map((p) => p.param ?? { w: 0, h: minParamHeight });
 
     // SVG strokes straddle the path line — s/2 bleeds outside on each side;
@@ -74,12 +87,12 @@ function computeDimensions(input: BrickOutlineInput, minimums: BrickMinimums): C
 
     // ── Head ──
     const maxParamWidth = params.length > 0 ? Math.max(...params.map((p) => p.w)) : 0;
-    const labelParamGutter = maxParamWidth > 0 ? LABEL_PARAM_GUTTER_X : 0;
+    const widgetParamGutter = maxParamWidth > 0 ? WIDGET_PARAM_GUTTER_X : 0;
     const headWidth =
         strokeWidth / 2 +
         HEAD_PAD_X1 +
-        input.labelDims.w +
-        labelParamGutter +
+        input.widgetDims.w +
+        widgetParamGutter +
         maxParamWidth +
         HEAD_PAD_X2 +
         strokeWidth / 2;
@@ -99,10 +112,10 @@ function computeDimensions(input: BrickOutlineInput, minimums: BrickMinimums): C
     const paramsTotalHeight = params.reduce((sum, p) => sum + p.h, 0);
     const paramGutterTotal = PARAM_GUTTER_Y * Math.max(0, params.length - 1);
 
-    const headHeightByLabel =
+    const headHeightByWidget =
         strokeWidth / 2 +
         HEAD_PAD_Y1 +
-        Math.max(input.labelDims.h, minLabelHeight) +
+        Math.max(input.widgetDims.h, minWidgetHeight) +
         HEAD_PAD_Y2 +
         strokeWidth / 2;
     const headHeightByParams =
@@ -121,7 +134,7 @@ function computeDimensions(input: BrickOutlineInput, minimums: BrickMinimums): C
         0,
     );
 
-    const headHeight = Math.max(headHeightByLabel, headHeightByParams, headHeightByArgs);
+    const headHeight = Math.max(headHeightByWidget, headHeightByParams, headHeightByArgs);
 
     // ── Tail ──
     const hasNesting = input.nestingDims !== undefined;
@@ -513,9 +526,9 @@ function segTailStepBottom(strokeWidth: number, hasBottomNotch: boolean): string
 }
 
 /**
- * Computes the bounding boxes for each visual region of a brick (label, nesting area,
- * params, and args), applying minimum dimension constraints and aligning each region
- * to its corresponding slot in the outline geometry.
+ * Computes the bounding boxes for each visual region of a brick (main widget, nesting area,
+ * params, and args), applying minimum dimension constraints and aligning each region to its
+ * corresponding slot in the outline geometry.
  */
 function generateBounds(
     input: BrickOutlineInput,
@@ -525,14 +538,14 @@ function generateBounds(
     hasNesting: boolean,
     minimums: BrickMinimums,
 ): BrickOutlineOutput['bounds'] {
-    const { minLabelHeight, minNestHeight, minParamHeight, minArgHeight } = minimums;
+    const { minWidgetHeight, minNestHeight, minParamHeight, minArgHeight } = minimums;
     const strokeWidth = input.strokeWidth;
 
-    const label: Bounds = {
+    const widget: Bounds = {
         x: strokeWidth / 2 + HEAD_PAD_X1,
         y: strokeWidth / 2 + HEAD_PAD_Y1,
-        w: input.labelDims.w,
-        h: Math.max(input.labelDims.h, minLabelHeight),
+        w: input.widgetDims.w,
+        h: Math.max(input.widgetDims.h, minWidgetHeight),
     };
 
     let nesting: Bounds | undefined;
@@ -577,7 +590,7 @@ function generateBounds(
     }
 
     return {
-        label,
+        widget,
         params: params.some((p) => p !== null) ? params : undefined,
         args: args.some((a) => a !== null) ? args : undefined,
         nesting,
@@ -601,7 +614,7 @@ export function createBrickOutlineGenerator(
     /**
      * Computes the SVG path and layout bounds for a single brick frame.
      *
-     * @param input - Stroke width, label/param/arg dimensions, optional nesting,
+     * @param input - Stroke width, widget/param/arg dimensions, optional nesting,
      *               and optional topNotch / bottomNotch flags.
      * @returns SVG path string, outer frame dimensions, content-region bounds,
      *          and notch protrusion depths (for SVG viewBox sizing).
@@ -612,9 +625,9 @@ export function createBrickOutlineGenerator(
         const strokeWidth = input.strokeWidth;
         const hasNesting = input.nestingDims !== undefined;
 
-        const hasTopNotch = input.hasTopNotch ?? false;
-        const hasBottomNotch = input.hasBottomNotch ?? false;
-        const hasLeftNotch = input.hasLeftNotch ?? false;
+        const hasTopNotch = input.hasPrevNotch ?? false;
+        const hasBottomNotch = input.hasNextNotch ?? false;
+        const hasLeftNotch = input.hasOutputNotch ?? false;
 
         const argNotchCentreYs = computeArgNotchCentreYs(input.paramArgDims, minimums.minArgHeight);
 

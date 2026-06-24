@@ -69,8 +69,8 @@
     "@types/react-dom": "^19.1.6",
     "@typescript-eslint/eslint-plugin": "^8.34.0",
     "@typescript-eslint/parser": "^8.34.0",
-    "@vitejs/plugin-react": "^4.5.2",
-    "@vitest/coverage-v8": "^3.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "@vitest/coverage-v8": "^4.1.9",
     "eslint": "^8.31.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-json": "^3.1.0",
@@ -99,11 +99,11 @@
     "textlint-rule-terminology": "^5.2.16",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",
-    "vite": "^6.3.5",
+    "vite": "^8.1.0",
     "vite-plugin-compression": "^0.5.1",
-    "vite-plugin-ejs": "^1.7.0",
-    "vite-plugin-eslint2": "^5.1.0",
+    "vite-plugin-ejs": "^1.7.1",
+    "vite-plugin-eslint2": "^5.3.0",
     "vite-plugin-pwa": "^1.0.0",
-    "vitest": "^3.2.3"
+    "vitest": "^4.1.9"
   }
 }

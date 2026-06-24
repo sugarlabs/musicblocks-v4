@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Meta, StoryObj, Decorator } from '@storybook/react';
+import type { Meta, StoryObj, Decorator } from '@storybook/react-vite';
 import { ExpressionBrickView } from '../components/expression';
 import type { TBrickRenderPropsExpression } from '../../../@types/brick';
 

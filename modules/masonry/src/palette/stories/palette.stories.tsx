@@ -1,7 +1,7 @@
 // src/palette/palette.stories.tsx
 
 import React from 'react';
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import PaletteWrapper from '../components/paletteWrapper';
 
 const meta: Meta<typeof PaletteWrapper> = {

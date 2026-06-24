@@ -1,20 +1,17 @@
 import type { UserConfig } from 'vite';
 
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { mergeConfig } from 'vite';
 
 // -------------------------------------------------------------------------------------------------
 
 function resolve(rootPath: string) {
-    return path.resolve(__dirname, '..', rootPath);
+    return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', rootPath);
 }
 export default {
     stories: ['../src/**/*.mdx', '../src/**/*.stories.@(tsx|ts|jsx|js)'],
-    addons: [
-        '@storybook/addon-links',
-        '@storybook/addon-essentials',
-        '@storybook/addon-interactions',
-    ],
+    addons: ['@storybook/addon-a11y'],
     framework: {
         name: '@storybook/react-vite',
         options: {},

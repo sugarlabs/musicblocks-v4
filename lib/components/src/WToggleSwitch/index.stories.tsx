@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { linkTo } from '@storybook/addon-links';
+import { fn } from 'storybook/test';
 import { default as WToggleSwitch } from '.';
 
 // -------------------------------------------------------------------------------------------------
@@ -20,13 +20,13 @@ type Story = StoryObj<typeof WToggleSwitch>;
 export const Active: Story = {
   args: {
     active: true,
-    handlerClick: linkTo('Common/WToggleSwitch', 'Inactive'),
+    handlerClick: fn(),
   },
 };
 
 export const Inactive: Story = {
   args: {
     active: false,
-    handlerClick: linkTo('Common/WToggleSwitch', 'Active'),
+    handlerClick: fn(),
   },
 };

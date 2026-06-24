@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 
 import { BrickViewFixed } from '../components/BrickViewFixed';
 
-import mouseSvg from '../../../../assets/icons/mouse.svg';
+import mouseSvg from '@/assets/mouse.svg';
 
 const meta = {
   title: 'BRICKS/BrickViewFixed',
@@ -99,7 +99,6 @@ export const StatementWithNesting: Story = {
       type: 'label',
       text: 'Repeat',
       glyph: { src: mouseSvg },
-      
     },
     hasConnectionPrev: true,
     hasConnectionNext: true,
@@ -115,5 +114,3 @@ export const StatementWithNesting: Story = {
     },
   },
 };
-
-

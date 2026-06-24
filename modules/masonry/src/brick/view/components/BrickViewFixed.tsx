@@ -262,13 +262,13 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
                 <img
                   src={labelGlyph.src}
                   alt="glyph"
-                  style={{ width: fontSize, height: fontSize, objectFit: 'contain' }}
+                  style={{ width: fontSize, height: fontSize, objectFit: 'contain', flexShrink: 0 }}
                 />
               )}
               {labelGlyph?.name && !labelGlyph.src && (
                 <span
                   className={`glyph-${labelGlyph.name}`}
-                  style={{ color: labelGlyph.color, fontSize }}
+                  style={{ color: labelGlyph.color, fontSize, flexShrink: 0 }}
                 />
               )}
             </div>

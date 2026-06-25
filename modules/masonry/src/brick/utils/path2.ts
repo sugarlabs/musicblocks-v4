@@ -46,14 +46,14 @@ export const TAIL_STEP_H = 12;
 // Lip arc radii are derived from strokeWidth at each call site.
 
 /** Centre-line radius for convex V-notch tabs. */
-export const V_NOTCH_RADIUS = 1;
+export const V_NOTCH_RADIUS = 2;
 /** End-to-end centre-line width for V-notches. */
 export const V_NOTCH_WIDTH = 16;
 /** x-offset from the left edge (or TAIL_INDENT_W for nested notches) to a V-notch centre. */
 export const V_NOTCH_OFFSET_X = 18;
 
 /** Centre-line radius for convex H-notch tabs. */
-export const H_NOTCH_RADIUS = 1;
+export const H_NOTCH_RADIUS = 2;
 /** End-to-end centre-line width for H-notches. */
 export const H_NOTCH_WIDTH = 16;
 /** y-offset from the top of an arg slot down to an H-notch centre. */

@@ -1,7 +1,7 @@
 // src/masonry/view/CompoundBrickView.stories.tsx
 
 import React from 'react';
-import type { Meta, StoryObj, Decorator } from '@storybook/react';
+import type { Meta, StoryObj, Decorator } from '@storybook/react-vite';
 import { CompoundBrickView } from '../components/compound';
 import type { TBrickRenderPropsCompound } from '../../../@types/brick';
 

@@ -9,5 +9,8 @@
     "coverage": "vitest run --coverage --passWithNoTests",
     "check": "tsc",
     "lint": "eslint src"
+  },
+  "dependencies": {
+    "uuid": "^14.0.1"
   }
 }

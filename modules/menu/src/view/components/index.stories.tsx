@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { TInjectedMenu } from '#/@types/components/menu';
 
 import { Menu } from '.';

@@ -110,7 +110,7 @@ describe('path V2: generateBrickOutline (integration)', () => {
             nestingDims: { w: 50, h: 50 },
         });
         expect(result.path).toBe(
-            'M 4 0 h 112 a 4 4 0 0 1 4 4 v 24 a 4 4 0 0 1 -4 4 h -86 a 0 0 0 0 0 0 0 a 4 4 0 0 1 -4 4 a 4 4 0 0 1 -4 -4 a 0 0 0 0 0 0 0 h -10 a 4 4 0 0 0 -4 4 v 42 a 4 4 0 0 0 4 4 h 10 a 0 0 0 0 0 0 0 a 4 4 0 0 0 4 4 a 4 4 0 0 0 4 -4 a 0 0 0 0 0 0 0 h 14 a 4 4 0 0 1 4 4 v 4 a 4 4 0 0 1 -4 4 h -40 a 4 4 0 0 1 -4 -4 v -86 a 4 4 0 0 1 4 -4 Z',
+            'M 4 0 h 112 a 4 4 0 0 1 4 4 v 24 a 4 4 0 0 1 -4 4 h -82 a 0 0 0 0 0 0 0 a 2 2 0 0 1 -2 2 h -12 a 2 2 0 0 1 -2 -2 a 0 0 0 0 0 0 0 h -6 a 4 4 0 0 0 -4 4 v 42 a 4 4 0 0 0 4 4 h 6 a 0 0 0 0 0 0 0 a 2 2 0 0 0 2 2 h 12 a 2 2 0 0 0 2 -2 a 0 0 0 0 0 0 0 h 10 a 4 4 0 0 1 4 4 v 4 a 4 4 0 0 1 -4 4 h -40 a 4 4 0 0 1 -4 -4 v -86 a 4 4 0 0 1 4 -4 Z',
         );
     });
 
@@ -122,7 +122,7 @@ describe('path V2: generateBrickOutline (integration)', () => {
             nestingDims: { w: 50, h: 50 },
         });
         expect(result.path).toBe(
-            'M 6 2 h 108 a 4 4 0 0 1 4 4 v 24 a 4 4 0 0 1 -4 4 h -76 a 6 6 0 0 0 -6 6 a 2 2 0 0 1 -2 2 a 2 2 0 0 1 -2 -2 a 6 6 0 0 0 -6 -6 h -4 a 8 8 0 0 0 -8 8 v 38 a 8 8 0 0 0 8 8 h 4 a 2 2 0 0 1 2 2 a 6 6 0 0 0 6 6 a 6 6 0 0 0 6 -6 a 2 2 0 0 1 2 -2 h 8 a 4 4 0 0 1 4 4 v 4 a 4 4 0 0 1 -4 4 h -40 a 4 4 0 0 1 -4 -4 v -90 a 4 4 0 0 1 4 -4 Z',
+            'M 6 2 h 108 a 4 4 0 0 1 4 4 v 24 a 4 4 0 0 1 -4 4 h -96 a 8 8 0 0 0 -8 8 v 38 a 8 8 0 0 0 8 8 h 4 a 2 2 0 0 1 2 2 a 6 6 0 0 0 6 6 h 0 a 6 6 0 0 0 6 -6 a 2 2 0 0 1 2 -2 h 4 a 4 4 0 0 1 4 4 v 4 a 4 4 0 0 1 -4 4 h -40 a 4 4 0 0 1 -4 -4 v -90 a 4 4 0 0 1 4 -4 Z',
         );
     });
 
@@ -180,27 +180,27 @@ describe('path V2: generateBrickOutline (integration)', () => {
     });
 
     describe('notch wiring through the public API', () => {
-        it('emits one right-edge groove per arg slot, radius H_NOTCH_RADIUS + s/2', () => {
+        it('emits one right-edge groove per arg slot, radius H_NOTCH_RADIUS + s', () => {
             const s = 2;
             const r = generateBrickOutline({
                 strokeWidth: s,
                 widgetDims: { w: 60, h: 20 },
                 paramArgDims: [oneArg, oneArg, oneArg],
             });
-            const grooves = parseArcs(r.path).filter((a) => a.rx === H_NOTCH_RADIUS + s / 2);
-            expect(grooves).toHaveLength(3);
+            const grooves = countRightEdgeGrooves(r.path, H_NOTCH_RADIUS + s);
+            expect(grooves).toBe(3);
         });
 
         it('the left tab centre aligns with the first right groove, both at NOTCH_OFFSET_Y', () => {
-            const s = 4;
+            const s = 2;
             const r = generateBrickOutline({
                 strokeWidth: s,
                 widgetDims: { w: 60, h: 20 },
                 paramArgDims: [oneArg, oneArg, oneArg],
                 hasOutputNotch: true,
             });
-            const grooveCentres = semicircleCentresY(r.path, H_NOTCH_RADIUS + s / 2);
-            const tabCentre = leftTabCentreY(r.path);
+            const grooveCentres = rightEdgeGrooveCentresY(r.path, H_NOTCH_RADIUS + s);
+            const tabCentre = leftTabCentreY(r.path, H_NOTCH_RADIUS);
             expect(grooveCentres[0]).toBeCloseTo(NOTCH_OFFSET_Y);
             expect(tabCentre).toBeCloseTo(NOTCH_OFFSET_Y);
         });
@@ -287,6 +287,44 @@ function parseArcs(path: string): ArcSeg[] {
     return arcs;
 }
 
+function countRightEdgeGrooves(path: string, radius: number): number {
+    return rightEdgeGrooveCentresY(path, radius).length;
+}
+
+function rightEdgeGrooveCentresY(path: string, radius: number): number[] {
+    const tokens = path.trim().split(/\s+/);
+    const centres: number[] = [];
+    let y = 0;
+    for (let i = 0; i < tokens.length; i++) {
+        const cmd = tokens[i];
+        if (cmd === 'M' || cmd === 'm') {
+            y = parseFloat(tokens[i + 2]);
+        } else if (cmd === 'v') {
+            y += parseFloat(tokens[i + 1]);
+        } else if (cmd === 'a') {
+            const dy = parseFloat(tokens[i + 7]);
+            const isInwardArc =
+                parseFloat(tokens[i + 1]) === radius &&
+                parseFloat(tokens[i + 5]) === 0 &&
+                parseFloat(tokens[i + 6]) === -radius &&
+                dy === radius;
+            const isStraightSpan = tokens[i + 8] === 'v';
+            const isOutwardArc =
+                tokens[i + 10] === 'a' &&
+                parseFloat(tokens[i + 11]) === radius &&
+                parseFloat(tokens[i + 15]) === 0 &&
+                parseFloat(tokens[i + 16]) === radius &&
+                parseFloat(tokens[i + 17]) === radius;
+            if (isInwardArc && isStraightSpan && isOutwardArc) {
+                const middle = parseFloat(tokens[i + 9]);
+                centres.push(y + radius + middle / 2);
+            }
+            y += dy;
+        }
+    }
+    return centres;
+}
+
 /** Net displacement of the whole path, INCLUDING arc segments (0,0 for a closed loop). */
 function netDisplacementFull(path: string): { dx: number; dy: number } {
     const tokens = path.trim().split(/\s+/);
@@ -304,33 +342,8 @@ function netDisplacementFull(path: string): { dx: number; dy: number } {
     return { dx, dy };
 }
 
-// Absolute y of each semicircle centre of the given radius (centre = y + dy/2).
-function semicircleCentresY(path: string, radius: number): number[] {
-    const tokens = path.trim().split(/\s+/);
-    let y = 0;
-    const centres: number[] = [];
-    for (let i = 0; i < tokens.length; i++) {
-        const cmd = tokens[i];
-        if (cmd === 'M' || cmd === 'm') {
-            y = parseFloat(tokens[i + 2]);
-        } else if (cmd === 'v') {
-            y += parseFloat(tokens[i + 1]);
-        } else if (cmd === 'a') {
-            const rx = parseFloat(tokens[i + 1]);
-            let dy = parseFloat(tokens[i + 7]);
-            if (tokens[i + 8] === 'a' && Math.abs(parseFloat(tokens[i + 9]) - rx) < 1e-9) {
-                dy += parseFloat(tokens[i + 15]);
-                i += 8;
-            }
-            if (Math.abs(rx - radius) < 1e-9) centres.push(y + dy / 2);
-            y += dy;
-        }
-    }
-    return centres;
-}
-
-// Absolute y of the left-edge tab centre (the only arc with dx=0 and dy<0, travelling upward).
-function leftTabCentreY(path: string): number | undefined {
+// Absolute y of the left-edge tab centre.
+function leftTabCentreY(path: string, radius: number): number | undefined {
     const tokens = path.trim().split(/\s+/);
     let y = 0;
     for (let i = 0; i < tokens.length; i++) {
@@ -338,15 +351,23 @@ function leftTabCentreY(path: string): number | undefined {
         if (cmd === 'M' || cmd === 'm') y = parseFloat(tokens[i + 2]);
         else if (cmd === 'v') y += parseFloat(tokens[i + 1]);
         else if (cmd === 'a') {
-            const rx = parseFloat(tokens[i + 1]);
-            let dx = parseFloat(tokens[i + 6]);
-            let dy = parseFloat(tokens[i + 7]);
-            if (tokens[i + 8] === 'a' && Math.abs(parseFloat(tokens[i + 9]) - rx) < 1e-9) {
-                dx += parseFloat(tokens[i + 14]);
-                dy += parseFloat(tokens[i + 15]);
-                i += 8;
+            const dy = parseFloat(tokens[i + 7]);
+            const isInwardTabArc =
+                parseFloat(tokens[i + 1]) === radius &&
+                parseFloat(tokens[i + 5]) === 1 &&
+                parseFloat(tokens[i + 6]) === -radius &&
+                dy === -radius;
+            const isStraightSpan = tokens[i + 8] === 'v';
+            const isOutwardTabArc =
+                tokens[i + 10] === 'a' &&
+                parseFloat(tokens[i + 11]) === radius &&
+                parseFloat(tokens[i + 15]) === 1 &&
+                parseFloat(tokens[i + 16]) === radius &&
+                parseFloat(tokens[i + 17]) === -radius;
+            if (isInwardTabArc && isStraightSpan && isOutwardTabArc) {
+                const middle = parseFloat(tokens[i + 9]);
+                return y - radius + middle / 2;
             }
-            if (dx === 0 && dy < 0) return y + dy / 2;
             y += dy;
         }
     }

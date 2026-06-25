@@ -251,16 +251,20 @@ function renderWidget(
       );
     case 'slider':
       return (
-        <div className="flex h-4 w-24 cursor-pointer items-center">
-          <Slider
-            key={key}
-            defaultValue={[Number(widget.value) || 0]}
-            min={widget.min}
-            max={widget.max}
-            step={widget.step}
-            orientation="horizontal"
-            style={{ '--widget-color': borderColor } as React.CSSProperties}
-          />
+        <div className="flex h-6 min-w-[8rem] cursor-pointer items-center gap-2 px-1" style={commonStyle}>
+          <span className="select-none text-xs font-medium opacity-80">{widget.min}</span>
+          <div className="flex flex-1 items-center">
+            <Slider
+              key={key}
+              defaultValue={[Number(widget.value) || 0]}
+              min={widget.min}
+              max={widget.max}
+              step={widget.step}
+              orientation="horizontal"
+              style={{ '--widget-color': borderColor } as React.CSSProperties}
+            />
+          </div>
+          <span className="select-none text-xs font-medium opacity-80">{widget.max}</span>
         </div>
       );
     default:

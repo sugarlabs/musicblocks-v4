@@ -1,5 +1,3 @@
-// @vitest-environment jsdom
-//
 // Component test for BrickViewFixed. Unlike the pure-math path2 specs, this
 // renders the React component into a DOM (jsdom) via React Testing Library and
 // asserts on the produced markup.

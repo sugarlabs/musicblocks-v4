@@ -55,15 +55,35 @@ export function BrickViewInput(props: BrickViewInputProps) {
 
   // Layout Effect 1: Measures the actual rendered DOM dimensions of the input.
   // We use the inputRef to measure the physical pixel width of the rendered widget.
-  // This must run first so we know exactly how large to draw the SVG brick path.
+  // We use a ResizeObserver to continuously track changes (e.g. when typing in a textbox).
   useLayoutEffect(() => {
-    if (inputRef.current) {
-      const { width, height } = inputRef.current.getBoundingClientRect();
-      if (width !== labelDims.w || height !== labelDims.h) {
-        setLabelDims({ w: width, h: height });
+    if (!inputRef.current) return;
+
+    const observer = new ResizeObserver(() => {
+      if (inputRef.current) {
+        const { width, height } = inputRef.current.getBoundingClientRect();
+        setLabelDims((prev) => {
+          if (prev.w !== width || prev.h !== height) {
+            return { w: width, h: height };
+          }
+          return prev;
+        });
       }
-    }
-  }, [props.widget, labelDims, fontSize, lineHeight]);
+    });
+
+    observer.observe(inputRef.current);
+
+    // Initial measurement
+    const { width, height } = inputRef.current.getBoundingClientRect();
+    setLabelDims((prev) => {
+      if (prev.w !== width || prev.h !== height) {
+        return { w: width, h: height };
+      }
+      return prev;
+    });
+
+    return () => observer.disconnect();
+  }, [fontSize, lineHeight]);
 
   // Layout Effect 2: Generates the SVG outline path based on the measured dimensions.
   // This runs after labelDims updates. It creates the path, and calculates
@@ -206,16 +226,7 @@ function renderWidget(
         </Select>
       );
     case 'textbox':
-      return (
-        <Input
-          key={key}
-          type="text"
-          defaultValue={widget.value as string}
-          maxLength={widget.maxLength}
-          className="h-7 border-black/20 bg-transparent px-2 py-1 transition-colors hover:bg-black/5 focus-visible:ring-1 focus-visible:ring-black/20 dark:border-white/20 dark:hover:bg-white/5 dark:focus-visible:ring-white/20"
-          style={{ ...commonStyle, width: `${Math.max(4, String(widget.value).length + 2)}ch` }}
-        />
-      );
+      return <DynamicTextbox key={key} widget={widget} commonStyle={commonStyle} />;
     case 'numberbox':
       return (
         <Input
@@ -291,4 +302,24 @@ function renderWidget(
     default:
       return null;
   }
+}
+
+function DynamicTextbox({
+  widget,
+  commonStyle,
+}: {
+  widget: any;
+  commonStyle: React.CSSProperties;
+}) {
+  const [val, setVal] = useState(String(widget.value));
+  return (
+    <Input
+      type="text"
+      defaultValue={widget.value as string}
+      onChange={(e) => setVal(e.target.value)}
+      maxLength={widget.maxLength}
+      className="h-7 border-black/20 bg-transparent px-2 py-1 transition-colors hover:bg-black/5 focus-visible:ring-1 focus-visible:ring-black/20 dark:border-white/20 dark:hover:bg-white/5 dark:focus-visible:ring-white/20"
+      style={{ ...commonStyle, width: `${Math.max(4, val.length + 2)}ch` }}
+    />
+  );
 }

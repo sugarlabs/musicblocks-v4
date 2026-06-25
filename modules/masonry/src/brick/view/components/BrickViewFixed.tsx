@@ -286,11 +286,21 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
                       borderColor: props.colorsDefault.border,
                     }}
                   >
-                    <SelectValue />
+                    <div className="grid">
+                      <span
+                        className="pointer-events-none invisible col-start-1 row-start-1 w-max"
+                        aria-hidden="true"
+                      >
+                        {variantOptions.reduce((a, b) => (a.length > b.length ? a : b), '')}
+                      </span>
+                      <span className="col-start-1 row-start-1 flex min-w-0 items-center justify-start">
+                        <SelectValue />
+                      </span>
+                    </div>
                   </SelectTrigger>
                   <SelectContent
                     alignItemWithTrigger={false}
-                    sideOffset={Math.max(0, svgToPx(dims.h) - (labelBounds.y + labelBounds.h)) + 8}
+                    className="min-w-0"
                     style={{
                       backgroundColor: props.colorsDefault.background,
                       borderColor: props.colorsDefault.border,

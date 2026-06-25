@@ -172,9 +172,16 @@ function renderWidget(
             className="h-7 min-w-[4rem] gap-1 border-black/20 bg-transparent px-2 py-1 transition-colors hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/5"
             style={commonStyle}
           >
-            <SelectValue />
+            <div className="grid">
+              <span className="col-start-1 row-start-1 invisible w-max pointer-events-none" aria-hidden="true">
+                {widget.options.reduce((a, b) => (String(a).length > String(b).length ? String(a) : String(b)), '')}
+              </span>
+              <span className="col-start-1 row-start-1 flex items-center justify-start min-w-0">
+                <SelectValue />
+              </span>
+            </div>
           </SelectTrigger>
-          <SelectContent style={{ backgroundColor, color, borderColor }}>
+          <SelectContent alignItemWithTrigger={false} className="min-w-0" style={{ backgroundColor, color, borderColor }}>
             {widget.options.map((opt) => (
               <SelectItem
                 key={opt}

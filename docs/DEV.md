@@ -4,8 +4,7 @@
 
 ### Without Docker
 
-This is a _**TypeScript**_ project that uses _**React**_. You'll just need
-_[**Node.js**](https://nodejs.org/en) v16_ and _**npm**_ installed on your development machine.
+This is a _**TypeScript**_ project that uses _**React**_. You'll need Node.js v24+ and npm v11+ installed on your development machine.
 Although, this is sufficient to run, build, and test the project as a whole, you might need some
 extra tools for other development tasks.
 
@@ -24,10 +23,12 @@ npm i -g ts-node
 
 _**Note:**_ Users on _Linux_ and _MacOS_ are required to add a `sudo` before these commands.
 
-Check installation using
-
 ```bash
-node -v && npm -v && tsc -v && ts-node -v && http-server -v
+v16.14.0
+8.3.1
+Version 4.6.2
+v10.6.0
+v14.1.0
 ```
 
 Output should look like
@@ -131,6 +132,91 @@ Windows) this repository using
     docker compose down
     ```
 
+---
+
+### 🪟 Windows Setup Notes (Important)
+
+This project works on Windows, but some commands and tools behave differently compared to Linux/macOS terminals. Follow the notes below to avoid common issues.
+
+---
+
+### Use PowerShell 7 (Recommended)
+
+Older versions of PowerShell (v5 or below) may not support some commands properly (like `&&` chaining).
+
+Check your PowerShell version:
+
+```powershell
+$PSVersionTable.PSVersion
+```
+
+If your version is below 7, install PowerShell 7:
+
+[Learn Powershell 7](https://learn.microsoft.com/powershell/)
+
+### Command Separator Issue (&&)
+
+In some Windows terminals (especially older CMD or PowerShell versions), `&&` may not work consistently.
+
+Instead of running:
+
+```bash
+node -v && npm -v && tsc -v && ts-node -v && http-server -v
+```
+
+Run each command separately:
+
+```bash
+node -v
+npm -v
+tsc -v
+ts-node -v
+http-server -v
+```
+
+### Script Execution Policy Error (tsc / ts-node)
+
+If you see an error like:
+
+```error
+tsc : File ... cannot be loaded because running scripts is disabled on this system
+```
+
+This is due to PowerShell execution policy.
+
+To fix it (optional), run PowerShell as Administrator and execute:
+
+```Powershell
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+**Note: Only change execution policy if you understand the security implications.**
+
+### Node.js Version Recommendation
+
+This project is tested with Node.js v16.
+
+Check your version:
+
+```bash
+node -v
+```
+
+If needed, install Node.js from:
+[Node.js](https://nodejs.org/)
+
+### npm Global Packages (Optional Tools)
+
+The following tools are optional and not required for the app itself, but may help in development:
+
+```bash
+npm i -g http-server
+npm i -g typescript
+npm i -g ts-node
+```
+
+**Note: On Windows, you may need to run the terminal as Administrator.**
+
 ## Commands
 
 **Note: This repository uses `sugarlabs/musicblocks-v4-lib` as an _npm_ package which is published to
@@ -198,10 +284,11 @@ After you are set-up, the steps you take depend on what you want to do:
         - For running end-to-end tests, run
 
             ```bash
-            ## In 1 terminal
+            ## In terminal 1
             npm run build
             npm run preview
-            ## In another terminal
+
+            ## In terminal 2
             npm run test:e2e
             ```
 
@@ -227,7 +314,7 @@ After you are set-up, the steps you take depend on what you want to do:
     node file.js
     ```
 
-  - To transpile a _TypeScipt_ file, say `file.ts`, to _JavaScript_, run
+  - To transpile a _TypeScript_ file, say `file.ts`, to _JavaScript_, run
 
     ```bash
     tsc file.ts

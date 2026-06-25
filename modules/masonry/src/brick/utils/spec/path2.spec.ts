@@ -192,7 +192,7 @@ describe('path V2: generateBrickOutline (integration)', () => {
         });
 
         it('the left tab centre aligns with the first right groove, both at NOTCH_OFFSET_Y', () => {
-            const s = 4;
+            const s = 2;
             const r = generateBrickOutline({
                 strokeWidth: s,
                 widgetDims: { w: 60, h: 20 },
@@ -200,7 +200,7 @@ describe('path V2: generateBrickOutline (integration)', () => {
                 hasOutputNotch: true,
             });
             const grooveCentres = rightEdgeGrooveCentresY(r.path, H_NOTCH_RADIUS + s);
-            const tabCentre = leftTabCentreY(r.path);
+            const tabCentre = leftTabCentreY(r.path, H_NOTCH_RADIUS);
             expect(grooveCentres[0]).toBeCloseTo(NOTCH_OFFSET_Y);
             expect(tabCentre).toBeCloseTo(NOTCH_OFFSET_Y);
         });
@@ -342,8 +342,8 @@ function netDisplacementFull(path: string): { dx: number; dy: number } {
     return { dx, dy };
 }
 
-// Absolute y of the left-edge tab centre (the only arc with dx=0 and dy<0, travelling upward).
-function leftTabCentreY(path: string): number | undefined {
+// Absolute y of the left-edge tab centre.
+function leftTabCentreY(path: string, radius: number): number | undefined {
     const tokens = path.trim().split(/\s+/);
     let y = 0;
     for (let i = 0; i < tokens.length; i++) {
@@ -351,15 +351,23 @@ function leftTabCentreY(path: string): number | undefined {
         if (cmd === 'M' || cmd === 'm') y = parseFloat(tokens[i + 2]);
         else if (cmd === 'v') y += parseFloat(tokens[i + 1]);
         else if (cmd === 'a') {
-            const rx = parseFloat(tokens[i + 1]);
-            let dx = parseFloat(tokens[i + 6]);
-            let dy = parseFloat(tokens[i + 7]);
-            if (tokens[i + 8] === 'a' && Math.abs(parseFloat(tokens[i + 9]) - rx) < 1e-9) {
-                dx += parseFloat(tokens[i + 14]);
-                dy += parseFloat(tokens[i + 15]);
-                i += 8;
+            const dy = parseFloat(tokens[i + 7]);
+            const isInwardTabArc =
+                parseFloat(tokens[i + 1]) === radius &&
+                parseFloat(tokens[i + 5]) === 1 &&
+                parseFloat(tokens[i + 6]) === -radius &&
+                dy === -radius;
+            const isStraightSpan = tokens[i + 8] === 'v';
+            const isOutwardTabArc =
+                tokens[i + 10] === 'a' &&
+                parseFloat(tokens[i + 11]) === radius &&
+                parseFloat(tokens[i + 15]) === 1 &&
+                parseFloat(tokens[i + 16]) === radius &&
+                parseFloat(tokens[i + 17]) === -radius;
+            if (isInwardTabArc && isStraightSpan && isOutwardTabArc) {
+                const middle = parseFloat(tokens[i + 9]);
+                return y - radius + middle / 2;
             }
-            if (dx === 0 && dy < 0) return y + dy / 2;
             y += dy;
         }
     }

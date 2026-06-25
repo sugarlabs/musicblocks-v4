@@ -118,6 +118,7 @@ export function BrickViewInput(props: BrickViewInputProps) {
         // on the first pass, allowing inputRef to measure its true, natural width.
         width={labelBounds.w || 9999}
         height={labelBounds.h || 9999}
+        style={{ overflow: 'visible' }}
       >
         <div
           className="flex items-center justify-center"
@@ -173,15 +174,25 @@ function renderWidget(
             style={commonStyle}
           >
             <div className="grid">
-              <span className="col-start-1 row-start-1 invisible w-max pointer-events-none" aria-hidden="true">
-                {widget.options.reduce((a, b) => (String(a).length > String(b).length ? String(a) : String(b)), '')}
+              <span
+                className="pointer-events-none invisible col-start-1 row-start-1 w-max"
+                aria-hidden="true"
+              >
+                {widget.options.reduce(
+                  (a, b) => (String(a).length > String(b).length ? String(a) : String(b)),
+                  '',
+                )}
               </span>
-              <span className="col-start-1 row-start-1 flex items-center justify-start min-w-0">
+              <span className="col-start-1 row-start-1 flex min-w-0 items-center justify-start">
                 <SelectValue />
               </span>
             </div>
           </SelectTrigger>
-          <SelectContent alignItemWithTrigger={false} className="min-w-0" style={{ backgroundColor, color, borderColor }}>
+          <SelectContent
+            alignItemWithTrigger={false}
+            className="min-w-0"
+            style={{ backgroundColor, color, borderColor }}
+          >
             {widget.options.map((opt) => (
               <SelectItem
                 key={opt}
@@ -226,23 +237,30 @@ function renderWidget(
       );
     case 'toggle':
       return (
-        <label key={key} className="relative flex h-7 cursor-pointer items-center rounded-full p-0.5" style={{ ...commonStyle, backgroundColor: borderColor }}>
+        <label
+          key={key}
+          className="relative flex h-7 cursor-pointer items-center rounded-full p-0.5"
+          style={{ ...commonStyle, backgroundColor: borderColor }}
+        >
           <input
             type="checkbox"
             className="peer sr-only"
             defaultChecked={widget.value as boolean}
           />
           {/* Thumb background */}
-          <div className="absolute left-0.5 top-0.5 h-6 w-[calc(50%-2px)] rounded-full shadow-sm transition-transform duration-200 ease-in-out peer-checked:translate-x-full" style={{ backgroundColor }} />
-          
+          <div
+            className="absolute top-0.5 left-0.5 h-6 w-[calc(50%-2px)] rounded-full shadow-sm transition-transform duration-200 ease-in-out peer-checked:translate-x-full"
+            style={{ backgroundColor }}
+          />
+
           <div className="relative z-10 flex w-full items-center">
             {widget.labels && (
-              <span className="flex-1 select-none px-3 text-center text-xs font-bold">
+              <span className="flex-1 px-3 text-center text-xs font-bold select-none">
                 {widget.labels.off}
               </span>
             )}
             {widget.labels && (
-              <span className="flex-1 select-none px-3 text-center text-xs font-bold">
+              <span className="flex-1 px-3 text-center text-xs font-bold select-none">
                 {widget.labels.on}
               </span>
             )}
@@ -251,8 +269,11 @@ function renderWidget(
       );
     case 'slider':
       return (
-        <div className="flex h-6 min-w-[8rem] cursor-pointer items-center gap-2 px-1" style={commonStyle}>
-          <span className="select-none text-xs font-medium opacity-80">{widget.min}</span>
+        <div
+          className="flex h-6 min-w-[8rem] cursor-pointer items-center gap-2 px-1"
+          style={commonStyle}
+        >
+          <span className="text-xs font-medium opacity-80 select-none">{widget.min}</span>
           <div className="flex flex-1 items-center">
             <Slider
               key={key}
@@ -264,7 +285,7 @@ function renderWidget(
               style={{ '--widget-color': borderColor } as React.CSSProperties}
             />
           </div>
-          <span className="select-none text-xs font-medium opacity-80">{widget.max}</span>
+          <span className="text-xs font-medium opacity-80 select-none">{widget.max}</span>
         </div>
       );
     default:

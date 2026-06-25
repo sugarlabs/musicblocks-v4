@@ -44,8 +44,12 @@ function Slider({
           <SliderPrimitive.Thumb
             data-slot="slider-thumb"
             key={index}
-            className="border-ring ring-ring/50 relative block size-3 shrink-0 rounded-full border bg-white transition-[color,box-shadow] select-none after:absolute after:-inset-2 hover:ring-3 focus-visible:ring-3 focus-visible:outline-hidden active:ring-3 disabled:pointer-events-none disabled:opacity-50"
-          />
+            className="border-ring ring-ring/50 group relative block size-3 shrink-0 rounded-full border bg-white transition-[color,box-shadow] select-none after:absolute after:-inset-2 hover:ring-3 focus-visible:ring-3 focus-visible:outline-hidden active:ring-3 disabled:pointer-events-none disabled:opacity-50"
+          >
+            <div className="pointer-events-none absolute -top-7 left-1/2 flex -translate-x-1/2 items-center justify-center rounded bg-[var(--widget-color,#333)] px-2 py-0.5 text-xs font-semibold opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 group-active:opacity-100 after:absolute after:-bottom-1 after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-[var(--widget-color,#333)]">
+              <SliderPrimitive.Value />
+            </div>
+          </SliderPrimitive.Thumb>
         ))}
       </SliderPrimitive.Control>
     </SliderPrimitive.Root>

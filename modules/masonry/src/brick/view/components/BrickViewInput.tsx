@@ -6,7 +6,6 @@ import { createBrickOutlineGenerator } from '../../utils/path2';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../ui/select2';
 import { Input } from '../../../ui/input';
-import { Switch } from '../../../ui/switch';
 import { Slider } from '../../../ui/slider';
 
 type OmitTooltip<T> = Omit<T, 'tooltipText'>;
@@ -308,7 +307,7 @@ function DynamicTextbox({
   widget,
   commonStyle,
 }: {
-  widget: any;
+  widget: Extract<WidgetInput, { type: 'textbox' }>;
   commonStyle: React.CSSProperties;
 }) {
   const [val, setVal] = useState(String(widget.value));

@@ -180,15 +180,15 @@ describe('path V2: generateBrickOutline (integration)', () => {
     });
 
     describe('notch wiring through the public API', () => {
-        it('emits one right-edge groove per arg slot, radius H_NOTCH_RADIUS + s/2', () => {
+        it('emits one right-edge groove per arg slot, radius H_NOTCH_RADIUS + s', () => {
             const s = 2;
             const r = generateBrickOutline({
                 strokeWidth: s,
                 widgetDims: { w: 60, h: 20 },
                 paramArgDims: [oneArg, oneArg, oneArg],
             });
-            const grooves = parseArcs(r.path).filter((a) => a.rx === H_NOTCH_RADIUS + s / 2);
-            expect(grooves).toHaveLength(3);
+            const grooves = countRightEdgeGrooves(r.path, H_NOTCH_RADIUS + s);
+            expect(grooves).toBe(3);
         });
 
         it('the left tab centre aligns with the first right groove, both at NOTCH_OFFSET_Y', () => {
@@ -285,6 +285,30 @@ function parseArcs(path: string): ArcSeg[] {
         }
     }
     return arcs;
+}
+
+function countRightEdgeGrooves(path: string, radius: number): number {
+    const tokens = path.trim().split(/\s+/);
+    let count = 0;
+    for (let i = 0; i < tokens.length; i++) {
+        const isInwardArc =
+            tokens[i] === 'a' &&
+            parseFloat(tokens[i + 1]) === radius &&
+            parseFloat(tokens[i + 5]) === 0 &&
+            parseFloat(tokens[i + 6]) === -radius &&
+            parseFloat(tokens[i + 7]) === radius;
+        const isStraightSpan = tokens[i + 8] === 'v';
+        const isOutwardArc =
+            tokens[i + 10] === 'a' &&
+            parseFloat(tokens[i + 11]) === radius &&
+            parseFloat(tokens[i + 15]) === 0 &&
+            parseFloat(tokens[i + 16]) === radius &&
+            parseFloat(tokens[i + 17]) === radius;
+        if (isInwardArc && isStraightSpan && isOutwardArc) {
+            count++;
+        }
+    }
+    return count;
 }
 
 /** Net displacement of the whole path, INCLUDING arc segments (0,0 for a closed loop). */

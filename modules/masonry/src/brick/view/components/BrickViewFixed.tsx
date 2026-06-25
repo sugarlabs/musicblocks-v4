@@ -206,7 +206,7 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
       xmlns="http://www.w3.org/2000/svg"
       width={svgToPx(dims.w) + maxArgW}
       height={svgToPx(dims.h)}
-      style={{ overflow: 'visible' }}
+      className="overflow-visible"
     >
       <path
         d={path}
@@ -225,29 +225,18 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
           height={labelBounds.h || 9999}
         >
           <div
+            className="flex items-center"
             style={{
               width: labelBounds.w,
               height: labelBounds.h,
-              display: 'flex',
-              alignItems: 'center',
             }}
           >
-            <div
-              ref={labelRef}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                width: 'max-content',
-              }}
-            >
+            <div ref={labelRef} className="flex w-max items-center gap-1">
               <p
+                className="m-0 max-w-none whitespace-nowrap"
                 style={{
-                  maxWidth: 'unset',
-                  margin: 0,
                   fontSize,
                   lineHeight: `${lineHeight}px`,
-                  whiteSpace: 'nowrap',
                   color: props.colorsDefault.foreground,
                 }}
               >
@@ -257,13 +246,14 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
                 <img
                   src={labelGlyph.src}
                   alt="glyph"
-                  style={{ width: fontSize, height: fontSize, objectFit: 'contain', flexShrink: 0 }}
+                  className="shrink-0 object-contain"
+                  style={{ width: fontSize, height: fontSize }}
                 />
               )}
               {labelGlyph?.name && !labelGlyph.src && (
                 <span
-                  className={`glyph-${labelGlyph.name}`}
-                  style={{ color: labelGlyph.color, fontSize, flexShrink: 0 }}
+                  className={`glyph-${labelGlyph.name} shrink-0`}
+                  style={{ color: labelGlyph.color, fontSize }}
                 />
               )}
             </div>
@@ -296,24 +286,21 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
             height={bounds.h || 9999}
           >
             <div
+              className="flex items-center"
               style={{
                 width: bounds.w,
                 height: bounds.h,
-                display: 'flex',
-                alignItems: 'center',
               }}
             >
               <p
                 ref={(el) => {
                   paramRefs.current[i] = el;
                 }}
+                className="m-0 max-w-none whitespace-nowrap"
                 style={{
-                  maxWidth: 'unset',
-                  margin: 0,
                   // Smaller than the main label so params read as secondary.
                   fontSize: paramFontSize,
                   lineHeight: `${paramLineHeight}px`,
-                  whiteSpace: 'nowrap',
                   // Same color as the main label, sitting next to the arg notch.
                   color: props.colorsDefault.foreground,
                 }}

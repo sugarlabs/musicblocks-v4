@@ -119,14 +119,14 @@ export const VariantWidget: Story = {
   args: {
     kind: 'expression',
     colorsDefault: {
-      background: '#e74c3c',
-      foreground: '#ffffff',
-      border: '#c0392b',
+      background: '#48ff00ff',
+      foreground: '#000000ff',
+      border: '#06ca06ff',
     },
     widget: {
       type: 'variant',
-      options: ['+', '-', '*', '/'],
-      value: '+',
+      options: ['Option 1', 'Option 2', 'Option 3'],
+      value: 'Option 1',
     },
     paramArgs: [
       {

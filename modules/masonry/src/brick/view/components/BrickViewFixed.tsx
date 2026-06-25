@@ -278,11 +278,12 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
               {isVariantWidget && (
                 <Select value={variantValue} onValueChange={() => {}}>
                   <SelectTrigger
-                    className="h-auto border-none bg-transparent p-0 pr-1 font-bold shadow-none focus:ring-0 [&>svg]:opacity-100"
+                    className="h-7 min-w-[4rem] gap-1 bg-transparent px-2 py-1 transition-colors hover:bg-black/5 dark:hover:bg-white/5"
                     style={{
                       fontSize,
                       lineHeight: `${lineHeight}px`,
                       color: props.colorsDefault.foreground,
+                      borderColor: props.colorsDefault.border,
                     }}
                   >
                     <SelectValue />
@@ -300,7 +301,7 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
                       <SelectItem
                         key={opt}
                         value={opt}
-                        className="focus:bg-black/20 focus:text-inherit data-[highlighted]:bg-black/20 data-[highlighted]:text-inherit dark:focus:bg-white/20 dark:data-[highlighted]:bg-white/20"
+                        className="focus:bg-black/10 focus:text-inherit dark:focus:bg-white/10"
                       >
                         {opt}
                       </SelectItem>

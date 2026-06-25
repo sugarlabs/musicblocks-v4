@@ -7,15 +7,18 @@ import type {
   StatementBrickViewProps,
   ValueBrickViewProps,
   ParamArgPair,
-} from '@/@types/brick';
+} from '../../../@types/brick';
 
 import { SCALE_LEVEL_CONFIG } from '../../utils/constants';
 import { BrickOutlineGenerator } from '../../utils/path2';
 
-// Ensure the widget is exclusively of type WidgetDisplay (no input widgets and no variant)
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../ui/select';
+
+// Ensure the widget is exclusively of type WidgetDisplay (no input widgets)
 type WidgetDisplay =
   | { type: 'label'; text: string; glyph?: { name?: string; src?: string; color?: string } }
-  | { type: 'graphic'; src: string };
+  | { type: 'graphic'; src: string }
+  | { type: 'variant'; options: string[]; value: string };
 
 // Utility to explicitly strip out tooltipText from inherited types
 type OmitTooltip<T> = Omit<T, 'tooltipText'>;
@@ -59,8 +62,20 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
   const paramRefs = useRef<(HTMLParagraphElement | null)[]>([]);
 
   const isLabelWidget = props.widget.type === 'label';
+  const isVariantWidget = props.widget.type === 'variant';
+
   const labelText = props.widget.type === 'label' ? props.widget.text : '';
   const labelGlyph = props.widget.type === 'label' ? props.widget.glyph : undefined;
+
+  const variantOptions = props.widget.type === 'variant' ? props.widget.options : [];
+  const variantValue = props.widget.type === 'variant' ? props.widget.value : '';
+
+  const widgetDep =
+    props.widget.type === 'label'
+      ? props.widget.text
+      : props.widget.type === 'variant'
+        ? props.widget.value
+        : '';
 
   const generateOutline = useMemo(
     () =>
@@ -107,7 +122,7 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
       setLabelDims(newLabelDims);
       setParamDimsList(newParamDimsList);
     }
-  }, [labelText, paramArgs.length, labelDims, paramDimsList, fontSize, lineHeight]);
+  }, [widgetDep, paramArgs.length, labelDims, paramDimsList, fontSize, lineHeight]);
 
   const hasConnectionPrev = 'hasConnectionPrev' in props ? props.hasConnectionPrev : false;
   const hasConnectionNext = 'hasConnectionNext' in props ? props.hasConnectionNext : false;
@@ -217,7 +232,7 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
       />
 
       {/* Main Widget */}
-      {isLabelWidget && (
+      {(isLabelWidget || isVariantWidget) && (
         <foreignObject
           x={labelBounds.x}
           y={labelBounds.y}
@@ -232,29 +247,66 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
             }}
           >
             <div ref={labelRef} className="flex w-max items-center gap-1">
-              <p
-                className="m-0 max-w-none whitespace-nowrap"
-                style={{
-                  fontSize,
-                  lineHeight: `${lineHeight}px`,
-                  color: props.colorsDefault.foreground,
-                }}
-              >
-                {labelText}
-              </p>
-              {labelGlyph?.src && (
-                <img
-                  src={labelGlyph.src}
-                  alt="glyph"
-                  className="shrink-0 object-contain"
-                  style={{ width: fontSize, height: fontSize }}
-                />
+              {isLabelWidget && (
+                <>
+                  <p
+                    className="m-0 max-w-none whitespace-nowrap"
+                    style={{
+                      fontSize,
+                      lineHeight: `${lineHeight}px`,
+                      color: props.colorsDefault.foreground,
+                    }}
+                  >
+                    {labelText}
+                  </p>
+                  {labelGlyph?.src && (
+                    <img
+                      src={labelGlyph.src}
+                      alt="glyph"
+                      className="shrink-0 object-contain"
+                      style={{ width: fontSize, height: fontSize }}
+                    />
+                  )}
+                  {labelGlyph?.name && !labelGlyph.src && (
+                    <span
+                      className={`glyph-${labelGlyph.name} shrink-0`}
+                      style={{ color: labelGlyph.color, fontSize }}
+                    />
+                  )}
+                </>
               )}
-              {labelGlyph?.name && !labelGlyph.src && (
-                <span
-                  className={`glyph-${labelGlyph.name} shrink-0`}
-                  style={{ color: labelGlyph.color, fontSize }}
-                />
+              {isVariantWidget && (
+                <Select value={variantValue} onValueChange={() => {}}>
+                  <SelectTrigger
+                    className="h-auto border-none bg-transparent p-0 pr-1 font-bold shadow-none focus:ring-0 [&>svg]:opacity-100"
+                    style={{
+                      fontSize,
+                      lineHeight: `${lineHeight}px`,
+                      color: props.colorsDefault.foreground,
+                    }}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent
+                    alignItemWithTrigger={false}
+                    sideOffset={Math.max(0, svgToPx(dims.h) - (labelBounds.y + labelBounds.h)) + 8}
+                    style={{
+                      backgroundColor: props.colorsDefault.background,
+                      borderColor: props.colorsDefault.border,
+                      color: props.colorsDefault.foreground,
+                    }}
+                  >
+                    {variantOptions.map((opt) => (
+                      <SelectItem
+                        key={opt}
+                        value={opt}
+                        className="focus:bg-black/20 focus:text-inherit data-[highlighted]:bg-black/20 data-[highlighted]:text-inherit dark:focus:bg-white/20 dark:data-[highlighted]:bg-white/20"
+                      >
+                        {opt}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
             </div>
           </div>

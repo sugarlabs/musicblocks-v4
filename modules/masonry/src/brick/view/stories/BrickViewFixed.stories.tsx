@@ -114,3 +114,29 @@ export const StatementWithNesting: Story = {
     },
   },
 };
+
+export const VariantWidget: Story = {
+  args: {
+    kind: 'expression',
+    colorsDefault: {
+      background: '#e74c3c',
+      foreground: '#ffffff',
+      border: '#c0392b',
+    },
+    widget: {
+      type: 'variant',
+      options: ['+', '-', '*', '/'],
+      value: '+',
+    },
+    paramArgs: [
+      {
+        param: 'num 1',
+        argDims: { w: 40, h: 20 },
+      },
+      {
+        param: 'num 2',
+        argDims: { w: 40, h: 20 },
+      },
+    ],
+  },
+};

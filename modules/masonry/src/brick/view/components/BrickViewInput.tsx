@@ -226,16 +226,27 @@ function renderWidget(
       );
     case 'toggle':
       return (
-        <label key={key} className="flex cursor-pointer items-center gap-2" style={commonStyle}>
-          <Switch
+        <label key={key} className="relative flex h-7 cursor-pointer items-center rounded-full p-0.5" style={{ ...commonStyle, backgroundColor: borderColor }}>
+          <input
+            type="checkbox"
+            className="peer sr-only"
             defaultChecked={widget.value as boolean}
-            style={{ '--widget-color': borderColor } as React.CSSProperties}
           />
-          {widget.labels && (
-            <span className="select-none">
-              {widget.value ? widget.labels.on : widget.labels.off}
-            </span>
-          )}
+          {/* Thumb background */}
+          <div className="absolute left-0.5 top-0.5 h-6 w-[calc(50%-2px)] rounded-full shadow-sm transition-transform duration-200 ease-in-out peer-checked:translate-x-full" style={{ backgroundColor }} />
+          
+          <div className="relative z-10 flex w-full items-center">
+            {widget.labels && (
+              <span className="flex-1 select-none px-3 text-center text-xs font-bold">
+                {widget.labels.off}
+              </span>
+            )}
+            {widget.labels && (
+              <span className="flex-1 select-none px-3 text-center text-xs font-bold">
+                {widget.labels.on}
+              </span>
+            )}
+          </div>
         </label>
       );
     case 'slider':

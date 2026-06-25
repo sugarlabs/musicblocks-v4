@@ -8,7 +8,7 @@
     "test": "vitest --passWithNoTests",
     "coverage": "vitest run --coverage --passWithNoTests",
     "check": "tsc",
-    "dev": "ts-node src/sample/program-test.ts",
+    "dev": "tsx src/sample/program-test.ts",
     "lint": "eslint src"
   }
 }

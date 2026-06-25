@@ -10,7 +10,7 @@ Although, this is sufficient to run, build, and test the project as a whole, you
 extra tools for other development tasks.
 
 You'll need _**tsc**_ (_TypeScript Compiler_) to manually compile `.ts` files. You'll need
-_**ts-node**_ (_Node.js executable for TypeScript_) to manually execute `.ts` scripts directly. Finally,
+_**tsx**_ (_Node.js executable for TypeScript_) to manually execute `.ts` scripts directly. Finally,
 you'll need an _HTTP_ server like _**http-server**_ (_a HTTP server program_), if you want to serve
 files manually.
 
@@ -19,7 +19,7 @@ Once _**npm**_ is installed, to install the above, run
 ```bash
 npm i -g http-server
 npm i -g typescript
-npm i -g ts-node
+npm i -g tsx
 ```
 
 _**Note:**_ Users on _Linux_ and _MacOS_ are required to add a `sudo` before these commands.
@@ -27,7 +27,7 @@ _**Note:**_ Users on _Linux_ and _MacOS_ are required to add a `sudo` before the
 Check installation using
 
 ```bash
-node -v && npm -v && tsc -v && ts-node -v && http-server -v
+node -v && npm -v && tsc -v && tsx --version && http-server -v
 ```
 
 Output should look like
@@ -36,7 +36,7 @@ Output should look like
 v16.14.0
 8.3.1
 Version 4.6.2
-v10.6.0
+tsx v4.20.3
 v14.1.0
 ```
 
@@ -101,11 +101,11 @@ Windows) this repository using
     input/output is connected to the terminal.
 
 6. _**Node.js**_ (_Node.js Runtime_), _**npm**_ (_Node.js Package Manager_), _**tsc**_ (_TypeScript
-    Compiler_), _**ts-node**_ (_Node.js executable for TypeScript_), and _**http-server**_ (_a HTTP
+    Compiler_), _**tsx**_ (_Node.js executable for TypeScript_), and _**http-server**_ (_a HTTP
     server program_) should be installed. Check using
 
     ```bash
-    node -v && npm -v && tsc -v && ts-node -v && http-server -v
+    node -v && npm -v && tsc -v && tsx --version && http-server -v
     ```
 
     Output should look like
@@ -114,7 +114,7 @@ Windows) this repository using
     v16.14.0
     8.3.1
     Version 4.6.2
-    v10.6.0
+    tsx v4.20.3
     v14.1.0
     ```
 
@@ -212,7 +212,7 @@ After you are set-up, the steps you take depend on what you want to do:
 - **Miscellaneous commands**
 
   _**Note:**_ This requires _**Node.js**_ (_Node.js Runtime_), _**tsc**_ (_TypeScript Compiler_), and
-  _**ts-node**_ (_Node.js executable for TypeScript_) to be installed. If you are using _Docker_, they'll
+  _**tsx**_ (_Node.js executable for TypeScript_) to be installed. If you are using _Docker_, they'll
   be pre-installed in the container.
 
   - To launch the _Node.js runtime_, run
@@ -238,7 +238,7 @@ After you are set-up, the steps you take depend on what you want to do:
   - To run a _TypeScript_ file directly, say `file.ts`, run
 
     ```bash
-    ts-node file.ts
+    tsx file.ts
     ```
 
 ## Editor

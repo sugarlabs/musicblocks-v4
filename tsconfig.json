@@ -22,13 +22,5 @@
       "vite/client",
       "vitest/globals"
     ]
-  },
-  /**
-   * `compilerOptions.module` should be UMD to execute modules with import statements
-   */
-  "ts-node": {
-    "compilerOptions": {
-      "module": "commonjs"
-    }
   }
 }

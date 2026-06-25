@@ -20,9 +20,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const colorsDefault = {
-  background: '#e67e22',
-  foreground: '#ffffff',
-  border: '#d35400',
+      background: '#f1c40f',
+      foreground: '#333333',
+      border: '#f39c12',
 };
 
 export const SelectWidget: Story = {

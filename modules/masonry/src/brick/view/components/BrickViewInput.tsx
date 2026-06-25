@@ -4,6 +4,11 @@ import type { Bounds, Size, ValueBrickViewProps } from '@/@types/brick';
 import { SCALE_LEVEL_CONFIG } from '../../utils/constants';
 import { createBrickOutlineGenerator } from '../../utils/path2';
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../ui/select2';
+import { Input } from '../../../ui/input';
+import { Switch } from '../../../ui/switch';
+import { Slider } from '../../../ui/slider';
+
 type OmitTooltip<T> = Omit<T, 'tooltipText'>;
 
 // Extract only the interactive input widgets from ValueBrickViewProps.
@@ -95,7 +100,7 @@ export function BrickViewInput(props: BrickViewInputProps) {
       xmlns="http://www.w3.org/2000/svg"
       width={svgToPx(dims.w)}
       height={svgToPx(dims.h)}
-      style={{ overflow: 'visible' }}
+      className="overflow-visible"
     >
       <path
         d={path}
@@ -115,30 +120,21 @@ export function BrickViewInput(props: BrickViewInputProps) {
         height={labelBounds.h || 9999}
       >
         <div
+          className="flex items-center justify-center"
           style={{
             width: labelBounds.w,
             height: labelBounds.h,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
           }}
         >
-          <div
-            ref={inputRef}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              width: 'max-content',
-              // CRITICAL: flexShrink: 0 prevents the layout from getting stuck!
-              // If we switch to a larger widget, the parent div (width: labelBounds.w)
-              // is temporarily too small. flexShrink: 0 forces this div to overflow
-              // instead of squishing, ensuring getBoundingClientRect measures the true width.
-              flexShrink: 0,
-              // Padding to give some space between the input and the brick border
-              padding: '0 8px',
-            }}
-          >
-            {renderWidget(props.widget, fontSize, lineHeight, props.colorsDefault.foreground)}
+          <div ref={inputRef} className="flex w-max shrink-0 items-center px-2">
+            {renderWidget(
+              props.widget,
+              fontSize,
+              lineHeight,
+              props.colorsDefault.foreground,
+              props.colorsDefault.border,
+              props.colorsDefault.background,
+            )}
           </div>
         </div>
       </foreignObject>
@@ -146,15 +142,17 @@ export function BrickViewInput(props: BrickViewInputProps) {
   );
 }
 
-function renderWidget(widget: WidgetInput, fontSize: number, lineHeight: number, color: string) {
+function renderWidget(
+  widget: WidgetInput,
+  fontSize: number,
+  lineHeight: number,
+  color: string,
+  borderColor: string,
+  backgroundColor: string,
+) {
   const commonStyle: React.CSSProperties = {
     fontSize,
     lineHeight: `${lineHeight}px`,
-    margin: 0,
-    fontFamily: 'sans-serif',
-    background: 'transparent',
-    border: 'none',
-    outline: 'none',
     color,
   };
 
@@ -169,54 +167,83 @@ function renderWidget(widget: WidgetInput, fontSize: number, lineHeight: number,
   switch (widget.type) {
     case 'select':
       return (
-        <select key={key} style={{ ...commonStyle, cursor: 'pointer' }} defaultValue={widget.value}>
-          {widget.options.map((opt) => (
-            <option key={opt} value={opt} style={{ color: '#000', background: '#fff' }}>
-              {opt}
-            </option>
-          ))}
-        </select>
+        <Select key={key} defaultValue={String(widget.value)}>
+          <SelectTrigger
+            className="h-7 min-w-[4rem] gap-1 border-black/20 bg-transparent px-2 py-1 transition-colors hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/5"
+            style={commonStyle}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent style={{ backgroundColor, color, borderColor }}>
+            {widget.options.map((opt) => (
+              <SelectItem
+                key={opt}
+                value={String(opt)}
+                className="focus:bg-black/10 focus:text-inherit dark:focus:bg-white/10"
+              >
+                {opt}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       );
     case 'textbox':
       return (
-        <input
+        <Input
           key={key}
           type="text"
-          defaultValue={widget.value}
+          defaultValue={widget.value as string}
           maxLength={widget.maxLength}
-          style={{ ...commonStyle, width: `${Math.max(4, widget.value.length + 2)}ch` }}
+          className="h-7 border-black/20 bg-transparent px-2 py-1 transition-colors hover:bg-black/5 focus-visible:ring-1 focus-visible:ring-black/20 dark:border-white/20 dark:hover:bg-white/5 dark:focus-visible:ring-white/20"
+          style={{ ...commonStyle, width: `${Math.max(4, String(widget.value).length + 2)}ch` }}
         />
       );
     case 'numberbox':
       return (
-        <input
+        <Input
           key={key}
           type="number"
-          defaultValue={widget.value}
+          defaultValue={widget.value as number}
           min={widget.min}
           max={widget.max}
           step={widget.step}
-          style={{ ...commonStyle, width: '80px' }}
+          className="h-7 border-black/20 bg-transparent px-2 py-1 transition-colors hover:bg-black/5 focus-visible:ring-1 focus-visible:ring-black/20 dark:border-white/20 dark:hover:bg-white/5 dark:focus-visible:ring-white/20"
+          style={
+            {
+              ...commonStyle,
+              'width': '80px',
+              '--widget-color': borderColor,
+            } as React.CSSProperties
+          }
         />
       );
     case 'toggle':
       return (
-        <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '4px', color, ...commonStyle }}>
-          <input type="checkbox" defaultChecked={widget.value as boolean} style={{ margin: 0 }} />
-          {widget.labels && <span>{widget.value ? widget.labels.on : widget.labels.off}</span>}
+        <label key={key} className="flex cursor-pointer items-center gap-2" style={commonStyle}>
+          <Switch
+            defaultChecked={widget.value as boolean}
+            style={{ '--widget-color': borderColor } as React.CSSProperties}
+          />
+          {widget.labels && (
+            <span className="select-none">
+              {widget.value ? widget.labels.on : widget.labels.off}
+            </span>
+          )}
         </label>
       );
     case 'slider':
       return (
-        <input
-          key={key}
-          type="range"
-          defaultValue={widget.value}
-          min={widget.min}
-          max={widget.max}
-          step={widget.step}
-          style={{ margin: 0, width: '100px' }}
-        />
+        <div className="flex h-4 w-24 cursor-pointer items-center">
+          <Slider
+            key={key}
+            defaultValue={[Number(widget.value) || 0]}
+            min={widget.min}
+            max={widget.max}
+            step={widget.step}
+            orientation="horizontal"
+            style={{ '--widget-color': borderColor } as React.CSSProperties}
+          />
+        </div>
       );
     default:
       return null;

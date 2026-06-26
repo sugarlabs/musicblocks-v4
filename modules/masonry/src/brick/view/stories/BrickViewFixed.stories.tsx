@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react';
 
 import { BrickViewFixed } from '../components/BrickViewFixed';
 
@@ -9,6 +9,9 @@ const meta = {
   component: BrickViewFixed,
   parameters: {
     layout: 'centered',
+  },
+  args: {
+    tooltipText: '',
   },
   argTypes: {
     scaleLevel: {
@@ -112,5 +115,31 @@ export const StatementWithNesting: Story = {
       dims: { w: 100, h: 60 },
       isFolded: false,
     },
+  },
+};
+
+export const VariantWidget: Story = {
+  args: {
+    kind: 'expression',
+    colorsDefault: {
+      background: '#48ff00ff',
+      foreground: '#000000ff',
+      border: '#06ca06ff',
+    },
+    widget: {
+      type: 'variant',
+      options: ['Option 1', 'Option 2', 'Option 3'],
+      value: 'Option 1',
+    },
+    paramArgs: [
+      {
+        param: 'num 1',
+        argDims: { w: 40, h: 20 },
+      },
+      {
+        param: 'num 2',
+        argDims: { w: 40, h: 20 },
+      },
+    ],
   },
 };

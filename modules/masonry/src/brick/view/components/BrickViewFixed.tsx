@@ -8,10 +8,11 @@ import type {
   ValueBrickViewProps,
 } from '@/@types/brick';
 
+import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/select';
+
 import { SCALE_LEVEL_CONFIG } from '@/brick/utils/constants';
 import { BrickOutlineGenerator } from '@/brick/utils/path2';
-
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/select';
 
 export type BrickViewFixedProps =
   | (Omit<ValueBrickViewProps, 'widget'> & { widget: ExpressionBrickViewProps['widget'] })
@@ -24,6 +25,11 @@ const DEFAULT_SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
 // (the label) stays dominant while params read as secondary detail.
 const PARAM_FONT_SCALE = 0.8;
 
+/**
+ * Renders a brick whose widget is fixed — no free user input. The variant widget is the sole
+ * exception, using a select UI, but it remains semantically fixed: the brick represents a
+ * predetermined concept, and the select only switches between its predefined forms.
+ */
 export function BrickViewFixed(props: BrickViewFixedProps) {
   const { brickScale, minWidth, minArgNestHeight, minWidgetParamHeight, fontSize, lineHeight } =
     SCALE_LEVEL_CONFIG[props.scaleLevel ?? DEFAULT_SCALE_LEVEL];
@@ -86,38 +92,8 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
     [minWidth, minWidgetParamHeight, minArgNestHeight, pxToSvg],
   );
 
-  // Serialize paramArgs to safely use it as a dependency in the layout effect below.
-  // This ensures we re-measure param dimensions only when their text or structure actually changes,
-  // rather than triggering on every render if the parent passes a new array reference.
+  // Stringify paramArgs for a stable dep — prevents re-measuring on referentially new but equal arrays.
   const paramArgsString = JSON.stringify(paramArgs);
-
-  // Layout Effect 1: Measures the actual rendered DOM text dimensions.
-  // Dependencies include fontSize and lineHeight so that scaleLevel changes correctly recalculate width/height.
-  useLayoutEffect(() => {
-    // Measure main label
-    if (labelRef.current) {
-      const { width, height } = labelRef.current.getBoundingClientRect();
-      setLabelDims((prev) =>
-        width !== prev.w || height !== prev.h ? { w: width, h: height } : prev,
-      );
-    }
-
-    // Measure param labels
-    setParamDimsList((prev) => {
-      let changed = false;
-      const newParamDimsList = [...prev];
-      paramRefs.current.forEach((el, i) => {
-        if (el) {
-          const { width, height } = el.getBoundingClientRect();
-          if (width !== newParamDimsList[i]?.w || height !== newParamDimsList[i]?.h) {
-            newParamDimsList[i] = { w: width, h: height };
-            changed = true;
-          }
-        }
-      });
-      return changed ? newParamDimsList : prev;
-    });
-  }, [widgetContent, paramArgsString, fontSize, lineHeight]);
 
   const nestingIsFolded = nesting?.isFolded;
   const nestingDimsW = nesting?.dims?.w;
@@ -154,6 +130,37 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
     nestingDimsH,
   ]);
 
+  const maxArgW = Math.max(0, ...paramArgs.map((p) => p.argDims?.w ?? 0));
+
+  // Layout Effect 1: Measures the actual rendered DOM text dimensions.
+  // fontSize and lineHeight are deps so that scaleLevel changes correctly recalculate width/height.
+  useLayoutEffect(() => {
+    // Measure main label
+    if (labelRef.current) {
+      const { width, height } = labelRef.current.getBoundingClientRect();
+      setLabelDims((prev) =>
+        width !== prev.w || height !== prev.h ? { w: width, h: height } : prev,
+      );
+    }
+
+    // Measure param labels
+    setParamDimsList((prev) => {
+      let changed = false;
+      const newParamDimsList = [...prev];
+      paramRefs.current.forEach((el, i) => {
+        if (el) {
+          const { width, height } = el.getBoundingClientRect();
+          if (width !== newParamDimsList[i]?.w || height !== newParamDimsList[i]?.h) {
+            newParamDimsList[i] = { w: width, h: height };
+            changed = true;
+          }
+        }
+      });
+      return changed ? newParamDimsList : prev;
+    });
+  }, [widgetContent, paramArgsString, fontSize, lineHeight]);
+
+  // Layout Effect 2: Converts measured DOM dimensions to SVG units and generates the brick outline path.
   useLayoutEffect(() => {
     const scaledWidgetDims = { w: pxToSvg(labelDims.w), h: pxToSvg(labelDims.h) };
 
@@ -230,8 +237,6 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
     minArgNestHeight,
   ]);
 
-  const maxArgW = Math.max(0, ...paramArgs.map((p) => p.argDims?.w ?? 0));
-
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -294,7 +299,10 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
               {isVariantWidget && (
                 <Select value={variantValue} onValueChange={() => {}}>
                   <SelectTrigger
-                    className="h-7 min-w-[4rem] gap-1 bg-transparent px-2 py-1 transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+                    className={cn(
+                      'h-7 min-w-16 gap-1 bg-transparent px-2 py-1',
+                      'transition-colors hover:bg-black/5 dark:hover:bg-white/5',
+                    )}
                     style={{
                       fontSize,
                       lineHeight: `${lineHeight}px`,

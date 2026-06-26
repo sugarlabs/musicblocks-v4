@@ -9,7 +9,7 @@ import {
     CORNER_RADIUS,
     TAIL_INDENT_W,
     TAIL_STEP_W,
-    createBrickOutlineGenerator,
+    BrickOutlineGenerator,
 } from '../path2';
 
 const MINIMUMS: BrickMinimums = {
@@ -20,7 +20,7 @@ const MINIMUMS: BrickMinimums = {
     minNestHeight: 40,
 };
 
-const generateBrickOutline = createBrickOutlineGenerator(MINIMUMS);
+const brickOutlineGenerator = new BrickOutlineGenerator(MINIMUMS);
 
 // A single argument slot, reused across integration cases.
 const oneArg = { param: null, arg: { w: 50, h: 40 } };
@@ -29,7 +29,7 @@ const oneArg = { param: null, arg: { w: 50, h: 40 } };
 
 describe('path V2: bounds', () => {
     it('always emits a label box; omits params, args, nesting when absent', () => {
-        const { bounds } = generateBrickOutline({
+        const { bounds } = brickOutlineGenerator.generate({
             strokeWidth: 0,
             widgetDims: { w: 60, h: 20 },
             paramArgDims: [],
@@ -46,7 +46,7 @@ describe('path V2: bounds', () => {
     });
 
     it('emits boxes for every region when params, args, and nesting are present', () => {
-        const { bounds } = generateBrickOutline({
+        const { bounds } = brickOutlineGenerator.generate({
             strokeWidth: 0,
             widgetDims: { w: 60, h: 20 },
             paramArgDims: [{ param: { w: 40, h: 15 }, arg: { w: 50, h: 30 } }],
@@ -59,7 +59,7 @@ describe('path V2: bounds', () => {
     });
 
     it('anchors the arg box to the right edge and centres the param box on its arg notch', () => {
-        const { bounds, width } = generateBrickOutline({
+        const { bounds, width } = brickOutlineGenerator.generate({
             strokeWidth: 0,
             widgetDims: { w: 60, h: 20 },
             paramArgDims: [{ param: { w: 40, h: 20 }, arg: { w: 50, h: 60 } }],
@@ -73,11 +73,11 @@ describe('path V2: bounds', () => {
     });
 });
 
-// ────────────────────────── 2. createBrickOutlineGenerator() — full-path integration ───────────────
+// ────────────────────────── 2. BrickOutlineGenerator() — full-path integration ───────────────
 
 describe('path V2: generateBrickOutline (integration)', () => {
     it('simple brick path with no stroke', () => {
-        const result = generateBrickOutline({
+        const result = brickOutlineGenerator.generate({
             strokeWidth: 0,
             widgetDims: { w: 60, h: 20 },
             paramArgDims: [],
@@ -90,7 +90,7 @@ describe('path V2: generateBrickOutline (integration)', () => {
     });
 
     it('simple brick path inset by s/2 with stroke', () => {
-        const result = generateBrickOutline({
+        const result = brickOutlineGenerator.generate({
             strokeWidth: 4,
             widgetDims: { w: 200, h: 30 },
             paramArgDims: [],
@@ -103,7 +103,7 @@ describe('path V2: generateBrickOutline (integration)', () => {
     });
 
     it('compound brick path with no stroke', () => {
-        const result = generateBrickOutline({
+        const result = brickOutlineGenerator.generate({
             strokeWidth: 0,
             widgetDims: { w: 80, h: 20 },
             paramArgDims: [],
@@ -115,7 +115,7 @@ describe('path V2: generateBrickOutline (integration)', () => {
     });
 
     it('compound brick path with stroke (cavity −s, foot +s)', () => {
-        const result = generateBrickOutline({
+        const result = brickOutlineGenerator.generate({
             strokeWidth: 4,
             widgetDims: { w: 80, h: 20 },
             paramArgDims: [],
@@ -172,7 +172,7 @@ describe('path V2: generateBrickOutline (integration)', () => {
 
         inputs.forEach(({ name, input }) => {
             it(`closes for ${name}`, () => {
-                const { dx, dy } = netDisplacementFull(generateBrickOutline(input).path);
+                const { dx, dy } = netDisplacementFull(brickOutlineGenerator.generate(input).path);
                 expect(dx).toBeCloseTo(0);
                 expect(dy).toBeCloseTo(0);
             });
@@ -182,7 +182,7 @@ describe('path V2: generateBrickOutline (integration)', () => {
     describe('notch wiring through the public API', () => {
         it('emits one right-edge groove per arg slot, radius H_NOTCH_RADIUS + s', () => {
             const s = 2;
-            const r = generateBrickOutline({
+            const r = brickOutlineGenerator.generate({
                 strokeWidth: s,
                 widgetDims: { w: 60, h: 20 },
                 paramArgDims: [oneArg, oneArg, oneArg],
@@ -193,7 +193,7 @@ describe('path V2: generateBrickOutline (integration)', () => {
 
         it('the left tab centre aligns with the first right groove, both at NOTCH_OFFSET_Y', () => {
             const s = 2;
-            const r = generateBrickOutline({
+            const r = brickOutlineGenerator.generate({
                 strokeWidth: s,
                 widgetDims: { w: 60, h: 20 },
                 paramArgDims: [oneArg, oneArg, oneArg],
@@ -206,7 +206,7 @@ describe('path V2: generateBrickOutline (integration)', () => {
         });
 
         it('grooves do not change the reported width/height (they cut inward)', () => {
-            const r = generateBrickOutline({
+            const r = brickOutlineGenerator.generate({
                 strokeWidth: 2,
                 widgetDims: { w: 60, h: 20 },
                 paramArgDims: [oneArg, oneArg],
@@ -220,7 +220,7 @@ describe('path V2: generateBrickOutline (integration)', () => {
 
     describe('corner radius', () => {
         it('rounds all four corners of a simple brick, each convex (sweep 1)', () => {
-            const r = generateBrickOutline({
+            const r = brickOutlineGenerator.generate({
                 strokeWidth: 2,
                 widgetDims: { w: 60, h: 20 },
                 paramArgDims: [],
@@ -232,7 +232,7 @@ describe('path V2: generateBrickOutline (integration)', () => {
 
         it('a compound brick rounds the two cavity-mouth corners concavely, a stroke-width larger', () => {
             const s = 2;
-            const r = generateBrickOutline({
+            const r = brickOutlineGenerator.generate({
                 strokeWidth: s,
                 widgetDims: { w: 80, h: 20 },
                 paramArgDims: [],

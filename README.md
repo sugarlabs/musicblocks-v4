@@ -31,7 +31,7 @@ See [**full development guide**](./docs/DEV.md).
 
 There is a [Music Blocks (v4)](https://github.com/orgs/sugarlabs/projects/9) _GitHub project_ which
 is used for task management. You can visit it from the
-[projects](https://github.com/sugarlabs/musicblocks-v4/projects?query=is%3Aopen) tab at the top of
+[projects](https://github.com/orgs/sugarlabs/projects/9) tab at the top of
 the repository. In addition, please visit the
 [discussions](https://github.com/sugarlabs/musicblocks-v4/discussions) tab at the top of the repository
 to follow and/or discuss about the planning progress.

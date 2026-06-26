@@ -82,594 +82,641 @@ interface ComputedDimensions {
     nestHeight: number;
 }
 
-function computeDimensions(input: BrickOutlineInput, minimums: BrickMinimums): ComputedDimensions {
-    const { minWidth, minWidgetHeight, minNestHeight, minParamHeight, minArgHeight } = minimums;
-    const params = input.paramArgDims.map((p) => p.param ?? { w: 0, h: minParamHeight });
-
-    // SVG strokes straddle the path line — s/2 bleeds outside on each side;
-    // every segment includes s/2 at both ends so the stroke isn't clipped.
-    const strokeWidth = input.strokeWidth;
-
-    // ── Width ──
-
-    // ── Head ──
-    const maxParamWidth = params.length > 0 ? Math.max(...params.map((p) => p.w)) : 0;
-    const widgetParamGutter = maxParamWidth > 0 ? WIDGET_PARAM_GUTTER_X : 0;
-    const headWidth =
-        strokeWidth / 2 +
-        HEAD_PAD_X1 +
-        input.widgetDims.w +
-        widgetParamGutter +
-        maxParamWidth +
-        HEAD_PAD_X2 +
-        strokeWidth / 2;
-
-    // ── Tail ──
-    const tailIndentWidth =
-        strokeWidth / 2 + TAIL_INDENT_W + (input.nestingDims?.w ?? 0) + strokeWidth / 2;
-    const tailStepWidth = strokeWidth / 2 + TAIL_STEP_W + strokeWidth / 2;
-
-    const tailWidth = Math.max(tailIndentWidth, tailStepWidth);
-
-    const width = Math.max(headWidth, tailWidth, minWidth);
-
-    // ── Height ──
-
-    // ── Head ──
-    const paramsTotalHeight = params.reduce((sum, p) => sum + p.h, 0);
-    const paramGutterTotal = PARAM_GUTTER_Y * Math.max(0, params.length - 1);
-
-    const headHeightByWidget =
-        strokeWidth / 2 +
-        HEAD_PAD_Y1 +
-        Math.max(input.widgetDims.h, minWidgetHeight) +
-        HEAD_PAD_Y2 +
-        strokeWidth / 2;
-    const headHeightByParams =
-        strokeWidth / 2 +
-        HEAD_PAD_Y1 +
-        paramsTotalHeight +
-        paramGutterTotal +
-        HEAD_PAD_Y2 +
-        strokeWidth / 2;
-    // No stroke clearance or padding — args are slots for external components whose
-    // input dims already account for their own strokes, if present.
-    // Each row must be at least minArgHeight tall, matching generateBounds and
-    // computeArgNotchCentreYs so the outline is tall enough for every notch.
-    const headHeightByArgs = input.paramArgDims.reduce(
-        (sum, { arg }) => sum + Math.max(arg?.h ?? 0, minArgHeight),
-        0,
-    );
-
-    const headHeight = Math.max(headHeightByWidget, headHeightByParams, headHeightByArgs);
-
-    // ── Tail ──
-    const hasNesting = input.nestingDims !== undefined;
-    const nestHeight = hasNesting ? Math.max(input.nestingDims?.h ?? 0, minNestHeight) : 0;
-    const tailHeight = hasNesting
-        ? nestHeight + strokeWidth / 2 + TAIL_STEP_H + strokeWidth / 2
-        : 0;
-
-    const height = headHeight + tailHeight;
-
-    return { width, height, headHeight, nestHeight };
+interface NormalizedInput extends Omit<
+    BrickOutlineInput,
+    'hasPrevNotch' | 'hasNextNotch' | 'hasOutputNotch'
+> {
+    hasNesting: boolean;
+    hasPrevNotch: boolean;
+    hasNextNotch: boolean;
+    hasOutputNotch: boolean;
 }
-
-/**
- * Returns the y-coordinate of each right-edge notch centre, one per argument slot.
- * Each centre sits NOTCH_OFFSET_Y below the top of its row, regardless of row height.
- */
-function computeArgNotchCentreYs(
-    paramArgDims: BrickOutlineInput['paramArgDims'],
-    minArgHeight: number,
-): number[] {
-    const centreYs: number[] = [];
-    let slotTop = 0;
-    for (const { arg } of paramArgDims) {
-        const rowH = Math.max(arg?.h ?? 0, minArgHeight);
-        if (arg !== null) {
-            centreYs.push(slotTop + NOTCH_OFFSET_Y);
-        }
-        slotTop += rowH;
-    }
-    return centreYs;
-}
-
-// ────────────────────────── Arc Helpers ──────────────────────────────────────────────────────────
 
 /** A point relative to the arc's start (the current pen position). */
 type RelPoint = { x: number; y: number };
 
-/** Relative SVG arc (`a`) from `end` and `centre` (both relative to the start); radius and sweep derived. Limited to a quarter turn. */
-function arc(end: RelPoint, centre: RelPoint): string {
-    const radius = Math.hypot(centre.x, centre.y);
-    // Cross product of (start→centre) and (start→end), with start at the origin.
-    // Negative ⇒ the turn is clockwise ⇒ SVG sweep flag 1 (in y-down space).
-    const sweepFlag = centre.y * end.x - centre.x * end.y < 0 ? 1 : 0;
-    return `a ${radius} ${radius} 0 0 ${sweepFlag} ${end.x} ${end.y}`;
-}
-
-/** Inward U-shape groove arc (left → right). Used by top notch and nested bottom notch. */
-function buildVGroove(strokeWidth: number): string[] {
-    const lip = strokeWidth / 2;
-    const R = V_NOTCH_RADIUS + strokeWidth;
-    const middle = V_NOTCH_WIDTH - 2 * (lip + R);
-    return [
-        // Quarter-arc: horizontal (left) → vertical (down). CW
-        arc({ x: lip, y: lip }, { x: lip, y: 0 }),
-        // Inner curve and straight span: vertical (down) → vertical (up). CCW (U-shape)
-        arc({ x: R, y: R }, { x: 0, y: R }),
-        `h ${middle}`,
-        arc({ x: R, y: -R }, { x: R, y: 0 }),
-        // Quarter-arc: vertical (up) → horizontal (right). CW
-        arc({ x: lip, y: -lip }, { x: 0, y: -lip }),
-    ];
-}
-
-/** Outward U-shape tab arc (right → left). Used by bottom notch and nested top notch. */
-function buildVTab(strokeWidth: number): string[] {
-    const lip = (3 * strokeWidth) / 2;
-    const R = V_NOTCH_RADIUS;
-    const middle = V_NOTCH_WIDTH - 2 * (lip + R);
-    return [
-        // Quarter-arc: horizontal (right) → vertical (down). CCW
-        arc({ x: -lip, y: lip }, { x: -lip, y: 0 }),
-        // Inner curve and straight span: vertical (down) → vertical (up). CW (U-shape)
-        arc({ x: -R, y: R }, { x: 0, y: R }),
-        `h ${-middle}`,
-        arc({ x: -R, y: -R }, { x: -R, y: 0 }),
-        // Quarter-arc: vertical (up) → horizontal (left). CCW
-        arc({ x: -lip, y: -lip }, { x: 0, y: -lip }),
-    ];
-}
-
-// ────────────────────────── Path Segments ────────────────────────────────────────────────────────
-
-/**
- * Top edge of the brick, left → right.
- * Draws a full-size arc groove (hasTopNotch) for interlocking with bricks above.
- * The groove cuts INWARD into the brick body.
- *
- * @param strokeWidth - Stroke width in SVG units
- * @param width       - Total outer width of the brick
- * @param hasTopNotch - Whether to draw the top notch groove
- */
-function segTopEdge(strokeWidth: number, width: number, hasTopNotch: boolean): string[] {
-    // Start point sits after the rounded top-left corner: inset by strokeWidth/2 and CORNER_RADIUS.
-    const start = `M ${strokeWidth / 2 + CORNER_RADIUS} ${strokeWidth / 2}`;
-    // Convex top-right corner: end CR right + CR down, curving around a centre CR to the right.
-    const corner = arc({ x: CORNER_RADIUS, y: CORNER_RADIUS }, { x: CORNER_RADIUS, y: 0 });
-
-    // No notch — single flat span, inset by strokeWidth/2 + CORNER_RADIUS at each end.
-    if (!hasTopNotch) {
-        return [start, `h ${width - strokeWidth - CORNER_RADIUS - CORNER_RADIUS}`, corner];
-    }
-
-    // flatBefore: horizontal run from the starting M position to the notch left edge
-    // flatAfter:  horizontal run from the notch right edge to the rounded top-right corner
-    const flatBefore = V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 - CORNER_RADIUS;
-    const flatAfter =
-        width - V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 - CORNER_RADIUS;
-
-    return [
-        start,
-        `h ${flatBefore}`, // flat run to groove left edge
-        ...buildVGroove(strokeWidth),
-        `h ${flatAfter}`, // flat run to brick right edge
-        corner,
-    ];
-}
-
-/**
- * Right edge of the head, top → bottom.
- * Draws one full-size concave groove per entry in `notchCentres`, cutting INWARD into the brick (−x).
- * Each groove receives one argument brick plugged in from the right.
- *
- * @param strokeWidth  - Stroke width in SVG units
- * @param headHeight   - Height of the head section
- * @param notchCentres - Absolute y positions (top → bottom) of each groove centre
- */
-function segHeadRight(strokeWidth: number, headHeight: number, notchCentres: number[]): string[] {
-    // The edge runs between the two corners, each inset by strokeWidth/2 + CORNER_RADIUS.
-    const edgeStart = strokeWidth / 2 + CORNER_RADIUS; // below the rounded top-right corner
-    const edgeEnd = headHeight - strokeWidth / 2 - CORNER_RADIUS; // above the rounded bottom-right corner
-
-    // Convex bottom-right corner: end CR left + CR down, curving around a centre CR below.
-    const corner = arc({ x: -CORNER_RADIUS, y: CORNER_RADIUS }, { x: 0, y: CORNER_RADIUS });
-
-    // No notches — single straight run.
-    if (notchCentres.length === 0) {
-        return [`v ${edgeEnd - edgeStart}`, corner];
-    }
-
-    const lip = strokeWidth / 2; // small flare arc radius, proportional to the stroke
-    const R = H_NOTCH_RADIUS + strokeWidth;
-    const middle = H_NOTCH_WIDTH - 2 * (lip + R);
-
-    const segs: string[] = [];
-    let pen = edgeStart; // current y of the pen, travelling downwards
-
-    for (const centre of notchCentres) {
-        // Build the notch span from its centre, one portion above and below:
-        //   centre        — the notch centre
-        //   semicircleTop — one radius above the centre
-        //   notchTop      — one lip arc above the semicircle (where the groove begins)
-        const semicircleTop = centre - middle / 2 - R;
-        const notchTop = semicircleTop - lip;
-        // ...and symmetrically downwards (where the groove ends):
-        const semicircleBottom = centre + middle / 2 + R;
-        const notchBottom = semicircleBottom + lip;
-
-        // Skip a notch that would overlap the previous one or run past the bottom corner,
-        // so the path stays continuous instead of self-crossing.
-        if (notchTop < pen || notchBottom > edgeEnd) {
-            continue;
-        }
-
-        // 1. flat run down to where the groove begins
-        const flatBefore = notchTop - pen;
-        segs.push(`v ${flatBefore}`);
-        // 2. lip arc: peel the edge inwards (−x)
-        segs.push(arc({ x: -lip, y: lip }, { x: 0, y: lip }));
-        // 3. semicircle: the concave groove dipping into the brick (−x)
-        segs.push(arc({ x: -R, y: R }, { x: -R, y: 0 }));
-        segs.push(`v ${middle}`);
-        segs.push(arc({ x: R, y: R }, { x: 0, y: R }));
-        // 4. lip arc: bring the edge back out
-        segs.push(arc({ x: lip, y: lip }, { x: lip, y: 0 }));
-
-        pen = notchBottom;
-    }
-
-    // 5. remaining flat run down to the bottom corner
-    segs.push(`v ${edgeEnd - pen}`);
-    segs.push(corner);
-    return segs;
-}
-
-/**
- * Bottom edge of the head (used for bricks without nesting), right → left.
- * Draws a smaller arc tab (hasBottomNotch) protruding OUTWARD below the brick.
- * Width is reduced by 2*s so it fits snugly inside the top groove when bricks stack.
- *
- * @param strokeWidth    - Stroke width in SVG units
- * @param width          - Total outer width of the brick
- * @param hasBottomNotch - Whether to draw the bottom notch tab
- */
-function segHeadBottom(strokeWidth: number, width: number, hasBottomNotch: boolean): string[] {
-    const span = width - strokeWidth - CORNER_RADIUS - CORNER_RADIUS;
-
-    // Convex bottom-left corner: end CR left + CR up, curving around a centre CR to the left.
-    const corner = arc({ x: -CORNER_RADIUS, y: -CORNER_RADIUS }, { x: -CORNER_RADIUS, y: 0 });
-
-    // No notch — single flat span going left.
-    if (!hasBottomNotch) {
-        return [`h ${-span}`, corner];
-    }
-
-    if (V_NOTCH_WIDTH <= 2 * ((3 * strokeWidth) / 2 + V_NOTCH_RADIUS)) {
-        return [`h ${-span}`, corner];
-    }
-
-    const flatBefore =
-        width - V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 - CORNER_RADIUS;
-    const flatAfter = V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 - CORNER_RADIUS;
-
-    return [
-        `h ${-flatBefore}`, // flat run to tab right edge
-        ...buildVTab(strokeWidth),
-        `h ${-flatAfter}`, // flat run to brick left edge
-        corner,
-    ];
-}
-
-/**
- * Left edge of the brick, bottom → top.
- * Draws a single smaller convex tab (hasLeftNotch) protruding OUTWARD from the brick (−x).
- * Tab radius is H_NOTCH_RADIUS; the parent's right groove uses H_NOTCH_RADIUS + strokeWidth.
- *
- * @param strokeWidth   - Stroke width in SVG units
- * @param height        - Total outer height of the brick
- * @param hasLeftNotch  - Whether to draw the left tab
- */
-function segLeftEdge(strokeWidth: number, height: number, hasLeftNotch: boolean): string[] {
-    // The edge runs between the two corners, each inset by strokeWidth/2 + CORNER_RADIUS; travelled upward.
-    const edgeStart = height - strokeWidth / 2 - CORNER_RADIUS; // above the rounded bottom-left corner
-    const edgeEnd = strokeWidth / 2 + CORNER_RADIUS; // below the rounded top-left corner
-
-    const tabR = H_NOTCH_RADIUS;
-    const lip = (3 * strokeWidth) / 2;
-    const middle = H_NOTCH_WIDTH - 2 * (lip + tabR);
-
-    // Convex top-left corner: end CR right + CR up, curving around a centre CR above.
-    const corner = arc({ x: CORNER_RADIUS, y: -CORNER_RADIUS }, { x: 0, y: -CORNER_RADIUS });
-
-    if (!hasLeftNotch) {
-        return [`v ${-(edgeStart - edgeEnd)}`, corner];
-    }
-
-    if (middle <= 0) {
-        return [`v ${-(edgeStart - edgeEnd)}`, corner];
-    }
-
-    const notchBottom = H_NOTCH_OFFSET_Y + middle / 2 + tabR + lip;
-    const notchTop = H_NOTCH_OFFSET_Y - middle / 2 - tabR - lip;
-
-    // Fall back to a straight edge if the tab wouldn't fit between the two corners.
-    if (notchBottom > edgeStart || notchTop < edgeEnd) {
-        return [`v ${-(edgeStart - edgeEnd)}`, corner];
-    }
-
-    return [
-        `v ${-(edgeStart - notchBottom)}`, // 1. flat run up to where the tab begins
-        arc({ x: -lip, y: -lip }, { x: 0, y: -lip }), // 2. lip arc: peel the edge outwards (−x)
-        arc({ x: -tabR, y: -tabR }, { x: -tabR, y: 0 }), // 3. semicircle: the convex tab bulging out (−x)
-        `v ${-middle}`,
-        arc({ x: tabR, y: -tabR }, { x: 0, y: -tabR }),
-        arc({ x: lip, y: -lip }, { x: lip, y: 0 }), // 4. lip arc: bring the edge back in
-        `v ${-(notchTop - edgeEnd)}`, // 5. remaining flat run up to the top-left corner
-        corner,
-    ];
-}
-
-/**
- * Cavity roof segment, right → left.
- * Draws a smaller arc tab (hasNestedTopNotch) protruding DOWN into the cavity.
- * Width is reduced by 2*s so it fits inside the nested-bottom groove.
- *
- * @param strokeWidth        - Stroke width in SVG units
- * @param width              - Total outer width of the brick
- */
-function segTailCavityRoof(strokeWidth: number, width: number): string[] {
-    // The two cavity corners run a stroke-width larger so a nested brick's rounded convex
-    // corner seats flush inside them (same idea as groove = tab + strokeWidth).
-    const cavityCornerRadius = CORNER_RADIUS + strokeWidth;
-
-    const span = width - TAIL_INDENT_W - strokeWidth - CORNER_RADIUS - cavityCornerRadius;
-
-    // Concave roof → spine corner: end crc left + crc down, curving around a centre crc to the left.
-    const corner = arc(
-        { x: -cavityCornerRadius, y: cavityCornerRadius },
-        { x: -cavityCornerRadius, y: 0 },
-    );
-
-    if (V_NOTCH_WIDTH <= 2 * ((3 * strokeWidth) / 2 + V_NOTCH_RADIUS)) {
-        return [`h ${-span}`, corner];
-    }
-
-    // Tab centre aligns with the inner brick's top/bottom notch centre.
-    const flatBefore =
-        width -
-        TAIL_INDENT_W -
-        V_NOTCH_OFFSET_X -
-        V_NOTCH_WIDTH / 2 -
-        (3 * strokeWidth) / 2 -
-        CORNER_RADIUS;
-    const flatAfter = V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 + strokeWidth / 2 - cavityCornerRadius;
-
-    return [
-        `h ${-flatBefore}`, // flat run to tab right edge
-        ...buildVTab(strokeWidth),
-        `h ${-flatAfter}`, // flat run to cavity left wall
-        corner,
-    ];
-}
-
-function segTailCavityLeft(strokeWidth: number, nestHeight: number): string[] {
-    const cavityCornerRadius = CORNER_RADIUS + strokeWidth;
-
-    // Grows s/2 per seam: starts s/2 below the inset roof, ends s/2 above the inset floor.
-    // Both ends meet concave cavity corners, so each is pulled in by cavityCornerRadius.
-    const span =
-        nestHeight + strokeWidth / 2 + strokeWidth / 2 - cavityCornerRadius - cavityCornerRadius;
-
-    // Concave spine → foot corner: end crc right + crc down, curving around a centre crc below.
-    const corner = arc(
-        { x: cavityCornerRadius, y: cavityCornerRadius },
-        { x: 0, y: cavityCornerRadius },
-    );
-
-    return [`v ${span}`, corner];
-}
-
-/**
- * Cavity foot segment, left → right.
- * Draws a full-size arc groove cutting DOWN into the foot.
- * Full-size so it receives the inner brick's bottom tab.
- *
- * @param strokeWidth          - Stroke width in SVG units
- */
-function segTailFoot(strokeWidth: number): string[] {
-    const cavityCornerRadius = CORNER_RADIUS + strokeWidth;
-
-    const span = TAIL_STEP_W - TAIL_INDENT_W;
-
-    const flatBefore = V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 + strokeWidth / 2 - cavityCornerRadius;
-    const flatAfter =
-        span - V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - (3 * strokeWidth) / 2 - CORNER_RADIUS;
-
-    // Convex foot → step-right corner: end CR right + CR down, curving around a centre CR to the right.
-    const corner = arc({ x: CORNER_RADIUS, y: CORNER_RADIUS }, { x: CORNER_RADIUS, y: 0 });
-
-    return [
-        `h ${flatBefore}`, // flat run to groove left edge
-        ...buildVGroove(strokeWidth),
-        `h ${flatAfter}`, // flat run to step right wall
-        corner,
-    ];
-}
-
-function segTailStepRight(): string[] {
-    // Convex step-right → step-bottom corner: end CR left + CR down, curving around a centre CR below.
-    const corner = arc({ x: -CORNER_RADIUS, y: CORNER_RADIUS }, { x: 0, y: CORNER_RADIUS });
-    return [`v ${TAIL_STEP_H - CORNER_RADIUS - CORNER_RADIUS}`, corner];
-}
-
-/**
- * Bottom of the tail step (nesting bricks only), right → left.
- * Draws a smaller arc tab protruding downward, same shape as segHeadBottom.
- *
- * @param strokeWidth    - Stroke width in SVG units
- * @param hasBottomNotch - Whether to draw the bottom notch tab
- */
-function segTailStepBottom(strokeWidth: number, hasBottomNotch: boolean): string[] {
-    const span = TAIL_STEP_W - CORNER_RADIUS - CORNER_RADIUS;
-
-    // Convex step-bottom → left corner: end CR left + CR up, curving around a centre CR to the left.
-    const corner = arc({ x: -CORNER_RADIUS, y: -CORNER_RADIUS }, { x: -CORNER_RADIUS, y: 0 });
-
-    // No notch — single flat span going left.
-    if (!hasBottomNotch) {
-        return [`h ${-span}`, corner];
-    }
-
-    if (V_NOTCH_WIDTH <= 2 * ((3 * strokeWidth) / 2 + V_NOTCH_RADIUS)) {
-        return [`h ${-span}`, corner];
-    }
-
-    const flatBefore =
-        TAIL_STEP_W - V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 - CORNER_RADIUS;
-    const flatAfter = V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 - CORNER_RADIUS;
-
-    return [
-        `h ${-flatBefore}`, // flat run to tab right edge
-        ...buildVTab(strokeWidth),
-        `h ${-flatAfter}`, // flat run to step left wall
-        corner,
-    ];
-}
-
-/**
- * Computes the bounding boxes for each visual region of a brick (main widget, nesting area,
- * params, and args), applying minimum dimension constraints and aligning each region to its
- * corresponding slot in the outline geometry.
- */
-function generateBounds(
-    input: BrickOutlineInput,
-    width: number,
-    headHeight: number,
-    nestHeight: number,
-    hasNesting: boolean,
-    minimums: BrickMinimums,
-): BrickOutlineOutput['bounds'] {
-    const { minWidgetHeight, minNestHeight, minParamHeight, minArgHeight } = minimums;
-    const strokeWidth = input.strokeWidth;
-
-    const widget: Bounds = {
-        x: strokeWidth / 2 + HEAD_PAD_X1,
-        y: strokeWidth / 2 + HEAD_PAD_Y1,
-        w: input.widgetDims.w,
-        h: Math.max(input.widgetDims.h, minWidgetHeight),
+export class BrickOutlineGenerator {
+    private input: NormalizedInput = {
+        strokeWidth: 0,
+        widgetDims: { w: 0, h: 0 },
+        paramArgDims: [],
+        hasNesting: false,
+        hasPrevNotch: false,
+        hasNextNotch: false,
+        hasOutputNotch: false,
     };
 
-    let nesting: Bounds | undefined;
-    if (hasNesting) {
-        nesting = {
-            x: TAIL_INDENT_W + strokeWidth / 2 + strokeWidth / 2,
-            y: headHeight,
-            w: input.nestingDims?.w ?? 0,
-            h: Math.max(nestHeight, minNestHeight),
+    private dimensions: ComputedDimensions = {
+        width: 0,
+        height: 0,
+        headHeight: 0,
+        nestHeight: 0,
+    };
+
+    public constructor(private readonly minimums: BrickMinimums) {}
+
+    protected computeDimensions(): ComputedDimensions {
+        const input = this.input;
+        const minimums = this.minimums;
+        const { minWidth, minWidgetHeight, minNestHeight, minParamHeight, minArgHeight } = minimums;
+        const params = input.paramArgDims.map((p) => p.param ?? { w: 0, h: minParamHeight });
+
+        // SVG strokes straddle the path line — s/2 bleeds outside on each side;
+        // every segment includes s/2 at both ends so the stroke isn't clipped.
+        const strokeWidth = input.strokeWidth;
+
+        // ── Width ──
+
+        // ── Head ──
+        const maxParamWidth = params.length > 0 ? Math.max(...params.map((p) => p.w)) : 0;
+        const widgetParamGutter = maxParamWidth > 0 ? WIDGET_PARAM_GUTTER_X : 0;
+        const headWidth =
+            strokeWidth / 2 +
+            HEAD_PAD_X1 +
+            input.widgetDims.w +
+            widgetParamGutter +
+            maxParamWidth +
+            HEAD_PAD_X2 +
+            strokeWidth / 2;
+
+        // ── Tail ──
+        const tailIndentWidth =
+            strokeWidth / 2 + TAIL_INDENT_W + (input.nestingDims?.w ?? 0) + strokeWidth / 2;
+        const tailStepWidth = strokeWidth / 2 + TAIL_STEP_W + strokeWidth / 2;
+
+        const tailWidth = Math.max(tailIndentWidth, tailStepWidth);
+
+        const width = Math.max(headWidth, tailWidth, minWidth);
+
+        // ── Height ──
+
+        // ── Head ──
+        const paramsTotalHeight = params.reduce((sum, p) => sum + p.h, 0);
+        const paramGutterTotal = PARAM_GUTTER_Y * Math.max(0, params.length - 1);
+
+        const headHeightByWidget =
+            strokeWidth / 2 +
+            HEAD_PAD_Y1 +
+            Math.max(input.widgetDims.h, minWidgetHeight) +
+            HEAD_PAD_Y2 +
+            strokeWidth / 2;
+        const headHeightByParams =
+            strokeWidth / 2 +
+            HEAD_PAD_Y1 +
+            paramsTotalHeight +
+            paramGutterTotal +
+            HEAD_PAD_Y2 +
+            strokeWidth / 2;
+        // No stroke clearance or padding — args are slots for external components whose
+        // input dims already account for their own strokes, if present.
+        // Each row must be at least minArgHeight tall, matching generateBounds and
+        // segHeadRight so the outline is tall enough for every notch.
+        const headHeightByArgs = input.paramArgDims.reduce(
+            (sum, { arg }) => sum + Math.max(arg?.h ?? 0, minArgHeight),
+            0,
+        );
+
+        const headHeight = Math.max(headHeightByWidget, headHeightByParams, headHeightByArgs);
+
+        // ── Tail ──
+        const hasNesting = input.nestingDims !== undefined;
+        const nestHeight = hasNesting ? Math.max(input.nestingDims?.h ?? 0, minNestHeight) : 0;
+        const tailHeight = hasNesting
+            ? nestHeight + strokeWidth / 2 + TAIL_STEP_H + strokeWidth / 2
+            : 0;
+
+        const height = headHeight + tailHeight;
+
+        return { width, height, headHeight, nestHeight };
+    }
+
+    // ────────────────────────── Arc Helpers ──────────────────────────────────────────────────────────
+
+    /** Relative SVG arc (`a`) from `end` and `centre` (both relative to the start); radius and sweep derived. Limited to a quarter turn. */
+    private arc(end: RelPoint, centre: RelPoint): string {
+        const radius = Math.hypot(centre.x, centre.y);
+        // Cross product of (start→centre) and (start→end), with start at the origin.
+        // Negative ⇒ the turn is clockwise ⇒ SVG sweep flag 1 (in y-down space).
+        const sweepFlag = centre.y * end.x - centre.x * end.y < 0 ? 1 : 0;
+        return `a ${radius} ${radius} 0 0 ${sweepFlag} ${end.x} ${end.y}`;
+    }
+
+    /** Inward U-shape groove arc (left → right). Used by top notch and nested bottom notch. */
+    private buildVGroove(): string[] {
+        const strokeWidth = this.input.strokeWidth;
+        const lip = strokeWidth / 2;
+        const R = V_NOTCH_RADIUS + strokeWidth;
+        const middle = V_NOTCH_WIDTH - 2 * (lip + R);
+        return [
+            // Quarter-arc: horizontal (left) → vertical (down). CW
+            this.arc({ x: lip, y: lip }, { x: lip, y: 0 }),
+            // Inner curve and straight span: vertical (down) → vertical (up). CCW (U-shape)
+            this.arc({ x: R, y: R }, { x: 0, y: R }),
+            `h ${middle}`,
+            this.arc({ x: R, y: -R }, { x: R, y: 0 }),
+            // Quarter-arc: vertical (up) → horizontal (right). CW
+            this.arc({ x: lip, y: -lip }, { x: 0, y: -lip }),
+        ];
+    }
+
+    /** Outward U-shape tab arc (right → left). Used by bottom notch and nested top notch. */
+    private buildVTab(): string[] {
+        const strokeWidth = this.input.strokeWidth;
+        const lip = (3 * strokeWidth) / 2;
+        const R = V_NOTCH_RADIUS;
+        const middle = V_NOTCH_WIDTH - 2 * (lip + R);
+        return [
+            // Quarter-arc: horizontal (right) → vertical (down). CCW
+            this.arc({ x: -lip, y: lip }, { x: -lip, y: 0 }),
+            // Inner curve and straight span: vertical (down) → vertical (up). CW (U-shape)
+            this.arc({ x: -R, y: R }, { x: 0, y: R }),
+            `h ${-middle}`,
+            this.arc({ x: -R, y: -R }, { x: -R, y: 0 }),
+            // Quarter-arc: vertical (up) → horizontal (left). CCW
+            this.arc({ x: -lip, y: -lip }, { x: 0, y: -lip }),
+        ];
+    }
+
+    // ────────────────────────── Path Segments ────────────────────────────────────────────────────────
+
+    /**
+     * Top edge of the brick, left → right.
+     * Draws a full-size arc groove (hasPrevNotch) for interlocking with bricks above.
+     * The groove cuts INWARD into the brick body.
+     *
+     * @param strokeWidth - Stroke width in SVG units
+     * @param width       - Total outer width of the brick
+     * @param hasPrevNotch - Whether to draw the top notch groove
+     */
+    private segTopEdge(): string[] {
+        const strokeWidth = this.input.strokeWidth;
+        const { width } = this.dimensions;
+        const hasPrevNotch = this.input.hasPrevNotch;
+        // Start point sits after the rounded top-left corner: inset by strokeWidth/2 and CORNER_RADIUS.
+        const start = `M ${strokeWidth / 2 + CORNER_RADIUS} ${strokeWidth / 2}`;
+        // Convex top-right corner: end CR right + CR down, curving around a centre CR to the right.
+        const corner = this.arc({ x: CORNER_RADIUS, y: CORNER_RADIUS }, { x: CORNER_RADIUS, y: 0 });
+
+        // No notch — single flat span, inset by strokeWidth/2 + CORNER_RADIUS at each end.
+        if (!hasPrevNotch) {
+            return [start, `h ${width - strokeWidth - CORNER_RADIUS - CORNER_RADIUS}`, corner];
+        }
+
+        // flatBefore: horizontal run from the starting M position to the notch left edge
+        // flatAfter:  horizontal run from the notch right edge to the rounded top-right corner
+        const flatBefore = V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 - CORNER_RADIUS;
+        const flatAfter =
+            width - V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 - CORNER_RADIUS;
+
+        return [
+            start,
+            `h ${flatBefore}`, // flat run to groove left edge
+            ...this.buildVGroove(),
+            `h ${flatAfter}`, // flat run to brick right edge
+            corner,
+        ];
+    }
+
+    /**
+     * Right edge of the head, top → bottom.
+     * Draws one full-size concave groove per entry in `notchCentres`, cutting INWARD into the brick (−x).
+     * Each groove receives one argument brick plugged in from the right.
+     *
+     * @param strokeWidth  - Stroke width in SVG units
+     * @param headHeight   - Height of the head section
+     * @param notchCentres - Absolute y positions (top → bottom) of each groove centre
+     */
+    private segHeadRight(): string[] {
+        const strokeWidth = this.input.strokeWidth;
+        const { headHeight } = this.dimensions;
+        const notchCentres: number[] = [];
+        let slotTop = 0;
+        for (const { arg } of this.input.paramArgDims) {
+            const rowH = Math.max(arg?.h ?? 0, this.minimums.minArgHeight);
+            if (arg !== null) {
+                notchCentres.push(slotTop + NOTCH_OFFSET_Y);
+            }
+            slotTop += rowH;
+        }
+        // The edge runs between the two corners, each inset by strokeWidth/2 + CORNER_RADIUS.
+        const edgeStart = strokeWidth / 2 + CORNER_RADIUS; // below the rounded top-right corner
+        const edgeEnd = headHeight - strokeWidth / 2 - CORNER_RADIUS; // above the rounded bottom-right corner
+
+        // Convex bottom-right corner: end CR left + CR down, curving around a centre CR below.
+        const corner = this.arc(
+            { x: -CORNER_RADIUS, y: CORNER_RADIUS },
+            { x: 0, y: CORNER_RADIUS },
+        );
+
+        // No notches — single straight run.
+        if (notchCentres.length === 0) {
+            return [`v ${edgeEnd - edgeStart}`, corner];
+        }
+
+        const lip = strokeWidth / 2; // small flare arc radius, proportional to the stroke
+        const R = H_NOTCH_RADIUS + strokeWidth;
+        const middle = H_NOTCH_WIDTH - 2 * (lip + R);
+
+        const segs: string[] = [];
+        let pen = edgeStart; // current y of the pen, travelling downwards
+
+        for (const centre of notchCentres) {
+            // Build the notch span from its centre, one portion above and below:
+            //   centre        — the notch centre
+            //   semicircleTop — one radius above the centre
+            //   notchTop      — one lip arc above the semicircle (where the groove begins)
+            const semicircleTop = centre - middle / 2 - R;
+            const notchTop = semicircleTop - lip;
+            // ...and symmetrically downwards (where the groove ends):
+            const semicircleBottom = centre + middle / 2 + R;
+            const notchBottom = semicircleBottom + lip;
+
+            // Skip a notch that would overlap the previous one or run past the bottom corner,
+            // so the path stays continuous instead of self-crossing.
+            if (notchTop < pen || notchBottom > edgeEnd) {
+                continue;
+            }
+
+            // 1. flat run down to where the groove begins
+            const flatBefore = notchTop - pen;
+            segs.push(`v ${flatBefore}`);
+            // 2. lip arc: peel the edge inwards (−x)
+            segs.push(this.arc({ x: -lip, y: lip }, { x: 0, y: lip }));
+            // 3. semicircle: the concave groove dipping into the brick (−x)
+            segs.push(this.arc({ x: -R, y: R }, { x: -R, y: 0 }));
+            segs.push(`v ${middle}`);
+            segs.push(this.arc({ x: R, y: R }, { x: 0, y: R }));
+            // 4. lip arc: bring the edge back out
+            segs.push(this.arc({ x: lip, y: lip }, { x: lip, y: 0 }));
+
+            pen = notchBottom;
+        }
+
+        // 5. remaining flat run down to the bottom corner
+        segs.push(`v ${edgeEnd - pen}`);
+        segs.push(corner);
+        return segs;
+    }
+
+    /**
+     * Bottom edge of the head (used for bricks without nesting), right → left.
+     * Draws a smaller arc tab (hasNextNotch) protruding OUTWARD below the brick.
+     * Width is reduced by 2*s so it fits snugly inside the top groove when bricks stack.
+     *
+     * @param strokeWidth    - Stroke width in SVG units
+     * @param width          - Total outer width of the brick
+     * @param hasNextNotch - Whether to draw the bottom notch tab
+     */
+    private segHeadBottom(): string[] {
+        const strokeWidth = this.input.strokeWidth;
+        const { width } = this.dimensions;
+        const hasNextNotch = this.input.hasNextNotch;
+        const span = width - strokeWidth - CORNER_RADIUS - CORNER_RADIUS;
+
+        // Convex bottom-left corner: end CR left + CR up, curving around a centre CR to the left.
+        const corner = this.arc(
+            { x: -CORNER_RADIUS, y: -CORNER_RADIUS },
+            { x: -CORNER_RADIUS, y: 0 },
+        );
+
+        // No notch — single flat span going left.
+        if (!hasNextNotch) {
+            return [`h ${-span}`, corner];
+        }
+
+        if (V_NOTCH_WIDTH <= 2 * ((3 * strokeWidth) / 2 + V_NOTCH_RADIUS)) {
+            return [`h ${-span}`, corner];
+        }
+
+        const flatBefore =
+            width - V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 - CORNER_RADIUS;
+        const flatAfter = V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 - CORNER_RADIUS;
+
+        return [
+            `h ${-flatBefore}`, // flat run to tab right edge
+            ...this.buildVTab(),
+            `h ${-flatAfter}`, // flat run to brick left edge
+            corner,
+        ];
+    }
+
+    /**
+     * Left edge of the brick, bottom → top.
+     * Draws a single smaller convex tab (hasOutputNotch) protruding OUTWARD from the brick (−x).
+     * Tab radius is H_NOTCH_RADIUS; the parent's right groove uses H_NOTCH_RADIUS + strokeWidth.
+     *
+     * @param strokeWidth   - Stroke width in SVG units
+     * @param height        - Total outer height of the brick
+     * @param hasOutputNotch  - Whether to draw the left tab
+     */
+    private segLeftEdge(): string[] {
+        const strokeWidth = this.input.strokeWidth;
+        const { height } = this.dimensions;
+        const hasOutputNotch = this.input.hasOutputNotch;
+        // The edge runs between the two corners, each inset by strokeWidth/2 + CORNER_RADIUS; travelled upward.
+        const edgeStart = height - strokeWidth / 2 - CORNER_RADIUS; // above the rounded bottom-left corner
+        const edgeEnd = strokeWidth / 2 + CORNER_RADIUS; // below the rounded top-left corner
+
+        const tabR = H_NOTCH_RADIUS;
+        const lip = (3 * strokeWidth) / 2;
+        const middle = H_NOTCH_WIDTH - 2 * (lip + tabR);
+
+        // Convex top-left corner: end CR right + CR up, curving around a centre CR above.
+        const corner = this.arc(
+            { x: CORNER_RADIUS, y: -CORNER_RADIUS },
+            { x: 0, y: -CORNER_RADIUS },
+        );
+
+        if (!hasOutputNotch) {
+            return [`v ${-(edgeStart - edgeEnd)}`, corner];
+        }
+
+        if (middle <= 0) {
+            return [`v ${-(edgeStart - edgeEnd)}`, corner];
+        }
+
+        const notchBottom = H_NOTCH_OFFSET_Y + middle / 2 + tabR + lip;
+        const notchTop = H_NOTCH_OFFSET_Y - middle / 2 - tabR - lip;
+
+        // Fall back to a straight edge if the tab wouldn't fit between the two corners.
+        if (notchBottom > edgeStart || notchTop < edgeEnd) {
+            return [`v ${-(edgeStart - edgeEnd)}`, corner];
+        }
+
+        return [
+            `v ${-(edgeStart - notchBottom)}`, // 1. flat run up to where the tab begins
+            this.arc({ x: -lip, y: -lip }, { x: 0, y: -lip }), // 2. lip arc: peel the edge outwards (−x)
+            this.arc({ x: -tabR, y: -tabR }, { x: -tabR, y: 0 }), // 3. semicircle: the convex tab bulging out (−x)
+            `v ${-middle}`,
+            this.arc({ x: tabR, y: -tabR }, { x: 0, y: -tabR }),
+            this.arc({ x: lip, y: -lip }, { x: lip, y: 0 }), // 4. lip arc: bring the edge back in
+            `v ${-(notchTop - edgeEnd)}`, // 5. remaining flat run up to the top-left corner
+            corner,
+        ];
+    }
+
+    /**
+     * Cavity roof segment, right → left.
+     * Draws a smaller arc tab (hasNestedTopNotch) protruding DOWN into the cavity.
+     * Width is reduced by 2*s so it fits inside the nested-bottom groove.
+     *
+     * @param strokeWidth        - Stroke width in SVG units
+     * @param width              - Total outer width of the brick
+     */
+    private segTailCavityRoof(): string[] {
+        const strokeWidth = this.input.strokeWidth;
+        const { width } = this.dimensions;
+        // The two cavity corners run a stroke-width larger so a nested brick's rounded convex
+        // corner seats flush inside them (same idea as groove = tab + strokeWidth).
+        const cavityCornerRadius = CORNER_RADIUS + strokeWidth;
+
+        const span = width - TAIL_INDENT_W - strokeWidth - CORNER_RADIUS - cavityCornerRadius;
+
+        // Concave roof → spine corner: end crc left + crc down, curving around a centre crc to the left.
+        const corner = this.arc(
+            { x: -cavityCornerRadius, y: cavityCornerRadius },
+            { x: -cavityCornerRadius, y: 0 },
+        );
+
+        if (V_NOTCH_WIDTH <= 2 * ((3 * strokeWidth) / 2 + V_NOTCH_RADIUS)) {
+            return [`h ${-span}`, corner];
+        }
+
+        // Tab centre aligns with the inner brick's top/bottom notch centre.
+        const flatBefore =
+            width -
+            TAIL_INDENT_W -
+            V_NOTCH_OFFSET_X -
+            V_NOTCH_WIDTH / 2 -
+            (3 * strokeWidth) / 2 -
+            CORNER_RADIUS;
+        const flatAfter =
+            V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 + strokeWidth / 2 - cavityCornerRadius;
+
+        return [
+            `h ${-flatBefore}`, // flat run to tab right edge
+            ...this.buildVTab(),
+            `h ${-flatAfter}`, // flat run to cavity left wall
+            corner,
+        ];
+    }
+
+    private segTailCavityLeft(): string[] {
+        const strokeWidth = this.input.strokeWidth;
+        const { nestHeight } = this.dimensions;
+        const cavityCornerRadius = CORNER_RADIUS + strokeWidth;
+
+        // Grows s/2 per seam: starts s/2 below the inset roof, ends s/2 above the inset floor.
+        // Both ends meet concave cavity corners, so each is pulled in by cavityCornerRadius.
+        const span =
+            nestHeight +
+            strokeWidth / 2 +
+            strokeWidth / 2 -
+            cavityCornerRadius -
+            cavityCornerRadius;
+
+        // Concave spine → foot corner: end crc right + crc down, curving around a centre crc below.
+        const corner = this.arc(
+            { x: cavityCornerRadius, y: cavityCornerRadius },
+            { x: 0, y: cavityCornerRadius },
+        );
+
+        return [`v ${span}`, corner];
+    }
+
+    /**
+     * Cavity foot segment, left → right.
+     * Draws a full-size arc groove cutting DOWN into the foot.
+     * Full-size so it receives the inner brick's bottom tab.
+     *
+     * @param strokeWidth          - Stroke width in SVG units
+     */
+    private segTailFoot(): string[] {
+        const strokeWidth = this.input.strokeWidth;
+        const cavityCornerRadius = CORNER_RADIUS + strokeWidth;
+
+        const span = TAIL_STEP_W - TAIL_INDENT_W;
+
+        const flatBefore =
+            V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 + strokeWidth / 2 - cavityCornerRadius;
+        const flatAfter =
+            span - V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - (3 * strokeWidth) / 2 - CORNER_RADIUS;
+
+        // Convex foot → step-right corner: end CR right + CR down, curving around a centre CR to the right.
+        const corner = this.arc({ x: CORNER_RADIUS, y: CORNER_RADIUS }, { x: CORNER_RADIUS, y: 0 });
+
+        return [
+            `h ${flatBefore}`, // flat run to groove left edge
+            ...this.buildVGroove(),
+            `h ${flatAfter}`, // flat run to step right wall
+            corner,
+        ];
+    }
+
+    private segTailStepRight(): string[] {
+        // Convex step-right → step-bottom corner: end CR left + CR down, curving around a centre CR below.
+        const corner = this.arc(
+            { x: -CORNER_RADIUS, y: CORNER_RADIUS },
+            { x: 0, y: CORNER_RADIUS },
+        );
+        return [`v ${TAIL_STEP_H - CORNER_RADIUS - CORNER_RADIUS}`, corner];
+    }
+
+    /**
+     * Bottom of the tail step (nesting bricks only), right → left.
+     * Draws a smaller arc tab protruding downward, same shape as segHeadBottom.
+     *
+     * @param strokeWidth    - Stroke width in SVG units
+     * @param hasNextNotch - Whether to draw the bottom notch tab
+     */
+    private segTailStepBottom(): string[] {
+        const strokeWidth = this.input.strokeWidth;
+        const hasNextNotch = this.input.hasNextNotch;
+        const span = TAIL_STEP_W - CORNER_RADIUS - CORNER_RADIUS;
+
+        // Convex step-bottom → left corner: end CR left + CR up, curving around a centre CR to the left.
+        const corner = this.arc(
+            { x: -CORNER_RADIUS, y: -CORNER_RADIUS },
+            { x: -CORNER_RADIUS, y: 0 },
+        );
+
+        // No notch — single flat span going left.
+        if (!hasNextNotch) {
+            return [`h ${-span}`, corner];
+        }
+
+        if (V_NOTCH_WIDTH <= 2 * ((3 * strokeWidth) / 2 + V_NOTCH_RADIUS)) {
+            return [`h ${-span}`, corner];
+        }
+
+        const flatBefore =
+            TAIL_STEP_W - V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 - CORNER_RADIUS;
+        const flatAfter = V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 - CORNER_RADIUS;
+
+        return [
+            `h ${-flatBefore}`, // flat run to tab right edge
+            ...this.buildVTab(),
+            `h ${-flatAfter}`, // flat run to step left wall
+            corner,
+        ];
+    }
+
+    /**
+     * Computes the bounding boxes for each visual region of a brick (widget, nesting area,
+     * params, and args), applying minimum dimension constraints and aligning each region
+     * to its corresponding slot in the outline geometry.
+     */
+    private generateBounds(): BrickOutlineOutput['bounds'] {
+        const input = this.input;
+        const { width, headHeight, nestHeight } = this.dimensions;
+        const hasNesting = this.input.hasNesting;
+        const minimums = this.minimums;
+        const { minWidgetHeight, minNestHeight, minParamHeight, minArgHeight } = minimums;
+        const strokeWidth = input.strokeWidth;
+
+        const widget: Bounds = {
+            x: strokeWidth / 2 + HEAD_PAD_X1,
+            y: strokeWidth / 2 + HEAD_PAD_Y1,
+            w: input.widgetDims.w,
+            h: Math.max(input.widgetDims.h, minWidgetHeight),
+        };
+
+        let nesting: Bounds | undefined;
+        if (hasNesting) {
+            nesting = {
+                x: TAIL_INDENT_W + strokeWidth / 2 + strokeWidth / 2,
+                y: headHeight,
+                w: input.nestingDims?.w ?? 0,
+                h: Math.max(nestHeight, minNestHeight),
+            };
+        }
+
+        const params: (Bounds | null)[] = [];
+        const args: (Bounds | null)[] = [];
+        let y = 0;
+
+        for (const { param, arg } of input.paramArgDims) {
+            const rowH = Math.max(arg?.h ?? 0, minArgHeight);
+
+            if (arg !== null) {
+                args.push({ x: width, y, w: arg.w, h: rowH });
+            } else {
+                args.push(null);
+            }
+
+            if (param !== null) {
+                const paramH = Math.max(param.h, minParamHeight);
+                // Centre the param label on its arg notch (NOTCH_OFFSET_Y below the row top);
+                // fall back to centring within the row when the slot has no arg (no notch).
+                const paramCentreY = arg !== null ? NOTCH_OFFSET_Y : rowH / 2;
+                params.push({
+                    x: width - strokeWidth / 2 - HEAD_PAD_X2 - param.w,
+                    y: y + paramCentreY - paramH / 2,
+                    w: param.w,
+                    h: paramH,
+                });
+            } else {
+                params.push(null);
+            }
+
+            y += rowH;
+        }
+
+        return {
+            widget,
+            params: params.some((p) => p !== null) ? params : undefined,
+            args: args.some((a) => a !== null) ? args : undefined,
+            nesting,
         };
     }
 
-    const params: (Bounds | null)[] = [];
-    const args: (Bounds | null)[] = [];
-    let y = 0;
+    // ────────────────────────── Public API ───────────────────────────────────────────────────────────
 
-    for (const { param, arg } of input.paramArgDims) {
-        const rowH = Math.max(arg?.h ?? 0, minArgHeight);
-
-        if (arg !== null) {
-            args.push({ x: width, y, w: arg.w, h: rowH });
-        } else {
-            args.push(null);
-        }
-
-        if (param !== null) {
-            const paramH = Math.max(param.h, minParamHeight);
-            // Centre the param label on its arg notch (NOTCH_OFFSET_Y below the row top);
-            // fall back to centring within the row when the slot has no arg (no notch).
-            const paramCentreY = arg !== null ? NOTCH_OFFSET_Y : rowH / 2;
-            params.push({
-                x: width - strokeWidth / 2 - HEAD_PAD_X2 - param.w,
-                y: y + paramCentreY - paramH / 2,
-                w: param.w,
-                h: paramH,
-            });
-        } else {
-            params.push(null);
-        }
-
-        y += rowH;
-    }
-
-    return {
-        widget,
-        params: params.some((p) => p !== null) ? params : undefined,
-        args: args.some((a) => a !== null) ? args : undefined,
-        nesting,
-    };
-}
-
-// ────────────────────────── Public API ───────────────────────────────────────────────────────────
-
-/**
- * Creates a reusable brick outline generator bound to the given size minimums.
- *
- * Minimums are fixed at creation time so the generator can be memoized and
- * called cheaply on every render.
- *
- * @param minimums - SVG-unit floor dimensions for width, heights, and slots.
- * @returns Generator that produces an SVG path and layout bounds for one brick.
- */
-export function createBrickOutlineGenerator(
-    minimums: BrickMinimums,
-): (input: BrickOutlineInput) => BrickOutlineOutput {
     /**
      * Computes the SVG path and layout bounds for a single brick frame.
      *
      * @param input - Stroke width, widget/param/arg dimensions, optional nesting,
-     *               and optional topNotch / bottomNotch flags.
+     *               and optional previous, next, and output notch flags.
      * @returns SVG path string, outer frame dimensions, content-region bounds,
      *          and notch protrusion depths (for SVG viewBox sizing).
      */
-    return (input: BrickOutlineInput): BrickOutlineOutput => {
-        const { width, height, headHeight, nestHeight } = computeDimensions(input, minimums);
+    public generate(input: BrickOutlineInput): BrickOutlineOutput {
+        this.input = {
+            ...input,
+            hasNesting: input.nestingDims !== undefined,
+            hasPrevNotch: input.hasPrevNotch ?? false,
+            hasNextNotch: input.hasNextNotch ?? false,
+            hasOutputNotch: input.hasOutputNotch ?? false,
+        };
+        this.dimensions = this.computeDimensions();
 
-        const strokeWidth = input.strokeWidth;
-        const hasNesting = input.nestingDims !== undefined;
-
-        const hasTopNotch = input.hasPrevNotch ?? false;
-        const hasBottomNotch = input.hasNextNotch ?? false;
-        const hasLeftNotch = input.hasOutputNotch ?? false;
-
-        const argNotchCentreYs = computeArgNotchCentreYs(input.paramArgDims, minimums.minArgHeight);
+        const { width, height } = this.dimensions;
 
         // Without nesting: top → right → bottom → left → close
         // With nesting:    top → right → cavityRoof → cavityLeft → foot → stepRight → stepBottom → left → close
-        const segments = !hasNesting
+        const segments = !this.input.hasNesting
             ? [
-                  ...segTopEdge(strokeWidth, width, hasTopNotch),
-                  ...segHeadRight(strokeWidth, headHeight, argNotchCentreYs),
-                  ...segHeadBottom(strokeWidth, width, hasBottomNotch),
-                  ...segLeftEdge(strokeWidth, height, hasLeftNotch),
+                  ...this.segTopEdge(),
+                  ...this.segHeadRight(),
+                  ...this.segHeadBottom(),
+                  ...this.segLeftEdge(),
                   'Z',
               ]
             : [
-                  ...segTopEdge(strokeWidth, width, hasTopNotch),
-                  ...segHeadRight(strokeWidth, headHeight, argNotchCentreYs),
-                  ...segTailCavityRoof(strokeWidth, width),
-                  ...segTailCavityLeft(strokeWidth, nestHeight),
-                  ...segTailFoot(strokeWidth),
-                  ...segTailStepRight(),
-                  ...segTailStepBottom(strokeWidth, hasBottomNotch),
-                  ...segLeftEdge(strokeWidth, height, hasLeftNotch),
+                  ...this.segTopEdge(),
+                  ...this.segHeadRight(),
+                  ...this.segTailCavityRoof(),
+                  ...this.segTailCavityLeft(),
+                  ...this.segTailFoot(),
+                  ...this.segTailStepRight(),
+                  ...this.segTailStepBottom(),
+                  ...this.segLeftEdge(),
                   'Z',
               ];
 
         const path = segments.join(' ');
 
-        const bounds = generateBounds(input, width, headHeight, nestHeight, hasNesting, minimums);
+        const bounds = this.generateBounds();
 
         return {
             path,
@@ -677,5 +724,5 @@ export function createBrickOutlineGenerator(
             height,
             bounds,
         };
-    };
+    }
 }

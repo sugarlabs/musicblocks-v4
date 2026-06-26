@@ -1,7 +1,7 @@
 import type { BrickOutlineInput } from '@/@types/brick';
 
 import { SCALE_LEVEL_CONFIG } from '../../utils/constants';
-import { createBrickOutlineGenerator } from '../../utils/path2';
+import { BrickOutlineGenerator } from '../../utils/path2';
 
 const SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
 const SCALE = SCALE_LEVEL_CONFIG[SCALE_LEVEL].brickScale;
@@ -9,7 +9,7 @@ const SCALE = SCALE_LEVEL_CONFIG[SCALE_LEVEL].brickScale;
 const pxToSvg = (px: number) => px / SCALE;
 const svgToPx = (u: number) => u * SCALE;
 
-const generateBrickOutline = createBrickOutlineGenerator({
+const brickOutlineGenerator = new BrickOutlineGenerator({
   minWidth: pxToSvg(SCALE_LEVEL_CONFIG[SCALE_LEVEL].minWidth),
   minWidgetHeight: pxToSvg(SCALE_LEVEL_CONFIG[SCALE_LEVEL].minWidgetParamHeight),
   minParamHeight: pxToSvg(SCALE_LEVEL_CONFIG[SCALE_LEVEL].minWidgetParamHeight),
@@ -19,7 +19,7 @@ const generateBrickOutline = createBrickOutlineGenerator({
 
 export function PathBrickView({ input }: { input: BrickOutlineInput }) {
   const maxArgW = Math.max(0, ...input.paramArgDims.map((p) => p.arg?.w ?? 0));
-  const { width, height, path, bounds } = generateBrickOutline({
+  const { width, height, path, bounds } = brickOutlineGenerator.generate({
     strokeWidth: pxToSvg(input.strokeWidth),
     widgetDims: { w: pxToSvg(input.widgetDims.w), h: pxToSvg(input.widgetDims.h) },
     paramArgDims: input.paramArgDims.map((p) => ({

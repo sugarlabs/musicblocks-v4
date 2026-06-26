@@ -10,7 +10,7 @@ import type {
 } from '@/@types/brick';
 
 import { SCALE_LEVEL_CONFIG } from '../../utils/constants';
-import { createBrickOutlineGenerator } from '../../utils/path2';
+import { BrickOutlineGenerator } from '../../utils/path2';
 
 // Ensure the widget is exclusively of type WidgetDisplay (no input widgets and no variant)
 type WidgetDisplay =
@@ -64,7 +64,7 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
 
   const generateOutline = useMemo(
     () =>
-      createBrickOutlineGenerator({
+      new BrickOutlineGenerator({
         minWidth: pxToSvg(minWidth),
         minWidgetHeight: pxToSvg(minWidgetParamHeight),
         minParamHeight: pxToSvg(minWidgetParamHeight),
@@ -136,7 +136,7 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
       height,
       path: generatedPath,
       bounds,
-    } = generateOutline({
+    } = generateOutline.generate({
       strokeWidth: pxToSvg(STROKE_WIDTH),
       widgetDims: { w: pxToSvg(labelDims.w), h: pxToSvg(labelDims.h) },
       paramArgDims: paramArgs.map((pa, i) => ({

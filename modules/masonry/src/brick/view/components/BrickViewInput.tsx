@@ -1,14 +1,12 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import type { Bounds, Size, ValueBrickViewProps } from '@/@types/brick';
-import { SCALE_LEVEL_CONFIG } from '../../utils/constants';
-import { createBrickOutlineGenerator } from '../../utils/path2';
+import { SCALE_LEVEL_CONFIG } from '@/brick/utils/constants';
+import { createBrickOutlineGenerator } from '@/brick/utils/path2';
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../ui/select2';
-import { Input } from '../../../ui/input';
-import { Slider } from '../../../ui/slider';
-
-type OmitTooltip<T> = Omit<T, 'tooltipText'>;
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/select2';
+import { Input } from '@/ui/input';
+import { Slider } from '@/ui/slider';
 
 // Extract only the interactive input widgets from ValueBrickViewProps.
 // This ensures BrickViewInput exclusively handles widgets like textboxes and toggles,
@@ -18,7 +16,7 @@ type WidgetInput = Extract<
   { type: 'textbox' | 'numberbox' | 'toggle' | 'slider' | 'select' }
 >;
 
-export type BrickViewInputProps = OmitTooltip<Omit<ValueBrickViewProps, 'widget'>> & {
+export type BrickViewInputProps = Omit<ValueBrickViewProps, 'widget'> & {
   widget: WidgetInput;
 };
 
@@ -88,6 +86,8 @@ export function BrickViewInput(props: BrickViewInputProps) {
   // This runs after labelDims updates. It creates the path, and calculates
   // the exact coordinates (labelBounds) where the foreignObject should be placed.
   useLayoutEffect(() => {
+    const scaledWidgetDims = { w: pxToSvg(labelDims.w), h: pxToSvg(labelDims.h) };
+
     // Value bricks only have a left notch
     const {
       width,
@@ -96,7 +96,7 @@ export function BrickViewInput(props: BrickViewInputProps) {
       bounds,
     } = generateOutline({
       strokeWidth: pxToSvg(STROKE_WIDTH),
-      labelDims: { w: pxToSvg(labelDims.w), h: pxToSvg(labelDims.h) },
+      labelDims: scaledWidgetDims,
       paramArgDims: [],
       hasTopNotch: false,
       hasBottomNotch: false,
@@ -112,7 +112,7 @@ export function BrickViewInput(props: BrickViewInputProps) {
       w: svgToPx(bounds.label.w),
       h: svgToPx(bounds.label.h),
     });
-  }, [labelDims, generateOutline, svgToPx, pxToSvg]);
+  }, [labelDims.w, labelDims.h, generateOutline, svgToPx, pxToSvg]);
 
   return (
     <svg
@@ -133,10 +133,10 @@ export function BrickViewInput(props: BrickViewInputProps) {
       <foreignObject
         x={labelBounds.x}
         y={labelBounds.y}
-        // Initially labelBounds is 0. We use 9999 so the HTML container is unconstrained
+        // Initially labelBounds is 0. We use undefined so the HTML container is unconstrained
         // on the first pass, allowing inputRef to measure its true, natural width.
-        width={labelBounds.w || 9999}
-        height={labelBounds.h || 9999}
+        width={labelBounds.w || undefined}
+        height={labelBounds.h || undefined}
         style={{ overflow: 'visible' }}
       >
         <div

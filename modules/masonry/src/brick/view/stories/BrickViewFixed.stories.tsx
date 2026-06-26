@@ -10,6 +10,9 @@ const meta = {
   parameters: {
     layout: 'centered',
   },
+  args: {
+    tooltipText: '',
+  },
   argTypes: {
     scaleLevel: {
       control: { type: 'radio' },

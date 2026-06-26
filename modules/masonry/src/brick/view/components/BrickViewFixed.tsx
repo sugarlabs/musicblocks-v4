@@ -14,27 +14,16 @@ import { BrickOutlineGenerator } from '../../utils/path2';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../ui/select';
 
-// Ensure the widget is exclusively of type WidgetDisplay (no input widgets)
-type WidgetDisplay =
-  | { type: 'label'; text: string; glyph?: { name?: string; src?: string; color?: string } }
-  | { type: 'graphic'; src: string }
-  | { type: 'variant'; options: string[]; value: string };
-
-// Utility to explicitly strip out tooltipText from inherited types
-type OmitTooltip<T> = Omit<T, 'tooltipText'>;
-
 export type BrickViewFixedProps =
-  | (OmitTooltip<Omit<ValueBrickViewProps, 'widget'>> & { widget: WidgetDisplay })
-  | OmitTooltip<ExpressionBrickViewProps>
-  | OmitTooltip<StatementBrickViewProps>;
+  | (Omit<ValueBrickViewProps, 'widget'> & { widget: ExpressionBrickViewProps['widget'] })
+  | ExpressionBrickViewProps
+  | StatementBrickViewProps;
 
 const STROKE_WIDTH = 2;
 const DEFAULT_SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
 // Param labels render smaller than the main label so the brick's identity
 // (the label) stays dominant while params read as secondary detail.
 const PARAM_FONT_SCALE = 0.8;
-// Use a stable reference for empty parameter arrays to prevent unnecessary re-renders.
-const EMPTY_PARAM_ARGS: ParamArgPair[] = [];
 
 export function BrickViewFixed(props: BrickViewFixedProps) {
   const { brickScale, minWidth, minArgNestHeight, minWidgetParamHeight, fontSize, lineHeight } =
@@ -54,7 +43,7 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
   const [labelBounds, setLabelBounds] = useState<Bounds>({ x: 0, y: 0, w: 0, h: 0 });
 
   // For parameter labels
-  const paramArgs = 'paramArgs' in props ? (props.paramArgs ?? EMPTY_PARAM_ARGS) : EMPTY_PARAM_ARGS;
+  const paramArgs = 'paramArgs' in props ? (props.paramArgs ?? []) : [];
   const [paramDimsList, setParamDimsList] = useState<Size[]>(paramArgs.map(() => ({ w: 0, h: 0 })));
   const [paramBoundsList, setParamBoundsList] = useState<(Bounds | null)[]>([]);
 
@@ -70,7 +59,7 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
   const variantOptions = props.widget.type === 'variant' ? props.widget.options : [];
   const variantValue = props.widget.type === 'variant' ? props.widget.value : '';
 
-  const widgetDep =
+  const widgetContent =
     props.widget.type === 'label'
       ? props.widget.text
       : props.widget.type === 'variant'
@@ -89,45 +78,37 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
     [minWidth, minWidgetParamHeight, minArgNestHeight, pxToSvg],
   );
 
+  const paramArgsString = JSON.stringify(paramArgs);
+
   // Layout Effect 1: Measures the actual rendered DOM text dimensions.
   // Dependencies include fontSize and lineHeight so that scaleLevel changes correctly recalculate width/height.
   useLayoutEffect(() => {
-    let changed = false;
-
     // Measure main label
-    let newLabelDims = { w: 0, h: 0 };
     if (labelRef.current) {
       const { width, height } = labelRef.current.getBoundingClientRect();
-      if (width !== labelDims.w || height !== labelDims.h) {
-        newLabelDims = { w: width, h: height };
-        changed = true;
-      } else {
-        newLabelDims = labelDims;
-      }
+      setLabelDims((prev) => (width !== prev.w || height !== prev.h ? { w: width, h: height } : prev));
     }
 
     // Measure param labels
-    const newParamDimsList = [...paramDimsList];
-    paramRefs.current.forEach((el, i) => {
-      if (el) {
-        const { width, height } = el.getBoundingClientRect();
-        if (width !== newParamDimsList[i]?.w || height !== newParamDimsList[i]?.h) {
-          newParamDimsList[i] = { w: width, h: height };
-          changed = true;
+    setParamDimsList((prev) => {
+      let changed = false;
+      const newParamDimsList = [...prev];
+      paramRefs.current.forEach((el, i) => {
+        if (el) {
+          const { width, height } = el.getBoundingClientRect();
+          if (width !== newParamDimsList[i]?.w || height !== newParamDimsList[i]?.h) {
+            newParamDimsList[i] = { w: width, h: height };
+            changed = true;
+          }
         }
-      }
+      });
+      return changed ? newParamDimsList : prev;
     });
-
-    if (changed) {
-      setLabelDims(newLabelDims);
-      setParamDimsList(newParamDimsList);
-    }
-  }, [widgetDep, paramArgs.length, labelDims, paramDimsList, fontSize, lineHeight]);
+  }, [widgetContent, paramArgsString, fontSize, lineHeight]);
 
   const hasConnectionPrev = 'hasConnectionPrev' in props ? props.hasConnectionPrev : false;
   const hasConnectionNext = 'hasConnectionNext' in props ? props.hasConnectionNext : false;
   const nesting = 'nesting' in props ? props.nesting : undefined;
-  const paramArgsString = JSON.stringify(paramArgs);
 
   useLayoutEffect(() => {
     let nestingDims;
@@ -209,7 +190,6 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
     generateOutline,
     svgToPx,
     pxToSvg,
-    paramArgs,
     paramArgsString,
     minArgNestHeight,
   ]);
@@ -242,8 +222,8 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
           <div
             className="flex items-center"
             style={{
-              width: labelBounds.w,
-              height: labelBounds.h,
+              width: labelBounds.w || undefined,
+              height: labelBounds.h || undefined,
             }}
           >
             <div ref={labelRef} className="flex w-max items-center gap-1">
@@ -336,9 +316,11 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
       )}
 
       {/* Parameters */}
-      {paramBoundsList.map((bounds, i) => {
-        const paramText = paramArgs[i]?.param;
-        if (!paramText || !bounds) return null;
+      {paramArgs.map((pa, i) => {
+        const paramText = pa.param;
+        if (!paramText) return null;
+
+        const bounds = paramBoundsList[i] || { x: 0, y: 0, w: 0, h: 0 };
 
         return (
           <foreignObject
@@ -351,8 +333,8 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
             <div
               className="flex items-center"
               style={{
-                width: bounds.w,
-                height: bounds.h,
+                width: bounds.w || undefined,
+                height: bounds.h || undefined,
               }}
             >
               <p

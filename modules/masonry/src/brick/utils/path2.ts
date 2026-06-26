@@ -107,6 +107,51 @@ export class BrickOutlineGenerator {
 
     public constructor(private readonly minimums: BrickMinimums) {}
 
+    private normalizeInput(input: BrickOutlineInput): NormalizedInput {
+        const hasNesting = input.nestingDims !== undefined;
+        const hasPrevNotch = input.hasPrevNotch ?? false;
+        const hasNextNotch = input.hasNextNotch ?? false;
+        const hasOutputNotch = input.hasOutputNotch ?? false;
+
+        return {
+            ...input,
+            hasNesting,
+            hasPrevNotch,
+            hasNextNotch,
+            hasOutputNotch,
+        };
+    }
+
+    /**
+     * Shallow-plus-array equality for two `NormalizedInput` objects.
+     * Avoids JSON serialisation on the render-critical path.
+     */
+    private inputsEqual(a: NormalizedInput, b: NormalizedInput): boolean {
+        if (
+            a.strokeWidth !== b.strokeWidth ||
+            a.hasNesting !== b.hasNesting ||
+            a.hasPrevNotch !== b.hasPrevNotch ||
+            a.hasNextNotch !== b.hasNextNotch ||
+            a.hasOutputNotch !== b.hasOutputNotch ||
+            a.widgetDims.w !== b.widgetDims.w ||
+            a.widgetDims.h !== b.widgetDims.h ||
+            (a.nestingDims?.w ?? null) !== (b.nestingDims?.w ?? null) ||
+            (a.nestingDims?.h ?? null) !== (b.nestingDims?.h ?? null) ||
+            a.paramArgDims.length !== b.paramArgDims.length
+        ) {
+            return false;
+        }
+        return a.paramArgDims.every((row, i) => {
+            const bRow = b.paramArgDims[i];
+            return (
+                (row.param?.w ?? null) === (bRow.param?.w ?? null) &&
+                (row.param?.h ?? null) === (bRow.param?.h ?? null) &&
+                (row.arg?.w ?? null) === (bRow.arg?.w ?? null) &&
+                (row.arg?.h ?? null) === (bRow.arg?.h ?? null)
+            );
+        });
+    }
+
     // ────────────────────────── Arc Helpers ──────────────────────────────────────────────────────
 
     /**
@@ -684,17 +729,23 @@ export class BrickOutlineGenerator {
     /**
      * Computes the overall layout dimensions for a single brick frame.
      *
+     * @param input - Stroke width, widget/param/arg dimensions, optional nesting,
+     *               and optional previous, next, and output notch flags.
      * @returns Outer width and height, plus head, tail, and nest sub-dimensions.
      */
-    public computeDimensions(): BrickComputedDimensions {
-        const input = this.input;
+    public computeDimensions(input: BrickOutlineInput): BrickComputedDimensions {
+        const inputNormalised = this.normalizeInput(input);
+
         const minimums = this.minimums;
         const { minWidth, minWidgetHeight, minNestHeight, minParamHeight, minArgHeight } = minimums;
-        const params = input.paramArgDims.map((p) => p.param ?? { w: 0, h: minParamHeight });
+
+        const params = inputNormalised.paramArgDims.map(
+            (p) => p.param ?? { w: 0, h: minParamHeight },
+        );
 
         // SVG strokes straddle the path line — s/2 bleeds outside on each side;
         // every segment includes s/2 at both ends so the stroke isn't clipped.
-        const strokeWidth = input.strokeWidth;
+        const strokeWidth = inputNormalised.strokeWidth;
 
         // ── Width ──
 
@@ -705,7 +756,7 @@ export class BrickOutlineGenerator {
         const headWidth =
             strokeWidth / 2 +
             BrickOutlineGenerator.HEAD_PAD_X1 +
-            input.widgetDims.w +
+            inputNormalised.widgetDims.w +
             widgetParamGutter +
             maxParamWidth +
             BrickOutlineGenerator.HEAD_PAD_X2 +
@@ -715,7 +766,7 @@ export class BrickOutlineGenerator {
         const tailIndentWidth =
             strokeWidth / 2 +
             BrickOutlineGenerator.TAIL_INDENT_W +
-            (input.nestingDims?.w ?? 0) +
+            (inputNormalised.nestingDims?.w ?? 0) +
             strokeWidth / 2;
         const tailStepWidth = strokeWidth / 2 + BrickOutlineGenerator.TAIL_STEP_W + strokeWidth / 2;
 
@@ -733,7 +784,7 @@ export class BrickOutlineGenerator {
         const headHeightByWidget =
             strokeWidth / 2 +
             BrickOutlineGenerator.HEAD_PAD_Y1 +
-            Math.max(input.widgetDims.h, minWidgetHeight) +
+            Math.max(inputNormalised.widgetDims.h, minWidgetHeight) +
             BrickOutlineGenerator.HEAD_PAD_Y2 +
             strokeWidth / 2;
         const headHeightByParams =
@@ -747,7 +798,7 @@ export class BrickOutlineGenerator {
         // input dims already account for their own strokes, if present.
         // Each row must be at least minArgHeight tall, matching generateBounds and
         // segHeadRight so the outline is tall enough for every notch.
-        const headHeightByArgs = input.paramArgDims.reduce(
+        const headHeightByArgs = inputNormalised.paramArgDims.reduce(
             (sum, { arg }) => sum + Math.max(arg?.h ?? 0, minArgHeight),
             0,
         );
@@ -755,10 +806,11 @@ export class BrickOutlineGenerator {
         const headHeight = Math.max(headHeightByWidget, headHeightByParams, headHeightByArgs);
 
         // ── Tail ──
-        const hasNesting = input.nestingDims !== undefined;
-        const nestWidth = hasNesting ? (input.nestingDims?.w ?? 0) : 0;
-        const nestHeight = hasNesting ? Math.max(input.nestingDims?.h ?? 0, minNestHeight) : 0;
-        const tailHeight = hasNesting
+        const nestWidth = inputNormalised.hasNesting ? (input.nestingDims?.w ?? 0) : 0;
+        const nestHeight = inputNormalised.hasNesting
+            ? Math.max(input.nestingDims?.h ?? 0, minNestHeight)
+            : 0;
+        const tailHeight = inputNormalised.hasNesting
             ? nestHeight + strokeWidth / 2 + BrickOutlineGenerator.TAIL_STEP_H + strokeWidth / 2
             : 0;
 
@@ -785,14 +837,12 @@ export class BrickOutlineGenerator {
      *          and notch protrusion depths (for SVG viewBox sizing).
      */
     public generate(input: BrickOutlineInput): BrickOutlineOutput {
-        this.input = {
-            ...input,
-            hasNesting: input.nestingDims !== undefined,
-            hasPrevNotch: input.hasPrevNotch ?? false,
-            hasNextNotch: input.hasNextNotch ?? false,
-            hasOutputNotch: input.hasOutputNotch ?? false,
-        };
-        this.dimensions = this.computeDimensions();
+        // Recompute dimensions only when the normalised input has actually changed.
+        const normalized = this.normalizeInput(input);
+        if (!this.inputsEqual(normalized, this.input)) {
+            this.input = normalized;
+            this.dimensions = this.computeDimensions(input);
+        }
 
         const { width, height } = this.dimensions;
 

@@ -1,8 +1,9 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import type { Bounds, Size, ValueBrickViewProps } from '@/@types/brick';
+
 import { SCALE_LEVEL_CONFIG } from '@/brick/utils/constants';
-import { createBrickOutlineGenerator } from '@/brick/utils/path2';
+import { BrickOutlineGenerator } from '@/brick/utils/path2';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/select2';
 import { Input } from '@/ui/input';
@@ -24,7 +25,7 @@ const STROKE_WIDTH = 2;
 const DEFAULT_SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
 
 export function BrickViewInput(props: BrickViewInputProps) {
-  const { brickScale, minWidth, minArgNestHeight, minLabelParamHeight, fontSize, lineHeight } =
+  const { brickScale, minWidth, minArgNestHeight, minWidgetParamHeight, fontSize, lineHeight } =
     SCALE_LEVEL_CONFIG[props.scaleLevel ?? DEFAULT_SCALE_LEVEL];
 
   const pxToSvg = useCallback((px: number) => px / brickScale, [brickScale]);
@@ -40,14 +41,14 @@ export function BrickViewInput(props: BrickViewInputProps) {
 
   const generateOutline = useMemo(
     () =>
-      createBrickOutlineGenerator({
+      new BrickOutlineGenerator({
         minWidth: pxToSvg(minWidth),
-        minLabelHeight: pxToSvg(minLabelParamHeight),
-        minNestHeight: pxToSvg(minArgNestHeight),
-        minParamHeight: pxToSvg(minLabelParamHeight),
+        minWidgetHeight: pxToSvg(minWidgetParamHeight),
+        minParamHeight: pxToSvg(minWidgetParamHeight),
         minArgHeight: pxToSvg(minArgNestHeight),
+        minNestHeight: pxToSvg(minArgNestHeight),
       }),
-    [minWidth, minLabelParamHeight, minArgNestHeight, pxToSvg],
+    [minWidth, minWidgetParamHeight, minArgNestHeight, pxToSvg],
   );
 
   // Layout Effect 1: Measures the actual rendered DOM dimensions of the input.
@@ -94,23 +95,23 @@ export function BrickViewInput(props: BrickViewInputProps) {
       height,
       path: generatedPath,
       bounds,
-    } = generateOutline({
+    } = generateOutline.generate({
       strokeWidth: pxToSvg(STROKE_WIDTH),
-      labelDims: scaledWidgetDims,
+      widgetDims: scaledWidgetDims,
       paramArgDims: [],
-      hasTopNotch: false,
-      hasBottomNotch: false,
-      hasLeftNotch: true,
+      hasPrevNotch: false,
+      hasNextNotch: false,
+      hasOutputNotch: true,
     });
 
     setPath(generatedPath);
     setDims({ w: width, h: height });
 
     setLabelBounds({
-      x: svgToPx(bounds.label.x),
-      y: svgToPx(bounds.label.y),
-      w: svgToPx(bounds.label.w),
-      h: svgToPx(bounds.label.h),
+      x: svgToPx(bounds.widget.x),
+      y: svgToPx(bounds.widget.y),
+      w: svgToPx(bounds.widget.w),
+      h: svgToPx(bounds.widget.h),
     });
   }, [labelDims.w, labelDims.h, generateOutline, svgToPx, pxToSvg]);
 
@@ -189,7 +190,7 @@ function renderWidget(
       return (
         <Select key={key} defaultValue={String(widget.value)}>
           <SelectTrigger
-            className="h-7 min-w-[4rem] gap-1 border-black/20 bg-transparent px-2 py-1 transition-colors hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/5"
+            className="h-7 min-w-16 gap-1 border-black/20 bg-transparent px-2 py-1 transition-colors hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/5"
             style={commonStyle}
           >
             <div className="grid">
@@ -280,7 +281,7 @@ function renderWidget(
     case 'slider':
       return (
         <div
-          className="flex h-6 min-w-[8rem] cursor-pointer items-center gap-2 px-1"
+          className="flex h-6 min-w-32 cursor-pointer items-center gap-2 px-1"
           style={commonStyle}
         >
           <span className="text-xs font-medium opacity-80 select-none">{widget.min}</span>

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { BrickViewInput } from '../components/BrickViewInput';
 
@@ -7,6 +7,9 @@ const meta = {
   component: BrickViewInput,
   parameters: {
     layout: 'centered',
+  },
+  args: {
+    tooltipText: '',
   },
   argTypes: {
     scaleLevel: {
@@ -20,9 +23,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const colorsDefault = {
-      background: '#f1c40f',
-      foreground: '#333333',
-      border: '#f39c12',
+  background: '#f1c40f',
+  foreground: '#333333',
+  border: '#f39c12',
 };
 
 export const SelectWidget: Story = {

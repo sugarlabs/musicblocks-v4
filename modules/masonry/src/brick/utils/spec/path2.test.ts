@@ -400,3 +400,313 @@ describe('computeDimensions', () => {
         });
     });
 });
+
+describe('generate', () => {
+    const strokeWidth = 2;
+
+    describe('return shape', () => {
+        it('returns path, width, height, and bounds', () => {
+            const result = brickOutlineGenerator.generate({
+                strokeWidth,
+                widgetDims: { w: 100, h: 20 },
+                paramArgDims: [],
+            });
+
+            expect(result).toHaveProperty('path');
+            expect(result).toHaveProperty('width');
+            expect(result).toHaveProperty('height');
+            expect(result).toHaveProperty('bounds');
+        });
+
+        it('width and height match computeDimensions for the same input', () => {
+            const input = {
+                strokeWidth,
+                widgetDims: { w: 100, h: 20 },
+                paramArgDims: [],
+            };
+            const dims = brickOutlineGenerator.computeDimensions(input);
+            const result = brickOutlineGenerator.generate(input);
+
+            expect(result.width).toBe(dims.width);
+            expect(result.height).toBe(dims.height);
+        });
+    });
+
+    describe('SVG path structure', () => {
+        it('path starts with M and ends with Z (no nesting)', () => {
+            const { path } = brickOutlineGenerator.generate({
+                strokeWidth,
+                widgetDims: { w: 100, h: 20 },
+                paramArgDims: [],
+            });
+
+            expect(path).toMatch(/^M /);
+            expect(path).toMatch(/Z$/);
+        });
+
+        it('path starts with M and ends with Z (with nesting)', () => {
+            const { path } = brickOutlineGenerator.generate({
+                strokeWidth,
+                widgetDims: { w: 100, h: 20 },
+                paramArgDims: [],
+                nestingDims: { w: 50, h: 40 },
+            });
+
+            expect(path).toMatch(/^M /);
+            expect(path).toMatch(/Z$/);
+        });
+
+        it('path contains exactly one Z (no nesting)', () => {
+            const { path } = brickOutlineGenerator.generate({
+                strokeWidth,
+                widgetDims: { w: 100, h: 20 },
+                paramArgDims: [],
+            });
+
+            expect((path.match(/Z/g) ?? []).length).toBe(1);
+        });
+
+        it('path contains exactly one Z (with nesting)', () => {
+            const { path } = brickOutlineGenerator.generate({
+                strokeWidth,
+                widgetDims: { w: 100, h: 20 },
+                paramArgDims: [],
+                nestingDims: { w: 50, h: 40 },
+            });
+
+            expect((path.match(/Z/g) ?? []).length).toBe(1);
+        });
+    });
+
+    describe('path changes with flags', () => {
+        it('hasPrevNotch: true produces a different path than false', () => {
+            const base = { strokeWidth, widgetDims: { w: 100, h: 20 }, paramArgDims: [] };
+            const without = brickOutlineGenerator.generate({ ...base, hasPrevNotch: false });
+            const with_ = brickOutlineGenerator.generate({ ...base, hasPrevNotch: true });
+
+            expect(with_.path).not.toBe(without.path);
+        });
+
+        it('hasNextNotch: true produces a different path than false', () => {
+            const base = { strokeWidth, widgetDims: { w: 100, h: 20 }, paramArgDims: [] };
+            const without = brickOutlineGenerator.generate({ ...base, hasNextNotch: false });
+            const with_ = brickOutlineGenerator.generate({ ...base, hasNextNotch: true });
+
+            expect(with_.path).not.toBe(without.path);
+        });
+
+        it('hasOutputNotch: true produces a different path than false', () => {
+            const base = { strokeWidth, widgetDims: { w: 100, h: 20 }, paramArgDims: [] };
+            const without = brickOutlineGenerator.generate({ ...base, hasOutputNotch: false });
+            const with_ = brickOutlineGenerator.generate({ ...base, hasOutputNotch: true });
+
+            expect(with_.path).not.toBe(without.path);
+        });
+
+        it('nestingDims present produces a different path than absent', () => {
+            const base = { strokeWidth, widgetDims: { w: 100, h: 20 }, paramArgDims: [] };
+            const without = brickOutlineGenerator.generate(base);
+            const with_ = brickOutlineGenerator.generate({
+                ...base,
+                nestingDims: { w: 50, h: 40 },
+            });
+
+            expect(with_.path).not.toBe(without.path);
+        });
+    });
+
+    describe('bounds', () => {
+        describe('widget', () => {
+            it('widget bound x and y account for stroke and padding', () => {
+                const { bounds } = brickOutlineGenerator.generate({
+                    strokeWidth,
+                    widgetDims: { w: 100, h: 20 },
+                    paramArgDims: [],
+                });
+
+                expect(bounds.widget.x).toBe(
+                    strokeWidth / 2 + BrickOutlineGeneratorTest.HEAD_PAD_X1,
+                );
+                expect(bounds.widget.y).toBe(
+                    strokeWidth / 2 + BrickOutlineGeneratorTest.HEAD_PAD_Y1,
+                );
+            });
+
+            it('widget bound width equals input widgetDims.w', () => {
+                const { bounds } = brickOutlineGenerator.generate({
+                    strokeWidth,
+                    widgetDims: { w: 123, h: 20 },
+                    paramArgDims: [],
+                });
+
+                expect(bounds.widget.w).toBe(123);
+            });
+
+            it('widget bound height is clamped to minWidgetHeight when input is shorter', () => {
+                const { bounds } = brickOutlineGenerator.generate({
+                    strokeWidth,
+                    widgetDims: { w: 100, h: 5 },
+                    paramArgDims: [],
+                });
+
+                expect(bounds.widget.h).toBe(MINIMUMS.minWidgetHeight);
+            });
+
+            it('widget bound height reflects input when taller than minimum', () => {
+                const widgetH = 60;
+                const { bounds } = brickOutlineGenerator.generate({
+                    strokeWidth,
+                    widgetDims: { w: 100, h: widgetH },
+                    paramArgDims: [],
+                });
+
+                expect(bounds.widget.h).toBe(widgetH);
+            });
+        });
+
+        describe('params and args', () => {
+            it('no param/arg rows: bounds.params and bounds.args are both undefined', () => {
+                const { bounds } = brickOutlineGenerator.generate({
+                    strokeWidth,
+                    widgetDims: { w: 100, h: 20 },
+                    paramArgDims: [],
+                });
+
+                expect(bounds.params).toBeUndefined();
+                expect(bounds.args).toBeUndefined();
+            });
+
+            it('param-only row: bounds.params has one entry, bounds.args is undefined', () => {
+                const { bounds } = brickOutlineGenerator.generate({
+                    strokeWidth,
+                    widgetDims: { w: 100, h: 20 },
+                    paramArgDims: [{ param: { w: 50, h: 20 }, arg: null }],
+                });
+
+                expect(bounds.params).toHaveLength(1);
+                expect(bounds.args).toBeUndefined();
+            });
+
+            it('arg-only row: bounds.args has one entry at x=width, bounds.params is undefined', () => {
+                const result = brickOutlineGenerator.generate({
+                    strokeWidth,
+                    widgetDims: { w: 100, h: 20 },
+                    paramArgDims: [{ param: null, arg: { w: 50, h: 40 } }],
+                });
+
+                expect(result.bounds.args).toHaveLength(1);
+                expect(result.bounds.args![0]!.x).toBe(result.width);
+                expect(result.bounds.params).toBeUndefined();
+            });
+
+            it('param+arg row: both arrays have one entry', () => {
+                const { bounds } = brickOutlineGenerator.generate({
+                    strokeWidth,
+                    widgetDims: { w: 100, h: 20 },
+                    paramArgDims: [{ param: { w: 50, h: 20 }, arg: { w: 50, h: 40 } }],
+                });
+
+                expect(bounds.params).toHaveLength(1);
+                expect(bounds.args).toHaveLength(1);
+            });
+
+            it('row with param: null produces a null entry in bounds.params', () => {
+                const { bounds } = brickOutlineGenerator.generate({
+                    strokeWidth,
+                    widgetDims: { w: 100, h: 20 },
+                    paramArgDims: [
+                        { param: { w: 50, h: 20 }, arg: { w: 50, h: 40 } },
+                        { param: null, arg: { w: 50, h: 40 } },
+                    ],
+                });
+
+                expect(bounds.params).toHaveLength(2);
+                expect(bounds.params![1]).toBeNull();
+            });
+
+            it('row with arg: null produces a null entry in bounds.args', () => {
+                const { bounds } = brickOutlineGenerator.generate({
+                    strokeWidth,
+                    widgetDims: { w: 100, h: 20 },
+                    paramArgDims: [
+                        { param: { w: 50, h: 20 }, arg: { w: 50, h: 40 } },
+                        { param: { w: 50, h: 20 }, arg: null },
+                    ],
+                });
+
+                expect(bounds.args).toHaveLength(2);
+                expect(bounds.args![1]).toBeNull();
+            });
+        });
+
+        describe('nesting', () => {
+            it('no nesting: bounds.nesting is undefined', () => {
+                const { bounds } = brickOutlineGenerator.generate({
+                    strokeWidth,
+                    widgetDims: { w: 100, h: 20 },
+                    paramArgDims: [],
+                });
+
+                expect(bounds.nesting).toBeUndefined();
+            });
+
+            it('with nesting: bounds.nesting.y equals headHeight', () => {
+                const input = {
+                    strokeWidth,
+                    widgetDims: { w: 100, h: 20 },
+                    paramArgDims: [],
+                    nestingDims: { w: 50, h: 40 },
+                };
+                const dims = brickOutlineGenerator.computeDimensions(input);
+                const result = brickOutlineGenerator.generate(input);
+
+                expect(result.bounds.nesting!.y).toBe(dims.headHeight);
+            });
+
+            it('with nesting: bounds.nesting.x equals TAIL_INDENT_W + strokeWidth', () => {
+                const { bounds } = brickOutlineGenerator.generate({
+                    strokeWidth,
+                    widgetDims: { w: 100, h: 20 },
+                    paramArgDims: [],
+                    nestingDims: { w: 50, h: 40 },
+                });
+
+                expect(bounds.nesting!.x).toBe(
+                    BrickOutlineGeneratorTest.TAIL_INDENT_W + strokeWidth,
+                );
+            });
+        });
+    });
+
+    describe('caching', () => {
+        it('consecutive calls with identical input return consistent dimensions', () => {
+            const gen = new BrickOutlineGeneratorTest(MINIMUMS);
+            const input = {
+                strokeWidth,
+                widgetDims: { w: 100, h: 20 },
+                paramArgDims: [],
+            };
+            const first = gen.generate(input);
+            const second = gen.generate(input);
+
+            expect(second.width).toBe(first.width);
+            expect(second.height).toBe(first.height);
+        });
+
+        it('changed input updates the returned dimensions', () => {
+            const gen = new BrickOutlineGeneratorTest(MINIMUMS);
+            const first = gen.generate({
+                strokeWidth,
+                widgetDims: { w: 50, h: 20 },
+                paramArgDims: [],
+            });
+            const second = gen.generate({
+                strokeWidth,
+                widgetDims: { w: 200, h: 20 },
+                paramArgDims: [],
+            });
+
+            expect(second.width).toBeGreaterThan(first.width);
+        });
+    });
+});

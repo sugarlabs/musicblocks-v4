@@ -119,8 +119,13 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
     });
   }, [widgetContent, paramArgsString, fontSize, lineHeight]);
 
+  const nestingIsFolded = nesting?.isFolded;
+  const nestingDimsW = nesting?.dims?.w;
+  const nestingDimsH = nesting?.dims?.h;
+  const hasNesting = nesting !== undefined;
+
   const { hasPrevNotch, hasNextNotch, hasOutputNotch, nestingDims } = useMemo(() => {
-    let nestingDims;
+    let computedNestingDims;
     let hasPrevNotch = false;
     let hasNextNotch = false;
     let hasOutputNotch = props.kind === 'value' || props.kind === 'expression';
@@ -128,26 +133,32 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
     if (props.kind === 'statement') {
       hasPrevNotch = hasConnectionPrev ?? false;
       hasNextNotch = hasConnectionNext ?? false;
-      if (nesting) {
-        // If the nesting cavity is folded, we pass undefined to path2.ts
-        // so it omits the cavity entirely and draws a flush, solid block.
-        nestingDims = nesting.isFolded ? undefined : (nesting.dims ?? null);
+      if (hasNesting) {
+        if (nestingIsFolded) {
+          computedNestingDims = undefined;
+        } else if (nestingDimsW !== undefined && nestingDimsH !== undefined) {
+          computedNestingDims = { w: nestingDimsW, h: nestingDimsH };
+        } else {
+          computedNestingDims = null;
+        }
       }
     }
-    return { hasPrevNotch, hasNextNotch, hasOutputNotch, nestingDims };
+    return { hasPrevNotch, hasNextNotch, hasOutputNotch, nestingDims: computedNestingDims };
   }, [
     props.kind,
     hasConnectionPrev,
     hasConnectionNext,
-    nesting?.isFolded,
-    nesting?.dims?.w,
-    nesting?.dims?.h,
+    hasNesting,
+    nestingIsFolded,
+    nestingDimsW,
+    nestingDimsH,
   ]);
 
   useLayoutEffect(() => {
     const scaledWidgetDims = { w: pxToSvg(labelDims.w), h: pxToSvg(labelDims.h) };
 
-    const scaledParamArgDims = paramArgs.map((pa, i) => ({
+    const parsedParamArgs = JSON.parse(paramArgsString) as typeof paramArgs;
+    const scaledParamArgDims = parsedParamArgs.map((pa, i) => ({
       param: pa.param
         ? { w: pxToSvg(paramDimsList[i]?.w ?? 0), h: pxToSvg(paramDimsList[i]?.h ?? 0) }
         : null,
@@ -205,18 +216,17 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
       );
     }
   }, [
-    props.kind,
-    hasConnectionPrev,
-    hasConnectionNext,
-    nesting?.dims?.w,
-    nesting?.dims?.h,
-    nesting?.isFolded,
-    labelDims,
+    labelDims.w,
+    labelDims.h,
+    paramArgsString,
     paramDimsList,
+    nestingDims,
+    hasPrevNotch,
+    hasNextNotch,
+    hasOutputNotch,
     generateOutline,
     svgToPx,
     pxToSvg,
-    paramArgsString,
     minArgNestHeight,
   ]);
 

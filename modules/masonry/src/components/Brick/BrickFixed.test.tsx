@@ -13,7 +13,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
 
-import { BrickViewFixed } from '../BrickViewFixed';
+import { BrickViewFixed } from './BrickFixed';
 
 afterEach(cleanup);
 

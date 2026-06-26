@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { BrickViewInput } from '../components/BrickViewInput';
+import { BrickViewInput } from './BrickInput';
 
 const meta = {
-  title: 'BRICKS/BrickViewInput',
+  title: 'Brick/BrickInput',
   component: BrickViewInput,
   parameters: {
     layout: 'centered',

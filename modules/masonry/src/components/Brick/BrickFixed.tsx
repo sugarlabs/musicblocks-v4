@@ -10,7 +10,6 @@ import type {
 
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/select';
-
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
 import { BrickOutlineGenerator } from '@/utils/path';
 

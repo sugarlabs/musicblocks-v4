@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { BrickView } from '../components/Brick';
+import { BrickView } from './Brick';
 
 type StoryArgs = React.ComponentProps<typeof BrickView> & { label: string };
 
 const meta: Meta<StoryArgs> = {
-  title: 'Bricks/Brick',
+  title: 'Brick/Brick',
   component: BrickView,
   parameters: {
     layout: 'centered',

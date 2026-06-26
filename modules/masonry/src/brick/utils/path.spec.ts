@@ -1,5 +1,5 @@
-import { generateBrickData } from '../path';
-import type { TInputUnion } from '../path';
+import { generateBrickData } from './path';
+import type { TInputUnion } from './path';
 
 // Helper function to parse SVG path and calculate actual bounding box
 function calculatePathBoundingBox(pathString: string): { w: number; h: number; debug?: unknown } {

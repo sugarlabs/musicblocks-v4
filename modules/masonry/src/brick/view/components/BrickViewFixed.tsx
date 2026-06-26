@@ -11,8 +11,8 @@ import type {
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/select';
 
-import { SCALE_LEVEL_CONFIG } from '@/brick/utils/constants';
-import { BrickOutlineGenerator } from '@/brick/utils/path2';
+import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
+import { BrickOutlineGenerator } from '@/utils/path';
 
 export type BrickViewFixedProps =
   | (Omit<ValueBrickViewProps, 'widget'> & { widget: ExpressionBrickViewProps['widget'] })

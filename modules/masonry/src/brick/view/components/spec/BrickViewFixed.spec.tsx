@@ -11,8 +11,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 
+import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
+
 import { BrickViewFixed } from '../BrickViewFixed';
-import { SCALE_LEVEL_CONFIG } from '../../../utils/constants';
 
 afterEach(cleanup);
 
@@ -31,6 +32,7 @@ function renderExpressionBrick(scaleLevel: 1 | 2 | 3 = 2) {
       colorsDefault={colorsDefault}
       widget={{ type: 'label', text: 'Add' }}
       paramArgs={[{ param: 'A', argDims: { w: 40, h: 20 } }]}
+      tooltipText=""
     />,
   );
 }

@@ -24,10 +24,18 @@ interface ComputedDimensions {
     width: number;
     /** Total outer height of the brick (headHeight + tailHeight) */
     height: number;
+    /** Width of the top head section containing main widget, param labels, and args */
+    headWidth: number;
     /** Height of the top head section containing main widget, param labels, and args */
     headHeight: number;
+    /** Width of the nesting cavity between the head and the tail step; 0 when no nesting */
+    nestWidth: number;
     /** Height of the nesting cavity between the head and the tail step; 0 when no nesting */
     nestHeight: number;
+    /** Width of the bottom tail step section; 0 when no nesting */
+    tailWidth: number;
+    /** Height of the bottom tail step section; 0 when no nesting */
+    tailHeight: number;
 }
 
 // ────────────────────────── Dimension Calculation ────────────────────────────────────────────────
@@ -107,8 +115,12 @@ export class BrickOutlineGenerator {
     private dimensions: ComputedDimensions = {
         width: 0,
         height: 0,
+        headWidth: 0,
         headHeight: 0,
+        nestWidth: 0,
         nestHeight: 0,
+        tailWidth: 0,
+        tailHeight: 0,
     };
 
     public constructor(private readonly minimums: BrickMinimums) {}
@@ -183,6 +195,7 @@ export class BrickOutlineGenerator {
 
         // ── Tail ──
         const hasNesting = input.nestingDims !== undefined;
+        const nestWidth = hasNesting ? (input.nestingDims?.w ?? 0) : 0;
         const nestHeight = hasNesting ? Math.max(input.nestingDims?.h ?? 0, minNestHeight) : 0;
         const tailHeight = hasNesting
             ? nestHeight + strokeWidth / 2 + BrickOutlineGenerator.TAIL_STEP_H + strokeWidth / 2
@@ -190,7 +203,16 @@ export class BrickOutlineGenerator {
 
         const height = headHeight + tailHeight;
 
-        return { width, height, headHeight, nestHeight };
+        return {
+            width,
+            height,
+            headWidth,
+            headHeight,
+            nestWidth,
+            nestHeight,
+            tailWidth,
+            tailHeight,
+        };
     }
 
     // ────────────────────────── Arc Helpers ──────────────────────────────────────────────────────
@@ -740,7 +762,7 @@ export class BrickOutlineGenerator {
 
             if (param !== null) {
                 const paramH = Math.max(param.h, minParamHeight);
-                // Centre the param label on its arg notch (NOTCH_OFFSET_Y below the row top);
+                // Centre the param label on its arg notch (H_NOTCH_OFFSET_Y below the row top);
                 // fall back to centring within the row when the slot has no arg (no notch).
                 const paramCentreY =
                     arg !== null ? BrickOutlineGenerator.H_NOTCH_OFFSET_Y : rowH / 2;

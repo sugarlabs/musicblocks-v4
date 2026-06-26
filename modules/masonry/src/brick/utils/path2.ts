@@ -13,30 +13,12 @@
 
 import type {
     Bounds,
+    BrickComputedDimensions,
     BrickMinimums,
     BrickOutlineInput,
     BrickOutlineOutput,
     Point,
 } from '@/@types/brick';
-
-interface ComputedDimensions {
-    /** Total outer width of the brick */
-    width: number;
-    /** Total outer height of the brick (headHeight + tailHeight) */
-    height: number;
-    /** Width of the top head section containing main widget, param labels, and args */
-    headWidth: number;
-    /** Height of the top head section containing main widget, param labels, and args */
-    headHeight: number;
-    /** Width of the nesting cavity between the head and the tail step; 0 when no nesting */
-    nestWidth: number;
-    /** Height of the nesting cavity between the head and the tail step; 0 when no nesting */
-    nestHeight: number;
-    /** Width of the bottom tail step section; 0 when no nesting */
-    tailWidth: number;
-    /** Height of the bottom tail step section; 0 when no nesting */
-    tailHeight: number;
-}
 
 // ────────────────────────── Dimension Calculation ────────────────────────────────────────────────
 
@@ -112,7 +94,7 @@ export class BrickOutlineGenerator {
         hasOutputNotch: false,
     };
 
-    private dimensions: ComputedDimensions = {
+    private dimensions: BrickComputedDimensions = {
         width: 0,
         height: 0,
         headWidth: 0,
@@ -124,96 +106,6 @@ export class BrickOutlineGenerator {
     };
 
     public constructor(private readonly minimums: BrickMinimums) {}
-
-    protected computeDimensions(): ComputedDimensions {
-        const input = this.input;
-        const minimums = this.minimums;
-        const { minWidth, minWidgetHeight, minNestHeight, minParamHeight, minArgHeight } = minimums;
-        const params = input.paramArgDims.map((p) => p.param ?? { w: 0, h: minParamHeight });
-
-        // SVG strokes straddle the path line — s/2 bleeds outside on each side;
-        // every segment includes s/2 at both ends so the stroke isn't clipped.
-        const strokeWidth = input.strokeWidth;
-
-        // ── Width ──
-
-        // ── Head ──
-        const maxParamWidth = params.length > 0 ? Math.max(...params.map((p) => p.w)) : 0;
-        const widgetParamGutter =
-            maxParamWidth > 0 ? BrickOutlineGenerator.WIDGET_PARAM_GUTTER_X : 0;
-        const headWidth =
-            strokeWidth / 2 +
-            BrickOutlineGenerator.HEAD_PAD_X1 +
-            input.widgetDims.w +
-            widgetParamGutter +
-            maxParamWidth +
-            BrickOutlineGenerator.HEAD_PAD_X2 +
-            strokeWidth / 2;
-
-        // ── Tail ──
-        const tailIndentWidth =
-            strokeWidth / 2 +
-            BrickOutlineGenerator.TAIL_INDENT_W +
-            (input.nestingDims?.w ?? 0) +
-            strokeWidth / 2;
-        const tailStepWidth = strokeWidth / 2 + BrickOutlineGenerator.TAIL_STEP_W + strokeWidth / 2;
-
-        const tailWidth = Math.max(tailIndentWidth, tailStepWidth);
-
-        const width = Math.max(headWidth, tailWidth, minWidth);
-
-        // ── Height ──
-
-        // ── Head ──
-        const paramsTotalHeight = params.reduce((sum, p) => sum + p.h, 0);
-        const paramGutterTotal =
-            BrickOutlineGenerator.PARAM_GUTTER_Y * Math.max(0, params.length - 1);
-
-        const headHeightByWidget =
-            strokeWidth / 2 +
-            BrickOutlineGenerator.HEAD_PAD_Y1 +
-            Math.max(input.widgetDims.h, minWidgetHeight) +
-            BrickOutlineGenerator.HEAD_PAD_Y2 +
-            strokeWidth / 2;
-        const headHeightByParams =
-            strokeWidth / 2 +
-            BrickOutlineGenerator.HEAD_PAD_Y1 +
-            paramsTotalHeight +
-            paramGutterTotal +
-            BrickOutlineGenerator.HEAD_PAD_Y2 +
-            strokeWidth / 2;
-        // No stroke clearance or padding — args are slots for external components whose
-        // input dims already account for their own strokes, if present.
-        // Each row must be at least minArgHeight tall, matching generateBounds and
-        // segHeadRight so the outline is tall enough for every notch.
-        const headHeightByArgs = input.paramArgDims.reduce(
-            (sum, { arg }) => sum + Math.max(arg?.h ?? 0, minArgHeight),
-            0,
-        );
-
-        const headHeight = Math.max(headHeightByWidget, headHeightByParams, headHeightByArgs);
-
-        // ── Tail ──
-        const hasNesting = input.nestingDims !== undefined;
-        const nestWidth = hasNesting ? (input.nestingDims?.w ?? 0) : 0;
-        const nestHeight = hasNesting ? Math.max(input.nestingDims?.h ?? 0, minNestHeight) : 0;
-        const tailHeight = hasNesting
-            ? nestHeight + strokeWidth / 2 + BrickOutlineGenerator.TAIL_STEP_H + strokeWidth / 2
-            : 0;
-
-        const height = headHeight + tailHeight;
-
-        return {
-            width,
-            height,
-            headWidth,
-            headHeight,
-            nestWidth,
-            nestHeight,
-            tailWidth,
-            tailHeight,
-        };
-    }
 
     // ────────────────────────── Arc Helpers ──────────────────────────────────────────────────────
 
@@ -788,6 +680,101 @@ export class BrickOutlineGenerator {
     }
 
     // ────────────────────────── Public API ───────────────────────────────────────────────────────
+
+    /**
+     * Computes the overall layout dimensions for a single brick frame.
+     *
+     * @returns Outer width and height, plus head, tail, and nest sub-dimensions.
+     */
+    public computeDimensions(): BrickComputedDimensions {
+        const input = this.input;
+        const minimums = this.minimums;
+        const { minWidth, minWidgetHeight, minNestHeight, minParamHeight, minArgHeight } = minimums;
+        const params = input.paramArgDims.map((p) => p.param ?? { w: 0, h: minParamHeight });
+
+        // SVG strokes straddle the path line — s/2 bleeds outside on each side;
+        // every segment includes s/2 at both ends so the stroke isn't clipped.
+        const strokeWidth = input.strokeWidth;
+
+        // ── Width ──
+
+        // ── Head ──
+        const maxParamWidth = params.length > 0 ? Math.max(...params.map((p) => p.w)) : 0;
+        const widgetParamGutter =
+            maxParamWidth > 0 ? BrickOutlineGenerator.WIDGET_PARAM_GUTTER_X : 0;
+        const headWidth =
+            strokeWidth / 2 +
+            BrickOutlineGenerator.HEAD_PAD_X1 +
+            input.widgetDims.w +
+            widgetParamGutter +
+            maxParamWidth +
+            BrickOutlineGenerator.HEAD_PAD_X2 +
+            strokeWidth / 2;
+
+        // ── Tail ──
+        const tailIndentWidth =
+            strokeWidth / 2 +
+            BrickOutlineGenerator.TAIL_INDENT_W +
+            (input.nestingDims?.w ?? 0) +
+            strokeWidth / 2;
+        const tailStepWidth = strokeWidth / 2 + BrickOutlineGenerator.TAIL_STEP_W + strokeWidth / 2;
+
+        const tailWidth = Math.max(tailIndentWidth, tailStepWidth);
+
+        const width = Math.max(headWidth, tailWidth, minWidth);
+
+        // ── Height ──
+
+        // ── Head ──
+        const paramsTotalHeight = params.reduce((sum, p) => sum + p.h, 0);
+        const paramGutterTotal =
+            BrickOutlineGenerator.PARAM_GUTTER_Y * Math.max(0, params.length - 1);
+
+        const headHeightByWidget =
+            strokeWidth / 2 +
+            BrickOutlineGenerator.HEAD_PAD_Y1 +
+            Math.max(input.widgetDims.h, minWidgetHeight) +
+            BrickOutlineGenerator.HEAD_PAD_Y2 +
+            strokeWidth / 2;
+        const headHeightByParams =
+            strokeWidth / 2 +
+            BrickOutlineGenerator.HEAD_PAD_Y1 +
+            paramsTotalHeight +
+            paramGutterTotal +
+            BrickOutlineGenerator.HEAD_PAD_Y2 +
+            strokeWidth / 2;
+        // No stroke clearance or padding — args are slots for external components whose
+        // input dims already account for their own strokes, if present.
+        // Each row must be at least minArgHeight tall, matching generateBounds and
+        // segHeadRight so the outline is tall enough for every notch.
+        const headHeightByArgs = input.paramArgDims.reduce(
+            (sum, { arg }) => sum + Math.max(arg?.h ?? 0, minArgHeight),
+            0,
+        );
+
+        const headHeight = Math.max(headHeightByWidget, headHeightByParams, headHeightByArgs);
+
+        // ── Tail ──
+        const hasNesting = input.nestingDims !== undefined;
+        const nestWidth = hasNesting ? (input.nestingDims?.w ?? 0) : 0;
+        const nestHeight = hasNesting ? Math.max(input.nestingDims?.h ?? 0, minNestHeight) : 0;
+        const tailHeight = hasNesting
+            ? nestHeight + strokeWidth / 2 + BrickOutlineGenerator.TAIL_STEP_H + strokeWidth / 2
+            : 0;
+
+        const height = headHeight + tailHeight;
+
+        return {
+            width,
+            height,
+            headWidth,
+            headHeight,
+            nestWidth,
+            nestHeight,
+            tailWidth,
+            tailHeight,
+        };
+    }
 
     /**
      * Computes the SVG path and layout bounds for a single brick frame.

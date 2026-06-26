@@ -42,6 +42,10 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
   const [labelDims, setLabelDims] = useState<Size>({ w: 0, h: 0 });
   const [labelBounds, setLabelBounds] = useState<Bounds>({ x: 0, y: 0, w: 0, h: 0 });
 
+  const hasConnectionPrev = 'hasConnectionPrev' in props ? props.hasConnectionPrev : false;
+  const hasConnectionNext = 'hasConnectionNext' in props ? props.hasConnectionNext : false;
+  const nesting = 'nesting' in props ? props.nesting : undefined;
+
   // For parameter labels
   const paramArgs = 'paramArgs' in props ? (props.paramArgs ?? []) : [];
   const [paramDimsList, setParamDimsList] = useState<Size[]>(paramArgs.map(() => ({ w: 0, h: 0 })));
@@ -52,6 +56,7 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
 
   const isLabelWidget = props.widget.type === 'label';
   const isVariantWidget = props.widget.type === 'variant';
+  const isGraphicWidget = props.widget.type === 'graphic';
 
   const labelText = props.widget.type === 'label' ? props.widget.text : '';
   const labelGlyph = props.widget.type === 'label' ? props.widget.glyph : undefined;
@@ -59,12 +64,16 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
   const variantOptions = props.widget.type === 'variant' ? props.widget.options : [];
   const variantValue = props.widget.type === 'variant' ? props.widget.value : '';
 
+  const graphicSrc = props.widget.type === 'graphic' ? props.widget.src : undefined;
+
   const widgetContent =
     props.widget.type === 'label'
       ? props.widget.text
       : props.widget.type === 'variant'
         ? props.widget.value
-        : '';
+        : props.widget.type === 'graphic'
+          ? props.widget.src
+          : '';
 
   const generateOutline = useMemo(
     () =>
@@ -78,6 +87,9 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
     [minWidth, minWidgetParamHeight, minArgNestHeight, pxToSvg],
   );
 
+  // Serialize paramArgs to safely use it as a dependency in the layout effect below.
+  // This ensures we re-measure param dimensions only when their text or structure actually changes,
+  // rather than triggering on every render if the parent passes a new array reference.
   const paramArgsString = JSON.stringify(paramArgs);
 
   // Layout Effect 1: Measures the actual rendered DOM text dimensions.
@@ -86,7 +98,9 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
     // Measure main label
     if (labelRef.current) {
       const { width, height } = labelRef.current.getBoundingClientRect();
-      setLabelDims((prev) => (width !== prev.w || height !== prev.h ? { w: width, h: height } : prev));
+      setLabelDims((prev) =>
+        width !== prev.w || height !== prev.h ? { w: width, h: height } : prev,
+      );
     }
 
     // Measure param labels
@@ -106,15 +120,10 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
     });
   }, [widgetContent, paramArgsString, fontSize, lineHeight]);
 
-  const hasConnectionPrev = 'hasConnectionPrev' in props ? props.hasConnectionPrev : false;
-  const hasConnectionNext = 'hasConnectionNext' in props ? props.hasConnectionNext : false;
-  const nesting = 'nesting' in props ? props.nesting : undefined;
-
-  useLayoutEffect(() => {
+  const { hasPrevNotch, hasNextNotch, hasOutputNotch, nestingDims } = useMemo(() => {
     let nestingDims;
     let hasPrevNotch = false;
     let hasNextNotch = false;
-
     let hasOutputNotch = props.kind === 'value' || props.kind === 'expression';
 
     if (props.kind === 'statement') {
@@ -126,6 +135,36 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
         nestingDims = nesting.isFolded ? undefined : (nesting.dims ?? null);
       }
     }
+    return { hasPrevNotch, hasNextNotch, hasOutputNotch, nestingDims };
+  }, [
+    props.kind,
+    hasConnectionPrev,
+    hasConnectionNext,
+    nesting?.isFolded,
+    nesting?.dims?.w,
+    nesting?.dims?.h,
+  ]);
+
+  useLayoutEffect(() => {
+    const scaledWidgetDims = { w: pxToSvg(labelDims.w), h: pxToSvg(labelDims.h) };
+
+    const scaledParamArgDims = paramArgs.map((pa, i) => ({
+      param: pa.param
+        ? { w: pxToSvg(paramDimsList[i]?.w ?? 0), h: pxToSvg(paramDimsList[i]?.h ?? 0) }
+        : null,
+      arg: pa.argDims
+        ? { w: pxToSvg(pa.argDims.w), h: pxToSvg(pa.argDims.h) }
+        : pa.param
+          ? { w: 0, h: pxToSvg(minArgNestHeight) }
+          : null,
+    }));
+
+    const scaledNestingDims =
+      nestingDims !== undefined
+        ? nestingDims === null
+          ? null
+          : { w: pxToSvg(nestingDims.w), h: pxToSvg(nestingDims.h) }
+        : undefined;
 
     const {
       width,
@@ -134,23 +173,9 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
       bounds,
     } = generateOutline.generate({
       strokeWidth: pxToSvg(STROKE_WIDTH),
-      widgetDims: { w: pxToSvg(labelDims.w), h: pxToSvg(labelDims.h) },
-      paramArgDims: paramArgs.map((pa, i) => ({
-        param: pa.param
-          ? { w: pxToSvg(paramDimsList[i]?.w ?? 0), h: pxToSvg(paramDimsList[i]?.h ?? 0) }
-          : null,
-        arg: pa.argDims
-          ? { w: pxToSvg(pa.argDims.w), h: pxToSvg(pa.argDims.h) }
-          : pa.param
-            ? { w: 0, h: pxToSvg(minArgNestHeight) }
-            : null,
-      })),
-      nestingDims:
-        nestingDims !== undefined
-          ? nestingDims === null
-            ? null
-            : { w: pxToSvg(nestingDims.w), h: pxToSvg(nestingDims.h) }
-          : undefined,
+      widgetDims: scaledWidgetDims,
+      paramArgDims: scaledParamArgDims,
+      nestingDims: scaledNestingDims,
       hasPrevNotch,
       hasNextNotch,
       hasOutputNotch,
@@ -184,7 +209,9 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
     props.kind,
     hasConnectionPrev,
     hasConnectionNext,
-    nesting,
+    nesting?.dims?.w,
+    nesting?.dims?.h,
+    nesting?.isFolded,
     labelDims,
     paramDimsList,
     generateOutline,
@@ -212,7 +239,7 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
       />
 
       {/* Main Widget */}
-      {(isLabelWidget || isVariantWidget) && (
+      {(isLabelWidget || isVariantWidget || isGraphicWidget) && (
         <foreignObject
           x={labelBounds.x}
           y={labelBounds.y}
@@ -299,20 +326,12 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
                   </SelectContent>
                 </Select>
               )}
+              {isGraphicWidget && graphicSrc && (
+                <img src={graphicSrc} alt="graphic widget" className="shrink-0 object-contain" />
+              )}
             </div>
           </div>
         </foreignObject>
-      )}
-
-      {props.widget.type === 'graphic' && (
-        <image
-          href={props.widget.src}
-          x={labelBounds.x}
-          y={labelBounds.y}
-          width={labelBounds.w}
-          height={labelBounds.h}
-          preserveAspectRatio="xMidYMid meet"
-        />
       )}
 
       {/* Parameters */}

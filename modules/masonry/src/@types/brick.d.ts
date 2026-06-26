@@ -148,6 +148,25 @@ export interface Point {
 /** Bounding rectangle of a layout region: position and size */
 export interface Bounds extends Size, Point {}
 
+export interface BrickComputedDimensions {
+    /** Total outer width of the brick */
+    width: number;
+    /** Total outer height of the brick (headHeight + tailHeight) */
+    height: number;
+    /** Width of the top head section containing main widget, param labels, and args */
+    headWidth: number;
+    /** Height of the top head section containing main widget, param labels, and args */
+    headHeight: number;
+    /** Width of the nesting cavity between the head and the tail step; 0 when no nesting */
+    nestWidth: number;
+    /** Height of the nesting cavity between the head and the tail step; 0 when no nesting */
+    nestHeight: number;
+    /** Width of the bottom tail step section; 0 when no nesting */
+    tailWidth: number;
+    /** Height of the bottom tail step section; 0 when no nesting */
+    tailHeight: number;
+}
+
 export interface BrickOutlineInput {
     /**
      * Stroke width of the outline. SVG strokes are center-aligned on the path, so the path is

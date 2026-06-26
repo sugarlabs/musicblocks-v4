@@ -6,7 +6,6 @@ import type {
   Size,
   StatementBrickViewProps,
   ValueBrickViewProps,
-  ParamArgPair,
 } from '../../../@types/brick';
 
 import { SCALE_LEVEL_CONFIG } from '../../utils/constants';

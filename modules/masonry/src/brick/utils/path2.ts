@@ -129,12 +129,12 @@ export class BrickOutlineGenerator {
 
         // ── Head ──
         const maxParamWidth = params.length > 0 ? Math.max(...params.map((p) => p.w)) : 0;
-        const labelParamGutter = maxParamWidth > 0 ? WIDGET_PARAM_GUTTER_X : 0;
+        const widgetParamGutter = maxParamWidth > 0 ? WIDGET_PARAM_GUTTER_X : 0;
         const headWidth =
             strokeWidth / 2 +
             HEAD_PAD_X1 +
             input.widgetDims.w +
-            labelParamGutter +
+            widgetParamGutter +
             maxParamWidth +
             HEAD_PAD_X2 +
             strokeWidth / 2;
@@ -154,7 +154,7 @@ export class BrickOutlineGenerator {
         const paramsTotalHeight = params.reduce((sum, p) => sum + p.h, 0);
         const paramGutterTotal = PARAM_GUTTER_Y * Math.max(0, params.length - 1);
 
-        const headHeightByLabel =
+        const headHeightByWidget =
             strokeWidth / 2 +
             HEAD_PAD_Y1 +
             Math.max(input.widgetDims.h, minWidgetHeight) +
@@ -176,7 +176,7 @@ export class BrickOutlineGenerator {
             0,
         );
 
-        const headHeight = Math.max(headHeightByLabel, headHeightByParams, headHeightByArgs);
+        const headHeight = Math.max(headHeightByWidget, headHeightByParams, headHeightByArgs);
 
         // ── Tail ──
         const hasNesting = input.nestingDims !== undefined;

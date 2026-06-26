@@ -750,7 +750,7 @@ export class BrickOutlineGenerator {
             strokeWidth / 2;
         const tailStepWidth = strokeWidth / 2 + BrickOutlineGenerator.TAIL_STEP_W + strokeWidth / 2;
 
-        const tailWidth = Math.max(tailIndentWidth, tailStepWidth);
+        const tailWidth = inputNormalised.hasNesting ? Math.max(tailIndentWidth, tailStepWidth) : 0;
 
         const width = Math.max(headWidth, tailWidth, minWidth);
 

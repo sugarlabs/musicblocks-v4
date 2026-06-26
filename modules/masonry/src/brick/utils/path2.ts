@@ -7,8 +7,12 @@
  * This module is intentionally agnostic of brick semantics (value, expression, statement).
  * It only understands geometry; all structural constraints and type rules live upstream.
  *
- * The API is two-step by design: `createBrickOutlineGenerator` binds the size minimums once
- * (making it safe to memoize), and the returned generator is cheap to call on every render.
+ * The API is two-step by design: `new BrickOutlineGenerator(minimums)` binds the size minimums
+ * once (making the instance safe to memoize), and `generate` / `computeDimensions` are cheap to
+ * call on every render.
+ *
+ * All generated paths trace the brick outline in **clockwise** winding order (SVG y-down space),
+ * starting from the top-left corner and proceeding one named segment at a time.
  */
 
 import type {
@@ -202,16 +206,12 @@ export class BrickOutlineGenerator {
         ];
     }
 
-    // ────────────────────────── Path Segments ────────────────────────────────────────────────────────
+    // ────────────────────────── Path Segments ────────────────────────────────────────────────────
 
     /**
      * Top edge of the brick, left → right.
      * Draws a full-size arc groove (hasPrevNotch) for interlocking with bricks above.
      * The groove cuts INWARD into the brick body.
-     *
-     * @param strokeWidth - Stroke width in SVG units
-     * @param width       - Total outer width of the brick
-     * @param hasPrevNotch - Whether to draw the top notch groove
      */
     private segTopEdge(): string[] {
         const strokeWidth = this.input.strokeWidth;
@@ -262,12 +262,8 @@ export class BrickOutlineGenerator {
 
     /**
      * Right edge of the head, top → bottom.
-     * Draws one full-size concave groove per entry in `notchCentres`, cutting INWARD into the brick (−x).
+     * Draws one full-size concave groove per arg slot, cutting INWARD into the brick (−x).
      * Each groove receives one argument brick plugged in from the right.
-     *
-     * @param strokeWidth  - Stroke width in SVG units
-     * @param headHeight   - Height of the head section
-     * @param notchCentres - Absolute y positions (top → bottom) of each groove centre
      */
     private segHeadRight(): string[] {
         const strokeWidth = this.input.strokeWidth;
@@ -349,10 +345,6 @@ export class BrickOutlineGenerator {
      * Bottom edge of the head (used for bricks without nesting), right → left.
      * Draws a smaller arc tab (hasNextNotch) protruding OUTWARD below the brick.
      * Width is reduced by 2*s so it fits snugly inside the top groove when bricks stack.
-     *
-     * @param strokeWidth    - Stroke width in SVG units
-     * @param width          - Total outer width of the brick
-     * @param hasNextNotch - Whether to draw the bottom notch tab
      */
     private segHeadBottom(): string[] {
         const strokeWidth = this.input.strokeWidth;
@@ -408,10 +400,6 @@ export class BrickOutlineGenerator {
      * Left edge of the brick, bottom → top.
      * Draws a single smaller convex tab (hasOutputNotch) protruding OUTWARD from the brick (−x).
      * Tab radius is H_NOTCH_RADIUS; the parent's right groove uses H_NOTCH_RADIUS + strokeWidth.
-     *
-     * @param strokeWidth   - Stroke width in SVG units
-     * @param height        - Total outer height of the brick
-     * @param hasOutputNotch  - Whether to draw the left tab
      */
     private segLeftEdge(): string[] {
         const strokeWidth = this.input.strokeWidth;
@@ -468,11 +456,8 @@ export class BrickOutlineGenerator {
 
     /**
      * Cavity roof segment, right → left.
-     * Draws a smaller arc tab (hasNestedTopNotch) protruding DOWN into the cavity.
+     * Draws a smaller arc tab protruding DOWN into the cavity.
      * Width is reduced by 2*s so it fits inside the nested-bottom groove.
-     *
-     * @param strokeWidth        - Stroke width in SVG units
-     * @param width              - Total outer width of the brick
      */
     private segTailCavityRoof(): string[] {
         const strokeWidth = this.input.strokeWidth;
@@ -552,8 +537,6 @@ export class BrickOutlineGenerator {
      * Cavity foot segment, left → right.
      * Draws a full-size arc groove cutting DOWN into the foot.
      * Full-size so it receives the inner brick's bottom tab.
-     *
-     * @param strokeWidth          - Stroke width in SVG units
      */
     private segTailFoot(): string[] {
         const strokeWidth = this.input.strokeWidth;
@@ -601,10 +584,7 @@ export class BrickOutlineGenerator {
 
     /**
      * Bottom of the tail step (nesting bricks only), right → left.
-     * Draws a smaller arc tab protruding downward, same shape as segHeadBottom.
-     *
-     * @param strokeWidth    - Stroke width in SVG units
-     * @param hasNextNotch - Whether to draw the bottom notch tab
+     * Draws a smaller arc tab (hasNextNotch) protruding downward, same shape as segHeadBottom.
      */
     private segTailStepBottom(): string[] {
         const strokeWidth = this.input.strokeWidth;
@@ -846,6 +826,7 @@ export class BrickOutlineGenerator {
 
         const { width, height } = this.dimensions;
 
+        // Clockwise, segment by segment, starting from the top-left corner:
         // Without nesting: top → right → bottom → left → close
         // With nesting:    top → right → cavityRoof → cavityLeft → foot → stepRight → stepBottom → left → close
         const segments = !this.input.hasNesting

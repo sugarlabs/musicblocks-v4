@@ -4,9 +4,9 @@ A complete overhaul of [Music Blocks](https://github.com/sugarlabs/musicblocks).
 
 ## Tech Stack
 
-Music Blocks (v4) is a client-side web application written in _TypeScript_. _"React_ is used to render
+Music Blocks (v4) is a client-side web application written in _TypeScript_. _React_ is used to render
 UI components; however, the project is set up to independently use any _JavaScript_ UI library/framework
-or the _JS DOM API_ directly". It is bundled using _Vite_.
+or the _JS DOM API_ directly. It is bundled using _Vite_.
 
 - Application
   - TypeScript 4

@@ -1,0 +1,36 @@
+{
+  "name": "@sugarlabs/mb4-module-engine.old",
+  "version": "4.2.0",
+  "description": "The core of the new Music Blocks (v4) application",
+  "private": "true",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    },
+    "./*": {
+      "types": "./src/*.ts",
+      "import": "./src/*.ts"
+    },
+    "./@types/*": {
+      "types": "./src/@types/*.d.ts"
+    }
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "build": "rm -rf dist/* && tsc -p . && cp -R src/@types dist/@types",
+    "test": "vitest --passWithNoTests src/syntax src/library src/execution",
+    "check": "tsc --noEmit",
+    "lint": "eslint src/**/*.ts && textlint --rule terminology --rule no-empty-section --rule no-dead-link README.md",
+    "prettify": "prettier --write src/@types src/syntax src/execution src/library"
+  },
+  "dependencies": {
+    "uuid": "^14.0.1"
+  },
+  "devDependencies": {
+    "@types/uuid": "^10.0.0"
+  }
+}

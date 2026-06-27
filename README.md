@@ -4,9 +4,9 @@ A complete overhaul of [Music Blocks](https://github.com/sugarlabs/musicblocks).
 
 ## Tech Stack
 
-Music Blocks (v4) is a client-side web application written in _TypeScript_. _React_ is used to render
-UI components, however, the project is set up to independently use any _JavaScript_ UI library/framework
-or the _JS DOM API_ directly. It is bundled using _Vite_.
+Music Blocks (v4) is a client-side web application written in _TypeScript_. _"React_ is used to render
+UI components; however, the project is set up to independently use any _JavaScript_ UI library/framework
+or the _JS DOM API_ directly". It is bundled using _Vite_.
 
 - Application
   - TypeScript 4
@@ -44,7 +44,7 @@ Please look out for _Issues_ tab of both repositories.
 **Note:** There is no need to ask permission to work on an issue. You should check for pull requests
 linked to an issue you are addressing; if there are none, then assume nobody has done anything. Begin
 to fix the problem, test, make your commits, push your commits, then make a pull request. Mention an
-issue number in the pull request, but not the commit message. These practices allow the competition
+issue number in the pull request, but not  in the commit message. These practices allow the competition
 of ideas (Sugar Labs is a meritocracy).
 
 See [**full contributing guide**](./docs/CONTRIBUTING.md).

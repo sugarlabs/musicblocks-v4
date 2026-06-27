@@ -41,6 +41,7 @@
     "lib/components",
     "modules/code-builder",
     "modules/editor",
+    "modules/engine.old",
     "modules/menu",
     "modules/painter",
     "modules/singer",

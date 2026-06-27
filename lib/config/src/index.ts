@@ -1,10 +1,13 @@
 import type { IComponent, TComponentId, TComponentManifest } from '#/@types/components';
-import type { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
+import type {
+    IElementSpecification,
+    IElementSpecificationEntries,
+} from '@sugarlabs/mb4-module-engine.old';
 
 import {
     registerElementSpecificationEntries,
     librarySpecification,
-} from '@sugarlabs/musicblocks-v4-lib';
+} from '@sugarlabs/mb4-module-engine.old';
 
 // -- private variables ----------------------------------------------------------------------------
 
@@ -180,5 +183,19 @@ export function registerElements(
                 specification as { [elementName: string]: IElementSpecification } | undefined,
         )
         .filter((specification) => specification !== undefined)
-        .forEach((specification) => registerElementSpecificationEntries(specification!));
+        .forEach((specification) => {
+            const entries: IElementSpecificationEntries = {};
+            Object.entries(specification!).forEach(([identifier, { classification, ...rest }]) => {
+                if (!(classification.group in entries)) {
+                    entries[classification.group] = { entries: {} };
+                }
+                // @ts-ignore
+                entries[classification.group].entries = {
+                    ...entries[classification.group].entries,
+                    [identifier]: { ...rest },
+                };
+            });
+            console.log(entries);
+            registerElementSpecificationEntries(entries);
+        });
 }

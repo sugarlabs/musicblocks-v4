@@ -6,26 +6,26 @@ import {
     generateSnapshot,
     resetSyntaxTree,
     getSpecificationSnapshot,
-} from '@sugarlabs/musicblocks-v4-lib';
+} from '@sugarlabs/mb4-module-engine.old';
 
 /** @todo these should be exposed */
 import {
     TElementType,
     IElementSpecificationSnapshot,
-} from '@sugarlabs/musicblocks-v4-lib/@types/specification';
+} from '@sugarlabs/mb4-module-engine.old/@types/specification';
 /** @todo these should be exposed */
 import {
     ITreeSnapshotDataInput,
     ITreeSnapshotExpressionInput,
     ITreeSnapshotStatementInput,
     ITreeSnapshotBlockInput,
-} from '@sugarlabs/musicblocks-v4-lib/@types/syntaxTree';
+} from '@sugarlabs/mb4-module-engine.old/@types/syntaxTree';
 /** @todo these should not be required */
 import {
     addInstance,
     getInstance,
     removeInstance,
-} from '@sugarlabs/musicblocks-v4-lib/syntax/warehouse/warehouse';
+} from '@sugarlabs/mb4-module-engine.old/syntax/warehouse/index';
 
 import { ICodeArgumentObj, ICodeArgument, ICodeInstruction } from '../@types';
 
@@ -88,7 +88,7 @@ export function generateAPI(): string {
     } = {};
 
     Object.entries(_specificationSnapshot).forEach(([elementName, specification]) => {
-        const category = specification.category;
+        const category = specification.classification.category;
 
         if (!(category in items)) {
             items[category] = [];
@@ -252,8 +252,8 @@ export function buildProgram(code: string): Promise<boolean> {
                         typeof codeArgument === 'boolean'
                             ? 'value-boolean'
                             : typeof codeArgument === 'number'
-                            ? 'value-number'
-                            : 'value-string',
+                              ? 'value-number'
+                              : 'value-string',
                     value: codeArgument.toString(),
                 };
             }

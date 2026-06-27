@@ -62,7 +62,7 @@ export function setup(): Promise<void> {
 
 // -- public classes -------------------------------------------------------------------------------
 
-import { ElementStatement, TData } from '@sugarlabs/musicblocks-v4-lib';
+import { ElementStatement, TData, IContext, ISymbolTable } from '@sugarlabs/mb4-module-engine.old';
 
 /**
  * @class
@@ -72,7 +72,10 @@ export class ElementTestSynth extends ElementStatement {
     constructor() {
         super('test-synth', 'test synth', { mode: ['number'] });
     }
-    onVisit(params: { [key: string]: TData }): void {
+    onVisit(
+        scope: { context: IContext<Record<string, unknown>>; symbolTable: ISymbolTable },
+        params: { [key: string]: TData },
+    ): void {
         // onVisit(): void {
         const noteValue = '8n'; //params['duration'] as number + "n";
         if ((params['mode'] as number) === 1) {
@@ -122,7 +125,10 @@ export class ElementPlayNote extends ElementStatement {
     /**
      * Plays a user inputted note.
      */
-    onVisit(params: { [key: string]: TData }): void {
+    onVisit(
+        scope: { context: IContext<Record<string, unknown>>; symbolTable: ISymbolTable },
+        params: { [key: string]: TData },
+    ): void {
         // onVisit(): void {
         const duration = params['duration'] as number;
         const now = Tone.now();
@@ -141,7 +147,10 @@ export class PlayGenericNoteName extends ElementStatement {
         super('play-generic', 'play generic', { name: ['string'] });
     }
 
-    onVisit(params: { [key: string]: TData }): void {
+    onVisit(
+        scope: { context: IContext<Record<string, unknown>>; symbolTable: ISymbolTable },
+        params: { [key: string]: TData },
+    ): void {
         const now = Tone.now();
         const offset = noteValueToSeconds(_state.notesPlayed);
 
@@ -164,7 +173,10 @@ export class PlayInterval extends ElementStatement {
         super('play-interval', 'play interval', { interval: ['number'] });
     }
 
-    onVisit(params: { [key: string]: TData }): void {
+    onVisit(
+        scope: { context: IContext<Record<string, unknown>>; symbolTable: ISymbolTable },
+        params: { [key: string]: TData },
+    ): void {
         const max = params['interval'] as number;
 
         for (let i = 0; i < 2; i++) {

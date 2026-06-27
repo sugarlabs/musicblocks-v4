@@ -125,7 +125,7 @@ export function run(): void {
 
 // -- public classes -------------------------------------------------------------------------------
 
-import { ElementStatement, TData } from '@sugarlabs/musicblocks-v4-lib';
+import { ElementStatement, TData, IContext, ISymbolTable } from '@sugarlabs/mb4-module-engine.old';
 
 /**
  * @class
@@ -139,7 +139,10 @@ export class ElementMoveForward extends ElementStatement {
     /**
      * Moves the sprite `steps` forward.
      */
-    onVisit(params: { [key: string]: TData }): void {
+    onVisit(
+        scope: { context: IContext<Record<string, unknown>>; symbolTable: ISymbolTable },
+        params: { [key: string]: TData },
+    ): void {
         _move(params['steps'] as number);
     }
 }
@@ -156,7 +159,10 @@ export class ElementMoveBackward extends ElementStatement {
     /**
      * Moves the sprite `steps` backward.
      */
-    onVisit(params: { [key: string]: TData }): void {
+    onVisit(
+        scope: { context: IContext<Record<string, unknown>>; symbolTable: ISymbolTable },
+        params: { [key: string]: TData },
+    ): void {
         _move(-params['steps'] as number);
     }
 }
@@ -173,7 +179,10 @@ export class ElementTurnRight extends ElementStatement {
     /**
      * Rotates the sprite right by `angle`.
      */
-    onVisit(params: { [key: string]: TData }): void {
+    onVisit(
+        scope: { context: IContext<Record<string, unknown>>; symbolTable: ISymbolTable },
+        params: { [key: string]: TData },
+    ): void {
         _turn(-params['angle'] as number);
     }
 }
@@ -190,7 +199,10 @@ export class ElementTurnLeft extends ElementStatement {
     /**
      * Rotates the sprite left by `angle`.
      */
-    onVisit(params: { [key: string]: TData }): void {
+    onVisit(
+        scope: { context: IContext<Record<string, unknown>>; symbolTable: ISymbolTable },
+        params: { [key: string]: TData },
+    ): void {
         _turn(params['angle'] as number);
     }
 }
@@ -207,7 +219,10 @@ export class ElementSetXY extends ElementStatement {
     /**
      * Updates the sprite position to (`x`, `y`).
      */
-    onVisit(params: { [key: string]: TData }): void {
+    onVisit(
+        scope: { context: IContext<Record<string, unknown>>; symbolTable: ISymbolTable },
+        params: { [key: string]: TData },
+    ): void {
         const [x1, y1, x2, y2] = [
             _state.position.x,
             _state.position.y,
@@ -235,7 +250,10 @@ export class ElementSetHeading extends ElementStatement {
     /**
      * Sets the sprite heading to the `angle`.
      */
-    onVisit(params: { [key: string]: TData }): void {
+    onVisit(
+        scope: { context: IContext<Record<string, unknown>>; symbolTable: ISymbolTable },
+        params: { [key: string]: TData },
+    ): void {
         _state.heading = (params['angle'] as number) + 90;
     }
 }
@@ -252,7 +270,10 @@ export class ElementDrawArc extends ElementStatement {
     /**
      * Moves the sprite along arc with `radius` and `angle`.
      */
-    onVisit(params: { [key: string]: TData }): void {
+    onVisit(
+        scope: { context: IContext<Record<string, unknown>>; symbolTable: ISymbolTable },
+        params: { [key: string]: TData },
+    ): void {
         const radius = params['radius'] as number;
         const angle = params['angle'] as number;
 
@@ -290,7 +311,10 @@ export class ElementSetColor extends ElementStatement {
     /**
      * Sets the pen color to the `value`.
      */
-    onVisit(params: { [key: string]: TData }): void {
+    onVisit(
+        scope: { context: IContext<Record<string, unknown>>; symbolTable: ISymbolTable },
+        params: { [key: string]: TData },
+    ): void {
         const value = ((params['value'] as number) - 1) % 10;
         sketch.setColor(..._colorMap[value]);
     }
@@ -308,7 +332,10 @@ export class ElementSetThickness extends ElementStatement {
     /**
      * Sets the pen thickness to the `value`.
      */
-    onVisit(params: { [key: string]: TData }): void {
+    onVisit(
+        scope: { context: IContext<Record<string, unknown>>; symbolTable: ISymbolTable },
+        params: { [key: string]: TData },
+    ): void {
         sketch.setThickness(params['value'] as number);
     }
 }
@@ -359,7 +386,10 @@ export class ElementSetBackground extends ElementStatement {
     /**
      * Sets the background color to the `value`.
      */
-    onVisit(params: { [key: string]: TData }): void {
+    onVisit(
+        scope: { context: IContext<Record<string, unknown>>; symbolTable: ISymbolTable },
+        params: { [key: string]: TData },
+    ): void {
         const value = ((params['value'] as number) - 1) % 10;
         updateBackgroundColor('set', _colorMap[value]);
     }

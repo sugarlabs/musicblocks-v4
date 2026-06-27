@@ -1,4 +1,4 @@
-import { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
+import { IElementSpecification } from '@sugarlabs/mb4-module-engine.old';
 import type { TAsset } from '../assets';
 
 /** Interface representing a component's API. */

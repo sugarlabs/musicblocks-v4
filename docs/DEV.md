@@ -133,23 +133,7 @@ Windows) this repository using
 
 ## Commands
 
-**Note: This repository uses `sugarlabs/musicblocks-v4-lib` as an _npm_ package which is published to
-the _GitHub npm Registry_ of Sugar Labs. Before you install the dependencies you need to make sure that
-your _GitHub Personal Access Token_ (_PAT_) is stored in your local system's _npm_ configuration file
-`.npmrc`.**
-
-**Note: Be sure to request permission for ```read: packages```**
-
-Learn
-[how to create a _PAT_](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-token).
-
-Add your _PAT_ to `.npmrc` using
-
-```bash
-echo "//npm.pkg.github.com/:_authToken=[YOUR_GITHUB_PERSONAL_ACCESS_TOKEN]" >> ~/.npmrc
-```
-
-After you are set-up, the steps you take depend on what you want to do:
+The steps you take depend on what you want to do:
 
 - **Run a development server and test suites**
 

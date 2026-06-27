@@ -21,9 +21,9 @@
   "dependencies": {
     "@sugarlabs/mb4-assets": "*",
     "@sugarlabs/mb4-events": "*",
+    "@sugarlabs/mb4-module-engine.old": "*",
     "@sugarlabs/mb4-transport": "*",
     "@sugarlabs/mb4-view": "*",
-    "@sugarlabs/musicblocks-v4-lib": "^0.2.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "web-vitals": "^5.3.0"

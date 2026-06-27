@@ -1,7 +1,7 @@
 import type { TInjectedMenu } from '#/@types/components/menu';
 
-import { getCrumbs, run } from '@sugarlabs/musicblocks-v4-lib';
 import { emitEvent } from '@sugarlabs/mb4-events';
+import { getCrumbs, run, registerContext, ScopeStack } from '@sugarlabs/mb4-module-engine.old';
 
 import { mount as mountView, updateHandler, updateState } from './view';
 
@@ -18,9 +18,16 @@ export async function mount(): Promise<void> {
  * Initializes the Menu component.
  */
 export async function setup(): Promise<void> {
+    registerContext('dummy', {});
+    const scopeStack = new ScopeStack();
+
     await updateHandler('run', () => {
         const crumbs = getCrumbs();
-        if (crumbs.length !== 0) run(getCrumbs()[0].nodeID);
+        if (crumbs.length !== 0)
+            run(getCrumbs()[0].nodeID, {
+                context: scopeStack.getContext('dummy'),
+                symbolTable: scopeStack.getSymbolTable(),
+            });
         updateState('running', true);
         setTimeout(() => updateState('running', false));
         emitEvent('menu.run');

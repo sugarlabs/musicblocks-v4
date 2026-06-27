@@ -1,4 +1,4 @@
-import type { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
+import type { IElementSpecification } from '@sugarlabs/mb4-module-engine.old';
 import type { TInjectedPainter } from '#/@types/components/painter';
 
 import { hearEvent } from '@sugarlabs/mb4-events';
@@ -69,79 +69,118 @@ export const elements: Record<string, IElementSpecification> = {
     'move-forward': {
         label: 'forward',
         type: 'Statement',
-        category: 'Graphics',
+        classification: {
+            group: 'Art',
+            category: 'Graphics',
+        },
         prototype: ElementMoveForward,
     },
     'move-backward': {
         label: 'backward',
         type: 'Statement',
-        category: 'Graphics',
+        classification: {
+            group: 'Art',
+            category: 'Graphics',
+        },
         prototype: ElementMoveBackward,
     },
     'turn-left': {
         label: 'left',
         type: 'Statement',
-        category: 'Graphics',
+        classification: {
+            group: 'Art',
+            category: 'Graphics',
+        },
         prototype: ElementTurnLeft,
     },
     'turn-right': {
         label: 'right',
         type: 'Statement',
-        category: 'Graphics',
+        classification: {
+            group: 'Art',
+            category: 'Graphics',
+        },
         prototype: ElementTurnRight,
     },
     'set-xy': {
         label: 'set xy',
         type: 'Statement',
-        category: 'Graphics',
+        classification: {
+            group: 'Art',
+            category: 'Graphics',
+        },
         prototype: ElementSetXY,
     },
     'set-heading': {
         label: 'set heading',
         type: 'Statement',
-        category: 'Graphics',
+        classification: {
+            group: 'Art',
+            category: 'Graphics',
+        },
         prototype: ElementSetHeading,
     },
     'draw-arc': {
         label: 'draw arc',
         type: 'Statement',
-        category: 'Graphics',
+        classification: {
+            group: 'Art',
+            category: 'Graphics',
+        },
         prototype: ElementDrawArc,
     },
     'set-color': {
         label: 'set color',
         type: 'Statement',
-        category: 'Pen',
+        classification: {
+            group: 'Art',
+            category: 'Pen',
+        },
         prototype: ElementSetColor,
     },
     'set-thickness': {
         label: 'set thickness',
         type: 'Statement',
-        category: 'Pen',
+        classification: {
+            group: 'Art',
+            category: 'Pen',
+        },
         prototype: ElementSetThickness,
     },
     'pen-up': {
         label: 'pen up',
         type: 'Statement',
-        category: 'Pen',
+        classification: {
+            group: 'Art',
+            category: 'Pen',
+        },
         prototype: ElementPenUp,
     },
     'pen-down': {
         label: 'pen down',
         type: 'Statement',
-        category: 'Pen',
+        classification: {
+            group: 'Art',
+            category: 'Pen',
+        },
         prototype: ElementPenDown,
     },
     'set-background': {
         label: 'set background',
         type: 'Statement',
-        category: 'Pen',
+        classification: {
+            group: 'Art',
+            category: 'Pen',
+        },
         prototype: ElementSetBackground,
     },
     'clear': {
         label: 'clear',
         type: 'Statement',
-        category: 'Pen',
+        classification: {
+            group: 'Art',
+            category: 'Pen',
+        },
         prototype: ElementClear,
     },
 };

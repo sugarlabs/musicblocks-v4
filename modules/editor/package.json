@@ -14,8 +14,8 @@
   },
   "dependencies": {
     "@sugarlabs/mb4-events": "*",
+    "@sugarlabs/mb4-module-engine.old": "*",
     "@sugarlabs/mb4-view": "*",
-    "@sugarlabs/musicblocks-v4-lib": "^0.2.0",
     "js-yaml": "^4.2.0"
   },
   "devDependencies": {

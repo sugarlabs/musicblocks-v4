@@ -9,6 +9,6 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@sugarlabs/musicblocks-v4-lib": "^0.2.0"
+    "@sugarlabs/mb4-module-engine.old": "*"
   }
 }

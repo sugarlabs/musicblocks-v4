@@ -1,4 +1,4 @@
-import type { IElementSpecification } from '@sugarlabs/musicblocks-v4-lib';
+import type { IElementSpecification } from '@sugarlabs/mb4-module-engine.old';
 import type { TInjectedSinger } from '#/@types/components/singer';
 
 import { setup as setupComponent } from './singer';
@@ -49,31 +49,46 @@ export const elements: Record<string, IElementSpecification> = {
     'test-synth': {
         label: 'test synth',
         type: 'Statement',
-        category: 'Music',
+        classification: {
+            group: 'Music',
+            category: 'Rhythm',
+        },
         prototype: ElementTestSynth,
     },
     'play-note': {
         label: 'play note',
         type: 'Statement',
-        category: 'Music',
+        classification: {
+            group: 'Music',
+            category: 'Rhythm',
+        },
         prototype: ElementPlayNote,
     },
     'reset-notes-played': {
         label: 'reset',
         type: 'Statement',
-        category: 'Music',
+        classification: {
+            group: 'Music',
+            category: 'Rhythm',
+        },
         prototype: ElementResetNotesPlayed,
     },
     'play-generic': {
         label: 'play generic',
         type: 'Statement',
-        category: 'Music',
+        classification: {
+            group: 'Music',
+            category: 'Rhythm',
+        },
         prototype: PlayGenericNoteName,
     },
     'play-interval': {
         label: 'play interval',
         type: 'Statement',
-        category: 'Music',
+        classification: {
+            group: 'Music',
+            category: 'Rhythm',
+        },
         prototype: PlayInterval,
     },
 };

@@ -13,6 +13,21 @@
  *
  * All generated paths trace the brick outline in **clockwise** winding order (SVG y-down space),
  * starting from the top-left corner and proceeding one named segment at a time.
+ *
+ * Brick structure:
+ * ```
+ *       ┌──────────────────────────────┐  ← top edge
+ *  HEAD │                              │
+ *       │                              ┤  ← right edge (one groove per arg slot)
+ *       │                              │
+ *  ──── ┤  ┌───────────────────────────┘  ← bottom edge (no-nesting path ends here)
+ *       │  |     CAVITY
+ *  TAIL │  |                              ← cavity spine (left wall)
+ *       |  |
+ *       ├  └───────┐                      ← tail foot (groove for nested brick bottom tab)
+ *       │          │
+ *       └──────────┘                      ← tail step right / step bottom
+ * ```
  */
 
 import type {

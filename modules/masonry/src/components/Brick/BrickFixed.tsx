@@ -10,8 +10,8 @@ import type {
 
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/select';
+import { BrickOutlineGenerator } from '@/utils/brick-shape';
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
-import { BrickOutlineGenerator } from '@/utils/path';
 
 export type BrickViewFixedProps =
   | (Omit<ValueBrickViewProps, 'widget'> & { widget: ExpressionBrickViewProps['widget'] })
@@ -157,7 +157,9 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
     });
   }, [widgetContent, paramArgsString, fontSize, lineHeight]);
 
-  // Layout Effect 2: Converts measured DOM dimensions to SVG units and generates the brick outline path.
+  // Layout Effect 2: Converts measured DOM dimensions to SVG units and generates the
+  // brick outline path. argDims and nestingDims come from outside — this component only
+  // allocates slot space, never renders those bricks.
   useLayoutEffect(() => {
     const scaledWidgetDims = { w: pxToSvg(labelDims.w), h: pxToSvg(labelDims.h) };
 

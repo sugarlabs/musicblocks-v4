@@ -14,6 +14,7 @@ export interface WidgetProps {
   backgroundColor: string;
 }
 
+/** Dispatches to the correct input sub-component for the given widget type. */
 export function Widget({
   widget,
   fontSize,

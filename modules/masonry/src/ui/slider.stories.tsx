@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Slider } from './slider';
 
 const meta: Meta<typeof Slider> = {
@@ -15,7 +15,7 @@ const meta: Meta<typeof Slider> = {
   },
   decorators: [
     (Story) => (
-      <div className="flex h-4 w-[200px] items-center">
+      <div className="flex h-4 w-50 items-center">
         <Story />
       </div>
     ),

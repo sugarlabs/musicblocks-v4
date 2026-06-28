@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import {
   Select,
   SelectContent,
@@ -25,7 +25,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: () => (
     <Select>
-      <SelectTrigger className="w-[180px]">
+      <SelectTrigger className="w-45">
         <SelectValue placeholder="Theme" />
       </SelectTrigger>
       <SelectContent alignItemWithTrigger={false}>
@@ -40,7 +40,7 @@ export const Default: Story = {
 export const WithGroups: Story = {
   render: () => (
     <Select>
-      <SelectTrigger className="w-[280px]">
+      <SelectTrigger className="w-70">
         <SelectValue placeholder="Select a timezone" />
       </SelectTrigger>
       <SelectContent alignItemWithTrigger={false}>
@@ -66,7 +66,7 @@ export const WithGroups: Story = {
 export const Disabled: Story = {
   render: () => (
     <Select disabled>
-      <SelectTrigger className="w-[180px]">
+      <SelectTrigger className="w-45">
         <SelectValue placeholder="Disabled Select" />
       </SelectTrigger>
       <SelectContent alignItemWithTrigger={false}>

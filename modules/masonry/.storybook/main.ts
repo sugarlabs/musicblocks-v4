@@ -1,4 +1,4 @@
-import type { UserConfigExport } from 'vite';
+import type { UserConfig } from 'vite';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -21,7 +21,7 @@ export default {
     docs: {
         autodocs: 'tag',
     },
-    async viteFinal(config: UserConfigExport) {
+    async viteFinal(config: UserConfig) {
         return mergeConfig(config, {
             plugins: [tailwindcss()],
             resolve: {

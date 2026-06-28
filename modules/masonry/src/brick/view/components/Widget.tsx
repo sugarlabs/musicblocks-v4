@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { WidgetInput } from '@/@types/brick';
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/select2';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/select';
 import { Input } from '@/ui/input';
 import { Slider } from '@/ui/slider';
 

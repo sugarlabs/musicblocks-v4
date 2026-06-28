@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { BrickOutlineInput } from '@/@types/brick';
+import type { BrickOutlineInput } from '@/@types/brick.types';
 
 import { PathBrickView } from './Path';
 

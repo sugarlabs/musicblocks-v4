@@ -1,4 +1,4 @@
-import type { BrickMinimums } from '@/@types/brick';
+import type { BrickMinimums } from '@/@types/brick.types';
 
 import { BrickOutlineGenerator } from './path';
 

@@ -73,7 +73,7 @@ export function BrickViewInput(props: BrickViewInputProps) {
     });
 
     return () => observer.disconnect();
-  }, [fontSize, lineHeight]);
+  }, []);
 
   // Layout Effect 2: Generates the SVG outline path based on the measured dimensions.
   // This runs after labelDims updates. It creates the path, and calculates

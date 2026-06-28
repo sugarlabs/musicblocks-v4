@@ -102,10 +102,12 @@ describe('computeDimensions', () => {
             expect(dims.tailWidth).toBe(0);
         });
 
-        it('nesting width at crossover (TAIL_STEP_W - TAIL_INDENT_W): tailStepWidth still wins', () => {
+        it('nesting width at crossover: tailIndentWidth ties with tailStepWidth', () => {
+            // crossover: s + TAIL_INDENT_W + nestW = TAIL_STEP_W
             const nestW =
-                // 40 — tied, step wins by max
-                BrickOutlineGeneratorTest.TAIL_STEP_W - BrickOutlineGeneratorTest.TAIL_INDENT_W;
+                BrickOutlineGeneratorTest.TAIL_STEP_W -
+                BrickOutlineGeneratorTest.TAIL_INDENT_W -
+                strokeWidth;
 
             const dims = brickOutlineGenerator.computeDimensions({
                 strokeWidth,
@@ -114,8 +116,8 @@ describe('computeDimensions', () => {
                 nestingDims: { w: nestW, h: 40 },
             });
 
-            // tailIndentWidth = sw+8+40 = 50 = tailStepWidth = sw+48 = 50 → tied, max picks either
-            expect(dims.tailWidth).toBe(strokeWidth + BrickOutlineGeneratorTest.TAIL_STEP_W);
+            // tailIndentWidth = 48 = tailStepWidth = 48 → tied, max picks either
+            expect(dims.tailWidth).toBe(BrickOutlineGeneratorTest.TAIL_STEP_W);
         });
 
         it('nesting wider than crossover: tailIndentWidth wins', () => {
@@ -475,6 +477,65 @@ describe('generate', () => {
             });
 
             expect((path.match(/Z/g) ?? []).length).toBe(1);
+        });
+    });
+
+    describe('nesting without bottom notch (high strokeWidth)', () => {
+        it('s > 2 and no bottom notch: path closes without negative x coordinates', () => {
+            const gen = new BrickOutlineGeneratorTest(MINIMUMS);
+            const { path } = gen.generate({
+                strokeWidth: 4,
+                widgetDims: { w: 100, h: 20 },
+                paramArgDims: [],
+                nestingDims: { w: 50, h: 40 },
+                hasNextNotch: false,
+            });
+
+            expect(path).toMatch(/^M /);
+            expect(path).toMatch(/Z$/);
+
+            const tokens = path.trim().split(/\s+/);
+            let x = 0;
+            let i = 0;
+            while (i < tokens.length) {
+                const cmd = tokens[i];
+                if (cmd === 'M' || cmd === 'm') {
+                    x = parseFloat(tokens[i + 1]);
+                    i += 3;
+                } else if (cmd === 'h') {
+                    x += parseFloat(tokens[i + 1]);
+                    i += 2;
+                } else if (cmd === 'a') {
+                    x += parseFloat(tokens[i + 6]);
+                    i += 8;
+                } else if (cmd === 'v') {
+                    i += 2;
+                } else if (cmd === 'Z' || cmd === 'z') {
+                    i += 1;
+                } else {
+                    i += 1;
+                }
+                if (!Number.isFinite(x)) {
+                    throw new Error(`Non-finite x coordinate ${x} at command ${cmd}`);
+                }
+                if (x < -0.001) {
+                    throw new Error(`Negative x coordinate ${x} at command ${cmd}`);
+                }
+            }
+        });
+
+        it('s > 2 with bottom notch: path still works', () => {
+            const gen = new BrickOutlineGeneratorTest(MINIMUMS);
+            const { path } = gen.generate({
+                strokeWidth: 4,
+                widgetDims: { w: 100, h: 20 },
+                paramArgDims: [],
+                nestingDims: { w: 50, h: 40 },
+                hasNextNotch: true,
+            });
+
+            expect(path).toMatch(/^M /);
+            expect(path).toMatch(/Z$/);
         });
     });
 

@@ -591,6 +591,7 @@ export class BrickOutlineGenerator {
         const hasNextNotch = this.input.hasNextNotch;
         const span =
             BrickOutlineGenerator.TAIL_STEP_W -
+            strokeWidth -
             BrickOutlineGenerator.CORNER_RADIUS -
             BrickOutlineGenerator.CORNER_RADIUS;
 
@@ -748,7 +749,7 @@ export class BrickOutlineGenerator {
             BrickOutlineGenerator.TAIL_INDENT_W +
             (inputNormalised.nestingDims?.w ?? 0) +
             strokeWidth / 2;
-        const tailStepWidth = strokeWidth / 2 + BrickOutlineGenerator.TAIL_STEP_W + strokeWidth / 2;
+        const tailStepWidth = BrickOutlineGenerator.TAIL_STEP_W;
 
         const tailWidth = inputNormalised.hasNesting ? Math.max(tailIndentWidth, tailStepWidth) : 0;
 

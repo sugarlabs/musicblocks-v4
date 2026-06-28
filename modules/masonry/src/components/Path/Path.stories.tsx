@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { BrickOutlineInput } from '@/@types/brick';
 
-import { PathBrickView } from '../components/Path';
+import { PathBrickView } from './Path';
 
 const meta: Meta<typeof PathBrickView> = {
-  title: 'Bricks/Path',
+  title: 'Brick/Path',
   component: PathBrickView,
   parameters: {
     layout: 'centered',

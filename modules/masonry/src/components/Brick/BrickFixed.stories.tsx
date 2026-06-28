@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { BrickViewFixed } from '../components/BrickViewFixed';
+import { BrickViewFixed } from './BrickFixed';
 
 import mouseSvg from '@/assets/mouse.svg';
 
 const meta = {
-  title: 'BRICKS/BrickViewFixed',
+  title: 'Brick/BrickFixed',
   component: BrickViewFixed,
   parameters: {
     layout: 'centered',

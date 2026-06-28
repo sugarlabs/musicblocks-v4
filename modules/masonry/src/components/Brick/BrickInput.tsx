@@ -2,10 +2,10 @@ import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import type { Bounds, Size, ValueBrickViewProps, WidgetInput } from '@/@types/brick';
 
-import { SCALE_LEVEL_CONFIG } from '@/brick/utils/constants';
-import { BrickOutlineGenerator } from '@/brick/utils/path2';
+import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
+import { BrickOutlineGenerator } from '@/utils/path';
 
-import { Widget } from './Widget';
+import { Widget } from './BrickWidget';
 
 export type BrickViewInputProps = Omit<ValueBrickViewProps, 'widget'> & {
   widget: WidgetInput;

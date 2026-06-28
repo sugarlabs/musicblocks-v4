@@ -1,9 +1,9 @@
-import type { Bounds, Size, StatementBrickViewProps } from '@/@types/brick';
-
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-import { SCALE_LEVEL_CONFIG } from '../../utils/constants';
-import { BrickOutlineGenerator } from '../../utils/path2';
+import type { Bounds, Size, StatementBrickViewProps } from '@/@types/brick';
+
+import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
+import { BrickOutlineGenerator } from '@/utils/path';
 
 const STROKE_WIDTH = 2;
 const DEFAULT_SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;

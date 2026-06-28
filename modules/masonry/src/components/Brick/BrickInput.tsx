@@ -14,6 +14,10 @@ export type BrickViewInputProps = Omit<ValueBrickViewProps, 'widget'> & {
 const STROKE_WIDTH = 2;
 const DEFAULT_SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
 
+/**
+ * Value brick with an interactive input widget. Outline re-flows via `ResizeObserver`
+ * as the widget changes size.
+ */
 export function BrickViewInput(props: BrickViewInputProps) {
   const { brickScale, minWidth, minArgNestHeight, minWidgetParamHeight, fontSize, lineHeight } =
     SCALE_LEVEL_CONFIG[props.scaleLevel ?? DEFAULT_SCALE_LEVEL];

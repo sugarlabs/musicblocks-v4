@@ -17,6 +17,10 @@ const brickOutlineGenerator = new BrickOutlineGenerator({
   minNestHeight: pxToSvg(SCALE_LEVEL_CONFIG[SCALE_LEVEL].minArgNestHeight),
 });
 
+/**
+ * Storybook-only debug harness. Renders the raw SVG path from `BrickOutlineGenerator`
+ * with coloured overlays for the widget, param, arg, and nesting bounds regions.
+ */
 export function PathBrickView({ input }: { input: BrickOutlineInput }) {
   const maxArgW = Math.max(0, ...input.paramArgDims.map((p) => p.arg?.w ?? 0));
   const { width, height, path, bounds } = brickOutlineGenerator.generate({

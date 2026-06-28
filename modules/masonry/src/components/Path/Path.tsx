@@ -1,4 +1,4 @@
-import type { BrickOutlineInput } from '@/@types/brick';
+import type { BrickOutlineInput } from '@/@types/brick.types';
 
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
 import { BrickOutlineGenerator } from '@/utils/path';

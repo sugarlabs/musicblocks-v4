@@ -6,7 +6,7 @@ import type {
   Size,
   StatementBrickViewProps,
   ValueBrickViewProps,
-} from '@/@types/brick';
+} from '@/@types/brick.types';
 
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/select';
@@ -129,8 +129,6 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
     nestingDimsH,
   ]);
 
-  const maxArgW = Math.max(0, ...paramArgs.map((p) => p.argDims?.w ?? 0));
-
   // Layout Effect 1: Measures the actual rendered DOM text dimensions.
   // fontSize and lineHeight are deps so that scaleLevel changes correctly recalculate width/height.
   useLayoutEffect(() => {
@@ -239,7 +237,7 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={svgToPx(dims.w) + maxArgW}
+      width={svgToPx(dims.w)}
       height={svgToPx(dims.h)}
       className="overflow-visible"
     >

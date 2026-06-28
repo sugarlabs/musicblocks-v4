@@ -22,7 +22,7 @@ import type {
     BrickOutlineInput,
     BrickOutlineOutput,
     Point,
-} from '@/@types/brick';
+} from '@/@types/brick.types';
 
 // ────────────────────────── Dimension Calculation ────────────────────────────────────────────────
 

@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-import type { Bounds, Size, ValueBrickViewProps } from '@/@types/brick';
+import type { Bounds, Size, ValueBrickViewProps, WidgetInput } from '@/@types/brick';
 
 import { SCALE_LEVEL_CONFIG } from '@/brick/utils/constants';
 import { BrickOutlineGenerator } from '@/brick/utils/path2';
@@ -8,14 +8,6 @@ import { BrickOutlineGenerator } from '@/brick/utils/path2';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/select2';
 import { Input } from '@/ui/input';
 import { Slider } from '@/ui/slider';
-
-// Extract only the interactive input widgets from ValueBrickViewProps.
-// This ensures BrickViewInput exclusively handles widgets like textboxes and toggles,
-// offloading display-only widgets (like labels/graphics) to BrickViewFixed.
-type WidgetInput = Extract<
-  ValueBrickViewProps['widget'],
-  { type: 'textbox' | 'numberbox' | 'toggle' | 'slider' | 'select' }
->;
 
 export type BrickViewInputProps = Omit<ValueBrickViewProps, 'widget'> & {
   widget: WidgetInput;

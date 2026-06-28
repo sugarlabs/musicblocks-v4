@@ -26,6 +26,9 @@ storybook
 .env.test.local
 .env.production.local
 
+.claude
+.cursor
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

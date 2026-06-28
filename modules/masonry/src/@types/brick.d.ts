@@ -245,7 +245,7 @@ type WidgetDisplay =
     | { type: 'variant'; options: string[]; value: string };
 
 /** Interactive input widgets — exclusively for value-kind bricks. */
-type WidgetInput =
+export type WidgetInput =
     /** Freeform text input. */
     | { type: 'textbox'; value: string; maxLength?: number }
     /** Numeric input with optional bounds and increment step. */

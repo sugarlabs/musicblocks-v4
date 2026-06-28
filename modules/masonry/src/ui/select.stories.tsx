@@ -17,7 +17,6 @@ const meta = {
   parameters: {
     layout: 'centered',
   },
-
 } satisfies Meta<typeof Select>;
 
 export default meta;

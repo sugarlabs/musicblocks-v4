@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { Slider } from './slider';
 
@@ -16,7 +15,7 @@ const meta: Meta<typeof Slider> = {
   },
   decorators: [
     (Story) => (
-      <div className="w-[200px] flex items-center h-4">
+      <div className="flex h-4 w-[200px] items-center">
         <Story />
       </div>
     ),

@@ -28,6 +28,7 @@
     "uuid": "^14.0.0"
   },
   "devDependencies": {
+    "@storybook/react": "^10.4.6",
     "@tailwindcss/vite": "^4.3.1",
     "@types/uuid": "^10.0.0",
     "prettier-plugin-tailwindcss": "^0.8.0",

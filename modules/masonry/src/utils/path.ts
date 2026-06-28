@@ -591,8 +591,10 @@ export class BrickOutlineGenerator {
         const hasNextNotch = this.input.hasNextNotch;
         const span =
             BrickOutlineGenerator.TAIL_STEP_W -
+            strokeWidth / 2 -
             BrickOutlineGenerator.CORNER_RADIUS -
-            BrickOutlineGenerator.CORNER_RADIUS;
+            BrickOutlineGenerator.CORNER_RADIUS -
+            strokeWidth / 2;
 
         // Convex step-bottom → left corner: end CR left + CR up, curving around a centre CR to the left.
         const corner = this.arc(

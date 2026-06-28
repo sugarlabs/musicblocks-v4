@@ -104,6 +104,7 @@ describe('computeDimensions', () => {
 
         it('nesting width at crossover (TAIL_STEP_W - TAIL_INDENT_W): tailStepWidth still wins', () => {
             const nestW =
+                // 40 — tied, step wins by max
                 BrickOutlineGeneratorTest.TAIL_STEP_W - BrickOutlineGeneratorTest.TAIL_INDENT_W;
 
             const dims = brickOutlineGenerator.computeDimensions({
@@ -119,6 +120,7 @@ describe('computeDimensions', () => {
 
         it('nesting wider than crossover: tailIndentWidth wins', () => {
             const nestW =
+                // 41 — indent pulls ahead
                 BrickOutlineGeneratorTest.TAIL_STEP_W - BrickOutlineGeneratorTest.TAIL_INDENT_W + 1;
 
             const dims = brickOutlineGenerator.computeDimensions({

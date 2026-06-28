@@ -1,7 +1,7 @@
 import type { BrickOutlineInput } from '@/@types/brick.types';
 
+import { BrickOutlineGenerator } from '@/utils/brick-shape';
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
-import { BrickOutlineGenerator } from '@/utils/path';
 
 const SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
 const SCALE = SCALE_LEVEL_CONFIG[SCALE_LEVEL].brickScale;

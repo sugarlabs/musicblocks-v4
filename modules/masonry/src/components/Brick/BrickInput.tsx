@@ -2,8 +2,8 @@ import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import type { Bounds, Size, ValueBrickViewProps, WidgetInput } from '@/@types/brick.types';
 
+import { BrickOutlineGenerator } from '@/utils/brick-shape';
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
-import { BrickOutlineGenerator } from '@/utils/path';
 
 import { Widget } from './BrickWidget';
 

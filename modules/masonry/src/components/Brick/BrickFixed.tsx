@@ -10,8 +10,8 @@ import type {
 
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/select';
+import { BrickOutlineGenerator } from '@/utils/brick-shape';
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
-import { BrickOutlineGenerator } from '@/utils/path';
 
 export type BrickViewFixedProps =
   | (Omit<ValueBrickViewProps, 'widget'> & { widget: ExpressionBrickViewProps['widget'] })

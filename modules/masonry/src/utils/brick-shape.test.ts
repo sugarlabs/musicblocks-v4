@@ -1,6 +1,6 @@
 import type { BrickMinimums } from '@/@types/brick.types';
 
-import { BrickOutlineGenerator } from './path';
+import { BrickOutlineGenerator } from './brick-shape';
 
 class BrickOutlineGeneratorTest extends BrickOutlineGenerator {
     static readonly HEAD_PAD_Y1 = BrickOutlineGenerator.HEAD_PAD_Y1;

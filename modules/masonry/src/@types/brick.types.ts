@@ -104,7 +104,7 @@ export interface BrickMinimums {
 // -------------------------------------------------------------------------------------------------
 
 /** Display widgets — represent the brick's identity/operation; used by all brick kinds. */
-type WidgetDisplay =
+export type WidgetDisplay =
     /** Text label identifying the brick, with an optional icon glyph. */
     | { type: 'label'; text: string; glyph?: { name?: string; src?: string; color?: string } }
     /** Static image representing the brick's identity. */

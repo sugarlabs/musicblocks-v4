@@ -1,18 +1,13 @@
 import type { UserConfig } from 'vite';
 
 import { defineConfig, mergeConfig } from 'vitest/config';
-import rootConfig from '../../vitest.config';
 
-import path from 'path';
+import rootConfig from '../../vitest.config';
+import baseConfig from './vite.config';
 
 export default mergeConfig(
-    rootConfig as UserConfig,
+    mergeConfig(rootConfig as UserConfig, baseConfig as UserConfig),
     defineConfig({
-        resolve: {
-            alias: {
-                '@': path.resolve(__dirname, './src'),
-            },
-        },
         test: {
             projects: [
                 {

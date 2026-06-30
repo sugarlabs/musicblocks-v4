@@ -65,6 +65,24 @@ reference only. They do not describe the new code.
 
 ---
 
+## Playground
+
+A standalone Vite + React app for manual, interactive testing of masonry components and
+behaviours. It is not part of the library build — it exists only as a dev harness.
+
+| Item | Detail |
+| --- | --- |
+| Location | `src/playground/` |
+| Entry | `src/playground/index.tsx` |
+| Script | `npm run playground2` (port 5602) |
+| Routing | `react-router-dom` `BrowserRouter`; each page is a route in `App.tsx` |
+| Pages | `src/playground/pages/` — one file per route |
+
+See [`src/playground/README.md`](../src/playground/README.md) for routing conventions and
+how to add new pages.
+
+---
+
 ## Dead / Pending Replacement
 
 The following `src/` directories and files belong to the old implementation. They are

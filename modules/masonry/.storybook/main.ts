@@ -1,36 +1,24 @@
 import type { UserConfig } from 'vite';
 
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { StorybookConfig } from '@storybook/react-vite';
 import { mergeConfig } from 'vite';
-import tailwindcss from '@tailwindcss/vite';
+
+import baseConfig from '../vite.config';
 
 // -------------------------------------------------------------------------------------------------
 
-function resolve(rootPath: string) {
-    return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', rootPath);
-}
-
-export default {
+const config: StorybookConfig = {
     stories: ['../src/**/*.mdx', '../src/**/*.stories.@(tsx|ts|jsx|js)'],
     addons: ['@storybook/addon-a11y'],
     framework: {
         name: '@storybook/react-vite',
-        options: {},
-    },
-    docs: {
-        autodocs: 'tag',
+        options: {
+            strictMode: true,
+        },
     },
     async viteFinal(config: UserConfig) {
-        return mergeConfig(config, {
-            plugins: [tailwindcss()],
-            resolve: {
-                alias: {
-                    '@': resolve('src'),
-                    '@res': resolve('../../res'),
-                },
-                extensions: ['.tsx', '.ts', '.js', '.scss', '.sass', '.json'],
-            },
-        });
+        return mergeConfig(config, baseConfig);
     },
 };
+
+export default config;

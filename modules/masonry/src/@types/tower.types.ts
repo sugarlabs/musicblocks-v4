@@ -21,7 +21,7 @@
  *
  * A value brick plugs into a single argument slot of a parent node.
  */
-export interface TValueNodeConfig {
+export interface TowerValueNodeConfig {
     kind: 'value';
     /** The node whose argument slot this value brick is plugged into; null if free-floating. */
     parent: TowerNodeConfig | null;
@@ -41,7 +41,7 @@ export interface TValueNodeConfig {
  * An expression brick plugs into a parent and itself owns one or more argument
  * slots, each of which may hold a value or expression child.
  */
-export interface TExpressionNodeConfig {
+export interface TowerExpressionNodeConfig {
     kind: 'expression';
     /** The node whose argument slot this expression brick is plugged into; null if free-floating. */
     parent: TowerNodeConfig | null;
@@ -67,7 +67,7 @@ export interface TExpressionNodeConfig {
  * Participates in a linear sequence: connected to the brick above (prev) and
  * the brick below (next), with zero or more argument slots on the side.
  */
-export interface TStatementNodeConfig {
+export interface TowerStatementNodeConfig {
     kind: 'statement';
     hasNesting: false;
     /** The node immediately preceding this one in the sequence; null if this is the first. */
@@ -97,7 +97,7 @@ export interface TStatementNodeConfig {
  * In addition to the linear sequence pointers, the brick owns a nesting cavity
  * that may contain its own inner sequence of bricks.
  */
-export interface TNestedStatementNodeConfig {
+export interface TowerNestedStatementNodeConfig {
     kind: 'statement';
     hasNesting: true;
     /** The node immediately preceding this one in the sequence; null if this is the first. */
@@ -117,7 +117,7 @@ export interface TNestedStatementNodeConfig {
 }
 
 export type TowerNodeConfig =
-    | TValueNodeConfig
-    | TExpressionNodeConfig
-    | TStatementNodeConfig
-    | TNestedStatementNodeConfig;
+    | TowerValueNodeConfig
+    | TowerExpressionNodeConfig
+    | TowerStatementNodeConfig
+    | TowerNestedStatementNodeConfig;

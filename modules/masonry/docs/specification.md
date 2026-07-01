@@ -93,21 +93,22 @@ Input widgets (`textbox`, `numberbox`, `toggle`, `slider`) are exclusive to valu
 
 ## Palette
 
-The catalog of available bricks the user picks from. The config describes what the Palette lists
-and how entries are grouped — not how a brick is rendered. Shape: `PaletteConfig` in
-`src/@types/palette.types.ts`.
+The catalog of available bricks the user picks from. The config describes what the Palette lists,
+how entries are grouped, and — per entry — the full render config used to preview the brick. Shape:
+`PaletteConfig` in `src/@types/palette.types.ts`.
 
 ### Structure
 
 A three-level tree: **Category → Section → Brick**.
 
-| Level    | Fields                                           | Role                           |
-| -------- | ------------------------------------------------ | ------------------------------ |
-| Category | `name`, `icon`, `sections`                       | Top-level group (e.g. "Music") |
-| Section  | `name`, `icon`, `color`, `bricks`                | Colored group (e.g. "Pitch")   |
-| Brick    | `id`, `name`, `description`, `thumbnail`, `bbox` | A catalog entry                |
+| Level    | Fields                               | Role                           |
+| -------- | ------------------------------------ | ------------------------------ |
+| Category | `name`, `icon`, `sections`           | Top-level group (e.g. "Music") |
+| Section  | `name`, `icon`, `color`, `bricks`    | Colored group (e.g. "Pitch")   |
+| Brick    | `id`, `name`, `description`, `brick` | A catalog entry                |
 
-A brick entry is a catalog descriptor, not a live brick: `id` keys it to the brick's definition
-(resolved to a `BrickModel` on instantiation), `name`/`description` feed listing and search, and
-`thumbnail`/`bbox` are the preview. Kind, widgets, connectors, and colors belong to the rendered
-brick (`BrickViewProps` / `BrickModel`), not the catalog.
+A brick entry carries both cataloging metadata and the full render config: `id` keys it to the
+brick's definition (resolved to a `BrickModel` on instantiation), `name`/`description` feed listing
+and search, and `brick` is the complete render config (`BrickViewProps` — kind, widgets, connectors,
+colors, nesting, etc.). The Palette previews each entry by rendering `brick` with the Brick renderer,
+so previews are live brick shapes rather than static images.

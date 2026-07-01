@@ -1,13 +1,15 @@
-import type { Size } from './brick.types';
+import type { BrickViewProps } from './brick.types';
 
 // -------------------------------------------------------------------------------------------------
 
 /**
  * A single brick entry in the Palette catalog.
  *
- * This is a catalog descriptor used to list and preview a brick in the Palette — it is not a live
- * brick instance. See `BrickModel` / `BrickViewProps` in `brick.types.ts` for the rendered brick.
- * The `id` keys this entry to the brick's definition, which is resolved when the brick is
+ * In addition to cataloging metadata (`id`, `name`, `description`), this entry embeds the full
+ * render config for the brick (`brick`). The Palette previews the entry by feeding this config to
+ * the Brick renderer — the same renderer used in the workspace — so previews are live brick shapes
+ * (colors, connectors, nesting, widgets, labels) rather than static images. The `id` keys this
+ * entry to the brick's definition, which is resolved into a live model when the brick is
  * instantiated into the workspace.
  */
 export interface PaletteBrickConfig {
@@ -17,10 +19,8 @@ export interface PaletteBrickConfig {
     name: string;
     /** Longer description; shown on hover and matched against search text. */
     description: string;
-    /** Source of the thumbnail graphic previewed as the brick in the Palette. */
-    thumbnail: string;
-    /** Bounding-box dimensions of the thumbnail preview, in pixels. */
-    bbox: Size;
+    /** Full render config; the Palette previews the entry by rendering it via the Brick renderer. */
+    brick: BrickViewProps;
 }
 
 /**

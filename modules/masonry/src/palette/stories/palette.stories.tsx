@@ -1,21 +1,26 @@
-// src/palette/palette.stories.tsx
-
 import React from 'react';
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import PaletteWrapper from '../components/paletteWrapper';
+import type { Meta, StoryFn } from '@storybook/react-vite';
+import { Palette } from '../palette';
+import { sampleConfig } from '../data/sampleConfig';
 
-const meta: Meta<typeof PaletteWrapper> = {
-  title: 'Palette/Playground',
-  component: PaletteWrapper,
+export default {
+  title: 'Palette/Palette',
+  component: Palette,
   parameters: {
-    controls: { hideNoControlsWarning: true },
+    layout: 'fullscreen',
   },
-};
+  decorators: [
+    (Story) => (
+      <div style={{ height: '100vh' }}>
+        <Story />
+      </div>
+    ),
+  ],
+} as Meta<typeof Palette>;
 
-export default meta;
+const Template: StoryFn<React.ComponentProps<typeof Palette>> = (args) => <Palette {...args} />;
 
-type Story = StoryObj<typeof PaletteWrapper>;
-
-export const Default: Story = {
-  name: 'Palette',
+export const Default = Template.bind({});
+Default.args = {
+  config: sampleConfig,
 };

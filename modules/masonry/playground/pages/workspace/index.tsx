@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import PaletteWrapper from '../../../src/palette/components/paletteWrapper';
-import '../../../src/palette/palette.css';
+import { Palette } from '../../../src/palette/palette';
+import { sampleConfig } from '../../../src/palette/data/sampleConfig';
 import WorkSpaceView from '../../../src/workspace/view/components/WorkspaceView';
 
 export default function App() {
@@ -12,11 +12,15 @@ export default function App() {
       <aside
         style={{
           width: 280,
+          height: '100%',
           borderRight: '1px solid #ddd',
-          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
-        <PaletteWrapper />
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <Palette config={sampleConfig} />
+        </div>
 
         {/* Collision Test Button */}
         <div

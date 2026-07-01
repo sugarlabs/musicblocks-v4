@@ -6,8 +6,8 @@
 // Pointer configs are shaped by brick kind (value | expression | statement) and,
 // for statement bricks, by whether a nesting cavity is present.
 //
-// All pointer fields store the UUID string of the connected node, or null when
-// the slot is unoccupied.
+// All pointer fields hold direct references to the connected TowerNodeConfig.
+// model objects, or null when the slot is unoccupied.
 //
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -24,7 +24,7 @@
 export interface TValueNodeConfig {
     kind: 'value';
     /** The node whose argument slot this value brick is plugged into; null if free-floating. */
-    parent: string | null;
+    parent: TowerNodeConfig | null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -44,12 +44,12 @@ export interface TValueNodeConfig {
 export interface TExpressionNodeConfig {
     kind: 'expression';
     /** The node whose argument slot this expression brick is plugged into; null if free-floating. */
-    parent: string | null;
+    parent: TowerNodeConfig | null;
     /**
      * One entry per argument slot in declaration order.
-     * Each entry is the UUID of the child node occupying that slot, or null if empty.
+     * Each entry is the direct reference of the child node occupying that slot, or null if empty.
      */
-    args: (string | null)[];
+    args: (TowerNodeConfig | null)[];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -71,14 +71,14 @@ export interface TStatementNodeConfig {
     kind: 'statement';
     hasNesting: false;
     /** The node immediately preceding this one in the sequence; null if this is the first. */
-    prev: string | null;
+    prev: TowerNodeConfig | null;
     /** The node immediately following this one in the sequence; null if this is the last. */
-    next: string | null;
+    next: TowerNodeConfig | null;
     /**
      * One entry per argument slot in declaration order.
-     * Each entry is the UUID of the child node occupying that slot, or null if empty.
+     * Each entry is the direct reference of the child node occupying that slot, or null if empty.
      */
-    args: (string | null)[];
+    args: (TowerNodeConfig | null)[];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -101,37 +101,22 @@ export interface TNestedStatementNodeConfig {
     kind: 'statement';
     hasNesting: true;
     /** The node immediately preceding this one in the sequence; null if this is the first. */
-    prev: string | null;
+    prev: TowerNodeConfig | null;
     /** The node immediately following this one in the sequence; null if this is the last. */
-    next: string | null;
+    next: TowerNodeConfig | null;
     /**
      * One entry per argument slot in declaration order.
-     * Each entry is the UUID of the child node occupying that slot, or null if empty.
+     * Each entry is the direct reference of the child node occupying that slot, or null if empty.
      */
-    args: (string | null)[];
+    args: (TowerNodeConfig | null)[];
     /**
      * The first node in the nested (inner) sequence housed inside this brick's cavity;
      * null when the cavity is empty.
      */
-    nestedNext: string | null;
+    nestedNext: TowerNodeConfig | null;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Discriminated union over all tower node config shapes.
- *
- * Narrow by `kind` first, then by `hasNesting` for statement nodes:
- * ```ts
- * function describe(cfg: TTowerNodeConfig) {
- *     if (cfg.kind === 'value') { ... }
- *     if (cfg.kind === 'expression') { ... }
- *     if (cfg.kind === 'statement' && !cfg.hasNesting) { ... }
- *     if (cfg.kind === 'statement' &&  cfg.hasNesting) { ... }
- * }
- * ```
- */
-export type TTowerNodeConfig =
+export type TowerNodeConfig =
     | TValueNodeConfig
     | TExpressionNodeConfig
     | TStatementNodeConfig

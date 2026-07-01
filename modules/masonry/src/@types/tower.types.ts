@@ -69,7 +69,7 @@ export interface TowerExpressionNodeConfig {
  */
 export interface TowerStatementNodeConfig {
     kind: 'statement';
-    hasNesting: false;
+    hasNesting?: false;
     /** The node immediately preceding this one in the sequence; null if this is the first. */
     prev: TowerNodeConfig | null;
     /** The node immediately following this one in the sequence; null if this is the last. */

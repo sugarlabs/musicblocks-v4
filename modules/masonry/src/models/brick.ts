@@ -53,7 +53,7 @@ abstract class BrickModelBase {
     set scaleLevel(value: 1 | 2 | 3) {
         this._scaleLevel = value;
         this._outlineGenerator = BrickModelBase._buildOutlineGenerator(value);
-        // TODO: trigger side effects here
+        this._notifyUpdate();
     }
 
     protected get outlineGenerator(): BrickOutlineGenerator {
@@ -97,6 +97,46 @@ abstract class BrickModelBase {
             minArgHeight: pxToSvg(minArgNestHeight),
             minNestHeight: pxToSvg(minArgNestHeight),
         });
+    }
+
+    // ── Callback registration ─────────────────────────────────────────────────
+
+    /**
+     * The set of registered update callbacks. These functions are called whenever
+     * model state that affects rendering changes (argDims, nestingDims, scaleLevel).
+     *
+     * Note: `widgetDims` is written by the view after measuring the DOM and
+     * intentionally does NOT trigger this callback to avoid a re-render loop.
+     */
+    private _updateCallbacks = new Set<() => void>();
+
+    /**
+     * Registers a callback that will be invoked whenever the model's rendering
+     * state changes.
+     *
+     * Intended usage (React):
+     * ```ts
+     * useEffect(() => {
+     *   const cb = () => setTick(t => t + 1);
+     *   model.registerUpdateCallback(cb);
+     *   return () => model.unregisterUpdateCallback(cb);
+     * }, [model]);
+     * ```
+     */
+    public registerUpdateCallback(cb: () => void): void {
+        this._updateCallbacks.add(cb);
+    }
+
+    /** Removes a specifically registered update callback. */
+    public unregisterUpdateCallback(cb: () => void): void {
+        this._updateCallbacks.delete(cb);
+    }
+
+    /** Invokes all registered callbacks. Called from mutating setters. */
+    protected _notifyUpdate(): void {
+        for (const cb of this._updateCallbacks) {
+            cb();
+        }
     }
 
     constructor(config: {
@@ -164,7 +204,7 @@ export class ExpressionBrickModel extends BrickModelBase {
 
     set argDims(value: (Size | null)[]) {
         this._argDims = value;
-        // TODO: trigger side effects here
+        this._notifyUpdate();
     }
 
     protected _buildOutlineInput(): BrickOutlineInput {
@@ -215,7 +255,7 @@ export class StatementBrickModel extends BrickModelBase {
 
     set argDims(value: (Size | null)[]) {
         this._argDims = value;
-        // TODO: trigger side effects here
+        this._notifyUpdate();
     }
 
     // Whether this brick structurally has a nesting cavity — fixed at creation.
@@ -229,7 +269,7 @@ export class StatementBrickModel extends BrickModelBase {
 
     set nestingDims(value: Size | null) {
         this._nestingDims = value;
-        // TODO: trigger side effects here
+        this._notifyUpdate();
     }
 
     // Mutable: change as bricks are linked or unlinked in a sequence.

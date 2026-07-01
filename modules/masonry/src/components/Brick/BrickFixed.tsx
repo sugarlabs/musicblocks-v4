@@ -1,22 +1,13 @@
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-import type {
-  Bounds,
-  ExpressionBrickViewProps,
-  Size,
-  StatementBrickViewProps,
-  ValueBrickViewProps,
-} from '@/@types/brick.types';
+import type { Bounds, BrickViewPropsWithModel, Size } from '@/@types/brick.types';
+
+import type { ExpressionBrickModel, StatementBrickModel } from '@/models/brick';
 
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/select';
 import { BrickOutlineGenerator } from '@/utils/brick-shape';
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
-
-export type BrickViewFixedProps =
-  | (Omit<ValueBrickViewProps, 'widget'> & { widget: ExpressionBrickViewProps['widget'] })
-  | ExpressionBrickViewProps
-  | StatementBrickViewProps;
 
 const STROKE_WIDTH = 2;
 const DEFAULT_SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
@@ -28,10 +19,30 @@ const PARAM_FONT_SCALE = 0.8;
  * Renders a brick whose widget is fixed — no free user input. The variant widget is the sole
  * exception, using a select UI, but it remains semantically fixed: the brick represents a
  * predetermined concept, and the select only switches between its predefined forms.
+ *
+ * The model is the single source of truth for all rendering data. The component:
+ *  1. Reads configuration (colors, widget, params, argDims, nesting) from `model`.
+ *  2. Writes the measured widget dimensions back to `model.widgetDims` after layout.
+ *  3. Re-renders automatically whenever the model notifies a state change.
  */
-export function BrickViewFixed(props: BrickViewFixedProps) {
+export function BrickViewFixed(props: BrickViewPropsWithModel) {
+  const { model } = props;
+
+  // ── Model reactivity ─────────────────────────────────────────────────────────
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const cb = () => setTick((t) => t + 1);
+    model.registerUpdateCallback(cb);
+    return () => model.unregisterUpdateCallback(cb);
+  }, [model]);
+
+  // ── Read from model ───────────────────────────────────────────────────────────
+  const scaleLevel = model.scaleLevel ?? DEFAULT_SCALE_LEVEL;
   const { brickScale, minWidth, minArgNestHeight, minWidgetParamHeight, fontSize, lineHeight } =
-    SCALE_LEVEL_CONFIG[props.scaleLevel ?? DEFAULT_SCALE_LEVEL];
+    SCALE_LEVEL_CONFIG[scaleLevel];
+
+  const colorsDefault = model.colorsDefault;
+  const widget = model.widget;
 
   // Param labels share the main label's color but render at a smaller size.
   const paramFontSize = Math.round(fontSize * PARAM_FONT_SCALE);
@@ -40,43 +51,60 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
   const pxToSvg = useCallback((px: number) => px / brickScale, [brickScale]);
   const svgToPx = useCallback((u: number) => u * brickScale, [brickScale]);
 
+  // Build paramArgs from the model's separate params[] and argDims[] arrays.
+  const paramArgs: { param?: string; argDims: Size | null }[] =
+    model.kind === 'expression' || model.kind === 'statement'
+      ? (() => {
+          const m = model as ExpressionBrickModel | StatementBrickModel;
+          return m.params.map((p, i) => ({ param: p ?? undefined, argDims: m.argDims[i] ?? null }));
+        })()
+      : [];
+
+  // Statement-only connection notches and nesting
+  const hasConnectionPrev =
+    model.kind === 'statement' ? (model as StatementBrickModel).hasConnectionPrev : false;
+  const hasConnectionNext =
+    model.kind === 'statement' ? (model as StatementBrickModel).hasConnectionNext : false;
+  const hasNesting = model.kind === 'statement' && (model as StatementBrickModel).hasNesting;
+  const nestingIsFolded =
+    model.kind === 'statement' ? (model as StatementBrickModel).isNestingFolded : false;
+  const nestingDimsW =
+    model.kind === 'statement' ? (model as StatementBrickModel).nestingDims?.w : undefined;
+  const nestingDimsH =
+    model.kind === 'statement' ? (model as StatementBrickModel).nestingDims?.h : undefined;
+
+  // ── Local layout state ───────────────────────────────────────────────────────
   const [path, setPath] = useState('');
   const [dims, setDims] = useState<Size>({ w: 0, h: 0 });
 
   const [labelDims, setLabelDims] = useState<Size>({ w: 0, h: 0 });
   const [labelBounds, setLabelBounds] = useState<Bounds>({ x: 0, y: 0, w: 0, h: 0 });
 
-  const hasConnectionPrev = 'hasConnectionPrev' in props ? props.hasConnectionPrev : false;
-  const hasConnectionNext = 'hasConnectionNext' in props ? props.hasConnectionNext : false;
-  const nesting = 'nesting' in props ? props.nesting : undefined;
-
-  // For parameter labels
-  const paramArgs = 'paramArgs' in props ? (props.paramArgs ?? []) : [];
   const [paramDimsList, setParamDimsList] = useState<Size[]>(paramArgs.map(() => ({ w: 0, h: 0 })));
   const [paramBoundsList, setParamBoundsList] = useState<(Bounds | null)[]>([]);
 
   const labelRef = useRef<HTMLDivElement>(null);
   const paramRefs = useRef<(HTMLParagraphElement | null)[]>([]);
 
-  const isLabelWidget = props.widget.type === 'label';
-  const isVariantWidget = props.widget.type === 'variant';
-  const isGraphicWidget = props.widget.type === 'graphic';
+  const isLabelWidget = widget.type === 'label';
+  const isVariantWidget = widget.type === 'variant';
+  const isGraphicWidget = widget.type === 'graphic';
 
-  const labelText = props.widget.type === 'label' ? props.widget.text : '';
-  const labelGlyph = props.widget.type === 'label' ? props.widget.glyph : undefined;
+  const labelText = widget.type === 'label' ? widget.text : '';
+  const labelGlyph = widget.type === 'label' ? widget.glyph : undefined;
 
-  const variantOptions = props.widget.type === 'variant' ? props.widget.options : [];
-  const variantValue = props.widget.type === 'variant' ? props.widget.value : '';
+  const variantOptions: string[] = widget.type === 'variant' ? widget.options : [];
+  const variantValue = widget.type === 'variant' ? widget.value : '';
 
-  const graphicSrc = props.widget.type === 'graphic' ? props.widget.src : undefined;
+  const graphicSrc = widget.type === 'graphic' ? widget.src : undefined;
 
   const widgetContent =
-    props.widget.type === 'label'
-      ? props.widget.text
-      : props.widget.type === 'variant'
-        ? props.widget.value
-        : props.widget.type === 'graphic'
-          ? props.widget.src
+    widget.type === 'label'
+      ? widget.text
+      : widget.type === 'variant'
+        ? widget.value
+        : widget.type === 'graphic'
+          ? widget.src
           : '';
 
   const generateOutline = useMemo(
@@ -94,20 +122,15 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
   // Stringify paramArgs for a stable dep — prevents re-measuring on referentially new but equal arrays.
   const paramArgsString = JSON.stringify(paramArgs);
 
-  const nestingIsFolded = nesting?.isFolded;
-  const nestingDimsW = nesting?.dims?.w;
-  const nestingDimsH = nesting?.dims?.h;
-  const hasNesting = nesting !== undefined;
-
   const { hasPrevNotch, hasNextNotch, hasOutputNotch, nestingDims } = useMemo(() => {
     let computedNestingDims;
     let hasPrevNotch = false;
     let hasNextNotch = false;
-    let hasOutputNotch = props.kind === 'value' || props.kind === 'expression';
+    const hasOutputNotch = model.kind === 'value' || model.kind === 'expression';
 
-    if (props.kind === 'statement') {
-      hasPrevNotch = hasConnectionPrev ?? false;
-      hasNextNotch = hasConnectionNext ?? false;
+    if (model.kind === 'statement') {
+      hasPrevNotch = hasConnectionPrev;
+      hasNextNotch = hasConnectionNext;
       if (hasNesting) {
         if (nestingIsFolded) {
           computedNestingDims = undefined;
@@ -120,7 +143,7 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
     }
     return { hasPrevNotch, hasNextNotch, hasOutputNotch, nestingDims: computedNestingDims };
   }, [
-    props.kind,
+    model.kind,
     hasConnectionPrev,
     hasConnectionNext,
     hasNesting,
@@ -131,16 +154,17 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
 
   // Layout Effect 1: Measures the actual rendered DOM text dimensions.
   // fontSize and lineHeight are deps so that scaleLevel changes correctly recalculate width/height.
+  // Writes the measured widget dimensions back to model.widgetDims so it stays in sync.
+  // widgetDims intentionally does NOT fire _notifyUpdate to avoid a measure → re-render loop.
   useLayoutEffect(() => {
-    // Measure main label
     if (labelRef.current) {
       const { width, height } = labelRef.current.getBoundingClientRect();
       setLabelDims((prev) =>
         width !== prev.w || height !== prev.h ? { w: width, h: height } : prev,
       );
+      model.widgetDims = { w: width, h: height };
     }
 
-    // Measure param labels
     setParamDimsList((prev) => {
       let changed = false;
       const newParamDimsList = [...prev];
@@ -155,7 +179,7 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
       });
       return changed ? newParamDimsList : prev;
     });
-  }, [widgetContent, paramArgsString, fontSize, lineHeight]);
+  }, [widgetContent, paramArgsString, fontSize, lineHeight, model]);
 
   // Layout Effect 2: Converts measured DOM dimensions to SVG units and generates the
   // brick outline path. argDims and nestingDims come from outside — this component only
@@ -246,8 +270,8 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
       <path
         d={path}
         transform={`scale(${brickScale})`}
-        fill={props.colorsDefault.background}
-        stroke={props.colorsDefault.border}
+        fill={colorsDefault.background}
+        stroke={colorsDefault.border}
         strokeWidth={pxToSvg(STROKE_WIDTH)}
       />
 
@@ -274,7 +298,7 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
                     style={{
                       fontSize,
                       lineHeight: `${lineHeight}px`,
-                      color: props.colorsDefault.foreground,
+                      color: colorsDefault.foreground,
                     }}
                   >
                     {labelText}
@@ -305,8 +329,8 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
                     style={{
                       fontSize,
                       lineHeight: `${lineHeight}px`,
-                      color: props.colorsDefault.foreground,
-                      borderColor: props.colorsDefault.border,
+                      color: colorsDefault.foreground,
+                      borderColor: colorsDefault.border,
                     }}
                   >
                     <div className="grid">
@@ -314,7 +338,10 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
                         className="pointer-events-none invisible col-start-1 row-start-1 w-max"
                         aria-hidden="true"
                       >
-                        {variantOptions.reduce((a, b) => (a.length > b.length ? a : b), '')}
+                        {variantOptions.reduce(
+                          (a: string, b: string) => (a.length > b.length ? a : b),
+                          '',
+                        )}
                       </span>
                       <span className="col-start-1 row-start-1 flex min-w-0 items-center justify-start">
                         <SelectValue />
@@ -325,12 +352,12 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
                     alignItemWithTrigger={false}
                     className="min-w-0"
                     style={{
-                      backgroundColor: props.colorsDefault.background,
-                      borderColor: props.colorsDefault.border,
-                      color: props.colorsDefault.foreground,
+                      backgroundColor: colorsDefault.background,
+                      borderColor: colorsDefault.border,
+                      color: colorsDefault.foreground,
                     }}
                   >
-                    {variantOptions.map((opt) => (
+                    {variantOptions.map((opt: string) => (
                       <SelectItem
                         key={opt}
                         value={opt}
@@ -378,11 +405,9 @@ export function BrickViewFixed(props: BrickViewFixedProps) {
                 }}
                 className="m-0 max-w-none whitespace-nowrap"
                 style={{
-                  // Smaller than the main label so params read as secondary.
                   fontSize: paramFontSize,
                   lineHeight: `${paramLineHeight}px`,
-                  // Same color as the main label, sitting next to the arg notch.
-                  color: props.colorsDefault.foreground,
+                  color: colorsDefault.foreground,
                 }}
               >
                 {paramText}

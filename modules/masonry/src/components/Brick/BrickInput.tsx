@@ -1,14 +1,22 @@
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-import type { Bounds, Size, ValueBrickViewProps, WidgetInput } from '@/@types/brick.types';
+import type { Bounds, Size, ValueBrickViewPropsWithModel, WidgetInput } from '@/@types/brick.types';
+
+import type { ValueBrickModel } from '@/models/brick';
 
 import { BrickOutlineGenerator } from '@/utils/brick-shape';
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
 
 import { Widget } from './BrickWidget';
 
-export type BrickViewInputProps = Omit<ValueBrickViewProps, 'widget'> & {
-  widget: WidgetInput;
+/**
+ * Model-based prop type for BrickViewInput.
+ * The model's widget must be a WidgetInput (interactive input control).
+ * The existing BrickViewInputProps is preserved for backward compatibility.
+ */
+export type BrickViewInputPropsWithModel = ValueBrickViewPropsWithModel & {
+  /** Narrows the model's widget to the interactive input type. */
+  model: ValueBrickModel & { widget: WidgetInput };
 };
 
 const STROKE_WIDTH = 2;
@@ -17,10 +25,30 @@ const DEFAULT_SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
 /**
  * Value brick with an interactive input widget. Outline re-flows via `ResizeObserver`
  * as the widget changes size.
+ *
+ * The model is the single source of truth for all rendering data. The component:
+ *  1. Reads configuration (colors, widget, scaleLevel) from `model`.
+ *  2. Writes the measured widget dimensions back to `model.widgetDims` after layout.
+ *  3. Re-renders automatically whenever the model notifies a state change.
  */
-export function BrickViewInput(props: BrickViewInputProps) {
+export function BrickViewInput(props: BrickViewInputPropsWithModel) {
+  const { model } = props;
+
+  // ── Model reactivity ─────────────────────────────────────────────────────────
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const cb = () => setTick((t) => t + 1);
+    model.registerUpdateCallback(cb);
+    return () => model.unregisterUpdateCallback(cb);
+  }, [model]);
+
+  // ── Read from model ───────────────────────────────────────────────────────────
+  const scaleLevel = model.scaleLevel ?? DEFAULT_SCALE_LEVEL;
   const { brickScale, minWidth, minArgNestHeight, minWidgetParamHeight, fontSize, lineHeight } =
-    SCALE_LEVEL_CONFIG[props.scaleLevel ?? DEFAULT_SCALE_LEVEL];
+    SCALE_LEVEL_CONFIG[scaleLevel];
+
+  const colorsDefault = model.colorsDefault;
+  const widget: WidgetInput = model.widget;
 
   const pxToSvg = useCallback((px: number) => px / brickScale, [brickScale]);
   const svgToPx = useCallback((u: number) => u * brickScale, [brickScale]);
@@ -45,45 +73,35 @@ export function BrickViewInput(props: BrickViewInputProps) {
     [minWidth, minWidgetParamHeight, minArgNestHeight, pxToSvg],
   );
 
-  // Layout Effect 1: Measures the actual rendered DOM dimensions of the input.
-  // We use the inputRef to measure the physical pixel width of the rendered widget.
-  // We use a ResizeObserver to continuously track changes (e.g. when typing in a textbox).
+  // Layout Effect 1: Measures the actual rendered DOM dimensions of the input via ResizeObserver.
+  // Writes the measured dimensions back to model.widgetDims so it stays in sync.
+  // widgetDims intentionally does NOT fire _notifyUpdate to avoid a measure → re-render loop.
   useLayoutEffect(() => {
     if (!inputRef.current) return;
 
+    const observe = (el: HTMLDivElement) => {
+      const { width, height } = el.getBoundingClientRect();
+      setLabelDims((prev) =>
+        prev.w !== width || prev.h !== height ? { w: width, h: height } : prev,
+      );
+      model.widgetDims = { w: width, h: height };
+    };
+
     const observer = new ResizeObserver(() => {
-      if (inputRef.current) {
-        const { width, height } = inputRef.current.getBoundingClientRect();
-        setLabelDims((prev) => {
-          if (prev.w !== width || prev.h !== height) {
-            return { w: width, h: height };
-          }
-          return prev;
-        });
-      }
+      if (inputRef.current) observe(inputRef.current);
     });
 
     observer.observe(inputRef.current);
-
-    // Initial measurement
-    const { width, height } = inputRef.current.getBoundingClientRect();
-    setLabelDims((prev) => {
-      if (prev.w !== width || prev.h !== height) {
-        return { w: width, h: height };
-      }
-      return prev;
-    });
+    observe(inputRef.current);
 
     return () => observer.disconnect();
-  }, []);
+  }, [model]);
 
   // Layout Effect 2: Generates the SVG outline path based on the measured dimensions.
-  // This runs after labelDims updates. It creates the path, and calculates
-  // the exact coordinates (labelBounds) where the foreignObject should be placed.
   useLayoutEffect(() => {
     const scaledWidgetDims = { w: pxToSvg(labelDims.w), h: pxToSvg(labelDims.h) };
 
-    // Value bricks only have a left notch
+    // Value bricks only have a left notch.
     const {
       width,
       height,
@@ -119,8 +137,8 @@ export function BrickViewInput(props: BrickViewInputProps) {
       <path
         d={path}
         transform={`scale(${brickScale})`}
-        fill={props.colorsDefault.background}
-        stroke={props.colorsDefault.border}
+        fill={colorsDefault.background}
+        stroke={colorsDefault.border}
         strokeWidth={pxToSvg(STROKE_WIDTH)}
       />
 
@@ -143,12 +161,12 @@ export function BrickViewInput(props: BrickViewInputProps) {
         >
           <div ref={inputRef} className="flex w-max shrink-0 items-center px-2">
             <Widget
-              widget={props.widget}
+              widget={widget}
               fontSize={fontSize}
               lineHeight={lineHeight}
-              color={props.colorsDefault.foreground}
-              borderColor={props.colorsDefault.border}
-              backgroundColor={props.colorsDefault.background}
+              color={colorsDefault.foreground}
+              borderColor={colorsDefault.border}
+              backgroundColor={colorsDefault.background}
             />
           </div>
         </div>

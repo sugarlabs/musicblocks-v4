@@ -193,3 +193,34 @@ export type BrickViewProps =
     | ValueBrickViewProps
     | ExpressionBrickViewProps
     | StatementBrickViewProps;
+
+// ── Model-based prop types ────────────────────────────────────────────────────
+// These parallel the prop types above but accept a model instance instead of a
+// flat configuration object. Existing types above are preserved for backward
+// compatibility — do not remove them.
+
+import type { ValueBrickModel, ExpressionBrickModel, StatementBrickModel } from '@/models/brick';
+
+/** Model-based props for a value brick (literal, variable, or input widget). */
+export interface ValueBrickViewPropsWithModel {
+    kind: 'value';
+    model: ValueBrickModel;
+}
+
+/** Model-based props for an expression brick (operator, function call, etc.). */
+export interface ExpressionBrickViewPropsWithModel {
+    kind: 'expression';
+    model: ExpressionBrickModel;
+}
+
+/** Model-based props for a statement brick (statement, block, loop, conditional, etc.). */
+export interface StatementBrickViewPropsWithModel {
+    kind: 'statement';
+    model: StatementBrickModel;
+}
+
+/** Discriminated union of all model-based brick view prop shapes; narrow via `kind`. */
+export type BrickViewPropsWithModel =
+    | ValueBrickViewPropsWithModel
+    | ExpressionBrickViewPropsWithModel
+    | StatementBrickViewPropsWithModel;

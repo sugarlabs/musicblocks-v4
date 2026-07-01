@@ -11,6 +11,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 
+import { ExpressionBrickModel } from '@/models/brick';
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
 
 import { BrickViewFixed } from './BrickFixed';
@@ -23,18 +24,18 @@ const colorsDefault = {
   border: '#4338ca',
 };
 
-/** Renders an expression brick with one labelled param ("A"). */
+/** Renders an expression brick with one labelled param ("A") via a model. */
 function renderExpressionBrick(scaleLevel: 1 | 2 | 3 = 2) {
-  return render(
-    <BrickViewFixed
-      kind="expression"
-      scaleLevel={scaleLevel}
-      colorsDefault={colorsDefault}
-      widget={{ type: 'label', text: 'Add' }}
-      paramArgs={[{ param: 'A', argDims: { w: 40, h: 20 } }]}
-      tooltipText=""
-    />,
-  );
+  const model = new ExpressionBrickModel({
+    colorsDefault,
+    tooltipText: '',
+    widget: { type: 'label', text: 'Add' },
+    params: ['A'],
+    argDims: [{ w: 40, h: 20 }],
+  });
+  model.scaleLevel = scaleLevel;
+
+  return render(<BrickViewFixed kind="expression" model={model} />);
 }
 
 describe('BrickViewFixed param label', () => {

@@ -1,12 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-import type {
-  Bounds,
-  ExpressionBrickViewPropsWithModel,
-  Size,
-  StatementBrickViewPropsWithModel,
-  ValueBrickViewPropsWithModel,
-} from '@/@types/brick.types';
+import type { Bounds, BrickViewPropsWithModel, Size } from '@/@types/brick.types';
 
 import type { ExpressionBrickModel, StatementBrickModel } from '@/models/brick';
 
@@ -14,15 +8,6 @@ import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/select';
 import { BrickOutlineGenerator } from '@/utils/brick-shape';
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
-
-/**
- * Model-based prop type for BrickViewFixed.
- * The existing BrickViewFixedProps type is preserved for backward compatibility.
- */
-export type BrickViewFixedPropsWithModel =
-  | ValueBrickViewPropsWithModel
-  | ExpressionBrickViewPropsWithModel
-  | StatementBrickViewPropsWithModel;
 
 const STROKE_WIDTH = 2;
 const DEFAULT_SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
@@ -40,7 +25,7 @@ const PARAM_FONT_SCALE = 0.8;
  *  2. Writes the measured widget dimensions back to `model.widgetDims` after layout.
  *  3. Re-renders automatically whenever the model notifies a state change.
  */
-export function BrickViewFixed(props: BrickViewFixedPropsWithModel) {
+export function BrickViewFixed(props: BrickViewPropsWithModel) {
   const { model } = props;
 
   // ── Model reactivity ─────────────────────────────────────────────────────────

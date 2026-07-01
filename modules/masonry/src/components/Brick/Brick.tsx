@@ -1,6 +1,6 @@
 import type { BrickViewPropsWithModel, WidgetInput } from '@/@types/brick.types';
 
-import { BrickViewFixed, type BrickViewFixedPropsWithModel } from './BrickFixed';
+import { BrickViewFixed } from './BrickFixed';
 import { BrickViewInput, type BrickViewInputPropsWithModel } from './BrickInput';
 
 const INPUT_WIDGET_TYPES: ReadonlySet<WidgetInput['type']> = new Set([
@@ -25,7 +25,5 @@ export function BrickView(props: BrickViewPropsWithModel) {
   ) {
     return <BrickViewInput {...(props as BrickViewInputPropsWithModel)} />;
   }
-  return <BrickViewFixed {...(props as BrickViewFixedPropsWithModel)} />;
+  return <BrickViewFixed {...props} />;
 }
-// Re-export sub-component prop types for consumers.
-export type { BrickViewFixedPropsWithModel };

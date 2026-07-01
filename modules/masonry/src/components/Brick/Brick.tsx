@@ -1,10 +1,7 @@
-import type { BrickViewProps, BrickViewPropsWithModel, WidgetInput } from '@/@types/brick.types';
-import type { ValueBrickModel } from '@/models/brick';
+import type { BrickViewPropsWithModel, WidgetInput } from '@/@types/brick.types';
 
-import { BrickViewFixed, type BrickViewFixedProps } from './BrickFixed';
-import { BrickViewFixedWithModel } from './BrickFixed';
-import { BrickViewInput } from './BrickInput';
-import { BrickViewInputWithModel } from './BrickInput';
+import { BrickViewFixed, type BrickViewFixedPropsWithModel } from './BrickFixed';
+import { BrickViewInput, type BrickViewInputPropsWithModel } from './BrickInput';
 
 const INPUT_WIDGET_TYPES: ReadonlySet<WidgetInput['type']> = new Set([
   'textbox',
@@ -16,36 +13,19 @@ const INPUT_WIDGET_TYPES: ReadonlySet<WidgetInput['type']> = new Set([
 
 /**
  * Top-level brick component — renders the graphical shape, layout, and widgets for a single brick
- * in the visual programming environment. Routes to `BrickViewInput` for value bricks with
+ * in the visual programming environment.
+ *
+ * The model is the single source of truth. Routes to `BrickViewInput` for value bricks with
  * interactive widgets; `BrickViewFixed` for everything else.
  */
-export function BrickView(props: BrickViewProps) {
-  if (props.kind === 'value' && INPUT_WIDGET_TYPES.has(props.widget.type as WidgetInput['type'])) {
-    return <BrickViewInput {...props} widget={props.widget as WidgetInput} />;
-  }
-  return <BrickViewFixed {...(props as BrickViewFixedProps)} />;
-}
-
-/**
- * Model-based top-level brick component. Mirrors `BrickView` but accepts a model instance
- * instead of a flat configuration object.
- *
- * Routes to `BrickViewInputWithModel` for value bricks whose model widget is an interactive
- * input control; `BrickViewFixedWithModel` for everything else.
- *
- * The existing `BrickView` component is completely unchanged.
- */
-export function BrickViewWithModel(props: BrickViewPropsWithModel) {
+export function BrickView(props: BrickViewPropsWithModel) {
   if (
     props.kind === 'value' &&
     INPUT_WIDGET_TYPES.has(props.model.widget.type as WidgetInput['type'])
   ) {
-    return (
-      <BrickViewInputWithModel
-        kind="value"
-        model={props.model as ValueBrickModel & { widget: WidgetInput }}
-      />
-    );
+    return <BrickViewInput {...(props as BrickViewInputPropsWithModel)} />;
   }
-  return <BrickViewFixedWithModel {...props} />;
+  return <BrickViewFixed {...(props as BrickViewFixedPropsWithModel)} />;
 }
+// Re-export sub-component prop types for consumers.
+export type { BrickViewFixedPropsWithModel };

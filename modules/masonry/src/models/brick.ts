@@ -102,38 +102,41 @@ abstract class BrickModelBase {
     // ── Callback registration ─────────────────────────────────────────────────
 
     /**
-     * A single update callback slot. The registered function is called whenever
+     * The set of registered update callbacks. These functions are called whenever
      * model state that affects rendering changes (argDims, nestingDims, scaleLevel).
      *
      * Note: `widgetDims` is written by the view after measuring the DOM and
      * intentionally does NOT trigger this callback to avoid a re-render loop.
      */
-    private _onUpdate: (() => void) | null = null;
+    private _updateCallbacks = new Set<() => void>();
 
     /**
      * Registers a callback that will be invoked whenever the model's rendering
-     * state changes. Replaces any previously registered callback.
+     * state changes.
      *
      * Intended usage (React):
      * ```ts
      * useEffect(() => {
-     *   model.registerUpdateCallback(() => setTick(t => t + 1));
-     *   return () => model.unregisterUpdateCallback();
+     *   const cb = () => setTick(t => t + 1);
+     *   model.registerUpdateCallback(cb);
+     *   return () => model.unregisterUpdateCallback(cb);
      * }, [model]);
      * ```
      */
     public registerUpdateCallback(cb: () => void): void {
-        this._onUpdate = cb;
+        this._updateCallbacks.add(cb);
     }
 
-    /** Removes the registered update callback. Safe to call even if none is registered. */
-    public unregisterUpdateCallback(): void {
-        this._onUpdate = null;
+    /** Removes a specifically registered update callback. */
+    public unregisterUpdateCallback(cb: () => void): void {
+        this._updateCallbacks.delete(cb);
     }
 
-    /** Invokes the registered callback if one exists. Called from mutating setters. */
+    /** Invokes all registered callbacks. Called from mutating setters. */
     protected _notifyUpdate(): void {
-        this._onUpdate?.();
+        for (const cb of this._updateCallbacks) {
+            cb();
+        }
     }
 
     constructor(config: {

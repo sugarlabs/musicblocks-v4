@@ -31,8 +31,9 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
   // ── Model reactivity ─────────────────────────────────────────────────────────
   const [, setTick] = useState(0);
   useEffect(() => {
-    model.registerUpdateCallback(() => setTick((t) => t + 1));
-    return () => model.unregisterUpdateCallback();
+    const cb = () => setTick((t) => t + 1);
+    model.registerUpdateCallback(cb);
+    return () => model.unregisterUpdateCallback(cb);
   }, [model]);
 
   // ── Read from model ───────────────────────────────────────────────────────────

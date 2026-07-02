@@ -1,13 +1,13 @@
 import type {
     BrickOutlineInput,
     BrickOutlineOutput,
-    Size,
     WidgetDisplay,
     WidgetInput,
 } from '@/@types/brick.types';
+import type { Size } from '@/@types/common.types';
 
-import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
 import { BrickOutlineGenerator } from '@/utils/brick-shape';
+import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
 
 const STROKE_WIDTH = 2;
 

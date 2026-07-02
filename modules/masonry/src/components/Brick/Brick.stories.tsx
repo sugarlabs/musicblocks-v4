@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { ExpressionBrickModel, StatementBrickModel, ValueBrickModel } from '@/models/brick';
-
 import mouseSvg from '@/assets/mouse.svg';
+
+import { ExpressionBrickModel, StatementBrickModel, ValueBrickModel } from '@/models/brick';
 
 import { BrickView } from './Brick';
 

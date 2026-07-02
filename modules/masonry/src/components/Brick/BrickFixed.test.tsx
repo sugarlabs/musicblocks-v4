@@ -8,8 +8,8 @@
 // at the arg notch" positioning is geometry and is covered by path2.spec.ts
 // (generateBounds), which needs no DOM.
 
-import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { ExpressionBrickModel } from '@/models/brick';
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';

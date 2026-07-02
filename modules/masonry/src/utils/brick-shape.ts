@@ -31,13 +31,12 @@
  */
 
 import type {
-    Bounds,
     BrickComputedDimensions,
     BrickMinimums,
     BrickOutlineInput,
     BrickOutlineOutput,
-    Point,
 } from '@/@types/brick.types';
+import type { Bounds, Point } from '@/@types/common.types';
 
 // ────────────────────────── Dimension Calculation ────────────────────────────────────────────────
 

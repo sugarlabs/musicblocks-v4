@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-import type { Bounds, BrickViewPropsWithModel, Size } from '@/@types/brick.types';
+import type { BrickViewPropsWithModel } from '@/@types/brick.types';
+import type { Bounds, Size } from '@/@types/common.types';
 
 import type { ExpressionBrickModel, StatementBrickModel } from '@/models/brick';
 

@@ -11,6 +11,17 @@
 //
 // ─────────────────────────────────────────────────────────────────────────────
 
+import type {
+    BrickModel,
+    ValueBrickModel,
+    ExpressionBrickModel,
+    StatementBrickModel,
+} from '../models/brick';
+
+export interface TowerBaseNodeConfig {
+    model: BrickModel;
+}
+
 /**
  * Pointer config for a **value** brick node.
  *
@@ -21,8 +32,9 @@
  *
  * A value brick plugs into a single argument slot of a parent node.
  */
-export interface TowerValueNodeConfig {
+export interface TowerValueNodeConfig extends TowerBaseNodeConfig {
     kind: 'value';
+    model: ValueBrickModel;
     /** The node whose argument slot this value brick is plugged into; null if free-floating. */
     parent: TowerNodeConfig | null;
 }
@@ -41,8 +53,9 @@ export interface TowerValueNodeConfig {
  * An expression brick plugs into a parent and itself owns one or more argument
  * slots, each of which may hold a value or expression child.
  */
-export interface TowerExpressionNodeConfig {
+export interface TowerExpressionNodeConfig extends TowerBaseNodeConfig {
     kind: 'expression';
+    model: ExpressionBrickModel;
     /** The node whose argument slot this expression brick is plugged into; null if free-floating. */
     parent: TowerNodeConfig | null;
     /**
@@ -67,8 +80,9 @@ export interface TowerExpressionNodeConfig {
  * Participates in a linear sequence: connected to the brick above (prev) and
  * the brick below (next), with zero or more argument slots on the side.
  */
-export interface TowerStatementNodeConfig {
+export interface TowerStatementNodeConfig extends TowerBaseNodeConfig {
     kind: 'statement';
+    model: StatementBrickModel;
     hasNesting?: false;
     /** The node immediately preceding this one in the sequence; null if this is the first. */
     prev: TowerNodeConfig | null;
@@ -97,8 +111,9 @@ export interface TowerStatementNodeConfig {
  * In addition to the linear sequence pointers, the brick owns a nesting cavity
  * that may contain its own inner sequence of bricks.
  */
-export interface TowerNestedStatementNodeConfig {
+export interface TowerNestedStatementNodeConfig extends TowerBaseNodeConfig {
     kind: 'statement';
+    model: StatementBrickModel;
     hasNesting: true;
     /** The node immediately preceding this one in the sequence; null if this is the first. */
     prev: TowerNodeConfig | null;
@@ -121,3 +136,14 @@ export type TowerNodeConfig =
     | TowerExpressionNodeConfig
     | TowerStatementNodeConfig
     | TowerNestedStatementNodeConfig;
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The overall tree configuration for a Brick Tower.
+ * Rather than passing individual bricks, components take this tree configuration
+ * (the rootNode directly)
+ */
+export interface TowerTreeConfig {
+    rootNode: TowerNodeConfig;
+}

@@ -1,4 +1,4 @@
-// ── Tower Node Config Types ───────────────────────────────────────────────────
+// ── Tower Node Types ───────────────────────────────────────────────────────────
 //
 // A Tower is a connected graph of bricks. Each node in the graph holds a
 // pointer config that describes how it links to neighbouring nodes.
@@ -6,7 +6,7 @@
 // Pointer configs are shaped by brick kind (value | expression | statement) and,
 // for statement bricks, by whether a nesting cavity is present.
 //
-// All pointer fields hold direct references to the connected TowerNodeConfig.
+// All pointer fields hold direct references to the connected TowerNode.
 // model objects, or null when the slot is unoccupied.
 //
 // ─────────────────────────────────────────────────────────────────────────────
@@ -23,11 +23,11 @@ import type { ValueBrickModel, ExpressionBrickModel, StatementBrickModel } from 
  *
  * A value brick plugs into a single argument slot of a parent node.
  */
-export interface TowerValueNodeConfig {
+export interface TowerValueNode {
     kind: 'value';
     model: ValueBrickModel;
     /** The node whose argument slot this value brick is plugged into; null if free-floating. */
-    parent: TowerNodeConfig | null;
+    parent: TowerNode | null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -44,16 +44,16 @@ export interface TowerValueNodeConfig {
  * An expression brick plugs into a parent and itself owns one or more argument
  * slots, each of which may hold a value or expression child.
  */
-export interface TowerExpressionNodeConfig {
+export interface TowerExpressionNode {
     kind: 'expression';
     model: ExpressionBrickModel;
     /** The node whose argument slot this expression brick is plugged into; null if free-floating. */
-    parent: TowerNodeConfig | null;
+    parent: TowerNode | null;
     /**
      * One entry per argument slot in declaration order.
      * Each entry is the direct reference of the child node occupying that slot, or null if empty.
      */
-    args: (TowerNodeConfig | null)[];
+    args: (TowerNode | null)[];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -71,41 +71,37 @@ export interface TowerExpressionNodeConfig {
  *
  * Participates in a linear sequence: connected to the brick above (prev) and
  * the brick below (next), with zero or more argument slots on the side.
- * If the brick has a nesting cavity, `hasNesting` is true and `nestedNext` points to the inner sequence.
+ * If the brick has a nesting cavity, `nestedNext` points to the inner sequence.
  */
-export interface TowerStatementNodeConfig {
+export interface TowerStatementNode {
     kind: 'statement';
     model: StatementBrickModel;
-    /** Whether this statement brick structurally owns a nesting cavity. */
-    hasNesting?: true;
     /** The node immediately preceding this one in the sequence; null if this is the first. */
-    prev: TowerNodeConfig | null;
+    prev: TowerNode | null;
     /** The node immediately following this one in the sequence; null if this is the last. */
-    next: TowerNodeConfig | null;
+    next: TowerNode | null;
     /**
      * One entry per argument slot in declaration order.
      * Each entry is the direct reference of the child node occupying that slot, or null if empty.
      */
-    args: (TowerNodeConfig | null)[];
+    args: (TowerNode | null)[];
     /**
      * The first node in the nested (inner) sequence housed inside this brick's cavity.
      * null when the cavity is empty, or undefined if the brick has no nesting cavity.
      */
-    nestedNext?: TowerNodeConfig | null;
+    nestedNext?: TowerNode | null;
 }
 
-export type TowerNodeConfig =
-    | TowerValueNodeConfig
-    | TowerExpressionNodeConfig
-    | TowerStatementNodeConfig;
+export type TowerNode = TowerValueNode | TowerExpressionNode | TowerStatementNode;
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * The overall tree configuration for a Brick Tower.
- * Rather than passing individual bricks, components take this tree configuration
- * (the rootNode directly)
+ * Props for rendering a Brick Tower view.
+ * Rather than passing individual bricks, components take the root node directly;
+ * the rest of the tree is reachable by traversal from there.
  */
-export interface TowerTreeConfig {
-    rootNode: TowerNodeConfig;
+export interface TowerViewProps {
+    /** The root node of the tower tree. */
+    root: TowerNode;
 }

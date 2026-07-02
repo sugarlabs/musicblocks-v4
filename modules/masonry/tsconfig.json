@@ -3,7 +3,6 @@
     "include": [
         "./**/*.ts",
         "./**/*.tsx",
-        "./.storybook/*.ts"
     ],
     "compilerOptions": {
         "paths": {

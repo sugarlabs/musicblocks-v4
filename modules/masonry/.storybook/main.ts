@@ -3,7 +3,7 @@ import type { UserConfig } from 'vite';
 import { StorybookConfig } from '@storybook/react-vite';
 import { mergeConfig } from 'vite';
 
-import baseConfig from '../vite.config';
+import baseConfig from '../vite.config.ts';
 
 // -------------------------------------------------------------------------------------------------
 

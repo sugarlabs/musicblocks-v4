@@ -3,6 +3,7 @@
   "version": "4.2.0",
   "description": "Graphical project builder using drag & drop code bricks",
   "private": "true",
+  "type": "module",
   "main": "src/index.ts",
   "scripts": {
     "test": "vitest --passWithNoTests",

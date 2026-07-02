@@ -1,3 +1,5 @@
+import type { ComponentType, CSSProperties } from 'react';
+
 import type { BrickViewProps } from './brick.types';
 
 // -------------------------------------------------------------------------------------------------
@@ -24,37 +26,51 @@ export interface PaletteBrickConfig {
 }
 
 /**
- * A Section groups related bricks within a Category (e.g. "Pitch" within "Music").
+ * A Category is the middle grouping level — the sub-group shown as a button in the Palette's left
+ * sidebar (e.g. "Rhythm", "Intervals", "Flow"). Its bricks are stacked as one section in the main
+ * scrollable list, and clicking its sidebar button scrolls the list to that category.
  */
-export interface PaletteSectionConfig {
-    /** Display name of the section. */
+export interface PaletteCategoryConfig {
+    /** Display name of the category; shown on the sidebar button and the main list header. */
     name: string;
-    /** Source of the section's icon. */
-    icon: string;
-    /** Accent color for the section, as a CSS color string. */
+    /** Icon component for the category, supplied by the config provider (e.g. a lucide-react icon). */
+    icon: ComponentType<{ className?: string; style?: CSSProperties }>;
+    /** Accent color for the category, as a CSS color string; tints its icon and header. */
     color: string;
-    /** Ordered bricks shown in this section. */
+    /** Ordered bricks shown in this category. */
     bricks: PaletteBrickConfig[];
 }
 
 /**
- * A Category is a top-level grouping of Sections (e.g. "Music", "Flow", "Graphics").
+ * A Classification is the top grouping level — the tab selected from the compact icon row at the
+ * top of the Palette (e.g. "Music", "Logic", "Art"). Selecting a classification swaps which set of
+ * categories the sidebar and main list show.
  */
-export interface PaletteCategoryConfig {
-    /** Display name of the category. */
+export interface PaletteClassificationConfig {
+    /** Display name of the classification; used as the tab's accessible label. */
     name: string;
-    /** Source of the category's icon. */
-    icon: string;
-    /** Ordered sections within this category. */
-    sections: PaletteSectionConfig[];
+    /** Icon component for the classification, supplied by the config provider (e.g. a lucide-react icon). */
+    icon: ComponentType<{ className?: string; style?: CSSProperties }>;
+    /** Ordered categories shown when this classification is active. */
+    categories: PaletteCategoryConfig[];
 }
 
 /**
  * Top-level configuration object for the Brick Palette.
  *
- * Defines the full Category → Section → Brick hierarchy the Palette renders.
+ * Defines the full Classification → Category → Brick hierarchy the Palette renders.
  */
 export interface PaletteConfig {
-    /** Ordered categories shown in the Palette. */
-    categories: PaletteCategoryConfig[];
+    /** Ordered classifications shown as tabs in the Palette. */
+    classifications: PaletteClassificationConfig[];
+}
+
+/**
+ * Props for the Palette view component.
+ *
+ * Carries the full Classification → Category → Brick hierarchy the palette view renders.
+ */
+export interface PaletteViewProps {
+    /** Full Classification → Category → Brick hierarchy the palette renders. */
+    config: PaletteConfig;
 }

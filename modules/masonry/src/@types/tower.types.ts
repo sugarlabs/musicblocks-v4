@@ -59,53 +59,25 @@ export interface TowerExpressionNodeConfig {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Pointer config for a **statement** brick node **without** a nesting cavity.
+ * Pointer config for a **statement** brick node.
  *
  * ```
- * // statement without nesting
+ * // statement
  * - a prev pointer
  * - a next pointer
  * - a list of arg pointers
+ * - (optional) a nested next pointer if the brick has a cavity
  * ```
  *
  * Participates in a linear sequence: connected to the brick above (prev) and
  * the brick below (next), with zero or more argument slots on the side.
+ * If the brick has a nesting cavity, `hasNesting` is true and `nestedNext` points to the inner sequence.
  */
 export interface TowerStatementNodeConfig {
     kind: 'statement';
     model: StatementBrickModel;
-    hasNesting?: false;
-    /** The node immediately preceding this one in the sequence; null if this is the first. */
-    prev: TowerNodeConfig | null;
-    /** The node immediately following this one in the sequence; null if this is the last. */
-    next: TowerNodeConfig | null;
-    /**
-     * One entry per argument slot in declaration order.
-     * Each entry is the direct reference of the child node occupying that slot, or null if empty.
-     */
-    args: (TowerNodeConfig | null)[];
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Pointer config for a **statement** brick node **with** a nesting cavity.
- *
- * ```
- * // statement with nesting
- * - a prev pointer
- * - a next pointer
- * - a list of arg pointers
- * - a nested next pointer
- * ```
- *
- * In addition to the linear sequence pointers, the brick owns a nesting cavity
- * that may contain its own inner sequence of bricks.
- */
-export interface TowerNestedStatementNodeConfig {
-    kind: 'statement';
-    model: StatementBrickModel;
-    hasNesting: true;
+    /** Whether this statement brick structurally owns a nesting cavity. */
+    hasNesting?: true;
     /** The node immediately preceding this one in the sequence; null if this is the first. */
     prev: TowerNodeConfig | null;
     /** The node immediately following this one in the sequence; null if this is the last. */
@@ -116,17 +88,16 @@ export interface TowerNestedStatementNodeConfig {
      */
     args: (TowerNodeConfig | null)[];
     /**
-     * The first node in the nested (inner) sequence housed inside this brick's cavity;
-     * null when the cavity is empty.
+     * The first node in the nested (inner) sequence housed inside this brick's cavity.
+     * null when the cavity is empty, or undefined if the brick has no nesting cavity.
      */
-    nestedNext: TowerNodeConfig | null;
+    nestedNext?: TowerNodeConfig | null;
 }
 
 export type TowerNodeConfig =
     | TowerValueNodeConfig
     | TowerExpressionNodeConfig
-    | TowerStatementNodeConfig
-    | TowerNestedStatementNodeConfig;
+    | TowerStatementNodeConfig;
 
 // ─────────────────────────────────────────────────────────────────────────────
 

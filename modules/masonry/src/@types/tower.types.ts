@@ -104,4 +104,6 @@ export type TowerNode = TowerValueNode | TowerExpressionNode | TowerStatementNod
 export interface TowerViewProps {
     /** The root node of the tower tree. */
     root: TowerNode;
+    /** If true, renders bricks directly without a wrapping container; defaults to false. */
+    asChild?: boolean;
 }

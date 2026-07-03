@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { listNodes, traverseBottomUp } from '../tower-traversal';
+import { listNodes, traverseBottomUp } from './tower-traversal';
 import {
     valueTree,
     expressionTree,

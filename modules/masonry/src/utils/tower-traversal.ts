@@ -76,66 +76,83 @@ export function* traverseBottomUp(root: TowerNode): Generator<TowerNode[]> {
 
     const visited = new Set<TowerNode>();
 
-    /**
-     * Recursively traverses the tree.
-     * @returns For arguments: the maximum depth of its sub-tree.
-     *          For statements: 0 (statements don't report depth to their parents).
-     */
-    function traverse(node: TowerNode, nestingDepth: number): number {
-        if (visited.has(node)) return 0;
-        visited.add(node);
+    type TraversalState = {
+        node: TowerNode;
+        nestingDepth: number;
+        phase: 'ENTER' | 'EXIT';
+    };
 
-        if (node.kind === 'value' || node.kind === 'expression') {
-            let maxChildDepth = -1;
-            if (node.kind === 'expression') {
-                for (const arg of node.args) {
+    const stack: TraversalState[] = [{ node: root, nestingDepth: 0, phase: 'ENTER' }];
+    const entered = new Set<TowerNode>();
+    const argDepthMap = new Map<TowerNode, number>();
+
+    while (stack.length > 0) {
+        const { node, nestingDepth, phase } = stack.pop()!;
+
+        if (phase === 'ENTER') {
+            if (entered.has(node)) continue;
+            entered.add(node);
+
+            // Push the EXIT phase so it runs after all children are processed
+            stack.push({ node, nestingDepth, phase: 'EXIT' });
+
+            if (node.kind === 'statement') {
+                // Push children in reverse order so they are popped in forward order:
+                // args first, then nestedNext, then next.
+                if (node.next !== null) {
+                    stack.push({ node: node.next, nestingDepth, phase: 'ENTER' });
+                }
+                if (node.nestedNext !== null && node.nestedNext !== undefined) {
+                    stack.push({
+                        node: node.nestedNext,
+                        nestingDepth: nestingDepth + 1,
+                        phase: 'ENTER',
+                    });
+                }
+                for (let i = node.args.length - 1; i >= 0; i--) {
+                    const arg = node.args[i];
                     if (arg !== null) {
-                        const childDepth = traverse(arg, nestingDepth);
-                        if (childDepth > maxChildDepth) {
-                            maxChildDepth = childDepth;
-                        }
+                        stack.push({ node: arg, nestingDepth, phase: 'ENTER' });
+                    }
+                }
+            } else if (node.kind === 'expression') {
+                for (let i = node.args.length - 1; i >= 0; i--) {
+                    const arg = node.args[i];
+                    if (arg !== null) {
+                        stack.push({ node: arg, nestingDepth, phase: 'ENTER' });
                     }
                 }
             }
-            const myDepth = maxChildDepth + 1;
+        } else {
+            // phase === 'EXIT'
+            if (visited.has(node)) continue;
+            visited.add(node);
 
-            const bucket = argsByDepth.get(myDepth) ?? [];
-            bucket.push(node);
-            argsByDepth.set(myDepth, bucket);
-
-            return myDepth;
-        }
-
-        if (node.kind === 'statement') {
-            // Process arguments of the statement
-            for (const arg of node.args) {
-                if (arg !== null) {
-                    traverse(arg, nestingDepth);
+            if (node.kind === 'value' || node.kind === 'expression') {
+                let maxChildDepth = -1;
+                if (node.kind === 'expression') {
+                    for (const arg of node.args) {
+                        if (arg !== null) {
+                            const childDepth = argDepthMap.get(arg) ?? 0;
+                            if (childDepth > maxChildDepth) {
+                                maxChildDepth = childDepth;
+                            }
+                        }
+                    }
                 }
+                const myDepth = maxChildDepth + 1;
+                argDepthMap.set(node, myDepth);
+
+                const bucket = argsByDepth.get(myDepth) ?? [];
+                bucket.push(node);
+                argsByDepth.set(myDepth, bucket);
+            } else if (node.kind === 'statement') {
+                const bucket = stmtsByDepth.get(nestingDepth) ?? [];
+                bucket.push(node);
+                stmtsByDepth.set(nestingDepth, bucket);
             }
-
-            // Process nested cavity if any (increase nesting depth)
-            if (node.nestedNext !== null && node.nestedNext !== undefined) {
-                traverse(node.nestedNext, nestingDepth + 1);
-            }
-
-            // Process next statement in the sequence (same nesting depth)
-            if (node.next !== null) {
-                traverse(node.next, nestingDepth);
-            }
-
-            const bucket = stmtsByDepth.get(nestingDepth) ?? [];
-            bucket.push(node);
-            stmtsByDepth.set(nestingDepth, bucket);
-
-            return 0;
         }
-
-        return 0;
     }
-
-    // Start traversal from the root. The root is at nesting depth 0.
-    traverse(root, 0);
 
     // Yield arguments from highest depth (leaves, depth 0) down to top-level args
     const argDepths = Array.from(argsByDepth.keys()).sort((a, b) => a - b);

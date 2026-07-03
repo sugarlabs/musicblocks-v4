@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { mockPaletteConfig } from '@/mock/palette';
+import { mockPaletteConfig } from '@/mocks/palette';
 
 import { Palette } from './Palette';
 

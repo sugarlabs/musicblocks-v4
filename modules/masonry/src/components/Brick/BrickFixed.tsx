@@ -224,6 +224,7 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
 
     setPath(generatedPath);
     setDims({ w: width, h: height });
+    model.setDims(width, height);
 
     setLabelBounds({
       x: svgToPx(bounds.widget.x),
@@ -259,6 +260,7 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
     svgToPx,
     pxToSvg,
     minArgNestHeight,
+    model,
   ]);
 
   return (

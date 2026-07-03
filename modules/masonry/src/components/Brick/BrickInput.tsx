@@ -119,6 +119,7 @@ export function BrickViewInput(props: BrickViewInputPropsWithModel) {
 
     setPath(generatedPath);
     setDims({ w: width, h: height });
+    model.setDims(width, height);
 
     setLabelBounds({
       x: svgToPx(bounds.widget.x),
@@ -126,7 +127,7 @@ export function BrickViewInput(props: BrickViewInputPropsWithModel) {
       w: svgToPx(bounds.widget.w),
       h: svgToPx(bounds.widget.h),
     });
-  }, [labelDims.w, labelDims.h, generateOutline, svgToPx, pxToSvg]);
+  }, [labelDims.w, labelDims.h, generateOutline, svgToPx, pxToSvg, model]);
 
   return (
     <svg

@@ -56,6 +56,27 @@ export function useTowerLayout(root: TowerNode) {
             return;
         }
 
+        // Propagate dimensions from already-rendered children into this batch's models
+        batch.forEach((node) => {
+            if (node.kind === 'expression' || node.kind === 'statement') {
+                node.model.argDims = node.args.map((arg) =>
+                    arg ? { w: arg.model.dims.w, h: arg.model.dims.h } : null,
+                );
+            }
+            if (node.kind === 'statement' && node.nestedNext) {
+                // Sum heights and find max width of the inner statement chain
+                let current: TowerNode | null = node.nestedNext;
+                let totalH = 0;
+                let maxW = 0;
+                while (current !== null) {
+                    totalH += current.model.dims.h;
+                    if (current.model.dims.w > maxW) maxW = current.model.dims.w;
+                    current = current.kind === 'statement' ? current.next : null;
+                }
+                node.model.nestingDims = { w: maxW, h: totalH };
+            }
+        });
+
         // Mark this batch's bricks ready so BrickWrappers render (and measure) them.
         useBrickLayoutStore.setState((state) => ({
             ready: {

@@ -61,93 +61,95 @@ export function listNodes(root: TowerNode): TowerNode[] {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Assigns a depth value to every node in an argument sub-tree using an iterative DFS.
+ * Traverses all nodes in a Brick Tower tree in a single pass, separating them into two buckets:
+ * 1. Arguments (Values and Expressions)
+ * 2. Statements
  *
- * `depth` here means "distance from the subtree root". Leaf nodes end up with the highest
- * depth numbers so that, when we sort descending, they appear first (bottom-up order).
- *
- * @param argRoot   The root of a single argument sub-tree (value or expression).
- * @param depthMap  Accumulator: maps node → depth (updated in place).
- */
-function collectArgDepths(argRoot: TowerNode, depthMap: Map<TowerNode, number>): void {
-    // Stack entries carry the node and the depth at which it sits.
-    const stack: { node: TowerNode; depth: number }[] = [{ node: argRoot, depth: 0 }];
-
-    while (stack.length > 0) {
-        const { node, depth } = stack.pop()!;
-
-        // Only deepen if we haven't visited this node yet, or if a deeper path is found.
-        const existing = depthMap.get(node);
-        if (existing === undefined || depth > existing) {
-            depthMap.set(node, depth);
-        }
-
-        // Push argument children (value/expression only — no statement chains here).
-        if (node.kind === 'expression') {
-            for (const arg of node.args) {
-                if (arg !== null) {
-                    stack.push({ node: arg, depth: depth + 1 });
-                }
-            }
-        }
-        // value nodes are leaves — nothing to push.
-    }
-}
-
-/**
- * Traverses all Argument sub-trees of a Brick Tower tree, **bottom-up**, yielding one batch of
- * `TowerNode`s per iteration.
+ * Yields batches of nodes bottom-up: first, all arguments (deepest leaves first),
+ * and then all statements (innermost cavities first).
  *
  * @param root - The root node of the tower tree.
  */
 export function* traverseBottomUp(root: TowerNode): Generator<TowerNode[]> {
-    // Collect the top-level statement chain (or a single non-statement root).
-    const statementChain: TowerNode[] = [];
+    const argsByDepth = new Map<number, TowerNode[]>();
+    const stmtsByDepth = new Map<number, TowerNode[]>();
 
-    if (root.kind === 'statement') {
-        let current: TowerStatementNode | null = root;
-        while (current !== null) {
-            statementChain.push(current);
-            current = current.next as TowerStatementNode | null;
-        }
-    } else {
-        // Expression or value at the root — treat as one argument sub-tree.
-        statementChain.push(root);
-    }
+    const visited = new Set<TowerNode>();
 
-    for (const stmtNode of statementChain) {
-        // Determine which nodes have argument children (expressions/statements with args).
-        const argsToProcess: TowerNode[] =
-            stmtNode.kind === 'statement' || stmtNode.kind === 'expression'
-                ? stmtNode.args.filter((a): a is TowerNode => a !== null)
-                : [];
+    /**
+     * Recursively traverses the tree.
+     * @returns For arguments: the maximum depth of its sub-tree.
+     *          For statements: 0 (statements don't report depth to their parents).
+     */
+    function traverse(node: TowerNode, nestingDepth: number): number {
+        if (visited.has(node)) return 0;
+        visited.add(node);
 
-        if (argsToProcess.length > 0) {
-            // Build a depth map for every node in every arg sub-tree of this statement.
-            const depthMap = new Map<TowerNode, number>();
-            for (const argRoot of argsToProcess) {
-                collectArgDepths(argRoot, depthMap);
+        if (node.kind === 'value' || node.kind === 'expression') {
+            let maxChildDepth = -1;
+            if (node.kind === 'expression') {
+                for (const arg of node.args) {
+                    if (arg !== null) {
+                        const childDepth = traverse(arg, nestingDepth);
+                        if (childDepth > maxChildDepth) {
+                            maxChildDepth = childDepth;
+                        }
+                    }
+                }
             }
+            const myDepth = maxChildDepth + 1;
 
-            // Group nodes by depth (ascending = shallow, highest number = deepest leaf).
-            const byDepth = new Map<number, TowerNode[]>();
-            for (const [node, depth] of depthMap.entries()) {
-                const bucket = byDepth.get(depth);
-                if (bucket) {
-                    bucket.push(node);
-                } else {
-                    byDepth.set(depth, [node]);
+            const bucket = argsByDepth.get(myDepth) ?? [];
+            bucket.push(node);
+            argsByDepth.set(myDepth, bucket);
+
+            return myDepth;
+        }
+
+        if (node.kind === 'statement') {
+            // Process arguments of the statement
+            for (const arg of node.args) {
+                if (arg !== null) {
+                    traverse(arg, nestingDepth);
                 }
             }
 
-            // Yield batches deepest-first (leaves before parents).
-            const depths = [...byDepth.keys()].sort((a, b) => b - a);
-            for (const depth of depths) {
-                yield byDepth.get(depth)!;
+            // Process nested cavity if any (increase nesting depth)
+            if (node.nestedNext !== null && node.nestedNext !== undefined) {
+                traverse(node.nestedNext, nestingDepth + 1);
             }
+
+            // Process next statement in the sequence (same nesting depth)
+            if (node.next !== null) {
+                traverse(node.next, nestingDepth);
+            }
+
+            const bucket = stmtsByDepth.get(nestingDepth) ?? [];
+            bucket.push(node);
+            stmtsByDepth.set(nestingDepth, bucket);
+
+            return 0;
         }
 
-        // Yield the statement/root node itself after all its arg children have been yielded.
-        yield [stmtNode];
+        return 0;
+    }
+
+    // Start traversal from the root. The root is at nesting depth 0.
+    traverse(root, 0);
+
+    // Yield arguments from highest depth (leaves, depth 0) down to top-level args
+    const argDepths = Array.from(argsByDepth.keys()).sort((a, b) => a - b);
+    for (const depth of argDepths) {
+        if (argsByDepth.get(depth)!.length > 0) {
+            yield argsByDepth.get(depth)!;
+        }
+    }
+
+    // Yield statements from highest nesting depth (innermost cavities) down to 0 (main chain)
+    const stmtDepths = Array.from(stmtsByDepth.keys()).sort((a, b) => b - a);
+    for (const depth of stmtDepths) {
+        if (stmtsByDepth.get(depth)!.length > 0) {
+            yield stmtsByDepth.get(depth)!;
+        }
     }
 }

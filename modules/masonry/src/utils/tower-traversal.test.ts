@@ -51,7 +51,45 @@ function argsAlwaysBeforeParent(root: TowerNode, nodes: TowerNode[]): boolean {
         }
 
         if (node.kind === 'statement') {
+            if (node.nestedNext) stack.push(node.nestedNext);
             if (node.next) stack.push(node.next);
+        }
+    }
+
+    return true;
+}
+
+/**
+ * Returns true when, for every statement in `nodes`, its `nestedNext` cavity chain
+ * appears at an earlier index in `nodes` than the statement itself.
+ */
+function nestedAlwaysBeforeParent(root: TowerNode, nodes: TowerNode[]): boolean {
+    const pos = new Map<TowerNode, number>(nodes.map((node, i) => [node, i]));
+    const visited = new Set<TowerNode>();
+    const stack: TowerNode[] = [root];
+
+    while (stack.length > 0) {
+        const node = stack.pop()!;
+        if (visited.has(node)) continue;
+        visited.add(node);
+
+        if (node.kind === 'statement') {
+            const parentPos = pos.get(node);
+            if (node.nestedNext) {
+                const childPos = pos.get(node.nestedNext);
+                if (childPos === undefined || parentPos === undefined) return false;
+                if (childPos >= parentPos) return false;
+                stack.push(node.nestedNext);
+            }
+            if (node.next) stack.push(node.next);
+
+            for (const arg of node.args) {
+                if (arg) stack.push(arg);
+            }
+        } else if (node.kind === 'expression') {
+            for (const arg of node.args) {
+                if (arg) stack.push(arg);
+            }
         }
     }
 
@@ -105,7 +143,8 @@ describe('tower-traversal', () => {
 
         // ── 3. Statement with no args ────────────────────────────────────────
         it('yields a single batch with just the statement when it has no args', () => {
-            const generator = traverseBottomUp(statementTreeNoNesting);
+            const singleStatement = { ...statementTreeNoNesting, next: null };
+            const generator = traverseBottomUp(singleStatement);
             const firstBatch = generator.next().value;
 
             expect(firstBatch).toBeDefined();
@@ -128,21 +167,22 @@ describe('tower-traversal', () => {
             expect(unique.has('Statement 2')).toBe(true);
         });
 
-        // ── 5. Statement chain (with nesting) — nestedNext exclusion ─────────
-        it('does NOT include nestedNext cavity nodes in argument-subtree batches', () => {
+        // ── 5. Statement chain (with nesting) — full traversal constraint ────
+        it('includes nestedNext cavity nodes and yields them before their parent statements', () => {
             const nodes = collectNodes(statementTreeWithNesting);
             const unique = new Set(nodes.map((n) => n.model.id));
 
-            // NS1 and NS3 are direct members of the outer statement chain, so they ARE yielded.
+            // Must contain outer statements
             expect(unique.has('Nesting Statement 1')).toBe(true);
             expect(unique.has('Nesting Statement 3')).toBe(true);
 
-            // NS2 lives inside NS1's nestedNext cavity — it must NOT appear.
-            expect(unique.has('Nesting Statement 1.Nesting Statement 2')).toBe(false);
+            // Must contain nested statements inside cavities
+            expect(unique.has('Nesting Statement 1.Nesting Statement 2')).toBe(true);
+            expect(unique.has('Nesting Statement 1.Statement 6')).toBe(true);
+            expect(unique.has('Nesting Statement 3.Statement 8')).toBe(true);
 
-            // Cavity-only statements must NOT appear.
-            expect(unique.has('Nesting Statement 1.Statement 6')).toBe(false);
-            expect(unique.has('Nesting Statement 3.Statement 8')).toBe(false);
+            // Nested statement chains must appear BEFORE the parent statement containing the cavity
+            expect(nestedAlwaysBeforeParent(statementTreeWithNesting, nodes)).toBe(true);
         });
 
         // ── 6. Batch non-emptiness ───────────────────────────────────────────

@@ -43,6 +43,11 @@ abstract class BrickModelBase {
         return this._bounds;
     }
 
+    /** Called by the view to persist the final rendered dimensions. */
+    public setDims(w: number, h: number): void {
+        this._dims = { w, h };
+    }
+
     private _scaleLevel: 1 | 2 | 3;
     private _outlineGenerator: BrickOutlineGenerator;
 

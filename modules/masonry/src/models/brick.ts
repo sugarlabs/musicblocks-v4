@@ -8,6 +8,7 @@ import type { Size } from '@/@types/common.types';
 
 import { BrickOutlineGenerator } from '@/utils/brick-shape';
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
+import { useBrickLayoutStore } from '@/stores';
 
 const STROKE_WIDTH = 2;
 
@@ -45,7 +46,17 @@ abstract class BrickModelBase {
 
     /** Called by the view to persist the final rendered dimensions. */
     public setDims(w: number, h: number): void {
-        this._dims = { w, h };
+        if (this._dims.w !== w || this._dims.h !== h) {
+            this._dims = { w, h };
+            // Trigger global layout update when a brick's intrinsic size changes
+            // (e.g. from user typing) so parent expressions can resize accordingly.
+            useBrickLayoutStore.getState().markLayoutDirty();
+        }
+    }
+
+    /** Called by the view to persist the final rendered bounds. */
+    public setBounds(bounds: BrickOutlineOutput['bounds']): void {
+        this._bounds = bounds;
     }
 
     private _scaleLevel: 1 | 2 | 3;
@@ -208,6 +219,15 @@ export class ExpressionBrickModel extends BrickModelBase {
     }
 
     set argDims(value: (Size | null)[]) {
+        if (
+            this._argDims.length === value.length &&
+            this._argDims.every(
+                (v, i) =>
+                    v === value[i] || (v && value[i] && v.w === value[i]!.w && v.h === value[i]!.h),
+            )
+        ) {
+            return;
+        }
         this._argDims = value;
         this._notifyUpdate();
     }
@@ -259,6 +279,15 @@ export class StatementBrickModel extends BrickModelBase {
     }
 
     set argDims(value: (Size | null)[]) {
+        if (
+            this._argDims.length === value.length &&
+            this._argDims.every(
+                (v, i) =>
+                    v === value[i] || (v && value[i] && v.w === value[i]!.w && v.h === value[i]!.h),
+            )
+        ) {
+            return;
+        }
         this._argDims = value;
         this._notifyUpdate();
     }
@@ -273,6 +302,15 @@ export class StatementBrickModel extends BrickModelBase {
     }
 
     set nestingDims(value: Size | null) {
+        if (
+            this._nestingDims === value ||
+            (this._nestingDims &&
+                value &&
+                this._nestingDims.w === value.w &&
+                this._nestingDims.h === value.h)
+        ) {
+            return;
+        }
         this._nestingDims = value;
         this._notifyUpdate();
     }

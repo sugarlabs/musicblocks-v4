@@ -8,6 +8,16 @@ export interface BrickLayoutStore {
     bounds: Record<string, Bounds>;
     /** Per-brick, whether ready for rendering, keyed by brick (node model) id. */
     ready: Record<string, boolean>;
+    /**
+     * Incremented to trigger a full re-layout of all towers.
+     * Added so the layout engine can listen for dynamic block resizing.
+     */
+    layoutVersion: number;
+    /**
+     * Triggers a full re-layout across all active towers.
+     * Call this whenever a block's intrinsic size changes.
+     */
+    markLayoutDirty: () => void;
 }
 
 /**
@@ -17,8 +27,10 @@ export interface BrickLayoutStore {
  * subscribe to a single brick's bounds in isolation, not just whole-store changes.
  */
 export const useBrickLayoutStore = create<BrickLayoutStore>()(
-    subscribeWithSelector(() => ({
+    subscribeWithSelector((set) => ({
         bounds: {},
         ready: {},
+        layoutVersion: 0,
+        markLayoutDirty: () => set((state) => ({ layoutVersion: state.layoutVersion + 1 })),
     })),
 );

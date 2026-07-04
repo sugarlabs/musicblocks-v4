@@ -120,6 +120,8 @@ export function BrickViewInput(props: BrickViewInputPropsWithModel) {
     setPath(generatedPath);
     setDims({ w: width, h: height });
     model.setDims(width, height);
+    // Persist generated bounds to the model so useTowerLayout can use them for top-down positioning
+    model.setBounds(bounds);
 
     setLabelBounds({
       x: svgToPx(bounds.widget.x),

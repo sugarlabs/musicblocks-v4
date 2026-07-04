@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { listNodes, traverseBottomUp } from './tower-traversal';
+import { listNodes, traverseBottomUp, traverseTopDown } from './tower-traversal';
 import {
     valueTree,
     expressionTree,
@@ -194,6 +194,57 @@ describe('tower-traversal', () => {
                 statementTreeWithNesting,
             ]) {
                 for (const batch of traverseBottomUp(tree)) {
+                    expect(batch.length).toBeGreaterThan(0);
+                }
+            }
+        });
+    });
+
+    describe('traverseTopDown', () => {
+        function collectBatchesTD(root: TowerNode): TowerNode[][] {
+            const batches: TowerNode[][] = [];
+            for (const batch of traverseTopDown(root)) {
+                batches.push(batch);
+            }
+            return batches;
+        }
+
+        function collectNodesTD(root: TowerNode): TowerNode[] {
+            return collectBatchesTD(root).flat();
+        }
+
+        it('yields parent statements before nested cavity statements', () => {
+            const nodes = collectNodesTD(statementTreeWithNesting);
+
+            const parentIndex = nodes.findIndex((n) => n.model.id === 'Nesting Statement 1');
+            const nestedIndex = nodes.findIndex(
+                (n) => n.model.id === 'Nesting Statement 1.Nesting Statement 2',
+            );
+
+            expect(parentIndex).toBeLessThan(nestedIndex);
+            expect(parentIndex).not.toBe(-1);
+            expect(nestedIndex).not.toBe(-1);
+        });
+
+        it('yields parent expressions before their argument children', () => {
+            const nodes = collectNodesTD(expressionTree);
+
+            const parentIndex = nodes.findIndex((n) => n.model.id === 'Add 1');
+            const childIndex = nodes.findIndex((n) => n.model.id === 'Add 1.Add 2');
+
+            expect(parentIndex).toBeLessThan(childIndex);
+            expect(parentIndex).not.toBe(-1);
+            expect(childIndex).not.toBe(-1);
+        });
+
+        it('never yields an empty batch', () => {
+            for (const tree of [
+                valueTree,
+                expressionTree,
+                statementTreeNoNesting,
+                statementTreeWithNesting,
+            ]) {
+                for (const batch of traverseTopDown(tree)) {
                     expect(batch.length).toBeGreaterThan(0);
                 }
             }

@@ -110,7 +110,7 @@ export type WidgetInput =
     | { type: 'select'; options: string[]; value: string };
 
 /** A pair of a parameter label and its argument slot. */
-interface ParamArgPair {
+export interface ParamArgPair {
     /** Parameter label; omitted if the slot has no label. */
     param?: string;
     /** Dimensions of the argument slot; null if the slot is empty. */

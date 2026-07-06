@@ -1,6 +1,57 @@
+import { useMemo } from 'react';
+
+import type { BrickViewProps, BrickViewPropsWithModel } from '@/@types/brick.types';
 import type { PaletteBrickConfig } from '@/@types/palette.types';
+import { BrickView } from '@/components/Brick/Brick';
+import {
+  ExpressionBrickModel,
+  StatementBrickModel,
+  ValueBrickModel,
+  type BrickModel,
+} from '@/models/brick';
 
 // -------------------------------------------------------------------------------------------------
+
+function createPreviewModel(props: BrickViewProps, id: string): BrickModel {
+  switch (props.kind) {
+    case 'value':
+      return new ValueBrickModel({
+        id,
+        colorsDefault: props.colorsDefault,
+        tooltipText: props.tooltipText,
+        scaleLevel: props.scaleLevel ?? 2,
+        widget: props.widget,
+      });
+    case 'expression':
+      return new ExpressionBrickModel({
+        id,
+        colorsDefault: props.colorsDefault,
+        tooltipText: props.tooltipText,
+        scaleLevel: props.scaleLevel ?? 2,
+        widget: props.widget,
+        params: props.paramArgs.map((p) => p.param ?? null) as [
+          string | null,
+          ...(string | null)[],
+        ],
+        argDims: props.paramArgs.map((p) => p.argDims),
+      });
+    case 'statement':
+      return new StatementBrickModel({
+        id,
+        colorsDefault: props.colorsDefault,
+        tooltipText: props.tooltipText,
+        scaleLevel: props.scaleLevel ?? 2,
+        widget: props.widget,
+        params: props.paramArgs?.map((p) => p.param ?? null),
+        argDims: props.paramArgs?.map((p) => p.argDims),
+        hasNesting: props.nesting !== undefined,
+        nestingDims: props.nesting?.dims,
+        isNestingFolded: props.nesting?.isFolded,
+        hasConnectionPrev: props.hasConnectionPrev,
+        hasConnectionNext: props.hasConnectionNext,
+      });
+  }
+}
 
 interface BrickSlotProps {
   /**
@@ -12,18 +63,25 @@ interface BrickSlotProps {
 }
 
 /**
- * Placeholder render boundary for a single palette brick. Renders a styled box showing the brick's
- * name with its description as a native hover tooltip. It intentionally renders no SVG and imports
- * no brick view components — live brick previews are the subject of a later PR.
+ * Render boundary for a single palette brick. Renders a live SVG brick preview using the config's
+ * `brick` properties, wrapped in a drag source boundary.
  */
 export function BrickSlot({ brick }: BrickSlotProps) {
+  const model = useMemo(() => createPreviewModel(brick.brick, brick.id), [brick.brick, brick.id]);
+
+  // Use a type assertion because the view expects BrickViewPropsWithModel, but BrickModel
+  // guarantees the model fields match the expected discriminated kind.
+  const viewProps = { kind: model.kind, model } as unknown as BrickViewPropsWithModel;
+
   return (
     <div
       title={brick.description}
       data-brick-id={brick.id}
-      className="border-border bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground flex min-h-11 cursor-grab items-center rounded-md border px-3 py-2 text-sm font-medium shadow-sm transition-colors select-none"
+      className="flex min-h-11 cursor-grab items-center px-1 py-1 transition-colors select-none hover:brightness-110"
     >
-      <span className="truncate">{brick.name}</span>
+      <div className="pointer-events-none">
+        <BrickView {...viewProps} />
+      </div>
     </div>
   );
 }

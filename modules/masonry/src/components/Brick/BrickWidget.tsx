@@ -199,7 +199,7 @@ function ToggleWidget({
 }) {
   return (
     <label
-      className="relative flex h-7 cursor-pointer items-center rounded-full p-0.5"
+      className="relative flex h-7 min-w-12 cursor-pointer items-center rounded-full p-0.5"
       style={{ ...commonStyle, backgroundColor: borderColor }}
     >
       <input type="checkbox" className="peer sr-only" defaultChecked={widget.value as boolean} />

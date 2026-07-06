@@ -149,15 +149,15 @@ export function BrickViewInput(props: BrickViewInputPropsWithModel) {
         y={labelBounds.y}
         // Initially labelBounds is 0. We use undefined so the HTML container is unconstrained
         // on the first pass, allowing inputRef to measure its true, natural width.
-        width={labelBounds.w || undefined}
-        height={labelBounds.h || undefined}
+        width={labelBounds.w || 9999}
+        height={labelBounds.h || 9999}
         style={{ overflow: 'visible' }}
       >
         <div
           className="flex items-center justify-center"
           style={{
-            width: labelBounds.w,
-            height: labelBounds.h,
+            width: labelBounds.w || undefined,
+            height: labelBounds.h || undefined,
           }}
         >
           <div ref={inputRef} className="flex w-max shrink-0 items-center px-2">

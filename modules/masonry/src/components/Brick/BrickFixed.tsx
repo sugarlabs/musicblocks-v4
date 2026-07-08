@@ -180,6 +180,17 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
       });
       return changed ? newParamDimsList : prev;
     });
+
+    // Write the measured param label dims back to model.paramDims (like widgetDims above) so
+    // the model's computed dims and bounds match the rendered outline.
+    if (model.kind === 'expression' || model.kind === 'statement') {
+      paramRefs.current.forEach((el, i) => {
+        if (el) {
+          const { width, height } = el.getBoundingClientRect();
+          model.paramDims[i] = { w: width, h: height };
+        }
+      });
+    }
   }, [widgetContent, paramArgsString, fontSize, lineHeight, model]);
 
   // Layout Effect 2: Converts measured DOM dimensions to SVG units and generates the

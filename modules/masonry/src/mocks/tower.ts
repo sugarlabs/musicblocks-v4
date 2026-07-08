@@ -58,7 +58,11 @@ function makeExpressionArg(
 function makeStatementArg(
     path: string,
     argFactories: ((self: TowerStatementNode, path: string) => TowerNode)[],
-    options: { hasNesting?: boolean } = {},
+    options: {
+        hasNesting?: boolean;
+        hasConnectionPrev?: boolean;
+        hasConnectionNext?: boolean;
+    } = {},
 ): TowerStatementNode {
     const node: TowerStatementNode = {
         kind: 'statement',
@@ -69,6 +73,8 @@ function makeStatementArg(
             widget: { type: 'label', text: lastPathSegment(path) },
             params: argFactories.map((_, index) => String.fromCharCode(65 + index)),
             hasNesting: options.hasNesting ?? false,
+            hasConnectionPrev: options.hasConnectionPrev ?? true,
+            hasConnectionNext: options.hasConnectionNext ?? true,
         }),
         prev: null,
         next: null,
@@ -86,8 +92,6 @@ function linkStatementChain(statements: TowerStatementNode[]): TowerStatementNod
         const next = statements[index + 1] ?? null;
         statement.prev = prev;
         statement.next = next;
-        statement.model.hasConnectionPrev = prev !== null;
-        statement.model.hasConnectionNext = next !== null;
     });
     return statements[0];
 }
@@ -148,7 +152,7 @@ export const expressionTree: TowerExpressionNode = makeExpressionArg(null, 'Add 
 
 function getStatements() {
     // St1 — no args.
-    const statement1 = makeStatementArg('Statement 1', []);
+    const statement1 = makeStatementArg('Statement 1', [], { hasConnectionPrev: false });
 
     // St2 — 1 arg, a 1-level add chain.
     const statement2 = makeStatementArg('Statement 2', [
@@ -193,10 +197,14 @@ function getStatements() {
     ]);
 
     // St5 — 2 value-only args: 113, 114.
-    const statement5 = makeStatementArg('Statement 5', [
-        (self, path) => makeValueArg(self, `${path}.113`),
-        (self, path) => makeValueArg(self, `${path}.114`),
-    ]);
+    const statement5 = makeStatementArg(
+        'Statement 5',
+        [
+            (self, path) => makeValueArg(self, `${path}.113`),
+            (self, path) => makeValueArg(self, `${path}.114`),
+        ],
+        { hasConnectionNext: false },
+    );
 
     return [statement1, statement2, statement3, statement4, statement5];
 }

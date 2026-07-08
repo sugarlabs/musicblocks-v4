@@ -4,7 +4,7 @@ import type {
     WidgetDisplay,
     WidgetInput,
 } from '@/@types/brick.types';
-import type { Size } from '@/@types/common.types';
+import type { Point, Size } from '@/@types/common.types';
 
 import { BrickOutlineGenerator } from '@/utils/brick-shape';
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
@@ -30,6 +30,7 @@ abstract class BrickModelBase {
     private _dims: Size = { w: 0, h: 0 };
     private _path: string = '';
     private _bounds: BrickOutlineOutput['bounds'] = { widget: { x: 0, y: 0, w: 0, h: 0 } };
+    private _position: Point = { x: 0, y: 0 };
 
     get dims(): Size {
         return this._dims;
@@ -41,6 +42,18 @@ abstract class BrickModelBase {
 
     get bounds(): BrickOutlineOutput['bounds'] {
         return this._bounds;
+    }
+
+    get position(): Point {
+        return this._position;
+    }
+
+    /**
+     * Called by the layout engine to persist the brick's position within its tower.
+     * Intentionally does not notify update callbacks — position must not trigger re-renders.
+     */
+    public setPosition(x: number, y: number): void {
+        this._position = { x, y };
     }
 
     private _scaleLevel: 1 | 2 | 3;
@@ -196,6 +209,9 @@ export class ExpressionBrickModel extends BrickModelBase {
     // At least one slot is required; labels are structural and fixed.
     readonly params: readonly [string | null, ...(string | null)[]];
 
+    /** Rendered sizes of the param labels; set by the view after measurement. */
+    paramDims: (Size | null)[];
+
     private _argDims: (Size | null)[];
 
     get argDims(): (Size | null)[] {
@@ -211,8 +227,13 @@ export class ExpressionBrickModel extends BrickModelBase {
         return {
             strokeWidth: this.pxToSvg(STROKE_WIDTH),
             widgetDims: { w: this.pxToSvg(this.widgetDims.w), h: this.pxToSvg(this.widgetDims.h) },
-            paramArgDims: this._argDims.map((dim) => ({
-                param: null,
+            paramArgDims: this._argDims.map((dim, i) => ({
+                param: this.paramDims[i]
+                    ? {
+                          w: this.pxToSvg(this.paramDims[i]!.w),
+                          h: this.pxToSvg(this.paramDims[i]!.h),
+                      }
+                    : null,
                 arg: dim ? { w: this.pxToSvg(dim.w), h: this.pxToSvg(dim.h) } : null,
             })),
             hasOutputNotch: true,
@@ -231,6 +252,7 @@ export class ExpressionBrickModel extends BrickModelBase {
         super(config);
         this.widget = config.widget;
         this.params = config.params;
+        this.paramDims = config.params.map(() => null);
         this._argDims = config.argDims ?? config.params.map(() => null);
     }
 }
@@ -246,6 +268,9 @@ export class StatementBrickModel extends BrickModelBase {
 
     // Param labels are structural and fixed; slot count won't change.
     readonly params: readonly (string | null)[];
+
+    /** Rendered sizes of the param labels; set by the view after measurement. */
+    paramDims: (Size | null)[];
 
     private _argDims: (Size | null)[];
 
@@ -289,8 +314,13 @@ export class StatementBrickModel extends BrickModelBase {
         return {
             strokeWidth: this.pxToSvg(STROKE_WIDTH),
             widgetDims: { w: this.pxToSvg(this.widgetDims.w), h: this.pxToSvg(this.widgetDims.h) },
-            paramArgDims: this._argDims.map((dim) => ({
-                param: null,
+            paramArgDims: this._argDims.map((dim, i) => ({
+                param: this.paramDims[i]
+                    ? {
+                          w: this.pxToSvg(this.paramDims[i]!.w),
+                          h: this.pxToSvg(this.paramDims[i]!.h),
+                      }
+                    : null,
                 arg: dim ? { w: this.pxToSvg(dim.w), h: this.pxToSvg(dim.h) } : null,
             })),
             nestingDims,
@@ -316,6 +346,7 @@ export class StatementBrickModel extends BrickModelBase {
         super(config);
         this.widget = config.widget;
         this.params = config.params ?? [];
+        this.paramDims = this.params.map(() => null);
         this._argDims = config.argDims ?? (config.params ?? []).map(() => null);
         this.hasNesting = config.hasNesting ?? false;
         this._nestingDims = config.nestingDims ?? null;

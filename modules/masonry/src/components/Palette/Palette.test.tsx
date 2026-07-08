@@ -33,15 +33,17 @@ const StubIcon = (props: { className?: string; style?: React.CSSProperties }) =>
   <span data-testid="stub-icon" {...props} />
 );
 
-// The placeholder BrickSlot never reads `brick`, so an empty cast keeps fixtures terse.
-const brick = {} as PaletteBrickConfig['brick'];
-
-/** Builds a single palette brick entry. */
+/** Builds a single palette brick entry with a value-kind brick config that renders the name. */
 const entry = (id: string, name: string, description: string): PaletteBrickConfig => ({
   id,
   name,
   description,
-  brick,
+  brick: {
+    kind: 'value',
+    colorsDefault: { background: '', foreground: '', border: '' },
+    tooltipText: '',
+    widget: { type: 'label', text: name },
+  },
 });
 
 /** Builds a category with an accent color and the given bricks. */

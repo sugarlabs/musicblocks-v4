@@ -4,7 +4,7 @@ import { SimpleBrickView } from '../components/simple';
 import type { TBrickRenderPropsSimple } from '../../../@types/brick';
 
 export default {
-  title: 'Bricks/SimpleBrick',
+  title: 'Old/Bricks/SimpleBrick',
   component: SimpleBrickView,
   decorators: [
     (Story) => (

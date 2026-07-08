@@ -12,7 +12,7 @@ const centerDecorator: Decorator<TBrickRenderPropsCompound> = (Story) => (
 );
 
 const meta: Meta<TBrickRenderPropsCompound> = {
-  title: 'Bricks/CompoundBrick',
+  title: 'Old/Bricks/CompoundBrick',
   component: CompoundBrickView,
   decorators: [centerDecorator],
   argTypes: {

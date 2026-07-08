@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import PaletteWrapper from '../components/paletteWrapper';
 
 const meta: Meta<typeof PaletteWrapper> = {
-  title: 'Palette/Playground',
+  title: 'Old/Palette/Playground',
   component: PaletteWrapper,
   parameters: {
     controls: { hideNoControlsWarning: true },

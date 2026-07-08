@@ -10,7 +10,7 @@ const centerDecorator: Decorator<TBrickRenderPropsExpression> = (Story) => (
 );
 
 const meta: Meta<TBrickRenderPropsExpression> = {
-  title: 'Bricks/ExpressionBrick',
+  title: 'Old/Bricks/ExpressionBrick',
   component: ExpressionBrickView,
   decorators: [centerDecorator],
   argTypes: {

@@ -79,7 +79,7 @@ const InteractiveWorkspace: React.FC<InteractiveWorkspaceProps> = ({
 };
 
 const meta: Meta<typeof InteractiveWorkspace> = {
-  title: 'Workspace/Interactive',
+  title: 'Old/Workspace/Interactive',
   component: InteractiveWorkspace,
   argTypes: {
     numTowers: {

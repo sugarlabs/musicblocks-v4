@@ -9,7 +9,7 @@ import { BrickView } from './Brick';
 // All stories construct a model instance and pass it to BrickView.
 // Models cannot be serialised to Storybook args, so every story uses `render`.
 const meta: Meta = {
-  title: 'Brick/Brick View',
+  title: 'Brick/Brick',
   component: BrickView,
   parameters: {
     layout: 'centered',

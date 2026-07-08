@@ -10,7 +10,7 @@ import {
 import { TowerView } from './Tower';
 
 const meta: Meta = {
-  title: 'Tower/Tower View',
+  title: 'Tower/Tower',
   component: TowerView,
   parameters: {
     layout: 'fullscreen',

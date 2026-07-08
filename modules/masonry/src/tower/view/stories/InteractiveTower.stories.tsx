@@ -92,7 +92,7 @@ const FullControlTower: React.FC<FullControlProps> = ({
 };
 
 const meta: Meta<typeof FullControlTower> = {
-  title: 'Tower/Interactive Full Control',
+  title: 'Old/Tower/Interactive Full Control',
   component: FullControlTower,
   argTypes: {
     rootType: {

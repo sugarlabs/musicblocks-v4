@@ -10,7 +10,7 @@ import {
 } from '../../../brick/utils/brickFactory';
 
 const meta: Meta<typeof TowerView> = {
-  title: 'Tower/Different-layouts',
+  title: 'Old/Tower/Different-layouts',
   component: TowerView,
 };
 export default meta;

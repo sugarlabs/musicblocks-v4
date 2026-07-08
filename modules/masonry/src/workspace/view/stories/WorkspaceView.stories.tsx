@@ -11,7 +11,7 @@ import {
 } from '../../../brick/utils/brickFactory';
 
 const meta: Meta<typeof WorkspaceView> = {
-  title: 'Workspace/Fixed',
+  title: 'Old/Workspace/Fixed',
   component: WorkspaceView,
 };
 export default meta;

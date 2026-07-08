@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { TowerExpressionNode, TowerStatementNode, TowerValueNode } from '@/@types/tower.types';
 import { ExpressionBrickModel, StatementBrickModel, ValueBrickModel } from '@/models/brick';
-import { traverseBottomUp } from './tower-traversal';
+import { traverseBottomUp, traverseTopDown } from './tower-traversal';
 
 const colorsDefault = { background: '#3498db', foreground: '#ffffff', border: '#2980b9' };
 
@@ -176,5 +176,170 @@ describe('traverseBottomUp', () => {
         expect(batch5).toContain(stmt1);
 
         expect(gen.next().done).toBe(true);
+    });
+});
+
+describe('traverseTopDown', () => {
+    /** Simulates the measurement pass: sets a widget size and computes dims like the layout hook. */
+    function makeMeasuredStatement(
+        id: string,
+        widgetH: number,
+        hasNesting = false,
+    ): TowerStatementNode {
+        const node = makeStatement(id, 0, hasNesting);
+        node.model.widgetDims = { w: 60, h: widgetH };
+        node.model.computeDims();
+        return node;
+    }
+
+    /** Links statements via `prev`/`next` and returns the head. */
+    function link(statements: TowerStatementNode[]): TowerStatementNode {
+        statements.forEach((statement, index) => {
+            statement.prev = statements[index - 1] ?? null;
+            statement.next = statements[index + 1] ?? null;
+        });
+        return statements[0];
+    }
+
+    /** Fills the parent's cavity with a chain and computes its outline so `bounds.nesting` exists. */
+    function nest(parent: TowerStatementNode, chain: TowerStatementNode[]): void {
+        parent.nestedNext = link(chain);
+        let totalH = 0;
+        let maxW = 0;
+        chain.forEach((statement) => {
+            totalH += statement.model.dims.h;
+            maxW = Math.max(maxW, statement.model.dims.w);
+        });
+        parent.model.nestingDims = { w: maxW, h: totalH };
+        parent.model.computeOutline();
+    }
+
+    it('returns an empty list for non-statement roots', () => {
+        expect(traverseTopDown(makeValue('v1'))).toEqual([]);
+        expect(traverseTopDown(makeExpression('add', 2))).toEqual([]);
+    });
+
+    it('positions the root statement at the origin', () => {
+        const st1 = makeMeasuredStatement('st1', 20);
+
+        const positioned = traverseTopDown(st1);
+
+        expect(positioned).toEqual([st1]);
+        expect(st1.model.position).toEqual({ x: 0, y: 0 });
+    });
+
+    it('stacks a next chain vertically, each statement flush below its predecessor', () => {
+        const st1 = makeMeasuredStatement('st1', 20);
+        const st2 = makeMeasuredStatement('st2', 40);
+        const st3 = makeMeasuredStatement('st3', 60);
+
+        traverseTopDown(link([st1, st2, st3]));
+
+        expect(st1.model.position).toEqual({ x: 0, y: 0 });
+        expect(st2.model.position).toEqual({ x: 0, y: st1.model.dims.h });
+        expect(st3.model.position).toEqual({ x: 0, y: st1.model.dims.h + st2.model.dims.h });
+    });
+
+    it('offsets a nested chain by the parent nesting cavity bounds', () => {
+        const st1 = makeMeasuredStatement('st1', 20);
+        const ns1 = makeMeasuredStatement('ns1', 20, true);
+        const st4 = makeMeasuredStatement('st4', 20);
+        const inner1 = makeMeasuredStatement('ns1.inner1', 20);
+        const inner2 = makeMeasuredStatement('ns1.inner2', 40);
+        nest(ns1, [inner1, inner2]);
+
+        traverseTopDown(link([st1, ns1, st4]));
+
+        const cavity = ns1.model.bounds.nesting;
+        expect(cavity).toBeDefined();
+
+        // Cavity chain: offset from ns1's position, then stacking as usual.
+        expect(ns1.model.position).toEqual({ x: 0, y: st1.model.dims.h });
+        expect(inner1.model.position).toEqual({
+            x: cavity!.x,
+            y: st1.model.dims.h + cavity!.y,
+        });
+        expect(inner2.model.position).toEqual({
+            x: cavity!.x,
+            y: st1.model.dims.h + cavity!.y + inner1.model.dims.h,
+        });
+        // The statement after ns1 sits below ns1's full height (cavity included in dims).
+        expect(st4.model.position).toEqual({
+            x: 0,
+            y: st1.model.dims.h + ns1.model.dims.h,
+        });
+    });
+
+    it('accumulates offsets across multiple nesting levels', () => {
+        const inner = makeMeasuredStatement('ns1.ns2.inner', 20);
+        const ns2 = makeMeasuredStatement('ns1.ns2', 20, true);
+        nest(ns2, [inner]);
+        const ns1 = makeMeasuredStatement('ns1', 20, true);
+        nest(ns1, [ns2]);
+
+        traverseTopDown(ns1);
+
+        const outerCavity = ns1.model.bounds.nesting!;
+        const innerCavity = ns2.model.bounds.nesting!;
+
+        expect(ns1.model.position).toEqual({ x: 0, y: 0 });
+        expect(ns2.model.position).toEqual({ x: outerCavity.x, y: outerCavity.y });
+        expect(inner.model.position).toEqual({
+            x: outerCavity.x + innerCavity.x,
+            y: outerCavity.y + innerCavity.y,
+        });
+    });
+
+    it('falls back to a zero cavity offset when nesting bounds are absent', () => {
+        const ns1 = makeMeasuredStatement('ns1', 20, true);
+        const inner = makeMeasuredStatement('ns1.inner', 20);
+        // Nested chain present, but the outline (and its nesting bounds) was never computed.
+        ns1.nestedNext = inner;
+        inner.prev = ns1;
+
+        traverseTopDown(ns1);
+
+        expect(inner.model.position).toEqual({ x: 0, y: 0 });
+    });
+
+    it('visits every statement exactly once, parent before next and nested children', () => {
+        const st1 = makeMeasuredStatement('st1', 20);
+        const ns1 = makeMeasuredStatement('ns1', 20, true);
+        const st2 = makeMeasuredStatement('st2', 20);
+        const inner1 = makeMeasuredStatement('ns1.inner1', 20);
+        const inner2 = makeMeasuredStatement('ns1.inner2', 20, true);
+        const deep = makeMeasuredStatement('ns1.inner2.deep', 20);
+        nest(inner2, [deep]);
+        nest(ns1, [inner1, inner2]);
+        const root = link([st1, ns1, st2]);
+
+        const positioned = traverseTopDown(root);
+
+        expect(positioned).toHaveLength(6);
+        expect(new Set(positioned).size).toBe(6);
+        for (const node of positioned) {
+            const index = positioned.indexOf(node);
+            if (node.next?.kind === 'statement') {
+                expect(positioned.indexOf(node.next)).toBeGreaterThan(index);
+            }
+            if (node.nestedNext?.kind === 'statement') {
+                expect(positioned.indexOf(node.nestedNext)).toBeGreaterThan(index);
+            }
+        }
+    });
+
+    it('recomputes positions when dims change and it runs again', () => {
+        const st1 = makeMeasuredStatement('st1', 20);
+        const st2 = makeMeasuredStatement('st2', 20);
+        const root = link([st1, st2]);
+
+        traverseTopDown(root);
+        expect(st2.model.position).toEqual({ x: 0, y: st1.model.dims.h });
+
+        st1.model.widgetDims = { w: 60, h: 80 };
+        st1.model.computeDims();
+        traverseTopDown(root);
+        expect(st2.model.position).toEqual({ x: 0, y: st1.model.dims.h });
+        expect(st2.model.position.y).toBeGreaterThan(20);
     });
 });

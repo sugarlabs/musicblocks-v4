@@ -4,7 +4,7 @@ import type {
     WidgetDisplay,
     WidgetInput,
 } from '@/@types/brick.types';
-import type { Size } from '@/@types/common.types';
+import type { Point, Size } from '@/@types/common.types';
 
 import { BrickOutlineGenerator } from '@/utils/brick-shape';
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
@@ -30,6 +30,7 @@ abstract class BrickModelBase {
     private _dims: Size = { w: 0, h: 0 };
     private _path: string = '';
     private _bounds: BrickOutlineOutput['bounds'] = { widget: { x: 0, y: 0, w: 0, h: 0 } };
+    private _position: Point = { x: 0, y: 0 };
 
     get dims(): Size {
         return this._dims;
@@ -41,6 +42,18 @@ abstract class BrickModelBase {
 
     get bounds(): BrickOutlineOutput['bounds'] {
         return this._bounds;
+    }
+
+    get position(): Point {
+        return this._position;
+    }
+
+    /**
+     * Called by the layout engine to persist the brick's position within its tower.
+     * Intentionally does not notify update callbacks — position must not trigger re-renders.
+     */
+    public setPosition(x: number, y: number): void {
+        this._position = { x, y };
     }
 
     private _scaleLevel: 1 | 2 | 3;

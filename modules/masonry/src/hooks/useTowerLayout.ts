@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 
 import { TowerNode } from '@/@types/tower.types';
 import { useBrickLayoutStore } from '@/stores';
-import { listNodes, traverseBottomUp } from '@/utils/tower-traversal';
+import { listNodes, traverseBottomUp, traverseTopDown } from '@/utils/tower-traversal';
 
 /**
  * Resolves the layout of a tower rooted at `root`.
@@ -103,6 +103,45 @@ export function useTowerLayout(root: TowerNode) {
                                         ...existing,
                                         w: node.model.dims.w,
                                         h: node.model.dims.h,
+                                    },
+                                ];
+                            }),
+                        ),
+                    },
+                }));
+            }
+
+            // All dims are measured by now, so compute every statement's position in one
+            // synchronous top-down pass and propagate to the store in a single update.
+
+            // computeDims() only computes outer dims; nesting statements also need their
+            // outline bounds for the cavity offset.
+            nodes.forEach((node) => {
+                if (node.kind === 'statement' && node.nestedNext) {
+                    node.model.computeOutline();
+                }
+            });
+
+            const positioned = traverseTopDown(root);
+
+            if (positioned.length > 0) {
+                useBrickLayoutStore.setState((state) => ({
+                    bounds: {
+                        ...state.bounds,
+                        ...Object.fromEntries(
+                            positioned.map((node) => {
+                                const existing = state.bounds[node.model.id] ?? {
+                                    x: 0,
+                                    y: 0,
+                                    w: 0,
+                                    h: 0,
+                                };
+                                return [
+                                    node.model.id,
+                                    {
+                                        ...existing,
+                                        x: node.model.position.x,
+                                        y: node.model.position.y,
                                     },
                                 ];
                             }),

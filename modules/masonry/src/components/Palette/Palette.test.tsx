@@ -8,6 +8,7 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { BrickViewProps } from '@/@types/brick.types';
 import type {
   PaletteBrickConfig,
   PaletteCategoryConfig,
@@ -33,15 +34,22 @@ const StubIcon = (props: { className?: string; style?: React.CSSProperties }) =>
   <span data-testid="stub-icon" {...props} />
 );
 
-// The placeholder BrickSlot never reads `brick`, so an empty cast keeps fixtures terse.
-const brick = {} as PaletteBrickConfig['brick'];
+// BrickSlot renders a live brick preview from `brick`, so each fixture needs a valid
+// BrickViewProps config. The label text mirrors the entry name so name-based queries
+// (getByText) resolve to the rendered SVG label.
+const brickProps = (name: string): BrickViewProps => ({
+  kind: 'statement',
+  widget: { type: 'label', text: name },
+  colorsDefault: { background: '#e07a5f', foreground: '#ffffff', border: '#00000033' },
+  tooltipText: name,
+});
 
 /** Builds a single palette brick entry. */
 const entry = (id: string, name: string, description: string): PaletteBrickConfig => ({
   id,
   name,
   description,
-  brick,
+  brick: brickProps(name),
 });
 
 /** Builds a category with an accent color and the given bricks. */

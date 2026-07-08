@@ -158,22 +158,19 @@ export function* traverseBottomUp(root: TowerNode): Generator<TowerNode[]> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Traverses the Statement sub-trees of a Brick Tower tree top down, computing each statement's
- * position and writing it into its brick model: the root sits at (0, 0), a `next` statement sits
- * flush below its predecessor, and a `nestedNext` sits at its parent's position offset by the
- * nesting cavity bounds. Argument sub-trees are not visited (separate top-down pass).
+ * Traverses the Statement and Argument sub-trees of a Brick Tower tree top down, computing each
+ * brick's position and writing it into its brick model: the root sits at (0, 0), a `next`
+ * statement sits flush below its predecessor, a `nestedNext` sits at its parent's position offset
+ * by the nesting cavity bounds, and an argument sits at its parent's position offset by its
+ * argument slot bounds.
  *
  * @param root - The root node of the tower tree.
- * @returns The positioned statement nodes, each parent preceding its `next` and `nestedNext`.
+ * @returns The positioned nodes, each parent preceding its children.
  */
-export function traverseTopDown(root: TowerNode): TowerStatementNode[] {
-    const positioned: TowerStatementNode[] = [];
+export function traverseTopDown(root: TowerNode): TowerNode[] {
+    const positioned: TowerNode[] = [];
 
-    if (root.kind !== 'statement') return positioned;
-
-    const stack: { node: TowerStatementNode; x: number; y: number }[] = [
-        { node: root, x: 0, y: 0 },
-    ];
+    const stack: { node: TowerNode; x: number; y: number }[] = [{ node: root, x: 0, y: 0 }];
 
     while (stack.length > 0) {
         const { node, x, y } = stack.pop()!;
@@ -182,16 +179,25 @@ export function traverseTopDown(root: TowerNode): TowerStatementNode[] {
         positioned.push(node);
 
         // Children's coordinates derive only from the parent's, so they are final at push time.
-        if (node.next?.kind === 'statement') {
-            stack.push({ node: node.next, x, y: y + node.model.dims.h });
-        }
-        if (node.nestedNext?.kind === 'statement') {
-            const nesting = node.model.bounds.nesting;
-            stack.push({
-                node: node.nestedNext,
-                x: x + (nesting?.x ?? 0),
-                y: y + (nesting?.y ?? 0),
+        if (node.kind === 'expression' || node.kind === 'statement') {
+            node.args.forEach((arg, index) => {
+                if (!arg) return;
+                const slot = node.model.bounds.args?.[index];
+                stack.push({ node: arg, x: x + (slot?.x ?? 0), y: y + (slot?.y ?? 0) });
             });
+        }
+        if (node.kind === 'statement') {
+            if (node.next?.kind === 'statement') {
+                stack.push({ node: node.next, x, y: y + node.model.dims.h });
+            }
+            if (node.nestedNext?.kind === 'statement') {
+                const nesting = node.model.bounds.nesting;
+                stack.push({
+                    node: node.nestedNext,
+                    x: x + (nesting?.x ?? 0),
+                    y: y + (nesting?.y ?? 0),
+                });
+            }
         }
     }
 

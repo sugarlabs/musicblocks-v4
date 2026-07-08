@@ -111,13 +111,17 @@ export function useTowerLayout(root: TowerNode) {
                 }));
             }
 
-            // All dims are measured by now, so compute every statement's position in one
+            // All dims are measured by now, so compute every brick's position in one
             // synchronous top-down pass and propagate to the store in a single update.
 
-            // computeDims() only computes outer dims; nesting statements also need their
-            // outline bounds for the cavity offset.
+            // computeDims() only computes outer dims; bricks with a nesting cavity or argument
+            // slots also need their outline bounds for the child offsets.
             nodes.forEach((node) => {
-                if (node.kind === 'statement' && node.nestedNext) {
+                if (node.kind === 'value') return;
+                if (
+                    node.args.some((arg) => arg !== null) ||
+                    (node.kind === 'statement' && node.nestedNext)
+                ) {
                     node.model.computeOutline();
                 }
             });

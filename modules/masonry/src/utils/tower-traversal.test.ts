@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import type { TowerExpressionNode, TowerStatementNode, TowerValueNode } from '@/@types/tower.types';
+import type {
+    TowerExpressionNode,
+    TowerNode,
+    TowerStatementNode,
+    TowerValueNode,
+} from '@/@types/tower.types';
 import { ExpressionBrickModel, StatementBrickModel, ValueBrickModel } from '@/models/brick';
 import { traverseBottomUp, traverseTopDown } from './tower-traversal';
 
@@ -214,9 +219,33 @@ describe('traverseTopDown', () => {
         parent.model.computeOutline();
     }
 
-    it('returns an empty list for non-statement roots', () => {
-        expect(traverseTopDown(makeValue('v1'))).toEqual([]);
-        expect(traverseTopDown(makeExpression('add', 2))).toEqual([]);
+    /** Simulates the measurement pass for a value node. */
+    function makeMeasuredValue(id: string, widgetH = 20): TowerValueNode {
+        const node = makeValue(id);
+        node.model.widgetDims = { w: 40, h: widgetH };
+        node.model.computeDims();
+        return node;
+    }
+
+    /** Attaches measured args to a parent and computes its outline so `bounds.args` exists. */
+    function attachArgs(
+        parent: TowerExpressionNode | TowerStatementNode,
+        args: (TowerNode | null)[],
+    ): void {
+        parent.args = args;
+        parent.model.argDims = args.map((arg) =>
+            arg ? { w: arg.model.dims.w, h: arg.model.dims.h } : null,
+        );
+        parent.model.computeOutline();
+    }
+
+    it('positions a lone non-statement root at the origin', () => {
+        const v1 = makeMeasuredValue('v1');
+
+        const positioned = traverseTopDown(v1);
+
+        expect(positioned).toEqual([v1]);
+        expect(v1.model.position).toEqual({ x: 0, y: 0 });
     });
 
     it('positions the root statement at the origin', () => {
@@ -302,6 +331,72 @@ describe('traverseTopDown', () => {
         expect(inner.model.position).toEqual({ x: 0, y: 0 });
     });
 
+    it('offsets expression arguments by their argument slot bounds', () => {
+        const v1 = makeMeasuredValue('v1');
+        const v2 = makeMeasuredValue('v2', 40);
+        const add = makeExpression('add', 2);
+        add.model.widgetDims = { w: 60, h: 20 };
+        attachArgs(add, [v1, v2]);
+
+        const positioned = traverseTopDown(add);
+
+        const slots = add.model.bounds.args;
+        expect(slots).toBeDefined();
+        expect(positioned).toHaveLength(3);
+        expect(add.model.position).toEqual({ x: 0, y: 0 });
+        expect(v1.model.position).toEqual({ x: slots![0]!.x, y: slots![0]!.y });
+        expect(v2.model.position).toEqual({ x: slots![1]!.x, y: slots![1]!.y });
+    });
+
+    it('accumulates argument offsets through nested expressions', () => {
+        const v1 = makeMeasuredValue('v1');
+        const sub = makeExpression('sub', 1);
+        sub.model.widgetDims = { w: 60, h: 20 };
+        attachArgs(sub, [v1]);
+        const add = makeExpression('add', 1);
+        add.model.widgetDims = { w: 60, h: 20 };
+        attachArgs(add, [sub]);
+
+        traverseTopDown(add);
+
+        const outerSlot = add.model.bounds.args![0]!;
+        const innerSlot = sub.model.bounds.args![0]!;
+        expect(sub.model.position).toEqual({ x: outerSlot.x, y: outerSlot.y });
+        expect(v1.model.position).toEqual({
+            x: outerSlot.x + innerSlot.x,
+            y: outerSlot.y + innerSlot.y,
+        });
+    });
+
+    it('offsets statement arguments by slot bounds relative to the statement position', () => {
+        const st1 = makeMeasuredStatement('st1', 20);
+        const st2 = makeStatement('st2', 1, false);
+        st2.model.widgetDims = { w: 60, h: 20 };
+        const v1 = makeMeasuredValue('v1');
+        attachArgs(st2, [v1]);
+        link([st1, st2]);
+
+        traverseTopDown(st1);
+
+        const slot = st2.model.bounds.args![0]!;
+        expect(v1.model.position).toEqual({
+            x: slot.x,
+            y: st1.model.dims.h + slot.y,
+        });
+    });
+
+    it('skips empty argument slots and falls back to a zero offset when slot bounds are absent', () => {
+        const v1 = makeMeasuredValue('v1');
+        const add = makeExpression('add', 2);
+        // Argument attached, but the outline (and its arg slot bounds) was never computed.
+        add.args = [null, v1];
+
+        const positioned = traverseTopDown(add);
+
+        expect(positioned).toHaveLength(2);
+        expect(v1.model.position).toEqual({ x: 0, y: 0 });
+    });
+
     it('visits every statement exactly once, parent before next and nested children', () => {
         const st1 = makeMeasuredStatement('st1', 20);
         const ns1 = makeMeasuredStatement('ns1', 20, true);
@@ -318,6 +413,7 @@ describe('traverseTopDown', () => {
         expect(positioned).toHaveLength(6);
         expect(new Set(positioned).size).toBe(6);
         for (const node of positioned) {
+            if (node.kind !== 'statement') continue;
             const index = positioned.indexOf(node);
             if (node.next?.kind === 'statement') {
                 expect(positioned.indexOf(node.next)).toBeGreaterThan(index);

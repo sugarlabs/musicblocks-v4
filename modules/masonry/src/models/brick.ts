@@ -209,6 +209,9 @@ export class ExpressionBrickModel extends BrickModelBase {
     // At least one slot is required; labels are structural and fixed.
     readonly params: readonly [string | null, ...(string | null)[]];
 
+    /** Rendered sizes of the param labels; set by the view after measurement. */
+    paramDims: (Size | null)[];
+
     private _argDims: (Size | null)[];
 
     get argDims(): (Size | null)[] {
@@ -224,8 +227,13 @@ export class ExpressionBrickModel extends BrickModelBase {
         return {
             strokeWidth: this.pxToSvg(STROKE_WIDTH),
             widgetDims: { w: this.pxToSvg(this.widgetDims.w), h: this.pxToSvg(this.widgetDims.h) },
-            paramArgDims: this._argDims.map((dim) => ({
-                param: null,
+            paramArgDims: this._argDims.map((dim, i) => ({
+                param: this.paramDims[i]
+                    ? {
+                          w: this.pxToSvg(this.paramDims[i]!.w),
+                          h: this.pxToSvg(this.paramDims[i]!.h),
+                      }
+                    : null,
                 arg: dim ? { w: this.pxToSvg(dim.w), h: this.pxToSvg(dim.h) } : null,
             })),
             hasOutputNotch: true,
@@ -244,6 +252,7 @@ export class ExpressionBrickModel extends BrickModelBase {
         super(config);
         this.widget = config.widget;
         this.params = config.params;
+        this.paramDims = config.params.map(() => null);
         this._argDims = config.argDims ?? config.params.map(() => null);
     }
 }
@@ -259,6 +268,9 @@ export class StatementBrickModel extends BrickModelBase {
 
     // Param labels are structural and fixed; slot count won't change.
     readonly params: readonly (string | null)[];
+
+    /** Rendered sizes of the param labels; set by the view after measurement. */
+    paramDims: (Size | null)[];
 
     private _argDims: (Size | null)[];
 
@@ -302,8 +314,13 @@ export class StatementBrickModel extends BrickModelBase {
         return {
             strokeWidth: this.pxToSvg(STROKE_WIDTH),
             widgetDims: { w: this.pxToSvg(this.widgetDims.w), h: this.pxToSvg(this.widgetDims.h) },
-            paramArgDims: this._argDims.map((dim) => ({
-                param: null,
+            paramArgDims: this._argDims.map((dim, i) => ({
+                param: this.paramDims[i]
+                    ? {
+                          w: this.pxToSvg(this.paramDims[i]!.w),
+                          h: this.pxToSvg(this.paramDims[i]!.h),
+                      }
+                    : null,
                 arg: dim ? { w: this.pxToSvg(dim.w), h: this.pxToSvg(dim.h) } : null,
             })),
             nestingDims,
@@ -329,6 +346,7 @@ export class StatementBrickModel extends BrickModelBase {
         super(config);
         this.widget = config.widget;
         this.params = config.params ?? [];
+        this.paramDims = this.params.map(() => null);
         this._argDims = config.argDims ?? (config.params ?? []).map(() => null);
         this.hasNesting = config.hasNesting ?? false;
         this._nestingDims = config.nestingDims ?? null;

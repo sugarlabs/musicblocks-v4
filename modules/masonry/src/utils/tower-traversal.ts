@@ -154,3 +154,46 @@ export function* traverseBottomUp(root: TowerNode): Generator<TowerNode[]> {
         }
     }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Traverses the Statement sub-trees of a Brick Tower tree top down, computing each statement's
+ * position and writing it into its brick model: the root sits at (0, 0), a `next` statement sits
+ * flush below its predecessor, and a `nestedNext` sits at its parent's position offset by the
+ * nesting cavity bounds. Argument sub-trees are not visited (separate top-down pass).
+ *
+ * @param root - The root node of the tower tree.
+ * @returns The positioned statement nodes, each parent preceding its `next` and `nestedNext`.
+ */
+export function traverseTopDown(root: TowerNode): TowerStatementNode[] {
+    const positioned: TowerStatementNode[] = [];
+
+    if (root.kind !== 'statement') return positioned;
+
+    const stack: { node: TowerStatementNode; x: number; y: number }[] = [
+        { node: root, x: 0, y: 0 },
+    ];
+
+    while (stack.length > 0) {
+        const { node, x, y } = stack.pop()!;
+
+        node.model.setPosition(x, y);
+        positioned.push(node);
+
+        // Children's coordinates derive only from the parent's, so they are final at push time.
+        if (node.next?.kind === 'statement') {
+            stack.push({ node: node.next, x, y: y + node.model.dims.h });
+        }
+        if (node.nestedNext?.kind === 'statement') {
+            const nesting = node.model.bounds.nesting;
+            stack.push({
+                node: node.nestedNext,
+                x: x + (nesting?.x ?? 0),
+                y: y + (nesting?.y ?? 0),
+            });
+        }
+    }
+
+    return positioned;
+}

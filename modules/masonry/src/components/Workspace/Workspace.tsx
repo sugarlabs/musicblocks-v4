@@ -6,6 +6,7 @@ import { useWorkspaceStore } from '@/stores';
 
 export function Workspace({ config }: WorkspaceViewProps) {
   const { palette } = config;
+
   const towersRecord = useWorkspaceStore((state) => state.towers);
   const towers = Object.values(towersRecord);
 
@@ -17,7 +18,13 @@ export function Workspace({ config }: WorkspaceViewProps) {
 
       <div className="bg-background relative h-full w-full shrink overflow-hidden">
         {towers.map((tower) => (
-          <TowerView key={tower.id} root={tower.root} coords={tower.position} asChild />
+          <TowerView
+            key={tower.id}
+            id={tower.id}
+            root={tower.root}
+            coords={tower.position}
+            asChild
+          />
         ))}
       </div>
     </div>

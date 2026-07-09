@@ -1,3 +1,4 @@
+import type { Point } from '@/@types/common.types';
 import { TowerNode, TowerStatementNode } from '@/@types/tower.types';
 
 /**
@@ -168,10 +169,7 @@ export function* traverseBottomUp(root: TowerNode): Generator<TowerNode[]> {
  * @param origin - The tower's origin co-ordinates; every brick is positioned relative to it.
  * @returns The positioned nodes, each parent preceding its children.
  */
-export function traverseTopDown(
-    root: TowerNode,
-    origin: { x: number; y: number } = { x: 0, y: 0 },
-): TowerNode[] {
+export function traverseTopDown(root: TowerNode, origin: Point = { x: 0, y: 0 }): TowerNode[] {
     const positioned: TowerNode[] = [];
 
     const stack: { node: TowerNode; x: number; y: number }[] = [

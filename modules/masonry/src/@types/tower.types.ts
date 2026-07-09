@@ -13,6 +13,8 @@
 
 import type { ValueBrickModel, ExpressionBrickModel, StatementBrickModel } from '../models/brick';
 
+import type { Point } from './common.types';
+
 /**
  * Pointer config for a **value** brick node.
  *
@@ -105,7 +107,7 @@ export interface TowerViewProps {
     /** The root node of the tower tree. */
     root: TowerNode;
     /** The origin of the tower; bricks are positioned relative to it. Defaults to (0, 0). */
-    coords?: { x: number; y: number };
+    coords?: Point;
     /** If true, renders bricks directly without a wrapping container; defaults to false. */
     asChild?: boolean;
 }

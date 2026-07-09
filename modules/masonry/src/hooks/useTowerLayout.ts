@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 
+import type { Point } from '@/@types/common.types';
 import { TowerNode } from '@/@types/tower.types';
 import { useBrickLayoutStore } from '@/stores';
 import { listNodes, traverseBottomUp, traverseTopDown } from '@/utils/tower-traversal';
@@ -14,7 +15,7 @@ import { listNodes, traverseBottomUp, traverseTopDown } from '@/utils/tower-trav
  *
  * Returns the tower's node list.
  */
-export function useTowerLayout(root: TowerNode, coords: { x: number; y: number } = { x: 0, y: 0 }) {
+export function useTowerLayout(root: TowerNode, coords: Point) {
     const isInitialized = useRef(false);
 
     const nodes = listNodes(root);

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-import type { Bounds } from '@/@types/common.types';
+import type { Bounds, Point } from '@/@types/common.types';
 import type { TowerState } from '@/@types/workspace.types';
 
 export interface BrickLayoutStore {
@@ -32,7 +32,7 @@ export interface WorkspaceStore {
     /** Removes a tower from the workspace by its ID */
     removeTower: (id: string) => void;
     /** Updates the position of an existing tower */
-    updateTowerPosition: (id: string, position: { x: number; y: number }) => void;
+    updateTowerPosition: (id: string, position: Point) => void;
 }
 
 /**

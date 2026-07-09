@@ -1,3 +1,4 @@
+import type { Point } from './common.types';
 import type { PaletteConfig } from './palette.types';
 import type { TowerNode } from './tower.types';
 
@@ -31,5 +32,5 @@ export interface TowerState {
     /** The root node of the tower tree */
     root: TowerNode;
     /** The absolute position of the tower in the workspace */
-    position: { x: number; y: number };
+    position: Point;
 }

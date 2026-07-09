@@ -104,6 +104,8 @@ export type TowerNode = TowerValueNode | TowerExpressionNode | TowerStatementNod
 export interface TowerViewProps {
     /** The root node of the tower tree. */
     root: TowerNode;
+    /** The origin of the tower; bricks are positioned relative to it. Defaults to (0, 0). */
+    coords?: { x: number; y: number };
     /** If true, renders bricks directly without a wrapping container; defaults to false. */
     asChild?: boolean;
 }

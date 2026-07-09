@@ -10,9 +10,11 @@ import { listNodes, traverseBottomUp, traverseTopDown } from '@/utils/tower-trav
  * Lists every node in the tree and ensures each has an entry in the brick layout store,
  * initializing it once per node so consumers can read and update its sizing and position state.
  *
+ * Bricks are positioned relative to `coords`, the tower's origin.
+ *
  * Returns the tower's node list.
  */
-export function useTowerLayout(root: TowerNode) {
+export function useTowerLayout(root: TowerNode, coords: { x: number; y: number } = { x: 0, y: 0 }) {
     const isInitialized = useRef(false);
 
     const nodes = listNodes(root);
@@ -126,7 +128,7 @@ export function useTowerLayout(root: TowerNode) {
                 }
             });
 
-            const positioned = traverseTopDown(root);
+            const positioned = traverseTopDown(root, { x: coords.x, y: coords.y });
 
             if (positioned.length > 0) {
                 useBrickLayoutStore.setState((state) => ({
@@ -161,7 +163,9 @@ export function useTowerLayout(root: TowerNode) {
         return () => {
             isCancelled = true;
         };
-    }, [root]);
+        // Depend on the primitive co-ordinates, not the coords object — callers may pass a fresh
+        // object literal each render, which would re-trigger the layout on every render.
+    }, [root, coords.x, coords.y]);
 
     return nodes;
 }

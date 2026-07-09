@@ -159,18 +159,24 @@ export function* traverseBottomUp(root: TowerNode): Generator<TowerNode[]> {
 
 /**
  * Traverses the Statement and Argument sub-trees of a Brick Tower tree top down, computing each
- * brick's position and writing it into its brick model: the root sits at (0, 0), a `next`
+ * brick's position and writing it into its brick model: the root sits at `origin`, a `next`
  * statement sits flush below its predecessor, a `nestedNext` sits at its parent's position offset
  * by the nesting cavity bounds, and an argument sits at its parent's position offset by its
  * argument slot bounds.
  *
  * @param root - The root node of the tower tree.
+ * @param origin - The tower's origin co-ordinates; every brick is positioned relative to it.
  * @returns The positioned nodes, each parent preceding its children.
  */
-export function traverseTopDown(root: TowerNode): TowerNode[] {
+export function traverseTopDown(
+    root: TowerNode,
+    origin: { x: number; y: number } = { x: 0, y: 0 },
+): TowerNode[] {
     const positioned: TowerNode[] = [];
 
-    const stack: { node: TowerNode; x: number; y: number }[] = [{ node: root, x: 0, y: 0 }];
+    const stack: { node: TowerNode; x: number; y: number }[] = [
+        { node: root, x: origin.x, y: origin.y },
+    ];
 
     while (stack.length > 0) {
         const { node, x, y } = stack.pop()!;

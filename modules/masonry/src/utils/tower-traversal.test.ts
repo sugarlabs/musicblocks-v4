@@ -257,6 +257,33 @@ describe('traverseTopDown', () => {
         expect(st1.model.position).toEqual({ x: 0, y: 0 });
     });
 
+    it('positions the root at the passed origin', () => {
+        const st1 = makeMeasuredStatement('st1', 20);
+
+        traverseTopDown(st1, { x: 300, y: 150 });
+
+        expect(st1.model.position).toEqual({ x: 300, y: 150 });
+    });
+
+    it('positions every brick relative to the passed origin', () => {
+        const st1 = makeMeasuredStatement('st1', 20);
+        const st2 = makeStatement('st2', 1, false);
+        st2.model.widgetDims = { w: 60, h: 20 };
+        const v1 = makeMeasuredValue('v1');
+        attachArgs(st2, [v1]);
+        link([st1, st2]);
+
+        traverseTopDown(st1, { x: 300, y: 150 });
+
+        const slot = st2.model.bounds.args![0]!;
+        expect(st1.model.position).toEqual({ x: 300, y: 150 });
+        expect(st2.model.position).toEqual({ x: 300, y: 150 + st1.model.dims.h });
+        expect(v1.model.position).toEqual({
+            x: 300 + slot.x,
+            y: 150 + st1.model.dims.h + slot.y,
+        });
+    });
+
     it('stacks a next chain vertically, each statement flush below its predecessor', () => {
         const st1 = makeMeasuredStatement('st1', 20);
         const st2 = makeMeasuredStatement('st2', 40);

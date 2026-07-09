@@ -44,3 +44,15 @@ export const StatementWithNesting: Story = {
   render: () => <TowerView root={statementTreeWithNesting} />,
 };
 StatementWithNesting.storyName = 'Statement - with nesting';
+
+export const WithOriginOffset: StoryObj<{ x: number; y: number }> = {
+  args: { x: 300, y: 150 },
+  argTypes: {
+    x: { control: { type: 'number', min: 0, step: 10 } },
+    y: { control: { type: 'number', min: 0, step: 10 } },
+  },
+  render: (args: { x: number; y: number }) => (
+    <TowerView root={statementTreeWithNesting} coords={{ x: args.x, y: args.y }} />
+  ),
+};
+WithOriginOffset.storyName = 'Statement - with origin offset';

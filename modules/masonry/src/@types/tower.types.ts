@@ -110,4 +110,6 @@ export interface TowerViewProps {
     coords?: Point;
     /** If true, renders bricks directly without a wrapping container; defaults to false. */
     asChild?: boolean;
+    /** Unique identifier for the tower, used for memoization. */
+    id?: string;
 }

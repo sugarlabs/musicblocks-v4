@@ -1,4 +1,6 @@
+import type { Point } from './common.types';
 import type { PaletteConfig } from './palette.types';
+import type { TowerNode } from './tower.types';
 
 // -------------------------------------------------------------------------------------------------
 
@@ -19,4 +21,16 @@ export interface WorkspaceConfig {
 export interface WorkspaceViewProps {
     /** Config for the Workspace and its composed pieces. */
     config: WorkspaceConfig;
+}
+
+/**
+ * Represents a single tower instance positioned in the workspace.
+ */
+export interface TowerState {
+    /** Unique identifier for the tower instance in the workspace */
+    id: string;
+    /** The root node of the tower tree */
+    root: TowerNode;
+    /** The absolute position of the tower in the workspace */
+    position: Point;
 }

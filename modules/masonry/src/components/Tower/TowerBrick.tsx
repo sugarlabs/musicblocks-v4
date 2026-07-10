@@ -1,7 +1,7 @@
 import type { TowerNode } from '@/@types/tower.types';
 
 import { BrickView } from '@/components/Brick/Brick';
-import { useBrickLayoutStore } from '@/stores';
+import { useBrickLayoutStore } from '@/stores/brick';
 
 export interface TowerBrickViewProps {
   /** The tower node whose brick should be rendered. */

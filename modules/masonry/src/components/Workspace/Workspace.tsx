@@ -5,9 +5,10 @@ import type { WorkspaceViewProps } from '@/@types/workspace.types';
 
 import { Palette } from '@/components/Palette/Palette';
 import { TowerView } from '@/components/Tower/Tower';
-import { DragGhost } from '@/components/Workspace/DragGhost';
 import { useDragFromPalette } from '@/hooks/useDragFromPalette';
-import { useWorkspaceStore } from '@/stores';
+import { useWorkspaceStore } from '@/stores/workspace';
+
+import { DragGhost } from './DragGhost';
 
 export function Workspace({ config }: WorkspaceViewProps) {
   const { palette } = config;

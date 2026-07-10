@@ -6,7 +6,9 @@ import { useEffect, useRef } from 'react';
 
 import type { Point } from '@/@types/common.types';
 import type { PaletteBrickConfig } from '@/@types/palette.types';
-import { usePaletteDragStore, useWorkspaceStore } from '@/stores';
+
+import { usePaletteDragStore } from '@/stores/palette';
+import { useWorkspaceStore } from '@/stores/workspace';
 import { createBrickModel, wrapAsRootNode } from '@/utils/brick-model-factory';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -52,6 +54,9 @@ export interface UseDragFromPaletteOptions {
  */
 export function useDragFromPalette(options: UseDragFromPaletteOptions) {
     const { rootRef, canvasRef, ghostRef, bricksById } = options;
+
+    const { startDrag, endDrag } = usePaletteDragStore.getState();
+    const { createTower } = useWorkspaceStore.getState();
 
     // interact.js binds its listeners once below, so route config lookups through a ref instead
     // of the closed-over map — palette config changes then don't require rebinding.
@@ -100,7 +105,7 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                     ghost.style.display = 'block';
 
                     // Mounts the ghost's brick preview.
-                    usePaletteDragStore.getState().startDrag(config);
+                    startDrag(config);
                 },
                 move(event: DragEvent) {
                     const ghost = ghostRef.current;
@@ -121,7 +126,7 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
 
                     // Ghost goes away on drop and cancel alike.
                     if (ghostRef.current) ghostRef.current.style.display = 'none';
-                    usePaletteDragStore.getState().endDrag();
+                    endDrag();
 
                     const canvas = canvasRef.current;
                     if (!drag || !canvas) return;
@@ -146,7 +151,7 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                     // Prevent placing the brick if it is still partially over the palette
                     if (position.x < 0) return;
 
-                    useWorkspaceStore.getState().addTower({
+                    createTower({
                         id: crypto.randomUUID(),
                         root: wrapAsRootNode(model),
                         position,
@@ -161,7 +166,7 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
             // `end` never fires if we unmount mid-drag, so clear the in-flight payload and the
             // module-global drag store here too — else a stale drag leaks into the next mount.
             dragRef.current = null;
-            usePaletteDragStore.getState().endDrag();
+            endDrag();
         };
-    }, [rootRef, canvasRef, ghostRef]);
+    }, [rootRef, canvasRef, ghostRef, startDrag, endDrag, createTower]);
 }

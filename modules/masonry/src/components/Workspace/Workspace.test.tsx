@@ -9,7 +9,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import type { PaletteConfig } from '@/@types/palette.types';
 
-import { usePaletteDragStore, useWorkspaceStore } from '@/stores';
+import { usePaletteDragStore } from '@/stores/palette';
+import { useWorkspaceStore } from '@/stores/workspace';
 
 import { Workspace } from './Workspace';
 

@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 
 import type { Point } from '@/@types/common.types';
 import { TowerNode } from '@/@types/tower.types';
-import { useBrickLayoutStore } from '@/stores';
+import { useBrickLayoutStore } from '@/stores/brick';
 import { listNodes, traverseBottomUp, traverseTopDown } from '@/utils/tower-traversal';
 
 /**

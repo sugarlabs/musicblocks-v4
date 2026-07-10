@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import type { PaletteBrickConfig } from '@/@types/palette.types';
 
-import { usePaletteDragStore } from './index';
+import { usePaletteDragStore } from './palette';
 
 // -------------------------------------------------------------------------------------------------
 

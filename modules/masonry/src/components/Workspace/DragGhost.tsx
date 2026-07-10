@@ -1,8 +1,9 @@
 import { useMemo, type Ref } from 'react';
 
 import type { BrickViewPropsWithModel } from '@/@types/brick.types';
+
 import { BrickView } from '@/components/Brick/Brick';
-import { usePaletteDragStore } from '@/stores';
+import { usePaletteDragStore } from '@/stores/palette';
 import { createBrickModel } from '@/utils/brick-model-factory';
 
 // -------------------------------------------------------------------------------------------------

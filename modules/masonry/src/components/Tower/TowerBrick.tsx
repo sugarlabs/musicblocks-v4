@@ -1,9 +1,13 @@
+import { memo } from 'react';
+
 import type { TowerNode } from '@/@types/tower.types';
 
 import { BrickView } from '@/components/Brick/Brick';
 import { useBrickLayoutStore } from '@/stores/brick';
 
 export interface TowerBrickViewProps {
+  /** Unique identifier, kept separate from `node` since `node`'s identity changes every render. */
+  id: string;
   /** The tower node whose brick should be rendered. */
   node: TowerNode;
 }
@@ -16,12 +20,12 @@ export interface TowerBrickViewProps {
  * Renders nothing until the store reports the node as mounted (so it can render and be measured),
  * and stays visually hidden until it's also positioned, to avoid a flash at a stale position.
  */
-export function TowerBrickView(props: TowerBrickViewProps) {
-  const { node } = props;
+export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
+  const { id, node } = props;
 
-  const { x, y } = useBrickLayoutStore((state) => state.coords[node.model.id]);
-  const isMounted = useBrickLayoutStore((state) => state.mounted[node.model.id]);
-  const isPositioned = useBrickLayoutStore((state) => state.positioned[node.model.id]);
+  const { x, y } = useBrickLayoutStore((state) => state.coords[id]);
+  const isMounted = useBrickLayoutStore((state) => state.mounted[id]);
+  const isPositioned = useBrickLayoutStore((state) => state.positioned[id]);
 
   if (!isMounted) return null;
 
@@ -38,6 +42,7 @@ export function TowerBrickView(props: TowerBrickViewProps) {
 
   return (
     <div
+      data-id={id}
       className="absolute"
       style={{
         transform: `translate(${x}px, ${y}px)`,
@@ -47,4 +52,4 @@ export function TowerBrickView(props: TowerBrickViewProps) {
       {brick}
     </div>
   );
-}
+});

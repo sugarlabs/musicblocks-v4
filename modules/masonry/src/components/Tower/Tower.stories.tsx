@@ -1,7 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { Point } from '@/@types/common.types';
-
 import {
   expressionTree,
   statementTreeNoNesting,
@@ -16,6 +14,12 @@ const meta: Meta = {
   component: TowerView,
   parameters: {
     layout: 'fullscreen',
+  },
+  argTypes: {
+    origin: { control: { type: 'object' } },
+  },
+  args: {
+    origin: { x: 0, y: 0 },
   },
   decorators: [
     (Story) => (
@@ -47,14 +51,10 @@ export const StatementWithNesting: Story = {
 };
 StatementWithNesting.storyName = 'Statement - with nesting';
 
-export const WithOriginOffset: StoryObj<Point> = {
-  args: { x: 300, y: 150 },
-  argTypes: {
-    x: { control: { type: 'number', min: 0, step: 10 } },
-    y: { control: { type: 'number', min: 0, step: 10 } },
+export const WithOriginOffset: Story = {
+  args: {
+    origin: { x: 100, y: 50 },
   },
-  render: (args: Point) => (
-    <TowerView root={statementTreeWithNesting} coords={{ x: args.x, y: args.y }} />
-  ),
+  render: (args) => <TowerView {...args} root={statementTreeWithNesting} />,
 };
 WithOriginOffset.storyName = 'Statement - with origin offset';

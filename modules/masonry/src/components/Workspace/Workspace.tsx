@@ -49,7 +49,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
             key={tower.id}
             id={tower.id}
             root={tower.root}
-            coords={tower.position}
+            origin={tower.position}
             asChild
           />
         ))}

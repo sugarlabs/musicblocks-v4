@@ -1,7 +1,12 @@
+import { useMemo, useRef } from 'react';
+
+import type { PaletteBrickConfig } from '@/@types/palette.types';
 import type { WorkspaceViewProps } from '@/@types/workspace.types';
 
 import { Palette } from '@/components/Palette/Palette';
 import { TowerView } from '@/components/Tower/Tower';
+import { DragGhost } from '@/components/Workspace/DragGhost';
+import { useDragFromPalette } from '@/hooks/useDragFromPalette';
 import { useWorkspaceStore } from '@/stores';
 
 export function Workspace({ config }: WorkspaceViewProps) {
@@ -10,13 +15,35 @@ export function Workspace({ config }: WorkspaceViewProps) {
   const towersRecord = useWorkspaceStore((state) => state.towers);
   const towers = Object.values(towersRecord);
 
+  // #issue: 676 — palette drag-and-drop wiring: the root element scopes the delegated drag
+  // selector and positions the ghost overlay; the canvas element anchors drop coordinates.
+  const rootRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const ghostRef = useRef<HTMLDivElement>(null);
+
+  // Flat id → config lookup across the whole palette hierarchy, used to resolve a dragged slot's
+  // `data-brick-id` back to its full palette entry.
+  const bricksById = useMemo(() => {
+    const map: Record<string, PaletteBrickConfig> = {};
+    for (const classification of palette.classifications) {
+      for (const category of classification.categories) {
+        for (const brick of category.bricks) {
+          map[brick.id] = brick;
+        }
+      }
+    }
+    return map;
+  }, [palette]);
+
+  useDragFromPalette({ rootRef, canvasRef, ghostRef, bricksById });
+
   return (
-    <div className="flex h-full w-full">
+    <div ref={rootRef} className="relative flex h-full w-full">
       <div className="h-full max-w-80">
         <Palette config={palette} />
       </div>
 
-      <div className="bg-background relative h-full w-full shrink overflow-hidden">
+      <div ref={canvasRef} className="bg-background relative h-full w-full shrink overflow-hidden">
         {towers.map((tower) => (
           <TowerView
             key={tower.id}
@@ -27,6 +54,8 @@ export function Workspace({ config }: WorkspaceViewProps) {
           />
         ))}
       </div>
+
+      <DragGhost ref={ghostRef} />
     </div>
   );
 }

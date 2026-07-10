@@ -180,6 +180,19 @@ describe('Palette', () => {
       expect(beat?.textContent).toContain('Beat');
     });
 
+    it('marks each brick slot as a palette drag source', () => {
+      const { container } = render(<Palette config={config} />);
+
+      const note = container.querySelector('[data-brick-id="r1"]');
+
+      // The class is the delegated interact.js selector bound by useDragFromPalette, and
+      // touch-action must be disabled so touch drags reach interact.js instead of scrolling.
+      expect(note?.classList.contains('palette-brick-slot')).toBe(true);
+      expect(note?.classList.contains('touch-none')).toBe(true);
+      // Every slot carries the markup, not just the first.
+      expect(container.querySelectorAll('.palette-brick-slot')).toHaveLength(3);
+    });
+
     it('renders no empty-state message when bricks are present', () => {
       render(<Palette config={config} />);
 

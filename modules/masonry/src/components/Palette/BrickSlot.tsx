@@ -34,7 +34,7 @@ export function BrickSlot({ brick }: BrickSlotProps) {
   return (
     <div
       className={cn(
-        'grid items-start ease-in-out [overflow-anchor:none]',
+        'grid min-h-6 items-start ease-in-out [overflow-anchor:none]',
         isDragging
           ? 'grid-rows-[0fr] opacity-0 transition-[grid-template-rows] duration-500'
           : 'grid-rows-[1fr] opacity-100 transition-all duration-500',

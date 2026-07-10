@@ -72,7 +72,7 @@ export function useTowerLayout(root: TowerNode, coords: Point) {
                     }
                 });
 
-                // Mark this batch's bricks ready so BrickWrappers render (and measure their widgetDims)
+                // Mark this batch's bricks ready so TowerBricks render (and measure their widgetDims)
                 useBrickLayoutStore.setState((state) => ({
                     ready: {
                         ...state.ready,
@@ -80,7 +80,7 @@ export function useTowerLayout(root: TowerNode, coords: Point) {
                     },
                 }));
 
-                // Yield to the browser. React will flush updates, render the BrickWrappers,
+                // Yield to the browser. React will flush updates, render the TowerBricks,
                 // and useLayoutEffect in BrickFixed will measure the DOM and set model.widgetDims.
                 await new Promise((resolve) => setTimeout(resolve, 0));
 

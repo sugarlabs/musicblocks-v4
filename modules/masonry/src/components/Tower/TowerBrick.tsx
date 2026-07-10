@@ -3,7 +3,7 @@ import type { TowerNode } from '@/@types/tower.types';
 import { BrickView } from '@/components/Brick/Brick';
 import { useBrickLayoutStore } from '@/stores';
 
-export interface BrickWrapperViewProps {
+export interface TowerBrickViewProps {
   /** The tower node whose brick should be rendered. */
   node: TowerNode;
 }
@@ -15,7 +15,7 @@ export interface BrickWrapperViewProps {
  * node's entry in the layout store, and translates itself to that position whenever it changes.
  * Renders nothing until the store reports the node's position as ready.
  */
-export function BrickWrapperView(props: BrickWrapperViewProps) {
+export function TowerBrickView(props: TowerBrickViewProps) {
   const { node } = props;
 
   const { x, y } = useBrickLayoutStore((state) => state.bounds[node.model.id]);

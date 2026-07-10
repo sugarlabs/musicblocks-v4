@@ -3,52 +3,10 @@ import { useMemo } from 'react';
 import type { BrickViewPropsWithModel } from '@/@types/brick.types';
 import type { PaletteBrickConfig } from '@/@types/palette.types';
 import { BrickView } from '@/components/Brick/Brick';
-// #issue: 676 — config → model construction moved to the shared factory so the slot preview, the
-// drag ghost, and the workspace drop build models the same way; original preserved below.
+import { cn } from '@/lib/utils';
+import { usePaletteDragStore } from '@/stores';
+
 import { createBrickModel } from '@/utils/brick-model-factory';
-
-// -------------------------------------------------------------------------------------------------
-
-// function createPreviewModel(props: BrickViewProps, id: string): BrickModel {
-//   switch (props.kind) {
-//     case 'value':
-//       return new ValueBrickModel({
-//         id,
-//         colorsDefault: props.colorsDefault,
-//         tooltipText: props.tooltipText,
-//         scaleLevel: props.scaleLevel ?? 2,
-//         widget: props.widget,
-//       });
-//     case 'expression':
-//       return new ExpressionBrickModel({
-//         id,
-//         colorsDefault: props.colorsDefault,
-//         tooltipText: props.tooltipText,
-//         scaleLevel: props.scaleLevel ?? 2,
-//         widget: props.widget,
-//         params: props.paramArgs.map((p) => p.param ?? null) as [
-//           string | null,
-//           ...(string | null)[],
-//         ],
-//         argDims: props.paramArgs.map((p) => p.argDims),
-//       });
-//     case 'statement':
-//       return new StatementBrickModel({
-//         id,
-//         colorsDefault: props.colorsDefault,
-//         tooltipText: props.tooltipText,
-//         scaleLevel: props.scaleLevel ?? 2,
-//         widget: props.widget,
-//         params: props.paramArgs?.map((p) => p.param ?? null),
-//         argDims: props.paramArgs?.map((p) => p.argDims),
-//         hasNesting: props.nesting !== undefined,
-//         nestingDims: props.nesting?.dims,
-//         isNestingFolded: props.nesting?.isFolded,
-//         hasConnectionPrev: props.hasConnectionPrev,
-//         hasConnectionNext: props.hasConnectionNext,
-//       });
-//   }
-// }
 
 interface BrickSlotProps {
   /**
@@ -67,6 +25,7 @@ interface BrickSlotProps {
  */
 export function BrickSlot({ brick }: BrickSlotProps) {
   const model = useMemo(() => createBrickModel(brick.brick, brick.id), [brick.brick, brick.id]);
+  const isDragging = usePaletteDragStore((state) => state.dragged?.id === brick.id);
 
   // Use a type assertion because the view expects BrickViewPropsWithModel, but BrickModel
   // guarantees the model fields match the expected discriminated kind.
@@ -74,12 +33,23 @@ export function BrickSlot({ brick }: BrickSlotProps) {
 
   return (
     <div
-      title={brick.description}
-      data-brick-id={brick.id}
-      className="palette-brick-slot flex min-h-11 cursor-grab touch-none items-center px-1 py-1 transition-colors select-none hover:brightness-110 active:cursor-grabbing"
+      className={cn(
+        'grid min-h-6 items-start ease-in-out [overflow-anchor:none]',
+        isDragging
+          ? 'grid-rows-[0fr] opacity-0 transition-[grid-template-rows] duration-500'
+          : 'grid-rows-[1fr] opacity-100 transition-all duration-500',
+      )}
     >
-      <div className="pointer-events-none">
-        <BrickView {...viewProps} />
+      <div className="overflow-hidden">
+        <div
+          title={brick.description}
+          data-brick-id={brick.id}
+          className="palette-brick-slot flex min-h-11 cursor-grab touch-none items-center px-1 py-1 transition-colors select-none hover:brightness-110 active:cursor-grabbing"
+        >
+          <div className="pointer-events-none">
+            <BrickView {...viewProps} />
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -143,6 +143,9 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                         drag.grabOffset,
                     );
 
+                    // Prevent placing the brick if it is still partially over the palette
+                    if (position.x < 0) return;
+
                     useWorkspaceStore.getState().addTower({
                         id: crypto.randomUUID(),
                         root: wrapAsRootNode(model),

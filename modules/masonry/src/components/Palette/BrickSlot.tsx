@@ -2,10 +2,10 @@ import { useMemo } from 'react';
 
 import type { BrickViewPropsWithModel } from '@/@types/brick.types';
 import type { PaletteBrickConfig } from '@/@types/palette.types';
+
 import { BrickView } from '@/components/Brick/Brick';
 import { cn } from '@/lib/utils';
-import { usePaletteDragStore } from '@/stores';
-
+import { usePaletteDragStore } from '@/stores/palette';
 import { createBrickModel } from '@/utils/brick-model-factory';
 
 interface BrickSlotProps {

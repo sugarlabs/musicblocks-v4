@@ -1,9 +1,13 @@
+import { memo } from 'react';
+
 import type { TowerNode } from '@/@types/tower.types';
 
 import { BrickView } from '@/components/Brick/Brick';
-import { useBrickLayoutStore } from '@/stores';
+import { useBrickLayoutStore } from '@/stores/brick';
 
-export interface BrickWrapperViewProps {
+export interface TowerBrickViewProps {
+  /** Unique identifier, kept separate from `node` since `node`'s identity changes every render. */
+  id: string;
   /** The tower node whose brick should be rendered. */
   node: TowerNode;
 }
@@ -13,15 +17,17 @@ export interface BrickWrapperViewProps {
  *
  * `BrickView` itself is static and has no notion of layout, so this wraps it, subscribes to the
  * node's entry in the layout store, and translates itself to that position whenever it changes.
- * Renders nothing until the store reports the node's position as ready.
+ * Renders nothing until the store reports the node as mounted (so it can render and be measured),
+ * and stays visually hidden until it's also positioned, to avoid a flash at a stale position.
  */
-export function BrickWrapperView(props: BrickWrapperViewProps) {
-  const { node } = props;
+export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
+  const { id, node } = props;
 
-  const { x, y } = useBrickLayoutStore((state) => state.bounds[node.model.id]);
-  const isReady = useBrickLayoutStore((state) => state.ready[node.model.id]);
+  const { x, y } = useBrickLayoutStore((state) => state.coords[id]);
+  const isMounted = useBrickLayoutStore((state) => state.mounted[id]);
+  const isPositioned = useBrickLayoutStore((state) => state.positioned[id]);
 
-  if (!isReady) return null;
+  if (!isMounted) return null;
 
   const brick = (() => {
     switch (node.kind) {
@@ -36,12 +42,14 @@ export function BrickWrapperView(props: BrickWrapperViewProps) {
 
   return (
     <div
+      data-id={id}
       className="absolute"
       style={{
         transform: `translate(${x}px, ${y}px)`,
+        visibility: isPositioned ? 'visible' : 'hidden',
       }}
     >
       {brick}
     </div>
   );
-}
+});

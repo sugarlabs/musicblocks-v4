@@ -1,13 +1,12 @@
+import { Search } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 
-import { Search } from 'lucide-react';
-
 import type { PaletteViewProps } from '@/@types/palette.types';
-import { Button } from '@/ui/button';
-import { Input } from '@/ui/input';
 
 import { cn } from '@/lib/utils';
-import { usePaletteDragStore } from '@/stores';
+import { usePaletteDragStore } from '@/stores/palette';
+import { Button } from '@/ui/button';
+import { Input } from '@/ui/input';
 
 import { BrickSlot } from './BrickSlot';
 

@@ -104,12 +104,12 @@ export type TowerNode = TowerValueNode | TowerExpressionNode | TowerStatementNod
  * the rest of the tree is reachable by traversal from there.
  */
 export interface TowerViewProps {
+    /** Unique identifier for the tower. */
+    id?: string;
     /** The root node of the tower tree. */
     root: TowerNode;
     /** The origin of the tower; bricks are positioned relative to it. Defaults to (0, 0). */
-    coords?: Point;
+    origin?: Point;
     /** If true, renders bricks directly without a wrapping container; defaults to false. */
     asChild?: boolean;
-    /** Unique identifier for the tower, used for memoization. */
-    id?: string;
 }

@@ -18,7 +18,7 @@ export interface TowerBrickViewProps {
 export function TowerBrickView(props: TowerBrickViewProps) {
   const { node } = props;
 
-  const { x, y } = useBrickLayoutStore((state) => state.bounds[node.model.id]);
+  const { x, y } = useBrickLayoutStore((state) => state.coords[node.model.id]);
   const isReady = useBrickLayoutStore((state) => state.ready[node.model.id]);
 
   if (!isReady) return null;

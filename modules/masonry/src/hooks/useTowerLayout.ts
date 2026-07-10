@@ -20,24 +20,10 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
 
     const nodes = listNodes(root);
 
+    const { setCoords, setReady } = useBrickLayoutStore.getState();
+
     if (!isInitialized.current) {
-        useBrickLayoutStore.setState((state) => ({
-            bounds: {
-                ...state.bounds,
-                ...Object.fromEntries(
-                    nodes.map((node) => [
-                        node.model.id,
-                        {
-                            w: 0,
-                            h: 0,
-                            x: 0,
-                            y: 0,
-                            isReady: false,
-                        },
-                    ]),
-                ),
-            },
-        }));
+        setCoords(Object.fromEntries(nodes.map((node) => [node.model.id, { x: 0, y: 0 }])));
 
         isInitialized.current = true;
     }
@@ -73,12 +59,7 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
                 });
 
                 // Mark this batch's bricks ready so TowerBricks render (and measure their widgetDims)
-                useBrickLayoutStore.setState((state) => ({
-                    ready: {
-                        ...state.ready,
-                        ...Object.fromEntries(batch.map((node) => [node.model.id, true])),
-                    },
-                }));
+                setReady(Object.fromEntries(batch.map((node) => [node.model.id, true])));
 
                 // Yield to the browser. React will flush updates, render the TowerBricks,
                 // and useLayoutEffect in BrickFixed will measure the DOM and set model.widgetDims.
@@ -86,32 +67,11 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
 
                 if (isCancelled) return;
 
-                // Now compute the full brick dimensions based on the freshly measured widgetDims,
-                // and propagate those full dimensions into the layout store's bounds.
-                useBrickLayoutStore.setState((state) => ({
-                    bounds: {
-                        ...state.bounds,
-                        ...Object.fromEntries(
-                            batch.map((node) => {
-                                node.model.computeDims(); // compute full size based on widgetDims + argDims + nestingDims
-                                const existing = state.bounds[node.model.id] ?? {
-                                    x: 0,
-                                    y: 0,
-                                    w: 0,
-                                    h: 0,
-                                };
-                                return [
-                                    node.model.id,
-                                    {
-                                        ...existing,
-                                        w: node.model.dims.w,
-                                        h: node.model.dims.h,
-                                    },
-                                ];
-                            }),
-                        ),
-                    },
-                }));
+                // Now compute the full brick dimensions based on the freshly measured widgetDims;
+                // used directly via node.model.dims by parents and the outline pass below.
+                batch.forEach((node) => {
+                    node.model.computeDims();
+                });
             }
 
             // All dims are measured by now, so compute every brick's position in one
@@ -132,29 +92,14 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
             const positioned = traverseTopDown(root, { x: origin.x, y: origin.y });
 
             if (positioned.length > 0) {
-                useBrickLayoutStore.setState((state) => ({
-                    bounds: {
-                        ...state.bounds,
-                        ...Object.fromEntries(
-                            positioned.map((node) => {
-                                const existing = state.bounds[node.model.id] ?? {
-                                    x: 0,
-                                    y: 0,
-                                    w: 0,
-                                    h: 0,
-                                };
-                                return [
-                                    node.model.id,
-                                    {
-                                        ...existing,
-                                        x: node.model.position.x,
-                                        y: node.model.position.y,
-                                    },
-                                ];
-                            }),
-                        ),
-                    },
-                }));
+                setCoords(
+                    Object.fromEntries(
+                        positioned.map((node) => [
+                            node.model.id,
+                            { x: node.model.position.x, y: node.model.position.y },
+                        ]),
+                    ),
+                );
             }
         }
 
@@ -166,7 +111,7 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
         };
         // Depend on the primitive co-ordinates, not the origin object — callers may pass a fresh
         // object literal each render, which would re-trigger the layout on every render.
-    }, [root, origin.x, origin.y]);
+    }, [root, origin.x, origin.y, setCoords, setReady]);
 
     return nodes;
 }

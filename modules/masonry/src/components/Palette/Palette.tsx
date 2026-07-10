@@ -6,6 +6,9 @@ import type { PaletteViewProps } from '@/@types/palette.types';
 import { Button } from '@/ui/button';
 import { Input } from '@/ui/input';
 
+import { cn } from '@/lib/utils';
+import { usePaletteDragStore } from '@/stores';
+
 import { BrickSlot } from './BrickSlot';
 
 // -------------------------------------------------------------------------------------------------
@@ -34,6 +37,7 @@ export function Palette({ config }: PaletteViewProps) {
   const [activeClassification, setActiveClassification] = useState(0);
   const [query, setQuery] = useState('');
   const categoryRefs = useRef<Array<HTMLElement | null>>([]);
+  const isDragging = usePaletteDragStore((state) => state.dragged !== null);
 
   const classifications = config.classifications;
 
@@ -141,7 +145,12 @@ export function Palette({ config }: PaletteViewProps) {
             <p className="text-muted-foreground text-sm">No bricks match your search.</p>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto p-4">
+          <div
+            className={cn(
+              'flex-1 overflow-y-auto p-4 transition-[padding-bottom] duration-500',
+              isDragging && 'pb-32',
+            )}
+          >
             {visibleCategories.map(({ category, index }) => {
               const Icon = category.icon;
               return (

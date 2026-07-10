@@ -13,15 +13,17 @@ export interface TowerBrickViewProps {
  *
  * `BrickView` itself is static and has no notion of layout, so this wraps it, subscribes to the
  * node's entry in the layout store, and translates itself to that position whenever it changes.
- * Renders nothing until the store reports the node's position as ready.
+ * Renders nothing until the store reports the node as mounted (so it can render and be measured),
+ * and stays visually hidden until it's also positioned, to avoid a flash at a stale position.
  */
 export function TowerBrickView(props: TowerBrickViewProps) {
   const { node } = props;
 
   const { x, y } = useBrickLayoutStore((state) => state.coords[node.model.id]);
-  const isReady = useBrickLayoutStore((state) => state.ready[node.model.id]);
+  const isMounted = useBrickLayoutStore((state) => state.mounted[node.model.id]);
+  const isPositioned = useBrickLayoutStore((state) => state.positioned[node.model.id]);
 
-  if (!isReady) return null;
+  if (!isMounted) return null;
 
   const brick = (() => {
     switch (node.kind) {
@@ -39,6 +41,7 @@ export function TowerBrickView(props: TowerBrickViewProps) {
       className="absolute"
       style={{
         transform: `translate(${x}px, ${y}px)`,
+        visibility: isPositioned ? 'visible' : 'hidden',
       }}
     >
       {brick}

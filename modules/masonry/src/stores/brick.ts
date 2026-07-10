@@ -6,15 +6,19 @@ import type { Point } from '@/@types/common.types';
 export interface BrickLayoutStore {
     /** Position per brick, keyed by brick (node model) id. */
     coords: Record<string, Point>;
-    /** Per-brick, whether ready for rendering, keyed by brick (node model) id. */
-    ready: Record<string, boolean>;
+    /** Per-brick, whether mounted for measurement, keyed by brick (node model) id. */
+    mounted: Record<string, boolean>;
+    /** Per-brick, whether positioned, keyed by brick (node model) id. */
+    positioned: Record<string, boolean>;
 
     /** Sets a single brick's coordinates. */
     setCoords(id: string, point: Point): void;
     /** Merges a batch of per-brick coordinates into `coords`. */
     setCoords(batch: Record<string, Point>): void;
-    /** Merges a batch of per-brick ready flags into `ready`. */
-    setReady: (batch: Record<string, boolean>) => void;
+    /** Merges a batch of per-brick flags into `mounted`. */
+    setMounted: (batch: Record<string, boolean>) => void;
+    /** Merges a batch of per-brick flags into `positioned`. */
+    setPositioned: (batch: Record<string, boolean>) => void;
 }
 
 /**
@@ -26,7 +30,8 @@ export interface BrickLayoutStore {
 export const useBrickLayoutStore = create<BrickLayoutStore>()(
     subscribeWithSelector((set) => ({
         coords: {},
-        ready: {},
+        mounted: {},
+        positioned: {},
 
         setCoords: ((idOrBatch: string | Record<string, Point>, point?: Point) => {
             const batch = typeof idOrBatch === 'string' ? { [idOrBatch]: point! } : idOrBatch;
@@ -38,10 +43,19 @@ export const useBrickLayoutStore = create<BrickLayoutStore>()(
             }));
         }) as BrickLayoutStore['setCoords'],
 
-        setReady: (batch) => {
+        setMounted: (batch) => {
             set((state) => ({
-                ready: {
-                    ...state.ready,
+                mounted: {
+                    ...state.mounted,
+                    ...batch,
+                },
+            }));
+        },
+
+        setPositioned: (batch) => {
+            set((state) => ({
+                positioned: {
+                    ...state.positioned,
                     ...batch,
                 },
             }));

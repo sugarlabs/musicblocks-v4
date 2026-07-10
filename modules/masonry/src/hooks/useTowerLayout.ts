@@ -16,14 +16,21 @@ import { listNodes, traverseBottomUp, traverseTopDown } from '@/utils/tower-trav
  * Returns the tower's node list.
  */
 export function useTowerLayout(root: TowerNode, origin: Point) {
+    const { setCoords, setMounted, setPositioned } = useBrickLayoutStore.getState();
+
     const isInitialized = useRef(false);
 
-    const nodes = listNodes(root);
+    const nodesRef = useRef<TowerNode[]>([]);
 
-    const { setCoords, setReady } = useBrickLayoutStore.getState();
+    const nodes = listNodes(root);
+    nodesRef.current = nodes;
 
     if (!isInitialized.current) {
-        setCoords(Object.fromEntries(nodes.map((node) => [node.model.id, { x: 0, y: 0 }])));
+        const ids = nodes.map((node) => node.model.id);
+
+        setCoords(Object.fromEntries(ids.map((id) => [id, { x: 0, y: 0 }])));
+        setMounted(Object.fromEntries(ids.map((id) => [id, false])));
+        setPositioned(Object.fromEntries(ids.map((id) => [id, false])));
 
         isInitialized.current = true;
     }
@@ -58,8 +65,8 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
                     }
                 });
 
-                // Mark this batch's bricks ready so TowerBricks render (and measure their widgetDims)
-                setReady(Object.fromEntries(batch.map((node) => [node.model.id, true])));
+                // Mark this batch's bricks mounted so TowerBricks render (and measure their widgetDims)
+                setMounted(Object.fromEntries(batch.map((node) => [node.model.id, true])));
 
                 // Yield to the browser. React will flush updates, render the TowerBricks,
                 // and useLayoutEffect in BrickFixed will measure the DOM and set model.widgetDims.
@@ -79,7 +86,7 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
 
             // computeDims() only computes outer dims; bricks with a nesting cavity or argument
             // slots also need their outline bounds for the child offsets.
-            nodes.forEach((node) => {
+            nodesRef.current.forEach((node) => {
                 if (node.kind === 'value') return;
                 if (
                     node.args.some((arg) => arg !== null) ||
@@ -100,6 +107,8 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
                         ]),
                     ),
                 );
+
+                setPositioned(Object.fromEntries(positioned.map((node) => [node.model.id, true])));
             }
         }
 
@@ -111,7 +120,7 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
         };
         // Depend on the primitive co-ordinates, not the origin object — callers may pass a fresh
         // object literal each render, which would re-trigger the layout on every render.
-    }, [root, origin.x, origin.y, setCoords, setReady]);
+    }, [root, origin.x, origin.y, setCoords, setMounted, setPositioned]);
 
     return nodes;
 }

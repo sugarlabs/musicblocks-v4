@@ -5,52 +5,8 @@ import type { PaletteBrickConfig } from '@/@types/palette.types';
 import { BrickView } from '@/components/Brick/Brick';
 import { cn } from '@/lib/utils';
 import { usePaletteDragStore } from '@/stores';
-// #issue: 676 — config → model construction moved to the shared factory so the slot preview, the
-// drag ghost, and the workspace drop build models the same way; original preserved below.
+
 import { createBrickModel } from '@/utils/brick-model-factory';
-
-// -------------------------------------------------------------------------------------------------
-
-// function createPreviewModel(props: BrickViewProps, id: string): BrickModel {
-//   switch (props.kind) {
-//     case 'value':
-//       return new ValueBrickModel({
-//         id,
-//         colorsDefault: props.colorsDefault,
-//         tooltipText: props.tooltipText,
-//         scaleLevel: props.scaleLevel ?? 2,
-//         widget: props.widget,
-//       });
-//     case 'expression':
-//       return new ExpressionBrickModel({
-//         id,
-//         colorsDefault: props.colorsDefault,
-//         tooltipText: props.tooltipText,
-//         scaleLevel: props.scaleLevel ?? 2,
-//         widget: props.widget,
-//         params: props.paramArgs.map((p) => p.param ?? null) as [
-//           string | null,
-//           ...(string | null)[],
-//         ],
-//         argDims: props.paramArgs.map((p) => p.argDims),
-//       });
-//     case 'statement':
-//       return new StatementBrickModel({
-//         id,
-//         colorsDefault: props.colorsDefault,
-//         tooltipText: props.tooltipText,
-//         scaleLevel: props.scaleLevel ?? 2,
-//         widget: props.widget,
-//         params: props.paramArgs?.map((p) => p.param ?? null),
-//         argDims: props.paramArgs?.map((p) => p.argDims),
-//         hasNesting: props.nesting !== undefined,
-//         nestingDims: props.nesting?.dims,
-//         isNestingFolded: props.nesting?.isFolded,
-//         hasConnectionPrev: props.hasConnectionPrev,
-//         hasConnectionNext: props.hasConnectionNext,
-//       });
-//   }
-// }
 
 interface BrickSlotProps {
   /**

@@ -15,7 +15,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
   const towersRecord = useWorkspaceStore((state) => state.towers);
   const towers = Object.values(towersRecord);
 
-  // #issue: 676 — palette drag-and-drop wiring: the root element scopes the delegated drag
+  // palette drag-and-drop wiring: the root element scopes the delegated drag
   // selector and positions the ghost overlay; the canvas element anchors drop coordinates.
   const rootRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);

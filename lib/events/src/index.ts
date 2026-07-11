@@ -32,6 +32,7 @@ export function hearEvent(event: TEvent, callback: CallableFunction): void {
 export function emitEvent(event: 'menu.run'): void;
 export function emitEvent(event: 'menu.stop'): void;
 export function emitEvent(event: 'menu.reset'): void;
+export function emitEvent(event: 'menu.exportDrawing'): void;
 /**
  * Emits an event.
  * @param event event name

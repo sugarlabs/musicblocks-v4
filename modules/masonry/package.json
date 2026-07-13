@@ -25,6 +25,7 @@
     "howler": "^2.2.4",
     "interactjs": "^1.10.27",
     "lucide-react": "^1.21.0",
+    "quadtree-lib": "^1.0.9",
     "react-sounds": "^1.0.30",
     "recoil": "^0.7.7",
     "shadcn": "^4.11.0",

@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react';
 
+import Collision from './Collision';
 import DragNDrop from './DragNDrop';
 import WorkspaceDemo from './Workspace';
 
@@ -16,6 +17,12 @@ export const pages: PageDef[] = [
         label: 'Drag & Drop',
         description: 'A simple drag and drop example',
         component: DragNDrop,
+    },
+    {
+        path: 'collision',
+        label: 'Collision',
+        description: 'Demonstrates collision detection',
+        component: Collision,
     },
     {
         path: 'workspace',

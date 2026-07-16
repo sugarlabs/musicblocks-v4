@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@sugarlabs/mb4-module-engine.old": "*",
+    "quadtree-lib": "^1.0.9",
     "react-aria": "^3.26.0",
     "zustand": "^5.0.14"
   }

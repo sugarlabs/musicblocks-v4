@@ -710,3 +710,204 @@ describe('generate', () => {
         });
     });
 });
+
+describe('getConnectorCoords', () => {
+    const strokeWidth = 2;
+
+    it('presence follows feature flags', () => {
+        // A plain value brick: no notches, no args, no nesting.
+        const value = brickOutlineGenerator.getConnectorCoords({
+            strokeWidth,
+            widgetDims: { w: 100, h: 20 },
+            paramArgDims: [],
+        });
+
+        expect(value.inputs).toEqual([]);
+        expect(value.prev).toBeUndefined();
+        expect(value.next).toBeUndefined();
+        expect(value.nestedNext).toBeUndefined();
+        expect(value.output).toBeUndefined();
+
+        // A fully-featured brick: every optional connector enabled plus one filled arg slot.
+        const full = brickOutlineGenerator.getConnectorCoords({
+            strokeWidth,
+            widgetDims: { w: 100, h: 20 },
+            paramArgDims: [{ param: null, arg: { w: 50, h: 40 } }],
+            nestingDims: { w: 50, h: 40 },
+            hasPrevNotch: true,
+            hasNextNotch: true,
+            hasOutputNotch: true,
+        });
+
+        expect(full.prev).toBeDefined();
+        expect(full.next).toBeDefined();
+        expect(full.nestedNext).toBeDefined();
+        expect(full.output).toBeDefined();
+        expect(full.inputs).toHaveLength(1);
+    });
+
+    it('inputs has one entry per filled arg slot, ordered top-to-bottom', () => {
+        const paramArgDims = [
+            { param: null, arg: { w: 50, h: 40 } },
+            { param: { w: 50, h: 20 }, arg: null },
+            { param: null, arg: { w: 50, h: 40 } },
+        ];
+        const { inputs } = brickOutlineGenerator.getConnectorCoords({
+            strokeWidth,
+            widgetDims: { w: 100, h: 20 },
+            paramArgDims,
+        });
+
+        // Derive the expected count from the input itself — param-only rows contribute nothing.
+        const expected = paramArgDims.filter((r) => r.arg !== null).length;
+        expect(inputs).toHaveLength(expected);
+        expect(expected).toBe(2);
+
+        // Ordered top-to-bottom: y values strictly increasing.
+        expect(inputs[1]!.y).toBeGreaterThan(inputs[0]!.y);
+    });
+
+    it('inputs align with the rendered arg grooves from generate()', () => {
+        const input = {
+            strokeWidth,
+            widgetDims: { w: 100, h: 20 },
+            paramArgDims: [
+                { param: null, arg: { w: 50, h: 70 } },
+                { param: null, arg: { w: 50, h: 40 } },
+            ],
+        };
+        const { inputs } = brickOutlineGenerator.getConnectorCoords(input);
+        const { bounds, width } = brickOutlineGenerator.generate(input);
+        const argGrooves = bounds.args!.filter((a): a is NonNullable<typeof a> => a !== null);
+
+        inputs.forEach((p, k) => {
+            const a = argGrooves[k]!;
+            expect(p.y).toBe(a.y + BrickOutlineGeneratorTest.H_NOTCH_OFFSET_Y);
+            expect(p.x).toBe(a.x - strokeWidth / 2);
+        });
+        // Grooves sit at the right edge (x = width); the connector is inset by half the stroke.
+        expect(inputs[0]!.x).toBe(width - strokeWidth / 2);
+    });
+
+    it("next connector sits on the brick's bottom edge (height branch)", () => {
+        const nest = {
+            strokeWidth,
+            widgetDims: { w: 100, h: 20 },
+            paramArgDims: [],
+            nestingDims: { w: 50, h: 60 },
+            hasNextNotch: true,
+        };
+        const dims = brickOutlineGenerator.computeDimensions(nest);
+        const c = brickOutlineGenerator.getConnectorCoords(nest);
+
+        expect(c.next!.y).toBe(dims.height - strokeWidth / 2);
+        // Proves the (hasNesting ? height : headHeight) branch selected the full height,
+        // placing next on the tail-step bottom rather than the cavity roof.
+        expect(c.next!.y).toBeGreaterThan(dims.headHeight);
+
+        const flat = { ...nest, nestingDims: undefined };
+        const fd = brickOutlineGenerator.computeDimensions(flat);
+        expect(brickOutlineGenerator.getConnectorCoords(flat).next!.y).toBe(
+            fd.height - strokeWidth / 2,
+        );
+    });
+
+    it('prev and next are vertically aligned for stacking', () => {
+        const c = brickOutlineGenerator.getConnectorCoords({
+            strokeWidth,
+            widgetDims: { w: 100, h: 20 },
+            paramArgDims: [],
+            hasPrevNotch: true,
+            hasNextNotch: true,
+        });
+
+        // prev sits on the top edge, inset by half the stroke.
+        expect(c.prev!.y).toBe(strokeWidth / 2);
+        // A brick's next tab must share its x with the prev groove of the brick stacked below.
+        expect(c.prev!.x).toBe(c.next!.x);
+    });
+
+    it("nestedNext mates with a nested child's prev over the cavity", () => {
+        const parent = {
+            strokeWidth,
+            widgetDims: { w: 100, h: 20 },
+            paramArgDims: [],
+            nestingDims: { w: 60, h: 60 },
+        };
+        const nestingX = brickOutlineGenerator.generate(parent).bounds.nesting!.x;
+        const nestedNext = brickOutlineGenerator.getConnectorCoords(parent).nestedNext!;
+
+        const childPrevX = brickOutlineGenerator.getConnectorCoords({
+            strokeWidth,
+            widgetDims: { w: 40, h: 20 },
+            paramArgDims: [],
+            hasPrevNotch: true,
+        }).prev!.x;
+
+        // A child dropped at the nesting origin lands its prev groove under the parent's roof tab.
+        expect(nestedNext.x).toBe(nestingX + childPrevX);
+    });
+
+    it('output mates with a parent input inside its arg slot', () => {
+        const parent = {
+            strokeWidth,
+            widgetDims: { w: 100, h: 20 },
+            paramArgDims: [{ param: null, arg: { w: 50, h: 40 } }],
+        };
+        const parentInput = brickOutlineGenerator.getConnectorCoords(parent).inputs[0]!;
+        const parentArg = brickOutlineGenerator.generate(parent).bounds.args![0]!;
+
+        const output = brickOutlineGenerator.getConnectorCoords({
+            strokeWidth,
+            widgetDims: { w: 40, h: 20 },
+            paramArgDims: [],
+            hasOutputNotch: true,
+        }).output!;
+
+        // output sits on the left edge, inset by half the stroke.
+        expect(output.x).toBe(strokeWidth / 2);
+        // The child's output seats into the parent's arg groove at the same in-slot offset.
+        expect(output.y).toBe(parentInput.y - parentArg.y);
+    });
+
+    it('every connector lies within the brick frame', () => {
+        const input = {
+            strokeWidth,
+            widgetDims: { w: 120, h: 20 },
+            paramArgDims: [{ param: null, arg: { w: 50, h: 40 } }],
+            nestingDims: { w: 60, h: 60 },
+            hasPrevNotch: true,
+            hasNextNotch: true,
+            hasOutputNotch: true,
+        };
+        const { width, height } = brickOutlineGenerator.generate(input);
+        const c = brickOutlineGenerator.getConnectorCoords(input);
+        const pts = [c.prev!, c.next!, c.nestedNext!, c.output!, ...c.inputs];
+
+        pts.forEach((p) => {
+            expect(p.x).toBeGreaterThanOrEqual(0);
+            expect(p.x).toBeLessThanOrEqual(width);
+            expect(p.y).toBeGreaterThanOrEqual(0);
+            expect(p.y).toBeLessThanOrEqual(height);
+        });
+    });
+
+    it('interleaving with generate() does not corrupt the shared cache', () => {
+        const gen = new BrickOutlineGeneratorTest(MINIMUMS);
+        const A = { strokeWidth, widgetDims: { w: 200, h: 20 }, paramArgDims: [] };
+        const B = {
+            strokeWidth,
+            widgetDims: { w: 60, h: 20 },
+            paramArgDims: [{ param: null, arg: { w: 50, h: 40 } }],
+        };
+
+        const wA1 = gen.generate(A).width;
+        const cB = gen.getConnectorCoords(B);
+        const wA2 = gen.generate(A).width;
+
+        // A getConnectorCoords(B) between two generate(A) calls must not leak state either way.
+        const fresh = new BrickOutlineGeneratorTest(MINIMUMS).getConnectorCoords(B);
+        expect(cB).toEqual(fresh);
+        expect(wA2).toBe(wA1);
+    });
+});

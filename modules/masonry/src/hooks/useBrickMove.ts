@@ -23,7 +23,6 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
         const interactable = interact(el).draggable({
             listeners: {
                 start(_event: DragEvent) {
-                    console.log('Drag started on brick:', id);
                     const { coords } = useBrickLayoutStore.getState();
                     const current = coords[id];
                     if (current) {
@@ -31,7 +30,6 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                     }
                 },
                 move(event: DragEvent) {
-                    console.log('Drag move on brick:', id, 'dx:', event.dx, 'dy:', event.dy);
                     dragPosRef.current.x += event.dx;
                     dragPosRef.current.y += event.dy;
 
@@ -41,7 +39,6 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                     });
                 },
                 end(_event: DragEvent) {
-                    console.log('Drag ended on brick:', id);
                     // Placeholder for future drop logic
                 },
             },

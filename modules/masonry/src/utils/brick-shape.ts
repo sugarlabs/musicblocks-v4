@@ -32,6 +32,7 @@
 
 import type {
     BrickComputedDimensions,
+    BrickConnectorCoords,
     BrickMinimums,
     BrickOutlineInput,
     BrickOutlineOutput,
@@ -875,5 +876,74 @@ export class BrickOutlineGenerator {
             height,
             bounds,
         };
+    }
+
+    /**
+     * Reports the centroid coordinates of every connector the brick actually has, in the same
+     * unscaled SVG space as `generate`'s path/bounds and relative to the brick's top-left origin.
+     *
+     * Optional connectors (prev/next/nestedNext/output) are present only when their feature is
+     * enabled; `inputs` is always an array with one entry per filled argument slot, top-to-bottom.
+     *
+     * @param input - Same input shape as `generate` / `computeDimensions`.
+     * @returns Connector centroids, keyed by connector kind.
+     */
+    public getConnectorCoords(input: BrickOutlineInput): BrickConnectorCoords {
+        // Recompute dimensions only when the normalised input has actually changed.
+        const normalized = this.normalizeInput(input);
+        if (!this.inputsEqual(normalized, this.input)) {
+            this.input = normalized;
+            this.dimensions = this.computeDimensions(input);
+        }
+
+        const strokeWidth = this.input.strokeWidth;
+        const { width, headHeight, height } = this.dimensions;
+        const { hasPrevNotch, hasNextNotch, hasNesting, hasOutputNotch } = this.input;
+
+        // Right-edge grooves: one centroid per filled arg slot, using the same slotTop
+        // accumulation as segHeadRight so the coords line up with the rendered grooves.
+        const inputs: Point[] = [];
+        let slotTop = 0;
+        for (const { arg } of this.input.paramArgDims) {
+            const rowH = Math.max(arg?.h ?? 0, this.minimums.minArgHeight);
+            if (arg !== null) {
+                inputs.push({
+                    x: width - strokeWidth / 2,
+                    y: slotTop + BrickOutlineGenerator.H_NOTCH_OFFSET_Y,
+                });
+            }
+            slotTop += rowH;
+        }
+
+        const coords: BrickConnectorCoords = { inputs };
+
+        // Top-edge groove.
+        if (hasPrevNotch) {
+            coords.prev = { x: BrickOutlineGenerator.V_NOTCH_OFFSET_X, y: strokeWidth / 2 };
+        }
+        // Bottom-edge tab, on the brick's bottom-most edge: the tail-step bottom when nesting,
+        // else the head bottom — which coincide, since height === headHeight without nesting.
+        if (hasNextNotch) {
+            coords.next = {
+                x: BrickOutlineGenerator.V_NOTCH_OFFSET_X,
+                y: height - strokeWidth / 2,
+            };
+        }
+        // Cavity-roof tab pointing down into the nesting cavity.
+        if (hasNesting) {
+            coords.nestedNext = {
+                x:
+                    BrickOutlineGenerator.TAIL_INDENT_W +
+                    strokeWidth +
+                    BrickOutlineGenerator.V_NOTCH_OFFSET_X,
+                y: headHeight - strokeWidth / 2,
+            };
+        }
+        // Left-edge tab that plugs into a parent's arg slot.
+        if (hasOutputNotch) {
+            coords.output = { x: strokeWidth / 2, y: BrickOutlineGenerator.H_NOTCH_OFFSET_Y };
+        }
+
+        return coords;
     }
 }

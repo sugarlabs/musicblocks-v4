@@ -72,8 +72,29 @@ export function Palette({ config }: PaletteViewProps) {
       .filter(({ category }) => category.bricks.length > 0);
   }, [activeCategories, query]);
 
-  const scrollToCategory = (index: number) => {
-    categoryRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // const scrollToCategory = (index: number) => {
+  //   categoryRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // };
+
+    const scrollToCategory = (index: number) => {
+    const el = categoryRefs.current[index];
+    if (el) {
+      
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      
+      
+      const header = el.firstElementChild as HTMLElement;
+      
+      if (header) {
+        
+        header.classList.add('transition-all', 'duration-300', 'translate-x-2', 'brightness-125');
+        
+       
+        setTimeout(() => {
+          header.classList.remove('transition-all', 'duration-300', 'translate-x-2', 'brightness-125');
+        }, 300);
+      }
+    }
   };
 
   const selectClassification = (index: number) => {
@@ -93,8 +114,9 @@ export function Palette({ config }: PaletteViewProps) {
               key={index}
               variant="ghost"
               size="default"
+              title={category.name}
               onClick={() => scrollToCategory(index)}
-              className="h-auto flex-col gap-1 px-1 py-2 text-[0.7rem]"
+              className="h-auto flex-col gap-1 px-1 py-2 text-[0.7rem] cursor-pointer"
             >
               <Icon className="size-5" style={{ color: category.color }} />
               <span className="w-full truncate text-center">{category.name}</span>
@@ -117,7 +139,7 @@ export function Palette({ config }: PaletteViewProps) {
                 aria-pressed={isActive}
                 title={classification.name}
                 onClick={() => selectClassification(index)}
-                className="h-9 flex-1"
+                className="h-9 flex-1 cursor-pointer"
               >
                 <Icon className="size-5" />
                 <span className="sr-only">{classification.name}</span>

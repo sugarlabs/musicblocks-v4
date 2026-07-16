@@ -18,12 +18,30 @@ const brickOutlineGenerator = new BrickOutlineGenerator({
 });
 
 /**
+ * Connector marker colours, keyed by connector type. Kept visually distinct from the
+ * translucent bounds overlays (pink widget, yellow params, green args, grey nesting):
+ *   prev       — magenta   next   — blue     nestedNext — teal
+ *   output     — orange    inputs — purple
+ * Each marker also gets a thin white outline so it stays legible over any overlay rect.
+ */
+const CONNECTOR_COLORS = {
+  prev: '#e84393',
+  next: '#0984e3',
+  nestedNext: '#00cec9',
+  output: '#e17055',
+  inputs: '#6c5ce7',
+};
+
+/** Radius (px) of the connector marker dots — small but visible over the overlays. */
+const MARKER_RADIUS = 2.5;
+
+/**
  * Storybook-only debug harness. Renders the raw SVG path from `BrickOutlineGenerator`
  * with coloured overlays for the widget, param, arg, and nesting bounds regions.
  */
 export function PathBrickView({ input }: { input: BrickOutlineInput }) {
   const maxArgW = Math.max(0, ...input.paramArgDims.map((p) => p.arg?.w ?? 0));
-  const { width, height, path, bounds } = brickOutlineGenerator.generate({
+  const svgInput: BrickOutlineInput = {
     strokeWidth: pxToSvg(input.strokeWidth),
     widgetDims: { w: pxToSvg(input.widgetDims.w), h: pxToSvg(input.widgetDims.h) },
     paramArgDims: input.paramArgDims.map((p) => ({
@@ -43,7 +61,9 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
     hasPrevNotch: input.hasPrevNotch,
     hasNextNotch: input.hasNextNotch,
     hasOutputNotch: input.hasOutputNotch,
-  });
+  };
+  const { width, height, path, bounds } = brickOutlineGenerator.generate(svgInput);
+  const connectors = brickOutlineGenerator.getConnectorCoords(svgInput);
 
   return (
     <svg
@@ -112,6 +132,59 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
             fill="#a5b1c27f"
           />
         )}
+
+        {/* Connector centroids — colour-coded by type (see CONNECTOR_COLORS) */}
+        {connectors.prev && (
+          <circle
+            cx={svgToPx(connectors.prev.x)}
+            cy={svgToPx(connectors.prev.y)}
+            r={MARKER_RADIUS}
+            fill={CONNECTOR_COLORS.prev}
+            stroke="#fff"
+            strokeWidth={0.75}
+          />
+        )}
+        {connectors.next && (
+          <circle
+            cx={svgToPx(connectors.next.x)}
+            cy={svgToPx(connectors.next.y)}
+            r={MARKER_RADIUS}
+            fill={CONNECTOR_COLORS.next}
+            stroke="#fff"
+            strokeWidth={0.75}
+          />
+        )}
+        {connectors.nestedNext && (
+          <circle
+            cx={svgToPx(connectors.nestedNext.x)}
+            cy={svgToPx(connectors.nestedNext.y)}
+            r={MARKER_RADIUS}
+            fill={CONNECTOR_COLORS.nestedNext}
+            stroke="#fff"
+            strokeWidth={0.75}
+          />
+        )}
+        {connectors.output && (
+          <circle
+            cx={svgToPx(connectors.output.x)}
+            cy={svgToPx(connectors.output.y)}
+            r={MARKER_RADIUS}
+            fill={CONNECTOR_COLORS.output}
+            stroke="#fff"
+            strokeWidth={0.75}
+          />
+        )}
+        {connectors.inputs.map((p, i) => (
+          <circle
+            key={i}
+            cx={svgToPx(p.x)}
+            cy={svgToPx(p.y)}
+            r={MARKER_RADIUS}
+            fill={CONNECTOR_COLORS.inputs}
+            stroke="#fff"
+            strokeWidth={0.75}
+          />
+        ))}
       </>
     </svg>
   );

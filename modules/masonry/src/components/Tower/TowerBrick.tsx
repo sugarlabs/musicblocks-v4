@@ -1,8 +1,9 @@
-import { memo } from 'react';
+import { memo, useRef } from 'react';
 
 import type { TowerNode } from '@/@types/tower.types';
 
 import { BrickView } from '@/components/Brick/Brick';
+import { useBrickMove } from '@/hooks/useBrickMove';
 import { useBrickLayoutStore } from '@/stores/brick';
 
 export interface TowerBrickViewProps {
@@ -22,6 +23,9 @@ export interface TowerBrickViewProps {
  */
 export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
   const { id, node } = props;
+  const ref = useRef<HTMLDivElement>(null);
+
+  useBrickMove(id, ref);
 
   const { x, y } = useBrickLayoutStore((state) => state.coords[id]);
   const isMounted = useBrickLayoutStore((state) => state.mounted[id]);
@@ -42,6 +46,7 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
 
   return (
     <div
+      ref={ref}
       data-id={id}
       className="absolute"
       style={{

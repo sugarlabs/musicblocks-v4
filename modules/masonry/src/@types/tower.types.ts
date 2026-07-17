@@ -112,4 +112,10 @@ export interface TowerViewProps {
     origin?: Point;
     /** If true, renders bricks directly without a wrapping container; defaults to false. */
     asChild?: boolean;
+    /**
+     * Monotonic re-layout trigger. `useTowerLayout` keys off this to re-run after the node graph is
+     * mutated in place (e.g. a snap-join) while `root`/`origin` stay referentially equal. Treated as 0
+     * when undefined.
+     */
+    layoutVersion?: number;
 }

@@ -15,7 +15,7 @@ import { listNodes, traverseBottomUp, traverseTopDown } from '@/utils/tower-trav
  *
  * Returns the tower's node list.
  */
-export function useTowerLayout(root: TowerNode, origin: Point) {
+export function useTowerLayout(root: TowerNode, origin: Point, layoutVersion?: number) {
     const { setCoords, setMounted, setPositioned } = useBrickLayoutStore.getState();
 
     const isInitialized = useRef(false);
@@ -112,15 +112,15 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
             }
         }
 
-        // We run the async process once per root/layoutVersion change
         processLayout();
 
         return () => {
             isCancelled = true;
         };
-        // Depend on the primitive co-ordinates, not the origin object — callers may pass a fresh
-        // object literal each render, which would re-trigger the layout on every render.
-    }, [root, origin.x, origin.y, setCoords, setMounted, setPositioned]);
+        // Depend on the primitive co-ordinates, not the `origin` object — a fresh literal each
+        // render would re-layout every render. `layoutVersion` is bumped after an in-place graph
+        // mutation (a snap-join) to force a re-layout when `root`/`origin` are referentially equal.
+    }, [root, origin.x, origin.y, layoutVersion, setCoords, setMounted, setPositioned]);
 
     return nodes;
 }

@@ -33,4 +33,10 @@ export interface TowerState {
     root: TowerNode;
     /** The absolute position of the tower in the workspace */
     position: Point;
+    /**
+     * Monotonic counter bumped to force a re-layout after the node graph is mutated in place (e.g. a
+     * snap-join) while `root`/`position` stay referentially equal. `useTowerLayout` keys off it.
+     * Treated as 0 when undefined.
+     */
+    layoutVersion?: number;
 }

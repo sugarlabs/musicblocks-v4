@@ -1,4 +1,5 @@
 import type {
+    BrickConnectorCoords,
     BrickOutlineInput,
     BrickOutlineOutput,
     WidgetDisplay,
@@ -78,6 +79,11 @@ abstract class BrickModelBase {
         return px / SCALE_LEVEL_CONFIG[this._scaleLevel].brickScale;
     }
 
+    /** Converts an SVG-unit value to canvas pixels for the current scale level. */
+    protected svgToPx(svg: number): number {
+        return svg * SCALE_LEVEL_CONFIG[this._scaleLevel].brickScale;
+    }
+
     /** Assembles the generator input from this brick's current state. */
     protected abstract _buildOutlineInput(): BrickOutlineInput;
 
@@ -97,6 +103,28 @@ abstract class BrickModelBase {
         this._dims = { w: width, h: height };
         this._path = path;
         this._bounds = bounds;
+    }
+
+    /**
+     * Reports the centroid of every connector this brick has, in CANVAS PX (scaled for the
+     * current scale level) relative to the brick's top-left origin. The underlying generator
+     * returns unscaled SVG-space coords; each Point is multiplied by `brickScale` here.
+     *
+     * Optional connectors (prev/next/nestedNext/output) are present only when their feature is
+     * enabled; `inputs` is always an array with one entry per filled argument slot, top-to-bottom.
+     */
+    public getConnectorCoords(): BrickConnectorCoords {
+        const raw = this.outlineGenerator.getConnectorCoords(this._buildOutlineInput());
+        const scalePoint = (point: Point): Point => ({
+            x: this.svgToPx(point.x),
+            y: this.svgToPx(point.y),
+        });
+        const scaled: BrickConnectorCoords = { inputs: raw.inputs.map(scalePoint) };
+        if (raw.prev) scaled.prev = scalePoint(raw.prev);
+        if (raw.next) scaled.next = scalePoint(raw.next);
+        if (raw.nestedNext) scaled.nestedNext = scalePoint(raw.nestedNext);
+        if (raw.output) scaled.output = scalePoint(raw.output);
+        return scaled;
     }
 
     private static _buildOutlineGenerator(level: 1 | 2 | 3): BrickOutlineGenerator {

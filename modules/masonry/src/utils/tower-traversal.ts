@@ -59,6 +59,20 @@ export function listNodes(root: TowerNode): TowerNode[] {
     return nodes;
 }
 
+/**
+ * Walks a tower's outer statement sequence to its TAIL — the last node still linked by a main-chain
+ * `next`. Shared by the snap probe collection and the join step: it is the node carrying the dragged
+ * tower's open bottom `next` end, and the node that receives a displaced successor on a mid-chain
+ * insertion.
+ */
+export function findTail(root: TowerStatementNode): TowerStatementNode {
+    let tail: TowerStatementNode = root;
+    while (tail.next !== null && tail.next.kind === 'statement') {
+        tail = tail.next;
+    }
+    return tail;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**

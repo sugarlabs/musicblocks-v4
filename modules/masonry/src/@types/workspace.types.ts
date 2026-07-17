@@ -34,3 +34,18 @@ export interface TowerState {
     /** The absolute position of the tower in the workspace */
     position: Point;
 }
+
+/**
+ * Metadata for a statement connector point in the collision space.
+ * Allows querying the corresponding Brick and Tower instance from a collision hit.
+ */
+export interface StatementConnectorMeta {
+    /** The unique ID of the connector point, matching the CollisionObject's id */
+    id: number;
+    /** The ID of the tower this connector belongs to */
+    towerId: string;
+    /** The ID of the brick this connector belongs to */
+    brickId: string;
+    /** The type of notch this connector represents */
+    type: 'prev' | 'next' | 'nestedNext';
+}

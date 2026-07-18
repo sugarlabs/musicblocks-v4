@@ -33,6 +33,7 @@
 import type {
     BrickComputedDimensions,
     BrickConnectorCoords,
+    BrickInputConnector,
     BrickMinimums,
     BrickOutlineInput,
     BrickOutlineOutput,
@@ -883,7 +884,8 @@ export class BrickOutlineGenerator {
      * unscaled SVG space as `generate`'s path/bounds and relative to the brick's top-left origin.
      *
      * Optional connectors (prev/next/nestedNext/output) are present only when their feature is
-     * enabled; `inputs` is always an array with one entry per filled argument slot, top-to-bottom.
+     * enabled; `inputs` is always an array with one entry per argument slot (filled and empty),
+     * top-to-bottom, tagged with the slot index and its filled state.
      *
      * @param input - Same input shape as `generate` / `computeDimensions`.
      * @returns Connector centroids, keyed by connector kind.
@@ -900,19 +902,23 @@ export class BrickOutlineGenerator {
         const { width, headHeight, height } = this.dimensions;
         const { hasPrevNotch, hasNextNotch, hasNesting, hasOutputNotch } = this.input;
 
-        // Right-edge grooves: one centroid per filled arg slot, using the same slotTop
-        // accumulation as segHeadRight so the coords line up with the rendered grooves.
-        const inputs: Point[] = [];
+        // Right-edge grooves: one centroid per arg slot (filled and empty), using the same
+        // slotTop accumulation as segHeadRight so the coords line up with the rendered grooves.
+        const inputs: BrickInputConnector[] = [];
         let slotTop = 0;
+        let index = 0;
         for (const { arg } of this.input.paramArgDims) {
             const rowH = Math.max(arg?.h ?? 0, this.minimums.minArgHeight);
-            if (arg !== null) {
-                inputs.push({
+            inputs.push({
+                point: {
                     x: width - strokeWidth / 2,
                     y: slotTop + BrickOutlineGenerator.H_NOTCH_OFFSET_Y,
-                });
-            }
+                },
+                index,
+                filled: arg !== null,
+            });
             slotTop += rowH;
+            index += 1;
         }
 
         const coords: BrickConnectorCoords = { inputs };

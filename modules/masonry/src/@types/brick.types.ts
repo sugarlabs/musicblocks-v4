@@ -81,8 +81,8 @@ export interface BrickOutlineOutput {
  *   next       — hasNextNotch
  *   nestedNext — hasNesting (cavity-roof tab)
  *   output     — hasOutputNotch
- * `inputs` is always present: one Point per argument slot whose arg !== null,
- * ordered top-to-bottom; an empty array when the brick has no filled arg slots.
+ * `inputs` is always present: one entry per argument slot (filled and empty),
+ * ordered top-to-bottom; an empty array when the brick has no arg slots.
  */
 export interface BrickConnectorCoords {
     /** Sequence-in connector centroid (top-edge groove). */
@@ -93,8 +93,22 @@ export interface BrickConnectorCoords {
     nestedNext?: Point;
     /** Output connector centroid (left-edge tab). */
     output?: Point;
-    /** Argument-slot connector centroids (right-edge grooves), one per filled slot. */
-    inputs: Point[];
+    /** Argument-slot connector centroids (right-edge grooves), one per slot. */
+    inputs: BrickInputConnector[];
+}
+
+/**
+ * One argument-slot input connector: its centroid plus which slot it belongs to and
+ * whether that slot currently holds a child. Emitted for every slot — filled and empty —
+ * so empty slots can be queried as snap targets.
+ */
+export interface BrickInputConnector {
+    /** Connector centroid (right-edge groove). */
+    point: Point;
+    /** Slot's declaration-order index. */
+    index: number;
+    /** Whether the slot currently holds a child. */
+    filled: boolean;
 }
 
 export interface BrickMinimums {

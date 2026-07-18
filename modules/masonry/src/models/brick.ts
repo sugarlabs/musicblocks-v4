@@ -111,7 +111,8 @@ abstract class BrickModelBase {
      * returns unscaled SVG-space coords; each Point is multiplied by `brickScale` here.
      *
      * Optional connectors (prev/next/nestedNext/output) are present only when their feature is
-     * enabled; `inputs` is always an array with one entry per filled argument slot, top-to-bottom.
+     * enabled; `inputs` is always an array with one entry per argument slot (filled and empty),
+     * top-to-bottom, tagged with the slot index and its filled state.
      */
     public getConnectorCoords(): BrickConnectorCoords {
         const raw = this.outlineGenerator.getConnectorCoords(this._buildOutlineInput());
@@ -119,7 +120,13 @@ abstract class BrickModelBase {
             x: this.svgToPx(point.x),
             y: this.svgToPx(point.y),
         });
-        const scaled: BrickConnectorCoords = { inputs: raw.inputs.map(scalePoint) };
+        const scaled: BrickConnectorCoords = {
+            inputs: raw.inputs.map((s) => ({
+                point: scalePoint(s.point),
+                index: s.index,
+                filled: s.filled,
+            })),
+        };
         if (raw.prev) scaled.prev = scalePoint(raw.prev);
         if (raw.next) scaled.next = scalePoint(raw.next);
         if (raw.nestedNext) scaled.nestedNext = scalePoint(raw.nestedNext);

@@ -744,9 +744,11 @@ describe('getConnectorCoords', () => {
         expect(full.nestedNext).toBeDefined();
         expect(full.output).toBeDefined();
         expect(full.inputs).toHaveLength(1);
+        expect(full.inputs[0]!.index).toBe(0);
+        expect(full.inputs[0]!.filled).toBe(true);
     });
 
-    it('inputs has one entry per filled arg slot, ordered top-to-bottom', () => {
+    it('inputs has one entry per slot (filled and empty), ordered top-to-bottom', () => {
         const paramArgDims = [
             { param: null, arg: { w: 50, h: 40 } },
             { param: { w: 50, h: 20 }, arg: null },
@@ -758,13 +760,33 @@ describe('getConnectorCoords', () => {
             paramArgDims,
         });
 
-        // Derive the expected count from the input itself — param-only rows contribute nothing.
-        const expected = paramArgDims.filter((r) => r.arg !== null).length;
-        expect(inputs).toHaveLength(expected);
-        expect(expected).toBe(2);
+        // One entry per slot now — the middle param-only row is emitted as an empty slot.
+        expect(inputs).toHaveLength(paramArgDims.length);
+        expect(inputs.map((s) => s.index)).toEqual([0, 1, 2]);
+        expect(inputs.map((s) => s.filled)).toEqual([true, false, true]);
 
         // Ordered top-to-bottom: y values strictly increasing.
-        expect(inputs[1]!.y).toBeGreaterThan(inputs[0]!.y);
+        expect(inputs[1]!.point.y).toBeGreaterThan(inputs[0]!.point.y);
+        expect(inputs[2]!.point.y).toBeGreaterThan(inputs[1]!.point.y);
+    });
+
+    it('an empty arg slot is emitted with filled:false at the right y', () => {
+        const paramArgDims = [
+            { param: null, arg: { w: 50, h: 40 } },
+            { param: { w: 50, h: 20 }, arg: null },
+        ];
+        const { inputs } = brickOutlineGenerator.getConnectorCoords({
+            strokeWidth,
+            widgetDims: { w: 100, h: 20 },
+            paramArgDims,
+        });
+
+        // The second slot holds no child: still emitted, tagged empty, seated one row down.
+        const empty = inputs[1]!;
+        expect(empty.filled).toBe(false);
+        expect(empty.index).toBe(1);
+        const firstRowH = Math.max(40, MINIMUMS.minArgHeight);
+        expect(empty.point.y).toBe(firstRowH + BrickOutlineGeneratorTest.H_NOTCH_OFFSET_Y);
     });
 
     it('inputs align with the rendered arg grooves from generate()', () => {
@@ -780,13 +802,15 @@ describe('getConnectorCoords', () => {
         const { bounds, width } = brickOutlineGenerator.generate(input);
         const argGrooves = bounds.args!.filter((a): a is NonNullable<typeof a> => a !== null);
 
-        inputs.forEach((p, k) => {
+        // Both slots are filled here, so every input entry lines up with a rendered groove.
+        const filled = inputs.filter((s) => s.filled);
+        filled.forEach((s, k) => {
             const a = argGrooves[k]!;
-            expect(p.y).toBe(a.y + BrickOutlineGeneratorTest.H_NOTCH_OFFSET_Y);
-            expect(p.x).toBe(a.x - strokeWidth / 2);
+            expect(s.point.y).toBe(a.y + BrickOutlineGeneratorTest.H_NOTCH_OFFSET_Y);
+            expect(s.point.x).toBe(a.x - strokeWidth / 2);
         });
         // Grooves sit at the right edge (x = width); the connector is inset by half the stroke.
-        expect(inputs[0]!.x).toBe(width - strokeWidth / 2);
+        expect(inputs[0]!.point.x).toBe(width - strokeWidth / 2);
     });
 
     it("next connector sits on the brick's bottom edge (height branch)", () => {
@@ -854,7 +878,7 @@ describe('getConnectorCoords', () => {
             widgetDims: { w: 100, h: 20 },
             paramArgDims: [{ param: null, arg: { w: 50, h: 40 } }],
         };
-        const parentInput = brickOutlineGenerator.getConnectorCoords(parent).inputs[0]!;
+        const parentInput = brickOutlineGenerator.getConnectorCoords(parent).inputs[0]!.point;
         const parentArg = brickOutlineGenerator.generate(parent).bounds.args![0]!;
 
         const output = brickOutlineGenerator.getConnectorCoords({
@@ -882,7 +906,7 @@ describe('getConnectorCoords', () => {
         };
         const { width, height } = brickOutlineGenerator.generate(input);
         const c = brickOutlineGenerator.getConnectorCoords(input);
-        const pts = [c.prev!, c.next!, c.nestedNext!, c.output!, ...c.inputs];
+        const pts = [c.prev!, c.next!, c.nestedNext!, c.output!, ...c.inputs.map((s) => s.point)];
 
         pts.forEach((p) => {
             expect(p.x).toBeGreaterThanOrEqual(0);

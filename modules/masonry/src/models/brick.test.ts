@@ -106,7 +106,30 @@ describe('BrickModelBase.getConnectorCoords', () => {
 
         // Single filled slot: first-row groove y = H_NOTCH_OFFSET_Y (svg) * brickScale (=1 here).
         expect(coords.inputs).toHaveLength(1);
-        expect(coords.inputs[0]!.y).toBeCloseTo(
+        expect(coords.inputs[0]!.index).toBe(0);
+        expect(coords.inputs[0]!.filled).toBe(true);
+        expect(coords.inputs[0]!.point.y).toBeCloseTo(
+            H_NOTCH_OFFSET_Y * SCALE_LEVEL_CONFIG[2].brickScale,
+        );
+    });
+
+    it('emits an empty input slot for a param with no argument', () => {
+        const brick = new StatementBrickModel({
+            colorsDefault,
+            tooltipText: '',
+            widget: { type: 'label', text: 'St' },
+            scaleLevel: 2,
+            params: ['A'],
+            argDims: [null],
+        });
+
+        const coords = brick.getConnectorCoords();
+
+        // The slot is declared but holds no child: still emitted, tagged empty at index 0.
+        expect(coords.inputs).toHaveLength(1);
+        expect(coords.inputs[0]!.index).toBe(0);
+        expect(coords.inputs[0]!.filled).toBe(false);
+        expect(coords.inputs[0]!.point.y).toBeCloseTo(
             H_NOTCH_OFFSET_Y * SCALE_LEVEL_CONFIG[2].brickScale,
         );
     });

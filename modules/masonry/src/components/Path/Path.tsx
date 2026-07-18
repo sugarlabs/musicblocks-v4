@@ -177,8 +177,8 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
         {connectors.inputs.map((p, i) => (
           <circle
             key={i}
-            cx={svgToPx(p.x)}
-            cy={svgToPx(p.y)}
+            cx={svgToPx(p.point.x)}
+            cy={svgToPx(p.point.y)}
             r={MARKER_RADIUS}
             fill={CONNECTOR_COLORS.inputs}
             stroke="#fff"

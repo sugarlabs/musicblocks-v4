@@ -92,9 +92,10 @@ function resolveSnap(
     if (best === null) return null;
     const snap = best;
 
-    // A dragged `nestedNext` is never an approved mate; narrow to a 'prev' | 'next' with no cast so
-    // `joinTowers` only ever receives a `DraggedKind`.
-    if (snap.draggedKind === 'nestedNext') return null;
+    // Only a dragged `prev`/`next` is an approved mate (a `nestedNext` or an argument-domain
+    // `input`/`output` is not); narrow to a 'prev' | 'next' with no cast so `joinTowers` only ever
+    // receives a `DraggedKind`.
+    if (snap.draggedKind !== 'prev' && snap.draggedKind !== 'next') return null;
     const draggedKind: DraggedKind = snap.draggedKind;
 
     const draggedRoot = tower.root;

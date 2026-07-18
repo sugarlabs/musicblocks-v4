@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { Point } from '@/@types/common.types';
-import type { TowerStatementNode } from '@/@types/tower.types';
-import { StatementBrickModel } from '@/models/brick';
-import { collectConnectors, type OpenConnector } from '@/utils/connectors';
+import type { TowerStatementNode, TowerValueNode } from '@/@types/tower.types';
+import { StatementBrickModel, ValueBrickModel } from '@/models/brick';
+import { collectArgConnectors, collectConnectors, type OpenConnector } from '@/utils/connectors';
 
 import { useBrickLayoutStore } from './brick';
 import { getSnapEngine, refreshSnapTargets } from './snap';
@@ -125,6 +125,70 @@ describe('stores/snap', () => {
             expect(hit).not.toBeNull();
             expect(hit!.targetNodeId).toBe('head');
             expect(hit!.target.occupied).toBe(true);
+        });
+
+        it('adds argument connectors to the target set without disturbing statement snapping', () => {
+            // A statement carrying one value arg, so the tower exposes argument-domain connectors
+            // (the slot input + the value's output) alongside its statement-sequence connectors.
+            const child: TowerValueNode = {
+                kind: 'value',
+                model: new ValueBrickModel({
+                    id: 'C',
+                    colorsDefault,
+                    tooltipText: '',
+                    widget: { type: 'numberbox', value: 0 },
+                }),
+                parent: null,
+            };
+            const host: TowerStatementNode = {
+                kind: 'statement',
+                model: new StatementBrickModel({
+                    id: 'H',
+                    colorsDefault,
+                    tooltipText: '',
+                    widget: { type: 'label', text: 'H' },
+                    params: ['A'],
+                    hasConnectionPrev: true,
+                    hasConnectionNext: true,
+                    hasNesting: false,
+                }),
+                prev: null,
+                next: null,
+                args: [child],
+                nestedNext: undefined,
+            };
+            child.parent = host;
+
+            const pos: Point = { x: 300, y: 300 };
+            useWorkspaceStore.setState({
+                towers: { host: { id: 'host', root: host, position: pos } },
+            });
+            useBrickLayoutStore.getState().setCoords({ H: pos, C: { x: 420, y: 300 } });
+
+            const coords = useBrickLayoutStore.getState().coords;
+            const origin: Point = { x: 0, y: 0 };
+            const args = collectArgConnectors(host, origin, coords, 'host');
+            // Sanity: the tower really does expose argument connectors that must reach the space.
+            expect(args.some((c) => c.kind === 'output')).toBe(true);
+            expect(args.some((c) => c.kind === 'input')).toBe(true);
+
+            const hostNext = collectConnectors(host, origin, coords, 'host').find(
+                (c) => c.kind === 'next',
+            )!;
+            const valueOutput = args.find((c) => c.kind === 'output')!;
+
+            const engine = getSnapEngine(1000, 1000);
+            refreshSnapTargets('dragged');
+
+            // Statement snapping still resolves against the arg-bearing tower.
+            const hit = engine.findSnap(probe('prev', hostNext.point));
+            expect(hit).not.toBeNull();
+            expect(hit!.targetNodeId).toBe('H');
+            expect(hit!.targetKind).toBe('next');
+
+            // Argument connectors are in the space but never cross-match a statement probe
+            // (isValidMate rejects the argument domain until join lands), so no false snap.
+            expect(engine.findSnap(probe('prev', valueOutput.point))).toBeNull();
         });
     });
 });

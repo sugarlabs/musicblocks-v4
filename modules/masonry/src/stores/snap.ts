@@ -1,4 +1,9 @@
-import { collectConnectors, ORIGIN, type Connector } from '@/utils/connectors';
+import {
+    collectArgConnectors,
+    collectConnectors,
+    ORIGIN,
+    type Connector,
+} from '@/utils/connectors';
 import { SnapEngine } from '@/utils/snap';
 
 import { useBrickLayoutStore } from './brick';
@@ -36,8 +41,9 @@ export function getSnapEngine(width: number, height: number): SnapEngine {
 
 /**
  * Rebuilds the shared engine's target set from every tower EXCEPT the dragged one (so a tower can
- * never snap to itself), using live coords from the brick layout store. Targets include open and
- * occupied connectors so mid-chain insertion is reachable. No-ops if the engine does not exist yet.
+ * never snap to itself), using live coords from the brick layout store. Targets include both
+ * statement-sequence and argument-slot connectors, open and occupied, so mid-chain insertion and
+ * arg snapping are both reachable. No-ops if the engine does not exist yet.
  */
 export function refreshSnapTargets(draggedTowerId: string): void {
     if (engine === null) return;
@@ -48,7 +54,10 @@ export function refreshSnapTargets(draggedTowerId: string): void {
     const targets: Connector[] = [];
     for (const tower of Object.values(towers)) {
         if (tower.id === draggedTowerId) continue;
+        // Both snapping domains share one engine: statement-sequence connectors and argument-slot
+        // connectors go into the same target set. isValidMate keeps the domains from cross-matching.
         targets.push(...collectConnectors(tower.root, ORIGIN, coords, tower.id));
+        targets.push(...collectArgConnectors(tower.root, ORIGIN, coords, tower.id));
     }
 
     engine.setTargets(targets);

@@ -1,11 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
 import type { Point } from '@/@types/common.types';
-import type { TowerNode, TowerStatementNode } from '@/@types/tower.types';
-import { StatementBrickModel } from '@/models/brick';
+import type {
+    TowerExpressionNode,
+    TowerNode,
+    TowerStatementNode,
+    TowerValueNode,
+} from '@/@types/tower.types';
+import { ExpressionBrickModel, StatementBrickModel, ValueBrickModel } from '@/models/brick';
 import { statementTreeNoNesting, statementTreeWithNesting, valueTree } from '@/mocks/tower';
 
 import {
+    collectArgConnectors,
     collectConnectors,
     collectOpenConnectors,
     collectProbeConnectors,
@@ -337,5 +343,135 @@ describe('collectProbeConnectors', () => {
     it('returns nothing for a non-statement root', () => {
         const coords: Record<string, Point> = { [valueTree.model.id]: { x: 0, y: 0 } };
         expect(collectProbeConnectors(valueTree, { x: 0, y: 0 }, coords, 't')).toEqual([]);
+    });
+});
+
+/** A free-floating value node; pass a parent to mark it plugged in. */
+function makeValue(id: string, parent: TowerNode | null = null): TowerValueNode {
+    return {
+        kind: 'value',
+        model: new ValueBrickModel({
+            id,
+            colorsDefault,
+            tooltipText: '',
+            widget: { type: 'numberbox', value: 0 },
+        }),
+        parent,
+    };
+}
+
+/** An expression node with `params.length` argument slots, all empty unless `args` is supplied. */
+function makeExpression(
+    id: string,
+    params: [string | null, ...(string | null)[]],
+    args?: (TowerNode | null)[],
+): TowerExpressionNode {
+    return {
+        kind: 'expression',
+        model: new ExpressionBrickModel({
+            id,
+            colorsDefault,
+            tooltipText: '',
+            widget: { type: 'label', text: id },
+            params,
+        }),
+        parent: null,
+        args: args ?? params.map(() => null),
+    };
+}
+
+describe('collectArgConnectors', () => {
+    it('emits one input per slot with correct slotIndex, occupancy, and world point', () => {
+        // Two slots: slot 0 holds a child (occupied), slot 1 is empty (open).
+        const expr = makeExpression('E', ['A', 'B']);
+        const child = makeValue('E.child', expr);
+        expr.args = [child, null];
+
+        const origin: Point = { x: 5, y: 7 };
+        const topLeft: Point = { x: 40, y: 400 };
+        const coords: Record<string, Point> = { 'E': topLeft, 'E.child': { x: 60, y: 400 } };
+
+        const result = collectArgConnectors(expr, origin, coords, 'tower-1');
+        const inputs = result.filter((c) => c.kind === 'input');
+        const offsets = expr.model.getConnectorCoords();
+
+        expect(inputs).toHaveLength(2);
+        expect(offsets.inputs).toHaveLength(2);
+
+        const slot0 = inputs.find((c) => c.slotIndex === 0)!;
+        expect(slot0).toBeDefined();
+        expect(slot0.towerId).toBe('tower-1');
+        expect(slot0.nodeId).toBe('E');
+        expect(slot0.occupied).toBe(true); // node.args[0] is the child
+        expect(slot0.point).toEqual({
+            x: origin.x + topLeft.x + offsets.inputs[0].point.x,
+            y: origin.y + topLeft.y + offsets.inputs[0].point.y,
+        });
+
+        const slot1 = inputs.find((c) => c.slotIndex === 1)!;
+        expect(slot1.occupied).toBe(false); // node.args[1] is null
+        expect(slot1.point).toEqual({
+            x: origin.x + topLeft.x + offsets.inputs[1].point.x,
+            y: origin.y + topLeft.y + offsets.inputs[1].point.y,
+        });
+    });
+
+    it('derives input occupancy from the node graph, not the model filled flag', () => {
+        // args say occupied, but argDims (model filled flag) are left empty — the graph wins.
+        const expr = makeExpression('E', ['A']);
+        expr.args = [makeValue('E.child', expr)];
+        const result = collectArgConnectors(expr, { x: 0, y: 0 }, { E: { x: 0, y: 0 } }, 't');
+
+        const input = result.filter((c) => c.kind === 'input');
+        expect(input).toHaveLength(1);
+        expect(input[0].occupied).toBe(true);
+        expect(expr.model.getConnectorCoords().inputs[0].filled).toBe(false);
+    });
+
+    it('emits an output for a value brick, occupancy reflecting its parent', () => {
+        const free = makeValue('V');
+        const freeResult = collectArgConnectors(free, { x: 3, y: 9 }, { V: { x: 10, y: 20 } }, 't');
+        expect(freeResult).toHaveLength(1);
+
+        const output = freeResult[0];
+        const offsets = free.model.getConnectorCoords();
+        expect(output.kind).toBe('output');
+        expect(output.occupied).toBe(false); // parent === null
+        expect(output.slotIndex).toBeUndefined();
+        expect(output.point).toEqual({
+            x: 3 + 10 + offsets.output!.x,
+            y: 9 + 20 + offsets.output!.y,
+        });
+
+        // A value plugged into a parent reports its output as occupied.
+        const parent = makeExpression('P', ['A']);
+        const plugged = makeValue('P.child', parent);
+        parent.args = [plugged];
+        const pluggedResult = collectArgConnectors(
+            plugged,
+            { x: 0, y: 0 },
+            { 'P.child': { x: 0, y: 0 } },
+            't',
+        );
+        expect(pluggedResult).toHaveLength(1);
+        expect(pluggedResult[0].occupied).toBe(true);
+    });
+
+    it('emits BOTH the output and the input slots of an expression brick', () => {
+        const expr = makeExpression('E', ['A', 'B']);
+        const result = collectArgConnectors(expr, { x: 0, y: 0 }, { E: { x: 0, y: 0 } }, 't');
+
+        const inputs = result.filter((c) => c.kind === 'input');
+        const outputs = result.filter((c) => c.kind === 'output');
+        expect(inputs).toHaveLength(2);
+        expect(outputs).toHaveLength(1);
+        // Its own output is open (no parent), both slots open (no args).
+        expect(outputs[0].occupied).toBe(false);
+        expect(inputs.every((c) => !c.occupied)).toBe(true);
+    });
+
+    it('skips nodes whose top-left coordinate is missing from the coords map', () => {
+        const expr = makeExpression('E', ['A']);
+        expect(collectArgConnectors(expr, { x: 0, y: 0 }, {}, 't')).toEqual([]);
     });
 });

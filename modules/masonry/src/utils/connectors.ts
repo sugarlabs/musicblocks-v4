@@ -13,10 +13,13 @@ import { findTail, listNodes } from './tower-traversal';
 export const ORIGIN: Point = { x: 0, y: 0 };
 
 /**
- * Statement-domain connector kinds that participate in sequence snapping. Argument-domain
- * `inputs`/`output` connectors are handled separately and are out of scope here.
+ * Every connector kind a tower can expose, across both snapping domains:
+ *   - Statement domain (sequence snapping): `prev` | `next` | `nestedNext`.
+ *   - Argument domain (arg snapping): `output` — the left-edge tab on a value/expression brick that
+ *     plugs into a parent's argument slot; `input` — an argument slot on an expression/statement
+ *     brick that accepts such a tab.
  */
-export type ConnectorKind = 'prev' | 'next' | 'nestedNext';
+export type ConnectorKind = 'prev' | 'next' | 'nestedNext' | 'output' | 'input';
 
 /**
  * An OPEN connector on a tower, resolved into absolute canvas (world) space. "Open" means the
@@ -34,6 +37,11 @@ export interface OpenConnector {
     kind: ConnectorKind;
     /** Connector centroid in absolute canvas (world) pixels. */
     point: Point;
+    /**
+     * Present only on `input` connectors: the declaration-order index of the argument slot, used to
+     * resolve the connector back to `node.args[slotIndex]`.
+     */
+    slotIndex?: number;
 }
 
 /**
@@ -126,6 +134,77 @@ export function collectConnectors(
                 point: toWorld(origin, topLeft, offsets.nestedNext),
                 occupied: node.nestedNext !== null,
             });
+        }
+    }
+
+    return connectors;
+}
+
+/**
+ * Collects every argument-domain connector in a tower (open AND occupied), resolved to absolute
+ * canvas space, so the result is suitable as the SNAP TARGET set for arg snapping. Mirrors
+ * {@link collectConnectors} but over the argument domain:
+ *   - `input`  — one per argument slot on an expression/statement node (filled and empty), tagged
+ *                with its `slotIndex`; occupied when `node.args[slotIndex]` already holds a child.
+ *   - `output` — the left-edge tab on a value/expression node; occupied when the node already has a
+ *                `parent`.
+ *
+ * Both open and occupied connectors are emitted — #698 populates the space with ALL argument
+ * connectors; filtering to empty slots is the join step's concern.
+ *
+ * Pure: the caller supplies per-brick top-lefts via `coords`; this never reads a store. A
+ * connector's world point is the sum of three offsets:
+ *   `origin` + brick top-left px (`coords[nodeId]`) + connector px offset (`getConnectorCoords()`)
+ *
+ * Occupancy is derived from the NODE GRAPH (`node.args` / `node.parent`), the authoritative source,
+ * not from the model's `filled` flag. A node missing from `coords` is skipped (it cannot be placed
+ * in world space yet).
+ *
+ * @param root    - Root node of the tower tree.
+ * @param origin  - The tower's origin in canvas px; every connector is measured relative to it.
+ * @param coords  - Map of brick id → the brick's top-left position in canvas px.
+ * @param towerId - Id of the tower, passed through onto every emitted connector.
+ */
+export function collectArgConnectors(
+    root: TowerNode,
+    origin: Point,
+    coords: Record<string, Point>,
+    towerId: string,
+): Connector[] {
+    const connectors: Connector[] = [];
+
+    for (const node of listNodes(root)) {
+        const topLeft = coords[node.model.id];
+        if (!topLeft) continue;
+
+        const offsets = node.model.getConnectorCoords();
+
+        // input grooves — one per argument slot; occupied when the slot already holds a child.
+        if (node.kind === 'expression' || node.kind === 'statement') {
+            for (const input of offsets.inputs) {
+                connectors.push({
+                    towerId,
+                    nodeId: node.model.id,
+                    kind: 'input',
+                    point: toWorld(origin, topLeft, input.point),
+                    slotIndex: input.index,
+                    occupied: node.args[input.index] !== null,
+                });
+            }
+        }
+
+        // output tab — present only when the node can produce a value; occupied when already plugged
+        // into a parent.
+        if (node.kind === 'value' || node.kind === 'expression') {
+            if (offsets.output) {
+                connectors.push({
+                    towerId,
+                    nodeId: node.model.id,
+                    kind: 'output',
+                    point: toWorld(origin, topLeft, offsets.output),
+                    occupied: node.parent !== null,
+                });
+            }
         }
     }
 

@@ -14,14 +14,22 @@ import type { SnapCandidate, SnapEngine } from '@/utils/snap';
 import { joinTowers, type DraggedKind, type JoinParams } from '@/utils/tower-join';
 import { listNodes } from '@/utils/tower-traversal';
 
+/** A single dragged node: its positioned DOM element and where it started. */
+interface DraggedNode {
+    /** The brick's positioned DOM element, translated straight to the DOM during `move`. */
+    el: HTMLElement;
+    /** The brick's top-left position at drag start. */
+    start: Point;
+}
+
 /** Per-drag bookkeeping, captured at `start` and consumed through `move` and `end`. */
 interface DragState {
     /** Id of the tower the grabbed brick belongs to. */
     towerId: string;
     /** The tower's origin at drag start, used to reconcile its final position on drop. */
     towerStart: Point;
-    /** Each dragged node's top-left position at drag start, keyed by brick id. */
-    nodeStarts: Record<string, Point>;
+    /** Every dragged node's DOM element and start position, keyed by brick id. */
+    nodes: Record<string, DraggedNode>;
     /** The shared snap engine — already sized to the canvas and targeted at every other tower. */
     engine: SnapEngine;
 }
@@ -109,8 +117,9 @@ function resolveSnap(
 
 /**
  * Attaches interact.js drag events to a brick's DOM element. A tower moves as a unit: grabbing any
- * brick drags the WHOLE tower, translating every node together via a batched layout-store update.
- * On release the tower's two open ends are probed against the shared snap engine for a valid mate.
+ * brick drags the WHOLE tower, translating every node by writing transforms straight to the DOM so
+ * no brick re-renders mid-drag; the layout store is reconciled once on release. On release the
+ * tower's two open ends are probed against the shared snap engine for a valid mate.
  *
  * @param id - The unique identifier of the grabbed brick.
  * @param ref - The DOM ref of the brick's wrapper element.
@@ -138,18 +147,6 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                     }
                     const { tower, nodes } = owning;
 
-                    // Snapshot the start position of every node in the tower so `move` can
-                    // translate them all by the accumulated delta. Reuse the node list `findTower`
-                    // already computed rather than walking the graph again.
-                    const { coords } = useBrickLayoutStore.getState();
-                    const nodeStarts: Record<string, Point> = {};
-                    for (const node of nodes) {
-                        const current = coords[node.model.id];
-                        if (current) {
-                            nodeStarts[node.model.id] = { x: current.x, y: current.y };
-                        }
-                    }
-
                     // Size the shared snap space to the canvas (the brick's positioned ancestor)
                     // and rebuild its targets from every tower EXCEPT this one.
                     const canvas = el.offsetParent as HTMLElement | null;
@@ -158,10 +155,37 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                     const engine = getSnapEngine(width, height);
                     refreshSnapTargets(tower.id);
 
+                    // Index every positioned brick element on the canvas by its `data-id`, in one
+                    // static-selector query (no per-node lookup, no id escaping).
+                    const elById = new Map<string, HTMLElement>();
+                    canvas?.querySelectorAll<HTMLElement>('[data-id]').forEach((brickEl) => {
+                        const dataId = brickEl.dataset.id;
+                        if (dataId) elById.set(dataId, brickEl);
+                    });
+
+                    // Snapshot each node's start position AND its DOM element, so `move` can
+                    // translate the whole tower by writing transforms straight to the DOM — no
+                    // per-frame store write means no brick re-renders mid-drag (mirroring the
+                    // palette-ghost drag). Reuse the node list `findTower` already computed rather
+                    // than walking the graph again.
+                    const { coords } = useBrickLayoutStore.getState();
+                    const dragNodes: Record<string, DraggedNode> = {};
+                    for (const node of nodes) {
+                        const nodeId = node.model.id;
+                        const current = coords[nodeId];
+                        const nodeEl = elById.get(nodeId) ?? null;
+                        if (current && nodeEl) {
+                            dragNodes[nodeId] = {
+                                el: nodeEl,
+                                start: { x: current.x, y: current.y },
+                            };
+                        }
+                    }
+
                     dragStateRef.current = {
                         towerId: tower.id,
                         towerStart: { x: tower.position.x, y: tower.position.y },
-                        nodeStarts,
+                        nodes: dragNodes,
                         engine,
                     };
                 },
@@ -170,10 +194,11 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                     deltaRef.current.y += event.dy;
 
                     const drag = dragStateRef.current;
-                    const { coords, setCoords } = useBrickLayoutStore.getState();
 
                     if (!drag) {
-                        // Fallback: no resolved tower — translate only the grabbed brick.
+                        // Fallback: no resolved tower — translate only the grabbed brick via the
+                        // store. It's a single brick, so the re-render cost is negligible here.
+                        const { coords, setCoords } = useBrickLayoutStore.getState();
                         const current = coords[id];
                         if (current) {
                             setCoords(id, {
@@ -184,15 +209,13 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                         return;
                     }
 
-                    // Translate every node of the tower by the accumulated delta in one batch.
-                    const batch: Record<string, Point> = {};
-                    for (const [nodeId, start] of Object.entries(drag.nodeStarts)) {
-                        batch[nodeId] = {
-                            x: start.x + deltaRef.current.x,
-                            y: start.y + deltaRef.current.y,
-                        };
+                    // Translate every node of the tower by writing its transform straight to the
+                    // DOM. This bypasses the layout store, so no brick re-renders mid-drag; the
+                    // store is reconciled once on `end`.
+                    const { x: dx, y: dy } = deltaRef.current;
+                    for (const { el: nodeEl, start } of Object.values(drag.nodes)) {
+                        nodeEl.style.transform = `translate(${start.x + dx}px, ${start.y + dy}px)`;
                     }
-                    setCoords(batch);
                 },
                 end(_event: DragEvent) {
                     const drag = dragStateRef.current;
@@ -203,15 +226,26 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                     const tower = towers[drag.towerId];
                     if (!tower) return;
 
+                    const { x: dx, y: dy } = deltaRef.current;
+
+                    // The move handler wrote only to the DOM, so the store still holds each brick's
+                    // START position. Compute the dropped positions and commit them ONCE — the sole
+                    // re-render of the whole drag — so the post-drop render reads the dropped (not
+                    // the stale start) coords, and the snap probe below measures the real drop.
+                    const finalCoords: Record<string, Point> = {};
+                    for (const [nodeId, node] of Object.entries(drag.nodes)) {
+                        finalCoords[nodeId] = { x: node.start.x + dx, y: node.start.y + dy };
+                    }
+                    useBrickLayoutStore.getState().setCoords(finalCoords);
+
                     const finalPosition: Point = {
-                        x: drag.towerStart.x + deltaRef.current.x,
-                        y: drag.towerStart.y + deltaRef.current.y,
+                        x: drag.towerStart.x + dx,
+                        y: drag.towerStart.y + dy,
                     };
 
                     // Resolve the drop into a validated join plan (probe → findSnap → resolve target
                     // → validate) in one step, so there is a single fallback path.
-                    const { coords } = useBrickLayoutStore.getState();
-                    const plan = resolveSnap(tower, coords, drag.engine, towers);
+                    const plan = resolveSnap(tower, finalCoords, drag.engine, towers);
 
                     if (plan === null) {
                         // No valid mate: the tower stays free. Reconcile its origin with where it

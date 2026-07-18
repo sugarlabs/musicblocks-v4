@@ -234,13 +234,15 @@ export function collectOpenConnectors(
 }
 
 /**
- * Collects the DRAGGED tower's two probe connectors — its ROOT `prev` groove and its outer TAIL
- * `next` tab — resolved to absolute canvas space, keeping only the open ones. These are the only
- * connectors a moving tower snaps WITH (per the approved spec): a tower snaps by an END of its
- * outer sequence, not by its middle or an inner cavity. A value/expression root yields nothing.
+ * Collects the DRAGGED tower's probe connectors — the connectors a moving tower snaps WITH (per the
+ * approved spec: a tower snaps by an outer END, never by its middle or an inner cavity), resolved to
+ * absolute canvas space and kept only when open:
+ *   - Statement root: its ROOT `prev` groove and its outer TAIL `next` tab (up to two).
+ *   - Value/expression root: its single `output` tab — the argument-domain mirror of the "outer
+ *     ends only" rule (such a tower has no sequence ends, only an output to plug into a parent).
  *
- * See {@link collectConnectors} for parameter meanings. Returns up to two connectors (each omitted
- * when absent or already occupied).
+ * See {@link collectConnectors} for parameter meanings. Returns the open probes (each omitted when
+ * absent or already occupied).
  */
 export function collectProbeConnectors(
     root: TowerNode,
@@ -248,6 +250,24 @@ export function collectProbeConnectors(
     coords: Record<string, Point>,
     towerId: string,
 ): OpenConnector[] {
+    // Argument-domain probe: a value/expression tower probes by its own `output` tab, emitted only
+    // when the root is free (no parent), placed, and the model exposes an output offset.
+    if (root.kind === 'value' || root.kind === 'expression') {
+        const rootTopLeft = coords[root.model.id];
+        const rootOutput = root.model.getConnectorCoords().output;
+        if (root.parent === null && rootTopLeft && rootOutput) {
+            return [
+                {
+                    towerId,
+                    nodeId: root.model.id,
+                    kind: 'output',
+                    point: toWorld(origin, rootTopLeft, rootOutput),
+                },
+            ];
+        }
+        return [];
+    }
+
     if (root.kind !== 'statement') return [];
 
     const tail = findTail(root);

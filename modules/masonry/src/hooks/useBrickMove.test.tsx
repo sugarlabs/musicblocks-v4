@@ -8,8 +8,8 @@ import { useRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Point } from '@/@types/common.types';
-import type { TowerStatementNode } from '@/@types/tower.types';
-import { StatementBrickModel } from '@/models/brick';
+import type { TowerExpressionNode, TowerStatementNode, TowerValueNode } from '@/@types/tower.types';
+import { ExpressionBrickModel, StatementBrickModel, ValueBrickModel } from '@/models/brick';
 
 import { useBrickLayoutStore } from '@/stores/brick';
 import { resetSnapEngine } from '@/stores/snap';
@@ -72,6 +72,36 @@ function chain(...nodes: TowerStatementNode[]): TowerStatementNode {
     node.next = nodes[i + 1] ?? null;
   });
   return nodes[0];
+}
+
+/** A free-floating value node — its output tab is the arg-domain probe. */
+function makeValue(id: string): TowerValueNode {
+  return {
+    kind: 'value',
+    model: new ValueBrickModel({
+      id,
+      colorsDefault,
+      tooltipText: '',
+      widget: { type: 'numberbox', value: 0 },
+    }),
+    parent: null,
+  };
+}
+
+/** An expression node with one empty argument slot per `params` entry. */
+function makeExpression(id: string, params: [string, ...string[]]): TowerExpressionNode {
+  return {
+    kind: 'expression',
+    model: new ExpressionBrickModel({
+      id,
+      colorsDefault,
+      tooltipText: '',
+      widget: { type: 'label', text: id },
+      params,
+    }),
+    parent: null,
+    args: params.map(() => null),
+  };
 }
 
 /** A brick that binds the drag hook and positions itself from the layout store, like TowerBrick. */
@@ -212,6 +242,48 @@ describe('useBrickMove', () => {
     // Both bricks are reachable from the survivor's root by forward pointers.
     const ids = listNodes(towers.target.root).map((node) => node.model.id);
     expect(ids).toEqual(expect.arrayContaining(['T', 'D']));
+  });
+
+  it('arg-snaps a dragged value output onto an empty input slot and absorbs the tower', () => {
+    const target = makeExpression('E', ['A']); // one empty argument slot
+    const dragged = makeValue('V');
+    useWorkspaceStore
+      .getState()
+      .createTower({ id: 'target', root: target, position: { x: 0, y: 0 } });
+    useWorkspaceStore
+      .getState()
+      .createTower({ id: 'dragged', root: dragged, position: { x: 0, y: 0 } });
+
+    const pTarget: Point = { x: 200, y: 200 };
+    const pDraggedStart: Point = { x: 400, y: 400 };
+    useBrickLayoutStore.getState().setCoords({ E: pTarget, V: pDraggedStart });
+    useBrickLayoutStore.getState().setMounted({ E: true, V: true });
+
+    // Move the dragged value so its output tab lands exactly on the target's empty input slot:
+    //   (pDraggedStart + delta) + draggedOutput === pTarget + targetInput
+    const targetInput = target.model.getConnectorCoords().inputs[0].point;
+    const draggedOutput = dragged.model.getConnectorCoords().output!;
+    const delta: Point = {
+      x: pTarget.x + targetInput.x - draggedOutput.x - pDraggedStart.x,
+      y: pTarget.y + targetInput.y - draggedOutput.y - pDraggedStart.y,
+    };
+
+    const { brickEl } = renderCanvas(['E', 'V']);
+    const listeners = listenersFor(brickEl, 'V');
+
+    act(() => listeners.start({}));
+    act(() => listeners.move({ dx: delta.x, dy: delta.y }));
+    act(() => listeners.end({}));
+
+    const { towers } = useWorkspaceStore.getState();
+    // The dragged value tower is absorbed into the target, whose layout is bumped to re-run.
+    expect(towers.dragged).toBeUndefined();
+    expect(towers.target).toBeDefined();
+    expect(towers.target.layoutVersion).toBe(1);
+    // The value is now wired into the expression's slot 0, with its parent back-pointer set.
+    const survivor = towers.target.root as TowerExpressionNode;
+    expect(survivor.args[0]).toBe(dragged);
+    expect(dragged.parent).toBe(survivor);
   });
 
   it('falls back to moving only the grabbed brick via the store when it has no owning tower', () => {

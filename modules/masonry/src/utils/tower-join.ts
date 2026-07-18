@@ -1,4 +1,4 @@
-import type { TowerStatementNode } from '@/@types/tower.types';
+import type { TowerExpressionNode, TowerStatementNode, TowerValueNode } from '@/@types/tower.types';
 
 import type { ConnectorKind } from './connectors';
 import { findTail } from './tower-traversal';
@@ -100,4 +100,28 @@ export function joinTowers(params: JoinParams): void {
     throw new Error(
         `joinTowers: unsupported mating dragged '${draggedKind}' → target '${targetKind}'`,
     );
+}
+
+/** Parameters describing a single validated argument-join between two towers. */
+export interface ArgJoinParams {
+    /** Root of the dragged tower — the value/expression whose output plugs in. */
+    draggedRoot: TowerValueNode | TowerExpressionNode;
+    /** The target node whose empty argument slot receives the dragged root. */
+    target: TowerExpressionNode | TowerStatementNode;
+    /** Index of the target's argument slot being filled. */
+    slotIndex: number;
+}
+
+/**
+ * Plugs the dragged value/expression tower into a target's empty argument slot by mutating tower-node
+ * pointers in place. Pure with respect to stores and layout — it only edits the node graph (the slot
+ * reference and the dragged root's `parent` back-pointer); the caller merges the towers in the store
+ * and triggers a re-layout, which sets `argDims`. Arguments carry no notch flags.
+ *
+ * The caller guarantees the slot is empty (`SnapEngine.findSnap` filters out occupied slots) and that
+ * the two towers differ.
+ */
+export function joinArg({ draggedRoot, target, slotIndex }: ArgJoinParams): void {
+    target.args[slotIndex] = draggedRoot;
+    draggedRoot.parent = target;
 }

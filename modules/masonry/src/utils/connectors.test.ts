@@ -340,9 +340,50 @@ describe('collectProbeConnectors', () => {
         expect(find(result, 'S', 'prev')).toHaveLength(0);
     });
 
-    it('returns nothing for a non-statement root', () => {
-        const coords: Record<string, Point> = { [valueTree.model.id]: { x: 0, y: 0 } };
-        expect(collectProbeConnectors(valueTree, { x: 0, y: 0 }, coords, 't')).toEqual([]);
+    it('probes a free value root by its single output tab, at the correct world point', () => {
+        const origin: Point = { x: 5, y: 7 };
+        const topLeft: Point = { x: 40, y: 400 };
+        const coords: Record<string, Point> = { [valueTree.model.id]: topLeft };
+
+        const result = collectProbeConnectors(valueTree, origin, coords, 't');
+        const output = valueTree.model.getConnectorCoords().output!;
+
+        expect(result).toHaveLength(1);
+        expect(result[0].kind).toBe('output');
+        expect(result[0].nodeId).toBe(valueTree.model.id);
+        expect(result[0].towerId).toBe('t');
+        expect(result[0].point).toEqual({
+            x: origin.x + topLeft.x + output.x,
+            y: origin.y + topLeft.y + output.y,
+        });
+    });
+
+    it('probes a free expression root by its output tab (not its input slots)', () => {
+        const expr = makeExpression('E', ['A', 'B']);
+        const result = collectProbeConnectors(expr, { x: 0, y: 0 }, { E: { x: 0, y: 0 } }, 't');
+
+        // A dragged tower snaps by its own output only; its input slots are targets, never probes.
+        expect(result).toHaveLength(1);
+        expect(result[0].kind).toBe('output');
+        expect(find(result, 'E', 'input')).toHaveLength(0);
+    });
+
+    it('probes nothing when the value/expression root is already plugged into a parent', () => {
+        const parent = makeExpression('P', ['A']);
+        const plugged = makeValue('P.child', parent);
+        parent.args = [plugged];
+
+        const result = collectProbeConnectors(
+            plugged,
+            { x: 0, y: 0 },
+            { 'P.child': { x: 0, y: 0 } },
+            't',
+        );
+        expect(result).toEqual([]);
+    });
+
+    it('probes nothing for a value/expression root missing from the coords map', () => {
+        expect(collectProbeConnectors(valueTree, { x: 0, y: 0 }, {}, 't')).toEqual([]);
     });
 });
 

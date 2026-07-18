@@ -10,9 +10,10 @@ import { SNAP_DISTANCE, SnapEngine } from './snap';
 const CANVAS: Point = { x: 1000, y: 1000 };
 
 /**
- * Builds a statement-domain connector at an absolute canvas point. Defaults to open (`occupied`
- * false); pass `occupied` to model a connector that already links a neighbour (an insertion
- * target). A `Connector` is also a valid dragged probe, since it extends `OpenConnector`.
+ * Builds a connector at an absolute canvas point. Defaults to open (`occupied` false); pass
+ * `occupied` to model a connector that already links a neighbour (an insertion target) or fills an
+ * argument slot. Pass `slotIndex` for an argument-domain `input`. A `Connector` is also a valid
+ * dragged probe, since it extends `OpenConnector`.
  */
 function connector(
     towerId: string,
@@ -20,8 +21,9 @@ function connector(
     kind: ConnectorKind,
     point: Point,
     occupied = false,
+    slotIndex?: number,
 ): Connector {
-    return { towerId, nodeId, kind, point, occupied };
+    return { towerId, nodeId, kind, point, occupied, slotIndex };
 }
 
 function makeEngine(targets: Connector[]): SnapEngine {
@@ -241,5 +243,73 @@ describe('SnapEngine.findSnap', () => {
         const engine = makeEngine([]);
         const dragged = connector('dragged', 'D', 'prev', { x: 300, y: 300 });
         expect(engine.findSnap(dragged)).toBeNull();
+    });
+
+    describe('argument domain (dragged output → target input slot)', () => {
+        it('snaps a dragged output onto an empty input slot, carrying its slotIndex', () => {
+            // slot 2 of the target expression, empty (occupied false).
+            const target = connector('target', 'E', 'input', { x: 300, y: 300 }, false, 2);
+            const engine = makeEngine([target]);
+
+            const dragged = connector('dragged', 'V', 'output', { x: 303, y: 300 }); // distance 3
+
+            const result = engine.findSnap(dragged);
+            expect(result).not.toBeNull();
+            expect(result!.targetKind).toBe('input');
+            expect(result!.draggedKind).toBe('output');
+            expect(result!.target.slotIndex).toBe(2);
+            expect(result!.distance).toBeCloseTo(3);
+        });
+
+        it('skips an OCCUPIED input slot (empty-only: no displace/replace)', () => {
+            // The only target slot already holds a child, so nothing valid is in range.
+            const target = connector('target', 'E', 'input', { x: 300, y: 300 }, true, 0);
+            const engine = makeEngine([target]);
+
+            const dragged = connector('dragged', 'V', 'output', { x: 300, y: 300 }); // coincident
+            expect(engine.findSnap(dragged)).toBeNull();
+        });
+
+        it('picks the nearest EMPTY slot when an occupied slot is closer', () => {
+            const occupiedNear = connector('target', 'E', 'input', { x: 300, y: 300 }, true, 0);
+            const emptyFar = connector('target', 'E', 'input', { x: 300, y: 308 }, false, 1);
+            const engine = makeEngine([occupiedNear, emptyFar]);
+
+            const dragged = connector('dragged', 'V', 'output', { x: 300, y: 301 });
+
+            const result = engine.findSnap(dragged);
+            expect(result).not.toBeNull();
+            expect(result!.target.slotIndex).toBe(1);
+        });
+
+        it('rejects a dragged output against a statement prev/next (domains never cross)', () => {
+            const asNext = connector('target', 'T', 'next', { x: 300, y: 300 });
+            const asPrev = connector('target', 'T', 'prev', { x: 400, y: 400 });
+            const engine = makeEngine([asNext, asPrev]);
+
+            expect(
+                engine.findSnap(connector('dragged', 'V', 'output', { x: 300, y: 300 })),
+            ).toBeNull();
+            expect(
+                engine.findSnap(connector('dragged', 'V', 'output', { x: 400, y: 400 })),
+            ).toBeNull();
+        });
+
+        it('resolves a dragged output through the shared engine onto an arg-push input target', () => {
+            // Mirrors refreshSnapTargets: statement-sequence AND argument-slot connectors share one
+            // target set. The output must resolve only against the arg-push input (isValidMate keeps
+            // the domains apart), proving the arg push is reachable through the engine.
+            const seqNext = connector('target', 'S', 'next', { x: 100, y: 100 });
+            const argInput = connector('target', 'E', 'input', { x: 300, y: 300 }, false, 0);
+            const engine = makeEngine([seqNext, argInput]);
+
+            const dragged = connector('dragged', 'V', 'output', { x: 302, y: 300 });
+
+            const result = engine.findSnap(dragged);
+            expect(result).not.toBeNull();
+            expect(result!.targetNodeId).toBe('E');
+            expect(result!.targetKind).toBe('input');
+            expect(result!.target.slotIndex).toBe(0);
+        });
     });
 });

@@ -11,7 +11,13 @@ import { getSnapEngine, refreshSnapTargets } from '@/stores/snap';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { collectProbeConnectors, ORIGIN } from '@/utils/connectors';
 import type { SnapCandidate, SnapEngine } from '@/utils/snap';
-import { joinTowers, type DraggedKind, type JoinParams } from '@/utils/tower-join';
+import {
+    joinArg,
+    joinTowers,
+    type ArgJoinParams,
+    type DraggedKind,
+    type JoinParams,
+} from '@/utils/tower-join';
 import { listNodes } from '@/utils/tower-traversal';
 
 /** A single dragged node: its positioned DOM element and where it started. */
@@ -58,13 +64,14 @@ function findTower(brickId: string): OwningTower | null {
     return null;
 }
 
-/** A validated snap resolved to everything the drop needs: the join to perform and the merge. */
-interface JoinPlan {
-    /** Fully validated parameters for {@link joinTowers}. */
-    params: JoinParams;
-    /** Id of the stationary tower that absorbs the dragged one after the join. */
-    targetTowerId: string;
-}
+/**
+ * A validated snap resolved to everything the drop needs: the join to perform and the merge. A drop
+ * is either a STATEMENT join (sequence snapping, spliced by {@link joinTowers}) or an ARG join
+ * (argument snapping, plugged by {@link joinArg}); both then absorb the dragged tower.
+ */
+type JoinPlan =
+    | { type: 'statement'; params: JoinParams; targetTowerId: string }
+    | { type: 'arg'; params: ArgJoinParams; targetTowerId: string };
 
 /**
  * Resolves the dragged tower's drop into a join plan, or `null` when nothing valid is in range —
@@ -92,15 +99,6 @@ function resolveSnap(
     if (best === null) return null;
     const snap = best;
 
-    // Only a dragged `prev`/`next` is an approved mate (a `nestedNext` or an argument-domain
-    // `input`/`output` is not); narrow to a 'prev' | 'next' with no cast so `joinTowers` only ever
-    // receives a `DraggedKind`.
-    if (snap.draggedKind !== 'prev' && snap.draggedKind !== 'next') return null;
-    const draggedKind: DraggedKind = snap.draggedKind;
-
-    const draggedRoot = tower.root;
-    if (draggedRoot.kind !== 'statement') return null;
-
     const targetTower = towers[snap.targetTowerId];
     if (!targetTower) return null;
 
@@ -108,9 +106,37 @@ function resolveSnap(
     const targetNode = listNodes(targetTower.root).find(
         (node) => node.model.id === snap.targetNodeId,
     );
-    if (!targetNode || targetNode.kind !== 'statement') return null;
+    if (!targetNode) return null;
+
+    // Argument join: a dragged `output` plugs into a target's empty `input` slot. The empty-slot and
+    // kind guards are defensive — `findSnap` already filters occupied inputs and gates the mating.
+    if (snap.draggedKind === 'output') {
+        const draggedRoot = tower.root;
+        if (draggedRoot.kind !== 'value' && draggedRoot.kind !== 'expression') return null;
+        if (snap.targetKind !== 'input' || snap.target.slotIndex === undefined) return null;
+        if (snap.target.occupied) return null;
+        if (targetNode.kind !== 'expression' && targetNode.kind !== 'statement') return null;
+
+        return {
+            type: 'arg',
+            params: { draggedRoot, target: targetNode, slotIndex: snap.target.slotIndex },
+            targetTowerId: snap.targetTowerId,
+        };
+    }
+
+    // Statement join: only a dragged `prev`/`next` is an approved mate (a `nestedNext` or an
+    // argument-domain `input` is not); narrow to a 'prev' | 'next' with no cast so `joinTowers` only
+    // ever receives a `DraggedKind`.
+    if (snap.draggedKind !== 'prev' && snap.draggedKind !== 'next') return null;
+    const draggedKind: DraggedKind = snap.draggedKind;
+
+    const draggedRoot = tower.root;
+    if (draggedRoot.kind !== 'statement') return null;
+
+    if (targetNode.kind !== 'statement') return null;
 
     return {
+        type: 'statement',
         params: { draggedRoot, target: targetNode, draggedKind, targetKind: snap.targetKind },
         targetTowerId: snap.targetTowerId,
     };
@@ -258,8 +284,10 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                     // A valid mate was found: mutate the node pointers in place, then drop the
                     // absorbed tower and bump the target's layoutVersion so useTowerLayout re-runs
                     // and positions everything flush from the target origin (snap-align falls out
-                    // of the re-layout).
-                    joinTowers(plan.params);
+                    // of the re-layout). A statement join splices the sequence; an arg join plugs
+                    // the output into the target slot.
+                    if (plan.type === 'statement') joinTowers(plan.params);
+                    else joinArg(plan.params);
                     useWorkspaceStore.getState().absorbTower(drag.towerId, plan.targetTowerId);
                 },
             },

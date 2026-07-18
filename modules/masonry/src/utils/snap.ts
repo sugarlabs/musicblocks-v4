@@ -56,11 +56,15 @@ export interface SnapCandidate {
  *   - S2 nest in clamp: dragged `prev` ← target `nestedNext`
  *   - S3 attach above:  dragged `next` → target `prev`
  *
- * A dragged `nestedNext` is not an approved case and is rejected.
+ * The argument domain adds one more case: a dragged `output` tab plugs into a target `input` slot.
+ *
+ * A dragged `nestedNext` (statement domain) or `input` (argument domain) is not an approved case and
+ * is rejected.
  */
 function isValidMate(draggedKind: ConnectorKind, targetKind: ConnectorKind): boolean {
     if (draggedKind === 'prev') return targetKind === 'next' || targetKind === 'nestedNext';
     if (draggedKind === 'next') return targetKind === 'prev';
+    if (draggedKind === 'output') return targetKind === 'input';
     return false;
 }
 
@@ -141,6 +145,11 @@ export class SnapEngine {
 
             // Tab/groove compatibility per the approved spec.
             if (!isValidMate(dragged.kind, target.kind)) continue;
+
+            // Argument domain is EMPTY-ONLY: an occupied `input` slot is skipped so findSnap picks
+            // the nearest EMPTY slot (no displace/replace). Statement mates keep occupied targets,
+            // where snapping onto one expresses mid-chain insertion.
+            if (target.kind === 'input' && target.occupied) continue;
 
             const distance = Math.hypot(
                 target.point.x - dragged.point.x,

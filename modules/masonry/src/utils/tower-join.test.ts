@@ -1,9 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import type { TowerStatementNode } from '@/@types/tower.types';
-import { StatementBrickModel } from '@/models/brick';
+import type {
+    TowerExpressionNode,
+    TowerNode,
+    TowerStatementNode,
+    TowerValueNode,
+} from '@/@types/tower.types';
+import { ExpressionBrickModel, StatementBrickModel, ValueBrickModel } from '@/models/brick';
 
-import { joinTowers } from './tower-join';
+import { joinArg, joinTowers } from './tower-join';
 
 const colorsDefault = { background: '#3498db', foreground: '#ffffff', border: '#2980b9' };
 
@@ -161,5 +166,76 @@ describe('joinTowers', () => {
         expect(() =>
             joinTowers({ draggedRoot, target, draggedKind: 'next', targetKind: 'next' }),
         ).toThrow(/unsupported mating/);
+    });
+});
+
+/** A free-floating value node. */
+function makeValue(id: string): TowerValueNode {
+    return {
+        kind: 'value',
+        model: new ValueBrickModel({
+            id,
+            colorsDefault,
+            tooltipText: '',
+            widget: { type: 'numberbox', value: 0 },
+        }),
+        parent: null,
+    };
+}
+
+/** An expression node with one arg slot per `params` entry, all empty unless `args` is supplied. */
+function makeExpression(
+    id: string,
+    params: [string | null, ...(string | null)[]],
+    args?: (TowerNode | null)[],
+): TowerExpressionNode {
+    return {
+        kind: 'expression',
+        model: new ExpressionBrickModel({
+            id,
+            colorsDefault,
+            tooltipText: '',
+            widget: { type: 'label', text: id },
+            params,
+        }),
+        parent: null,
+        args: args ?? params.map(() => null),
+    };
+}
+
+describe('joinArg', () => {
+    it('plugs a value into an empty expression slot, leaving other slots untouched', () => {
+        const target = makeExpression('E', ['A', 'B']); // two empty slots
+        const draggedRoot = makeValue('V');
+
+        joinArg({ draggedRoot, target, slotIndex: 1 });
+
+        // Slot 1 now references the value; its parent back-pointer targets the expression.
+        expect(target.args[1]).toBe(draggedRoot);
+        expect(draggedRoot.parent).toBe(target);
+        // The other slot is left alone.
+        expect(target.args[0]).toBeNull();
+    });
+
+    it('plugs an expression into another expression slot (output child)', () => {
+        const target = makeExpression('outer', ['A']);
+        const draggedRoot = makeExpression('inner', ['X']);
+
+        joinArg({ draggedRoot, target, slotIndex: 0 });
+
+        expect(target.args[0]).toBe(draggedRoot);
+        expect(draggedRoot.parent).toBe(target);
+    });
+
+    it('plugs a value into a statement target argument slot', () => {
+        const target = makeStatement('S');
+        target.args = [null, null];
+        const draggedRoot = makeValue('V');
+
+        joinArg({ draggedRoot, target, slotIndex: 0 });
+
+        expect(target.args[0]).toBe(draggedRoot);
+        expect(draggedRoot.parent).toBe(target);
+        expect(target.args[1]).toBeNull();
     });
 });

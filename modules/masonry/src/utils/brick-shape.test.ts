@@ -714,6 +714,11 @@ describe('generate', () => {
 describe('getConnectorCoords', () => {
     const strokeWidth = 2;
 
+    // Half the notch depth = distance from an edge line to the notch centroid. Connector points
+    // sit at the notch centre, so each is shifted by this off the edge (grooves in, tabs out).
+    const vHalfDepth = (BrickOutlineGeneratorTest.V_NOTCH_RADIUS + (3 * strokeWidth) / 2) / 2;
+    const hHalfDepth = (BrickOutlineGeneratorTest.H_NOTCH_RADIUS + (3 * strokeWidth) / 2) / 2;
+
     it('presence follows feature flags', () => {
         // A plain value brick: no notches, no args, no nesting.
         const value = brickOutlineGenerator.getConnectorCoords({
@@ -783,10 +788,11 @@ describe('getConnectorCoords', () => {
         inputs.forEach((p, k) => {
             const a = argGrooves[k]!;
             expect(p.y).toBe(a.y + BrickOutlineGeneratorTest.H_NOTCH_OFFSET_Y);
-            expect(p.x).toBe(a.x - strokeWidth / 2);
+            expect(p.x).toBe(a.x - strokeWidth / 2 - hHalfDepth);
         });
-        // Grooves sit at the right edge (x = width); the connector is inset by half the stroke.
-        expect(inputs[0]!.x).toBe(width - strokeWidth / 2);
+        // Grooves sit at the right edge (x = width); the connector is inset by half the stroke plus
+        // half the notch depth, since the point sits at the groove centroid.
+        expect(inputs[0]!.x).toBe(width - strokeWidth / 2 - hHalfDepth);
     });
 
     it("next connector sits on the brick's bottom edge (height branch)", () => {
@@ -800,7 +806,7 @@ describe('getConnectorCoords', () => {
         const dims = brickOutlineGenerator.computeDimensions(nest);
         const c = brickOutlineGenerator.getConnectorCoords(nest);
 
-        expect(c.next!.y).toBe(dims.height - strokeWidth / 2);
+        expect(c.next!.y).toBe(dims.height - strokeWidth / 2 + vHalfDepth);
         // Proves the (hasNesting ? height : headHeight) branch selected the full height,
         // placing next on the tail-step bottom rather than the cavity roof.
         expect(c.next!.y).toBeGreaterThan(dims.headHeight);
@@ -808,7 +814,7 @@ describe('getConnectorCoords', () => {
         const flat = { ...nest, nestingDims: undefined };
         const fd = brickOutlineGenerator.computeDimensions(flat);
         expect(brickOutlineGenerator.getConnectorCoords(flat).next!.y).toBe(
-            fd.height - strokeWidth / 2,
+            fd.height - strokeWidth / 2 + vHalfDepth,
         );
     });
 
@@ -821,8 +827,8 @@ describe('getConnectorCoords', () => {
             hasNextNotch: true,
         });
 
-        // prev sits on the top edge, inset by half the stroke.
-        expect(c.prev!.y).toBe(strokeWidth / 2);
+        // prev is a top-edge groove; its centroid sits half the notch depth below the edge.
+        expect(c.prev!.y).toBe(strokeWidth / 2 + vHalfDepth);
         // A brick's next tab must share its x with the prev groove of the brick stacked below.
         expect(c.prev!.x).toBe(c.next!.x);
     });
@@ -864,13 +870,13 @@ describe('getConnectorCoords', () => {
             hasOutputNotch: true,
         }).output!;
 
-        // output sits on the left edge, inset by half the stroke.
-        expect(output.x).toBe(strokeWidth / 2);
+        // output is a left-edge tab; its centroid sits half the notch depth outside the edge.
+        expect(output.x).toBe(strokeWidth / 2 - hHalfDepth);
         // The child's output seats into the parent's arg groove at the same in-slot offset.
         expect(output.y).toBe(parentInput.y - parentArg.y);
     });
 
-    it('every connector lies within the brick frame', () => {
+    it('every connector lies within a half-notch-depth margin of the brick frame', () => {
         const input = {
             strokeWidth,
             widgetDims: { w: 120, h: 20 },
@@ -882,14 +888,23 @@ describe('getConnectorCoords', () => {
         };
         const { width, height } = brickOutlineGenerator.generate(input);
         const c = brickOutlineGenerator.getConnectorCoords(input);
+
+        // Male-tab centroids (next below the bottom edge, output left of the left edge) sit at the
+        // notch centre and therefore fall a half-depth OUTSIDE the frame; female-groove centroids
+        // fall a half-depth inside. Allow a margin of at most one half-depth beyond each edge.
+        const margin = Math.max(vHalfDepth, hHalfDepth);
         const pts = [c.prev!, c.next!, c.nestedNext!, c.output!, ...c.inputs];
 
         pts.forEach((p) => {
-            expect(p.x).toBeGreaterThanOrEqual(0);
-            expect(p.x).toBeLessThanOrEqual(width);
-            expect(p.y).toBeGreaterThanOrEqual(0);
-            expect(p.y).toBeLessThanOrEqual(height);
+            expect(p.x).toBeGreaterThanOrEqual(-margin);
+            expect(p.x).toBeLessThanOrEqual(width + margin);
+            expect(p.y).toBeGreaterThanOrEqual(-margin);
+            expect(p.y).toBeLessThanOrEqual(height + margin);
         });
+
+        // The margin is meaningful: at least one tab centroid genuinely lands outside the frame.
+        expect(c.next!.y).toBeGreaterThan(height);
+        expect(c.output!.x).toBeLessThan(0);
     });
 
     it('interleaving with generate() does not corrupt the shared cache', () => {

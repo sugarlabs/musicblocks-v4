@@ -26,14 +26,36 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
     nodesRef.current = nodes;
 
     if (!isInitialized.current) {
-        const ids = nodes.map((node) => node.model.id);
+        const storeState = useBrickLayoutStore.getState();
+        const newCoords: Record<string, Point> = {};
+        const newMounted: Record<string, boolean> = {};
+        const newPositioned: Record<string, boolean> = {};
 
-        setCoords(Object.fromEntries(ids.map((id) => [id, { x: 0, y: 0 }])));
-        setMounted(Object.fromEntries(ids.map((id) => [id, false])));
-        setPositioned(Object.fromEntries(ids.map((id) => [id, false])));
+        for (const node of nodes) {
+            const id = node.model.id;
+            if (storeState.coords[id] === undefined) {
+                newCoords[id] = { x: 0, y: 0 };
+            }
+            if (storeState.mounted[id] === undefined) {
+                newMounted[id] = false;
+            }
+            if (storeState.positioned[id] === undefined) {
+                newPositioned[id] = false;
+            }
+        }
+
+        if (Object.keys(newCoords).length > 0) setCoords(newCoords);
+        if (Object.keys(newMounted).length > 0) setMounted(newMounted);
+        if (Object.keys(newPositioned).length > 0) setPositioned(newPositioned);
 
         isInitialized.current = true;
     }
+
+    // We need to keep a ref to the latest origin to avoid stale closures in the async process
+    const originRef = useRef(origin);
+    useEffect(() => {
+        originRef.current = origin;
+    }, [origin.x, origin.y]); // eslint-disable-line react-hooks/exhaustive-deps -- intentional: primitive deps prevent stale object reference
 
     useEffect(() => {
         let isCancelled = false;
@@ -96,7 +118,11 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
                 }
             });
 
-            const positioned = traverseTopDown(root, { x: origin.x, y: origin.y });
+            // Use the latest origin from the ref to avoid applying a stale layout position
+            const positioned = traverseTopDown(root, {
+                x: originRef.current.x,
+                y: originRef.current.y,
+            });
 
             if (positioned.length > 0) {
                 setCoords(
@@ -110,6 +136,8 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
 
                 setPositioned(Object.fromEntries(positioned.map((node) => [node.model.id, true])));
             }
+
+            isInitialized.current = true;
         }
 
         // We run the async process once per root/layoutVersion change
@@ -118,9 +146,26 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
         return () => {
             isCancelled = true;
         };
-        // Depend on the primitive co-ordinates, not the origin object — callers may pass a fresh
-        // object literal each render, which would re-trigger the layout on every render.
-    }, [root, origin.x, origin.y, setCoords, setMounted, setPositioned]);
+    }, [root, setCoords, setMounted, setPositioned]);
+
+    // Fast-path for moving a tower without recalculating its internal layout
+    useEffect(() => {
+        // Skip if layout is not fully measured yet
+        if (!isInitialized.current) return;
+
+        const positioned = traverseTopDown(root, { x: origin.x, y: origin.y });
+
+        if (positioned.length > 0) {
+            setCoords(
+                Object.fromEntries(
+                    positioned.map((node) => [
+                        node.model.id,
+                        { x: node.model.position.x, y: node.model.position.y },
+                    ]),
+                ),
+            );
+        }
+    }, [origin.x, origin.y, root, setCoords]);
 
     return nodes;
 }

@@ -2,20 +2,33 @@ import { useEffect, useMemo, useRef } from 'react';
 
 import type { PaletteBrickConfig } from '@/@types/palette.types';
 import type { WorkspaceViewProps } from '@/@types/workspace.types';
+import type { TowerNode } from '@/@types/tower.types';
+import type { Point } from '@/@types/common.types';
 
 import { Palette } from '@/components/Palette/Palette';
-import { TowerView } from '@/components/Tower/Tower';
+import { TowerBrickView } from '@/components/Tower/TowerBrick';
 import { useDragFromPalette } from '@/hooks/useDragFromPalette';
+import { useTowerLayout } from '@/hooks/useTowerLayout';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { useWorkspaceStore } from '@/stores/workspace';
+import { listNodes } from '@/utils/tower-traversal';
 
 import { DragGhost } from './DragGhost';
+
+function TowerLayoutEngine({ root, origin }: { root: TowerNode; origin: Point }) {
+  useTowerLayout(root, origin);
+  return null;
+}
 
 export function Workspace({ config }: WorkspaceViewProps) {
   const { palette } = config;
 
   const towersRecord = useWorkspaceStore((state) => state.towers);
-  const towers = Object.values(towersRecord);
+  const towers = useMemo(() => Object.values(towersRecord), [towersRecord]);
+
+  const allNodes = useMemo(() => {
+    return towers.flatMap((tower) => listNodes(tower.root));
+  }, [towers]);
 
   // palette drag-and-drop wiring: the root element scopes the delegated drag
   // selector and positions the ghost overlay; the canvas element anchors drop coordinates.
@@ -64,15 +77,17 @@ export function Workspace({ config }: WorkspaceViewProps) {
         <Palette config={palette} />
       </div>
 
-      <div ref={canvasRef} className="bg-background relative h-full w-full shrink overflow-hidden">
+      <div
+        ref={canvasRef}
+        className="bg-background relative h-full w-full shrink overflow-hidden select-none"
+      >
+        {/* TowerLayoutEngine runs the layout hooks for each tower to compute brick positions */}
         {towers.map((tower) => (
-          <TowerView
-            key={tower.id}
-            id={tower.id}
-            root={tower.root}
-            origin={tower.position}
-            asChild
-          />
+          <TowerLayoutEngine key={`layout-${tower.id}`} root={tower.root} origin={tower.position} />
+        ))}
+        {/* TowerBrickView renders the actual DOM nodes for all bricks in a flattened list */}
+        {allNodes.map((node) => (
+          <TowerBrickView key={node.model.id} id={node.model.id} node={node} />
         ))}
       </div>
 

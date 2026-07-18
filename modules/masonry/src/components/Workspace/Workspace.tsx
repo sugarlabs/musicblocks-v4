@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import type { PaletteBrickConfig } from '@/@types/palette.types';
 import type { WorkspaceViewProps } from '@/@types/workspace.types';
@@ -6,6 +6,7 @@ import type { WorkspaceViewProps } from '@/@types/workspace.types';
 import { Palette } from '@/components/Palette/Palette';
 import { TowerView } from '@/components/Tower/Tower';
 import { useDragFromPalette } from '@/hooks/useDragFromPalette';
+import { resetSnapEngine } from '@/stores/snap';
 import { useWorkspaceStore } from '@/stores/workspace';
 
 import { DragGhost } from './DragGhost';
@@ -37,6 +38,12 @@ export function Workspace({ config }: WorkspaceViewProps) {
   }, [palette]);
 
   useDragFromPalette({ rootRef, canvasRef, ghostRef, bricksById });
+
+  // Clear the shared snap-engine singleton on unmount so a remount starts with a fresh engine
+  // rather than one still sized to (and holding targets from) the previous canvas.
+  useEffect(() => {
+    return () => resetSnapEngine();
+  }, []);
 
   return (
     <div ref={rootRef} className="relative flex h-full w-full">

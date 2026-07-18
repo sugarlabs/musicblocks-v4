@@ -10,6 +10,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { PaletteConfig } from '@/@types/palette.types';
 
 import { usePaletteDragStore } from '@/stores/palette';
+import { getSnapEngine, resetSnapEngine } from '@/stores/snap';
 import { useWorkspaceStore } from '@/stores/workspace';
 
 import { Workspace } from './Workspace';
@@ -18,6 +19,7 @@ afterEach(() => {
   cleanup();
   usePaletteDragStore.setState({ dragged: null });
   useWorkspaceStore.setState({ towers: {} });
+  resetSnapEngine();
 });
 
 // -------------------------------------------------------------------------------------------------
@@ -115,5 +117,19 @@ describe('Workspace', () => {
     unmount();
 
     expect(usePaletteDragStore.getState().dragged).toBeNull();
+  });
+
+  it('resets the shared snap engine when the Workspace unmounts', () => {
+    const { unmount } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+    // While mounted, a fixed canvas size returns the same cached engine instance.
+    const before = getSnapEngine(800, 600);
+    expect(getSnapEngine(800, 600)).toBe(before);
+
+    unmount();
+
+    // After unmount the singleton is cleared, so the next request builds a fresh engine
+    // rather than reusing one still sized to the previous canvas.
+    expect(getSnapEngine(800, 600)).not.toBe(before);
   });
 });

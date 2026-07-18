@@ -50,6 +50,18 @@ export interface Connector extends OpenConnector {
 }
 
 /**
+ * Resolves a connector to absolute canvas (world) space as the sum of three offsets:
+ *   `origin` + brick top-left px + connector px offset (from `getConnectorCoords()`).
+ * Shared by every connector collector so they all measure connectors the same way.
+ */
+function toWorld(origin: Point, topLeft: Point, offset: Point): Point {
+    return {
+        x: origin.x + topLeft.x + offset.x,
+        y: origin.y + topLeft.y + offset.y,
+    };
+}
+
+/**
  * Collects every statement-domain sequence connector in a tower (open AND occupied), resolved to
  * absolute canvas space, so the result is suitable as the SNAP TARGET set — snapping onto an
  * occupied connector is how mid-chain insertion is expressed.
@@ -82,18 +94,13 @@ export function collectConnectors(
 
         const offsets = node.model.getConnectorCoords();
 
-        const worldPoint = (offset: Point): Point => ({
-            x: origin.x + topLeft.x + offset.x,
-            y: origin.y + topLeft.y + offset.y,
-        });
-
         // prev groove — occupied when the node already has a predecessor.
         if (offsets.prev) {
             connectors.push({
                 towerId,
                 nodeId: node.model.id,
                 kind: 'prev',
-                point: worldPoint(offsets.prev),
+                point: toWorld(origin, topLeft, offsets.prev),
                 occupied: node.prev !== null,
             });
         }
@@ -104,7 +111,7 @@ export function collectConnectors(
                 towerId,
                 nodeId: node.model.id,
                 kind: 'next',
-                point: worldPoint(offsets.next),
+                point: toWorld(origin, topLeft, offsets.next),
                 occupied: node.next !== null,
             });
         }
@@ -116,7 +123,7 @@ export function collectConnectors(
                 towerId,
                 nodeId: node.model.id,
                 kind: 'nestedNext',
-                point: worldPoint(offsets.nestedNext),
+                point: toWorld(origin, topLeft, offsets.nestedNext),
                 occupied: node.nestedNext !== null,
             });
         }
@@ -175,10 +182,7 @@ export function collectProbeConnectors(
             towerId,
             nodeId: root.model.id,
             kind: 'prev',
-            point: {
-                x: origin.x + rootTopLeft.x + rootPrev.x,
-                y: origin.y + rootTopLeft.y + rootPrev.y,
-            },
+            point: toWorld(origin, rootTopLeft, rootPrev),
         });
     }
 
@@ -190,10 +194,7 @@ export function collectProbeConnectors(
             towerId,
             nodeId: tail.model.id,
             kind: 'next',
-            point: {
-                x: origin.x + tailTopLeft.x + tailNext.x,
-                y: origin.y + tailTopLeft.y + tailNext.y,
-            },
+            point: toWorld(origin, tailTopLeft, tailNext),
         });
     }
 

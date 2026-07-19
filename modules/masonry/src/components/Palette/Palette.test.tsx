@@ -211,6 +211,8 @@ describe('Palette', () => {
       // touch-action must be disabled so touch drags reach interact.js instead of scrolling.
       expect(note?.classList.contains('palette-brick-slot')).toBe(true);
       expect(note?.classList.contains('touch-none')).toBe(true);
+      expect(note?.classList.contains('px-1')).toBe(false);
+      expect(note?.classList.contains('py-1')).toBe(true);
       // Every slot carries the markup, not just the first.
       expect(container.querySelectorAll('.palette-brick-slot')).toHaveLength(3);
     });

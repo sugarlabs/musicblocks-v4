@@ -73,17 +73,21 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
                             arg ? { w: arg.model.dims.w, h: arg.model.dims.h } : null,
                         );
                     }
-                    if (node.kind === 'statement' && node.nestedNext) {
-                        // Sum heights and find max width of the inner statement chain
-                        let current: TowerNode | null = node.nestedNext;
-                        let totalH = 0;
-                        let maxW = 0;
-                        while (current !== null) {
-                            totalH += current.model.dims.h;
-                            if (current.model.dims.w > maxW) maxW = current.model.dims.w;
-                            current = current.kind === 'statement' ? current.next : null;
+                    if (node.kind === 'statement') {
+                        if (node.nestedNext) {
+                            // Sum heights and find max width of the inner statement chain
+                            let current: TowerNode | null = node.nestedNext;
+                            let totalH = 0;
+                            let maxW = 0;
+                            while (current !== null) {
+                                totalH += current.model.dims.h;
+                                if (current.model.dims.w > maxW) maxW = current.model.dims.w;
+                                current = current.kind === 'statement' ? current.next : null;
+                            }
+                            node.model.nestingDims = { w: maxW, h: totalH };
+                        } else {
+                            node.model.nestingDims = null;
                         }
-                        node.model.nestingDims = { w: maxW, h: totalH };
                     }
                 });
 

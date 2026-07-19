@@ -142,6 +142,7 @@ describe('Palette', () => {
 
       const input = screen.getByPlaceholderText('Search');
       expect(input.nodeName).toBe('INPUT');
+      expect(screen.getByRole('textbox', { name: 'Search bricks' })).toBe(input);
       expect((input as HTMLInputElement).value).toBe('');
     });
 

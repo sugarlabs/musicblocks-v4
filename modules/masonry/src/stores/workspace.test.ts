@@ -3,6 +3,7 @@ import { act } from '@testing-library/react';
 import { useWorkspaceStore } from './workspace';
 import { expressionTree, statementTreeNoNesting } from '@/mocks/tower';
 import { listNodes } from '@/utils/tower-traversal';
+import type { TowerStatementNode } from '@/@types/tower.types';
 
 describe('Workspace Store Collision Space', () => {
     beforeEach(() => {
@@ -130,5 +131,40 @@ describe('Workspace Store Collision Space', () => {
             state.argumentCollisionSpace as unknown as { _itemsById: Map<number, unknown> }
         )._itemsById.size;
         expect(spaceObjects).toBe(0);
+    });
+
+    it('detaches a brick to a new tower correctly', () => {
+        const root = statementTreeNoNesting;
+        const secondNode = root.next!;
+        act(() => {
+            useWorkspaceStore.getState().createTower({
+                id: 'tower-1',
+                root: root,
+                position: { x: 0, y: 0 },
+            });
+        });
+
+        let newTowerId: string | null = null;
+        act(() => {
+            newTowerId = useWorkspaceStore
+                .getState()
+                .detachBrickToNewTower('tower-1', secondNode.model.id, { x: 50, y: 50 });
+        });
+
+        expect(newTowerId).toBeTruthy();
+
+        const state = useWorkspaceStore.getState();
+        const oldTower = state.towers['tower-1'];
+        const newTower = state.towers[newTowerId!];
+
+        // The old tower should have the link severed
+        expect((oldTower.root as TowerStatementNode).next).toBeNull();
+
+        // The new tower should be created at the requested position with the detached node as root
+        expect(newTower.position).toEqual({ x: 50, y: 50 });
+        expect(newTower.root.model.id).toBe(secondNode.model.id);
+
+        // The prev link on the newly detached root should be null
+        expect((newTower.root as TowerStatementNode).prev).toBeNull();
     });
 });

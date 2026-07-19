@@ -111,7 +111,7 @@ const configSingle: PaletteConfig = {
 
 /** Types into the search input. */
 const search = (value: string) =>
-  fireEvent.change(screen.getByPlaceholderText('Search bricks'), { target: { value } });
+  fireEvent.change(screen.getByPlaceholderText('Search'), { target: { value } });
 
 // -------------------------------------------------------------------------------------------------
 
@@ -137,10 +137,10 @@ describe('Palette', () => {
       expect(within(musicTab).getByTestId('stub-icon')).toBeTruthy();
     });
 
-    it('renders the search input with placeholder "Search bricks"', () => {
+    it('renders the search input with placeholder "Search"', () => {
       render(<Palette config={config} />);
 
-      const input = screen.getByPlaceholderText('Search bricks');
+      const input = screen.getByPlaceholderText('Search');
       expect(input.nodeName).toBe('INPUT');
       expect((input as HTMLInputElement).value).toBe('');
     });
@@ -151,6 +151,28 @@ describe('Palette', () => {
       // Music is active by default; disambiguated from same-named headings via role='button'.
       expect(screen.getByRole('button', { name: 'Rhythm' })).toBeTruthy();
       expect(screen.getByRole('button', { name: 'Meter' })).toBeTruthy();
+    });
+
+    it('applies the balanced Palette density and scoped button states', () => {
+      const { container } = render(<Palette config={config} />);
+
+      const root = container.firstElementChild;
+      const sidebar = screen.getByRole('navigation');
+      const categoryButton = screen.getByRole('button', { name: 'Rhythm' });
+      const inactiveTab = screen.getByRole('button', { name: 'Logic' });
+
+      expect(root?.classList.contains('font-sans')).toBe(true);
+      expect(root?.classList.contains('text-xs')).toBe(true);
+      expect(root?.classList.contains('border-border')).toBe(true);
+      expect(sidebar.classList.contains('w-18')).toBe(true);
+      expect(sidebar.classList.contains('px-1')).toBe(true);
+      expect(sidebar.classList.contains('border-border')).toBe(true);
+      expect(categoryButton.classList.contains('text-xs')).toBe(true);
+      expect(categoryButton.classList.contains('active:not-aria-[haspopup]:translate-y-0')).toBe(
+        true,
+      );
+      expect(inactiveTab.classList.contains('hover:bg-muted/60')).toBe(true);
+      expect(inactiveTab.classList.contains('active:not-aria-[haspopup]:translate-y-0')).toBe(true);
     });
 
     it('renders a section heading (h3) for each active-classification category', () => {
@@ -300,10 +322,10 @@ describe('Palette', () => {
 
       search('note');
       fireEvent.click(screen.getByRole('button', { name: 'Logic' }));
-      expect((screen.getByPlaceholderText('Search bricks') as HTMLInputElement).value).toBe('');
+      expect((screen.getByPlaceholderText('Search') as HTMLInputElement).value).toBe('');
 
       fireEvent.click(screen.getByRole('button', { name: 'Music' }));
-      expect((screen.getByPlaceholderText('Search bricks') as HTMLInputElement).value).toBe('');
+      expect((screen.getByPlaceholderText('Search') as HTMLInputElement).value).toBe('');
       // The query was reset, not just the view: all Music bricks are back.
       expect(screen.getByText('Note')).toBeTruthy();
       expect(screen.getByText('Rest')).toBeTruthy();
@@ -366,7 +388,7 @@ describe('Palette', () => {
     it('exposes the search field as a textbox reachable by its placeholder', () => {
       render(<Palette config={config} />);
 
-      const byPlaceholder = screen.getByPlaceholderText('Search bricks');
+      const byPlaceholder = screen.getByPlaceholderText('Search');
       expect(screen.getByRole('textbox')).toBe(byPlaceholder);
     });
 

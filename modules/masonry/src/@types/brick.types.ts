@@ -1,4 +1,4 @@
-import type { Bounds, Size } from './common.types';
+import type { Bounds, Size, Point } from './common.types';
 
 export interface BrickComputedDimensions {
     /** Total outer width of the brick */
@@ -70,6 +70,31 @@ export interface BrickOutlineOutput {
         /** Bounds of the nesting cavity. */
         nesting?: Bounds;
     };
+}
+
+/**
+ * Centroid coordinates of a brick's connectors, in the same unscaled SVG space as
+ * `BrickOutlineOutput.path` / `.bounds`, relative to the brick's top-left origin (0, 0).
+ *
+ * The optional keys are present only when the corresponding feature exists:
+ *   prev       — hasPrevNotch
+ *   next       — hasNextNotch
+ *   nestedNext — hasNesting (cavity-roof tab)
+ *   output     — hasOutputNotch
+ * `inputs` is always present: one Point per argument slot whose arg !== null,
+ * ordered top-to-bottom; an empty array when the brick has no filled arg slots.
+ */
+export interface BrickConnectorCoords {
+    /** Sequence-in connector centroid (top-edge groove). */
+    prev?: Point;
+    /** Sequence-out connector centroid (bottom-edge tab). */
+    next?: Point;
+    /** Nested-sequence-in connector centroid (cavity-roof tab). */
+    nestedNext?: Point;
+    /** Output connector centroid (left-edge tab). */
+    output?: Point;
+    /** Argument-slot connector centroids (right-edge grooves), one per filled slot. */
+    inputs: Point[];
 }
 
 export interface BrickMinimums {

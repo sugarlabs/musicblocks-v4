@@ -32,6 +32,7 @@
 
 import type {
     BrickComputedDimensions,
+    BrickConnectorCoords,
     BrickMinimums,
     BrickOutlineInput,
     BrickOutlineOutput,
@@ -184,11 +185,27 @@ export class BrickOutlineGenerator {
         return `a ${radius} ${radius} 0 0 ${sweepFlag} ${end.x} ${end.y}`;
     }
 
+    /**
+     * Perpendicular depth of a V-notch: from its edge line to the groove floor / tab tip.
+     * Single source of truth — both the notch-drawing builders and the connector-centroid
+     * calculation derive from this, so a dot stays centred if the geometry is ever retuned.
+     * Groove and tab share this depth by design (a tab must fit its mating groove).
+     */
+    private static vNotchDepth(strokeWidth: number): number {
+        return BrickOutlineGenerator.V_NOTCH_RADIUS + (3 * strokeWidth) / 2;
+    }
+
+    /** Perpendicular depth of an H-notch — see {@link BrickOutlineGenerator.vNotchDepth}. */
+    private static hNotchDepth(strokeWidth: number): number {
+        return BrickOutlineGenerator.H_NOTCH_RADIUS + (3 * strokeWidth) / 2;
+    }
+
     /** Inward U-shape groove arc (left → right). Used by top notch and nested bottom notch. */
     private buildVGroove(): string[] {
         const strokeWidth = this.input.strokeWidth;
-        const lip = strokeWidth / 2;
         const R = BrickOutlineGenerator.V_NOTCH_RADIUS + strokeWidth;
+        // Lip is the remaining depth after the arc radius, keeping lip + R === vNotchDepth.
+        const lip = BrickOutlineGenerator.vNotchDepth(strokeWidth) - R;
         const middle = BrickOutlineGenerator.V_NOTCH_WIDTH - 2 * (lip + R);
         return [
             // Quarter-arc: horizontal (left) → vertical (down). CW
@@ -205,8 +222,9 @@ export class BrickOutlineGenerator {
     /** Outward U-shape tab arc (right → left). Used by bottom notch and nested top notch. */
     private buildVTab(): string[] {
         const strokeWidth = this.input.strokeWidth;
-        const lip = (3 * strokeWidth) / 2;
         const R = BrickOutlineGenerator.V_NOTCH_RADIUS;
+        // Lip is the remaining depth after the arc radius, keeping lip + R === vNotchDepth.
+        const lip = BrickOutlineGenerator.vNotchDepth(strokeWidth) - R;
         const middle = BrickOutlineGenerator.V_NOTCH_WIDTH - 2 * (lip + R);
         return [
             // Quarter-arc: horizontal (right) → vertical (down). CCW
@@ -308,9 +326,9 @@ export class BrickOutlineGenerator {
             return [`v ${edgeEnd - edgeStart}`, corner];
         }
 
-        // small flare arc radius, proportional to the stroke
-        const lip = strokeWidth / 2;
         const R = BrickOutlineGenerator.H_NOTCH_RADIUS + strokeWidth;
+        // Lip is the remaining depth after the arc radius, keeping lip + R === hNotchDepth.
+        const lip = BrickOutlineGenerator.hNotchDepth(strokeWidth) - R;
         const middle = BrickOutlineGenerator.H_NOTCH_WIDTH - 2 * (lip + R);
 
         const segs: string[] = [];
@@ -426,7 +444,8 @@ export class BrickOutlineGenerator {
         const edgeEnd = strokeWidth / 2 + BrickOutlineGenerator.CORNER_RADIUS;
 
         const tabR = BrickOutlineGenerator.H_NOTCH_RADIUS;
-        const lip = (3 * strokeWidth) / 2;
+        // Lip is the remaining depth after the arc radius, keeping lip + tabR === hNotchDepth.
+        const lip = BrickOutlineGenerator.hNotchDepth(strokeWidth) - tabR;
         const middle = BrickOutlineGenerator.H_NOTCH_WIDTH - 2 * (lip + tabR);
 
         // Convex top-left corner: end CR right + CR up, curving around a centre CR above.
@@ -875,5 +894,92 @@ export class BrickOutlineGenerator {
             height,
             bounds,
         };
+    }
+
+    /**
+     * Reports the centroid coordinates of every connector the brick actually has, in the same
+     * unscaled SVG space as `generate`'s path/bounds and relative to the brick's top-left origin.
+     *
+     * Each point sits at the centre of the notch shape rather than on the brick's edge line: the
+     * perpendicular (depth) coordinate is shifted by half the notch depth away from the edge. Along
+     * the edge the coordinate is unchanged. As a consequence, male-tab centroids (next/output) fall
+     * a half-depth outside the brick frame, while female-groove centroids (prev/inputs/nestedNext)
+     * fall a half-depth inside it.
+     *
+     * Optional connectors (prev/next/nestedNext/output) are present only when their feature is
+     * enabled; `inputs` is always an array with one entry per filled argument slot, top-to-bottom.
+     *
+     * @param input - Same input shape as `generate` / `computeDimensions`.
+     * @returns Connector centroids, keyed by connector kind.
+     */
+    public getConnectorCoords(input: BrickOutlineInput): BrickConnectorCoords {
+        // Recompute dimensions only when the normalised input has actually changed.
+        const normalized = this.normalizeInput(input);
+        if (!this.inputsEqual(normalized, this.input)) {
+            this.input = normalized;
+            this.dimensions = this.computeDimensions(input);
+        }
+
+        const strokeWidth = this.input.strokeWidth;
+        const { width, headHeight, height } = this.dimensions;
+        const { hasPrevNotch, hasNextNotch, hasNesting, hasOutputNotch } = this.input;
+
+        // Distance from an edge line to the centroid of a notch on that edge: half the notch depth.
+        // Uses the same depth helpers the notch-drawing builders derive from, so the dot can never
+        // drift off-centre if the notch geometry is retuned.
+        const vHalfDepth = BrickOutlineGenerator.vNotchDepth(strokeWidth) / 2;
+        const hHalfDepth = BrickOutlineGenerator.hNotchDepth(strokeWidth) / 2;
+
+        // Right-edge grooves: one centroid per filled arg slot, using the same slotTop
+        // accumulation as segHeadRight so the coords line up with the rendered grooves.
+        const inputs: Point[] = [];
+        let slotTop = 0;
+        for (const { arg } of this.input.paramArgDims) {
+            const rowH = Math.max(arg?.h ?? 0, this.minimums.minArgHeight);
+            if (arg !== null) {
+                inputs.push({
+                    x: width - strokeWidth / 2 - hHalfDepth,
+                    y: slotTop + BrickOutlineGenerator.H_NOTCH_OFFSET_Y,
+                });
+            }
+            slotTop += rowH;
+        }
+
+        const coords: BrickConnectorCoords = { inputs };
+
+        // Top-edge groove.
+        if (hasPrevNotch) {
+            coords.prev = {
+                x: BrickOutlineGenerator.V_NOTCH_OFFSET_X,
+                y: strokeWidth / 2 + vHalfDepth,
+            };
+        }
+        // Bottom-edge tab, on the brick's bottom-most edge: the tail-step bottom when nesting,
+        // else the head bottom — which coincide, since height === headHeight without nesting.
+        if (hasNextNotch) {
+            coords.next = {
+                x: BrickOutlineGenerator.V_NOTCH_OFFSET_X,
+                y: height - strokeWidth / 2 + vHalfDepth,
+            };
+        }
+        // Cavity-roof tab pointing down into the nesting cavity.
+        if (hasNesting) {
+            coords.nestedNext = {
+                x:
+                    BrickOutlineGenerator.TAIL_INDENT_W +
+                    strokeWidth +
+                    BrickOutlineGenerator.V_NOTCH_OFFSET_X,
+                y: headHeight - strokeWidth / 2 + vHalfDepth,
+            };
+        }
+        // Left-edge tab that plugs into a parent's arg slot.
+        if (hasOutputNotch) {
+            coords.output = {
+                x: strokeWidth / 2 - hHalfDepth,
+                y: BrickOutlineGenerator.H_NOTCH_OFFSET_Y,
+            };
+        }
+
+        return coords;
     }
 }

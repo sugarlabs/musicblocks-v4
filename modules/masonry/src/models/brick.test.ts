@@ -5,9 +5,14 @@ import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
 // Generator geometry constants that the connector centroids are derived from (unscaled SVG units).
 // Mirrored from BrickOutlineGenerator so the expected canvas-px values can be computed independently.
 const V_NOTCH_OFFSET_X = 18;
+const V_NOTCH_RADIUS = 2;
 const H_NOTCH_OFFSET_Y = 16;
 const TAIL_INDENT_W = 8;
 const STROKE_WIDTH_PX = 2;
+
+// Perpendicular depth of a V-notch, mirrored from BrickOutlineGenerator.vNotchDepth. A groove
+// centroid sits half this depth inside the edge line (see the connector-centroid docs there).
+const vNotchDepth = (strokeWidth: number): number => V_NOTCH_RADIUS + (3 * strokeWidth) / 2;
 
 const colorsDefault = { background: '#3498db', foreground: '#ffffff', border: '#2980b9' };
 
@@ -41,12 +46,15 @@ describe('BrickModelBase.getConnectorCoords', () => {
 
         const coords = brick.getConnectorCoords();
 
-        // prev sits on the top edge: x = V_NOTCH_OFFSET_X (svg) * brickScale.
-        // Its svg y is strokeWidth_svg/2 = (STROKE_WIDTH_PX / brickScale) / 2, so the scaled
-        // y collapses back to STROKE_WIDTH_PX / 2 regardless of scale level.
+        // prev is a top-edge groove: x = V_NOTCH_OFFSET_X (svg) * brickScale (unchanged along the
+        // edge). Its centroid sits half a notch-depth INSIDE the edge, so the svg y is
+        // strokeWidth_svg/2 + vNotchDepth(strokeWidth_svg)/2, then scaled by brickScale.
+        const strokeSvg = STROKE_WIDTH_PX / brickScale;
         expect(coords.prev).toBeDefined();
         expect(coords.prev!.x).toBeCloseTo(V_NOTCH_OFFSET_X * brickScale); // 22.5
-        expect(coords.prev!.y).toBeCloseTo(STROKE_WIDTH_PX / 2); // 1
+        expect(coords.prev!.y).toBeCloseTo(
+            (strokeSvg / 2 + vNotchDepth(strokeSvg) / 2) * brickScale,
+        ); // 3.75
 
         // next shares prev's x (vertical stacking alignment) and lives on the bottom edge.
         expect(coords.next).toBeDefined();

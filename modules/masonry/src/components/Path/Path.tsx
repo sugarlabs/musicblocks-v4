@@ -32,8 +32,9 @@ const CONNECTOR_COLORS = {
   inputs: '#6c5ce7',
 };
 
-/** Radius (px) of the connector marker dots — small but visible over the overlays. */
-const MARKER_RADIUS = 2.5;
+/** Radius (px) of the connector marker dots — small enough to sit inside a notch without
+ * overlapping the brick body, while staying visible over the overlays. */
+const MARKER_RADIUS = 1.25;
 
 /**
  * Storybook-only debug harness. Renders the raw SVG path from `BrickOutlineGenerator`

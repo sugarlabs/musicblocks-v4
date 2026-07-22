@@ -3,11 +3,18 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 import type { Point } from '@/@types/common.types';
 import type { TowerNode } from '@/@types/tower.types';
-import type { TowerState } from '@/@types/workspace.types';
+import type { StatementConnectorMeta, TowerState } from '@/@types/workspace.types';
+import { QuadtreeCollisionSpace } from '@/utils/collision';
+import { extractStatementConnectors } from '@/utils/statement-collision';
 
 export interface WorkspaceStore {
     /** Record of all towers currently in the workspace, keyed by their unique ID */
     towers: Record<string, TowerState>;
+
+    /** Collision space tracking statement connection points */
+    statementCollisionSpace: QuadtreeCollisionSpace;
+    /** Book-keeping mapping collision object ID to statement connector metadata */
+    statementConnectors: Record<number, StatementConnectorMeta>;
 
     /** Creates a new tower in the workspace. */
     createTower: (tower: TowerState) => void;
@@ -25,6 +32,8 @@ export interface WorkspaceStore {
      * pointers, so keeping the old root would leave the prepended bricks unreachable.
      */
     absorbTower: (draggedId: string, targetId: string) => void;
+    /** Synchronises the collision points for a tower after layout */
+    syncStatementConnectors: (towerId: string, root: TowerNode) => void;
 }
 
 /**
@@ -45,6 +54,8 @@ function findTopmost(node: TowerNode): TowerNode {
 export const useWorkspaceStore = create<WorkspaceStore>()(
     subscribeWithSelector((set) => ({
         towers: {},
+        statementCollisionSpace: new QuadtreeCollisionSpace(4000, 4000),
+        statementConnectors: {},
 
         createTower: (tower) => {
             set((state) => ({
@@ -56,6 +67,24 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             set((state) => {
                 const newTowers = { ...state.towers };
                 delete newTowers[id];
+
+                // Cleanup collision points
+                const idsToRemove = Object.values(state.statementConnectors)
+                    .filter((meta) => meta.towerId === id)
+                    .map((meta) => meta.id);
+
+                if (idsToRemove.length > 0) {
+                    state.statementCollisionSpace.removeObjects(idsToRemove);
+                    const newConnectors = { ...state.statementConnectors };
+                    for (const rid of idsToRemove) {
+                        delete newConnectors[rid];
+                    }
+                    return {
+                        towers: newTowers,
+                        statementConnectors: newConnectors,
+                    };
+                }
+
                 return {
                     towers: newTowers,
                 };
@@ -87,6 +116,58 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                     layoutVersion: (target.layoutVersion ?? 0) + 1,
                 };
                 return { towers };
+            });
+        },
+
+        syncStatementConnectors: (towerId, root) => {
+            set((state) => {
+                // Remove old connectors for this tower first
+                const oldIds = Object.values(state.statementConnectors)
+                    .filter((meta) => meta.towerId === towerId)
+                    .map((meta) => meta.id);
+
+                if (oldIds.length > 0) {
+                    state.statementCollisionSpace.removeObjects(oldIds);
+                }
+
+                // Extract new connectors
+                const results = extractStatementConnectors(towerId, root);
+                if (results.length === 0) {
+                    if (oldIds.length === 0) return state;
+
+                    const newConnectors = { ...state.statementConnectors };
+                    for (const rid of oldIds) {
+                        delete newConnectors[rid];
+                    }
+                    return { statementConnectors: newConnectors };
+                }
+
+                const newObjects = results.map((r) => r.object);
+                state.statementCollisionSpace.createObjects(newObjects);
+
+                const newConnectors = { ...state.statementConnectors };
+                for (const rid of oldIds) {
+                    delete newConnectors[rid];
+                }
+                for (const r of results) {
+                    newConnectors[r.meta.id] = r.meta;
+                }
+
+                console.groupCollapsed(
+                    `[Collision Space] Synced ${results.length} connectors for tower ${towerId}`,
+                );
+                console.log('Connectors:');
+                console.table(
+                    results.map((r) => ({
+                        type: r.meta.type,
+                        brickId: r.meta.brickId,
+                        x: r.object.x,
+                        y: r.object.y,
+                    })),
+                );
+                console.groupEnd();
+
+                return { statementConnectors: newConnectors };
             });
         },
     })),

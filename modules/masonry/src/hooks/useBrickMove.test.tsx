@@ -261,7 +261,7 @@ describe('useBrickMove', () => {
 
     // Move the dragged value so its output tab lands exactly on the target's empty input slot:
     //   (pDraggedStart + delta) + draggedOutput === pTarget + targetInput
-    const targetInput = target.model.getConnectorCoords().inputs[0].point;
+    const targetInput = target.model.getConnectorCoords().inputs[0].bounds;
     const draggedOutput = dragged.model.getConnectorCoords().output!;
     const delta: Point = {
       x: pTarget.x + targetInput.x - draggedOutput.x - pDraggedStart.x,

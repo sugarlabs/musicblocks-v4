@@ -1,4 +1,4 @@
-import type { Bounds, Size, Point } from './common.types';
+import type { Bounds, Size } from './common.types';
 
 export interface BrickComputedDimensions {
     /** Total outer width of the brick */
@@ -73,8 +73,12 @@ export interface BrickOutlineOutput {
 }
 
 /**
- * Centroid coordinates of a brick's connectors, in the same unscaled SVG space as
+ * Bounds of a brick's connectors, in the same unscaled SVG space as
  * `BrickOutlineOutput.path` / `.bounds`, relative to the brick's top-left origin (0, 0).
+ *
+ * Origin convention differs from the layout regions in `BrickOutlineOutput.bounds`: here `x`/`y`
+ * is the connector CENTRE (the point on the mating edge), and `w`/`h` is its footprint. Footprints
+ * vary by connector, so each reports its own size.
  *
  * The optional keys are present only when the corresponding feature exists:
  *   prev       — hasPrevNotch
@@ -85,26 +89,26 @@ export interface BrickOutlineOutput {
  * ordered top-to-bottom; an empty array when the brick has no arg slots.
  */
 export interface BrickConnectorCoords {
-    /** Sequence-in connector centroid (top-edge groove). */
-    prev?: Point;
-    /** Sequence-out connector centroid (bottom-edge tab). */
-    next?: Point;
-    /** Nested-sequence-in connector centroid (cavity-roof tab). */
-    nestedNext?: Point;
-    /** Output connector centroid (left-edge tab). */
-    output?: Point;
-    /** Argument-slot connector centroids (right-edge grooves), one per slot. */
+    /** Sequence-in connector (top-edge groove). */
+    prev?: Bounds;
+    /** Sequence-out connector (bottom-edge tab). */
+    next?: Bounds;
+    /** Nested-sequence-in connector (cavity-roof tab). */
+    nestedNext?: Bounds;
+    /** Output connector (left-edge tab). */
+    output?: Bounds;
+    /** Argument-slot connectors (right-edge grooves), one per slot. */
     inputs: BrickInputConnector[];
 }
 
 /**
- * One argument-slot input connector: its centroid plus which slot it belongs to and
+ * One argument-slot input connector: its bounds plus which slot it belongs to and
  * whether that slot currently holds a child. Emitted for every slot — filled and empty —
  * so empty slots can be queried as snap targets.
  */
 export interface BrickInputConnector {
-    /** Connector centroid (right-edge groove). */
-    point: Point;
+    /** Connector bounds (right-edge groove). */
+    bounds: Bounds;
     /** Slot's declaration-order index. */
     index: number;
     /** Whether the slot currently holds a child. */

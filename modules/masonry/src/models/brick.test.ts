@@ -5,6 +5,7 @@ import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
 // Generator geometry constants that the connector centroids are derived from (unscaled SVG units).
 // Mirrored from BrickOutlineGenerator so the expected canvas-px values can be computed independently.
 const V_NOTCH_OFFSET_X = 18;
+const V_NOTCH_RADIUS = 2;
 const H_NOTCH_OFFSET_Y = 16;
 const TAIL_INDENT_W = 8;
 const STROKE_WIDTH_PX = 2;
@@ -41,12 +42,13 @@ describe('BrickModelBase.getConnectorCoords', () => {
 
         const coords = brick.getConnectorCoords();
 
-        // prev sits on the top edge: x = V_NOTCH_OFFSET_X (svg) * brickScale.
-        // Its svg y is strokeWidth_svg/2 = (STROKE_WIDTH_PX / brickScale) / 2, so the scaled
-        // y collapses back to STROKE_WIDTH_PX / 2 regardless of scale level.
+        // prev is a top-edge groove: x = V_NOTCH_OFFSET_X (svg) * brickScale. Its centroid sits half
+        // the notch depth below the edge, so scaled y = STROKE_WIDTH_PX/2 (edge) + half the scaled
+        // notch depth. The strokeWidth part of the depth scales back to px; the radius part scales.
+        const vNotchDepthPx = V_NOTCH_RADIUS * brickScale + 1.5 * STROKE_WIDTH_PX;
         expect(coords.prev).toBeDefined();
         expect(coords.prev!.x).toBeCloseTo(V_NOTCH_OFFSET_X * brickScale); // 22.5
-        expect(coords.prev!.y).toBeCloseTo(STROKE_WIDTH_PX / 2); // 1
+        expect(coords.prev!.y).toBeCloseTo(STROKE_WIDTH_PX / 2 + vNotchDepthPx / 2); // 3.75
 
         // next shares prev's x (vertical stacking alignment) and lives on the bottom edge.
         expect(coords.next).toBeDefined();
@@ -108,7 +110,7 @@ describe('BrickModelBase.getConnectorCoords', () => {
         expect(coords.inputs).toHaveLength(1);
         expect(coords.inputs[0]!.index).toBe(0);
         expect(coords.inputs[0]!.filled).toBe(true);
-        expect(coords.inputs[0]!.point.y).toBeCloseTo(
+        expect(coords.inputs[0]!.bounds.y).toBeCloseTo(
             H_NOTCH_OFFSET_Y * SCALE_LEVEL_CONFIG[2].brickScale,
         );
     });
@@ -129,7 +131,7 @@ describe('BrickModelBase.getConnectorCoords', () => {
         expect(coords.inputs).toHaveLength(1);
         expect(coords.inputs[0]!.index).toBe(0);
         expect(coords.inputs[0]!.filled).toBe(false);
-        expect(coords.inputs[0]!.point.y).toBeCloseTo(
+        expect(coords.inputs[0]!.bounds.y).toBeCloseTo(
             H_NOTCH_OFFSET_Y * SCALE_LEVEL_CONFIG[2].brickScale,
         );
     });

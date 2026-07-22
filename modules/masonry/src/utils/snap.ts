@@ -1,25 +1,34 @@
+import type { Bounds } from '@/@types/common.types';
+
 import { BruteForceCollisionSpace, type CollisionObject, type CollisionSpace } from './collision';
 import type { Connector, ConnectorKind, OpenConnector } from './connectors';
 
 /**
- * Centre-to-centre distance, in canvas px, within which two connectors are considered close
- * enough to snap. Tunable: raise it for a more forgiving snap, lower it for a stricter one.
+ * Tolerance margin, in canvas px, added around each connector's footprint on every side — the
+ * snap's "forgiveness", kept separate from connector geometry. Tunable: higher = more forgiving.
  */
 export const SNAP_DISTANCE = 20;
 
 /**
- * Side length of a connector's square probe box. The collision space treats each box as a circle
- * of radius `min(w, h) / 2` and fires when two centres are within `(rA + rB) * (1 - threshold)`.
- * Sizing both boxes to `SNAP_DIAMETER` with the space at `SNAP_THRESHOLD` reduces that expression
- * to exactly `SNAP_DISTANCE`.
- */
-export const SNAP_DIAMETER = SNAP_DISTANCE * 2;
-
-/**
- * Overlap threshold that, with `SNAP_DIAMETER`, makes a collision fire precisely when two connector
- * centres are closer than `SNAP_DISTANCE`: `(SNAP_DIAMETER / 2 + SNAP_DIAMETER / 2) * (1 - 0.5)`.
+ * Overlap threshold for the circle-shaped collision space (radius `min(w, h) / 2`). At 0.5, with
+ * every box inflated by `SNAP_DISTANCE` per side, a zero-footprint connector fires at exactly
+ * `SNAP_DISTANCE`; a larger footprint fires proportionally sooner.
  */
 const SNAP_THRESHOLD = 0.5;
+
+/**
+ * A connector's collision box: its footprint centred on the connector, inflated by `SNAP_DISTANCE`
+ * on every side. Footprints vary per connector, so the box is no longer a fixed square.
+ */
+function probeBox(id: number, bounds: Bounds): CollisionObject {
+    return {
+        id,
+        x: bounds.x,
+        y: bounds.y,
+        w: bounds.w + 2 * SNAP_DISTANCE,
+        h: bounds.h + 2 * SNAP_DISTANCE,
+    };
+}
 
 // Sentinel id for the transient dragged probe. Target ids are non-negative, so the probe can
 // never be mistaken for (or self-collide with) a tracked target.
@@ -108,13 +117,7 @@ export class SnapEngine {
         for (const connector of connectors) {
             const id = this._nextId++;
             this._connectorById.set(id, connector);
-            objects.push({
-                id,
-                x: connector.point.x,
-                y: connector.point.y,
-                w: SNAP_DIAMETER,
-                h: SNAP_DIAMETER,
-            });
+            objects.push(probeBox(id, connector.bounds));
         }
 
         this._space.createObjects(objects);
@@ -126,13 +129,7 @@ export class SnapEngine {
      * compatible tab/groove pairing; on a tie the earliest-registered target wins.
      */
     public findSnap(dragged: OpenConnector): SnapCandidate | null {
-        const probe: CollisionObject = {
-            id: PROBE_ID,
-            x: dragged.point.x,
-            y: dragged.point.y,
-            w: SNAP_DIAMETER,
-            h: SNAP_DIAMETER,
-        };
+        const probe: CollisionObject = probeBox(PROBE_ID, dragged.bounds);
 
         let best: SnapCandidate | null = null;
 
@@ -152,8 +149,8 @@ export class SnapEngine {
             if (target.kind === 'input' && target.occupied) continue;
 
             const distance = Math.hypot(
-                target.point.x - dragged.point.x,
-                target.point.y - dragged.point.y,
+                target.bounds.x - dragged.bounds.x,
+                target.bounds.y - dragged.bounds.y,
             );
 
             if (best === null || distance < best.distance) {

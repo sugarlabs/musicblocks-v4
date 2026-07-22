@@ -1,4 +1,5 @@
 import type { BrickOutlineInput } from '@/@types/brick.types';
+import type { Bounds } from '@/@types/common.types';
 
 import { BrickOutlineGenerator } from '@/utils/brick-shape';
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
@@ -32,8 +33,8 @@ const CONNECTOR_COLORS = {
   inputs: '#6c5ce7',
 };
 
-/** Radius (px) of the connector marker dots — small but visible over the overlays. */
-const MARKER_RADIUS = 2.5;
+/** Radius (px) of the connector marker dots — just large enough to pinpoint the centroid. */
+const MARKER_RADIUS = 1.25;
 
 /**
  * Storybook-only debug harness. Renders the raw SVG path from `BrickOutlineGenerator`
@@ -133,56 +134,25 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
           />
         )}
 
-        {/* Connector centroids — colour-coded by type (see CONNECTOR_COLORS) */}
-        {connectors.prev && (
+        {/* Connector centres — colour-coded by type (see CONNECTOR_COLORS). Each connector's
+            `bounds` carries a footprint too, but the harness marks only the centre point. */}
+        {(
+          [
+            connectors.prev && { kind: 'prev', bounds: connectors.prev },
+            connectors.next && { kind: 'next', bounds: connectors.next },
+            connectors.nestedNext && { kind: 'nestedNext', bounds: connectors.nestedNext },
+            connectors.output && { kind: 'output', bounds: connectors.output },
+            ...connectors.inputs.map((s) => ({ kind: 'inputs' as const, bounds: s.bounds })),
+          ].filter(Boolean) as { kind: keyof typeof CONNECTOR_COLORS; bounds: Bounds }[]
+        ).map(({ kind, bounds }, i) => (
           <circle
-            cx={svgToPx(connectors.prev.x)}
-            cy={svgToPx(connectors.prev.y)}
+            key={`${kind}-${i}`}
+            cx={svgToPx(bounds.x)}
+            cy={svgToPx(bounds.y)}
             r={MARKER_RADIUS}
-            fill={CONNECTOR_COLORS.prev}
+            fill={CONNECTOR_COLORS[kind]}
             stroke="#fff"
-            strokeWidth={0.75}
-          />
-        )}
-        {connectors.next && (
-          <circle
-            cx={svgToPx(connectors.next.x)}
-            cy={svgToPx(connectors.next.y)}
-            r={MARKER_RADIUS}
-            fill={CONNECTOR_COLORS.next}
-            stroke="#fff"
-            strokeWidth={0.75}
-          />
-        )}
-        {connectors.nestedNext && (
-          <circle
-            cx={svgToPx(connectors.nestedNext.x)}
-            cy={svgToPx(connectors.nestedNext.y)}
-            r={MARKER_RADIUS}
-            fill={CONNECTOR_COLORS.nestedNext}
-            stroke="#fff"
-            strokeWidth={0.75}
-          />
-        )}
-        {connectors.output && (
-          <circle
-            cx={svgToPx(connectors.output.x)}
-            cy={svgToPx(connectors.output.y)}
-            r={MARKER_RADIUS}
-            fill={CONNECTOR_COLORS.output}
-            stroke="#fff"
-            strokeWidth={0.75}
-          />
-        )}
-        {connectors.inputs.map((p, i) => (
-          <circle
-            key={i}
-            cx={svgToPx(p.point.x)}
-            cy={svgToPx(p.point.y)}
-            r={MARKER_RADIUS}
-            fill={CONNECTOR_COLORS.inputs}
-            stroke="#fff"
-            strokeWidth={0.75}
+            strokeWidth={0.4}
           />
         ))}
       </>

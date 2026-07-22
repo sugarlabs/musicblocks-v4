@@ -6,14 +6,17 @@ import type { Connector, ConnectorKind } from './connectors';
 import { SNAP_DISTANCE, SnapEngine } from './snap';
 
 // Canvas large enough that every connector sits well inside the collision space's valid margin
-// (createObjects drops anything within SNAP_DIAMETER/2 of an edge).
+// (createObjects drops anything within half a probe box of an edge; a zero-footprint connector's
+// box is 2*SNAP_DISTANCE, so that margin is SNAP_DISTANCE).
 const CANVAS: Point = { x: 1000, y: 1000 };
 
 /**
- * Builds a connector at an absolute canvas point. Defaults to open (`occupied` false); pass
- * `occupied` to model a connector that already links a neighbour (an insertion target) or fills an
- * argument slot. Pass `slotIndex` for an argument-domain `input`. A `Connector` is also a valid
- * dragged probe, since it extends `OpenConnector`.
+ * Builds a connector at an absolute canvas point. Its footprint is zero (`w`/`h` = 0), so the snap
+ * boundary here is driven purely by SNAP_DISTANCE — real connectors add their own footprint on top.
+ * Defaults to open (`occupied` false); pass `occupied` to model a connector that already links a
+ * neighbour (an insertion target) or fills an argument slot. Pass `slotIndex` for an
+ * argument-domain `input`. A `Connector` is also a valid dragged probe, since it extends
+ * `OpenConnector`.
  */
 function connector(
     towerId: string,
@@ -23,7 +26,7 @@ function connector(
     occupied = false,
     slotIndex?: number,
 ): Connector {
-    return { towerId, nodeId, kind, point, occupied, slotIndex };
+    return { towerId, nodeId, kind, bounds: { ...point, w: 0, h: 0 }, occupied, slotIndex };
 }
 
 function makeEngine(targets: Connector[]): SnapEngine {

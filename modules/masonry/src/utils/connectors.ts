@@ -1,4 +1,4 @@
-import type { Point } from '@/@types/common.types';
+import type { Bounds, Point } from '@/@types/common.types';
 import type { TowerNode } from '@/@types/tower.types';
 
 import { findTail, listNodes } from './tower-traversal';
@@ -35,8 +35,11 @@ export interface OpenConnector {
     nodeId: string;
     /** Which sequence connector this is. */
     kind: ConnectorKind;
-    /** Connector centroid in absolute canvas (world) pixels. */
-    point: Point;
+    /**
+     * Connector bounds in absolute canvas (world) pixels: `x`/`y` is the centre (mating point),
+     * `w`/`h` its footprint. Snap uses the centre for distance and the footprint for probe size.
+     */
+    bounds: Bounds;
     /**
      * Present only on `input` connectors: the declaration-order index of the argument slot, used to
      * resolve the connector back to `node.args[slotIndex]`.
@@ -58,14 +61,16 @@ export interface Connector extends OpenConnector {
 }
 
 /**
- * Resolves a connector to absolute canvas (world) space as the sum of three offsets:
- *   `origin` + brick top-left px + connector px offset (from `getConnectorCoords()`).
- * Shared by every connector collector so they all measure connectors the same way.
+ * Resolves a connector's bounds to absolute canvas (world) space: the centre (`x`/`y`) is
+ * translated by `origin` + brick top-left + connector offset; the footprint (`w`/`h`) carries
+ * through unchanged. Shared by every collector so they measure connectors the same way.
  */
-function toWorld(origin: Point, topLeft: Point, offset: Point): Point {
+function toWorld(origin: Point, topLeft: Point, box: Bounds): Bounds {
     return {
-        x: origin.x + topLeft.x + offset.x,
-        y: origin.y + topLeft.y + offset.y,
+        x: origin.x + topLeft.x + box.x,
+        y: origin.y + topLeft.y + box.y,
+        w: box.w,
+        h: box.h,
     };
 }
 
@@ -108,7 +113,7 @@ export function collectConnectors(
                 towerId,
                 nodeId: node.model.id,
                 kind: 'prev',
-                point: toWorld(origin, topLeft, offsets.prev),
+                bounds: toWorld(origin, topLeft, offsets.prev),
                 occupied: node.prev !== null,
             });
         }
@@ -119,7 +124,7 @@ export function collectConnectors(
                 towerId,
                 nodeId: node.model.id,
                 kind: 'next',
-                point: toWorld(origin, topLeft, offsets.next),
+                bounds: toWorld(origin, topLeft, offsets.next),
                 occupied: node.next !== null,
             });
         }
@@ -131,7 +136,7 @@ export function collectConnectors(
                 towerId,
                 nodeId: node.model.id,
                 kind: 'nestedNext',
-                point: toWorld(origin, topLeft, offsets.nestedNext),
+                bounds: toWorld(origin, topLeft, offsets.nestedNext),
                 occupied: node.nestedNext !== null,
             });
         }
@@ -186,7 +191,7 @@ export function collectArgConnectors(
                     towerId,
                     nodeId: node.model.id,
                     kind: 'input',
-                    point: toWorld(origin, topLeft, input.point),
+                    bounds: toWorld(origin, topLeft, input.bounds),
                     slotIndex: input.index,
                     occupied: node.args[input.index] !== null,
                 });
@@ -201,7 +206,7 @@ export function collectArgConnectors(
                     towerId,
                     nodeId: node.model.id,
                     kind: 'output',
-                    point: toWorld(origin, topLeft, offsets.output),
+                    bounds: toWorld(origin, topLeft, offsets.output),
                     occupied: node.parent !== null,
                 });
             }
@@ -228,7 +233,7 @@ export function collectOpenConnectors(
                 towerId: connector.towerId,
                 nodeId: connector.nodeId,
                 kind: connector.kind,
-                point: connector.point,
+                bounds: connector.bounds,
             }),
         );
 }
@@ -261,7 +266,7 @@ export function collectProbeConnectors(
                     towerId,
                     nodeId: root.model.id,
                     kind: 'output',
-                    point: toWorld(origin, rootTopLeft, rootOutput),
+                    bounds: toWorld(origin, rootTopLeft, rootOutput),
                 },
             ];
         }
@@ -281,7 +286,7 @@ export function collectProbeConnectors(
             towerId,
             nodeId: root.model.id,
             kind: 'prev',
-            point: toWorld(origin, rootTopLeft, rootPrev),
+            bounds: toWorld(origin, rootTopLeft, rootPrev),
         });
     }
 
@@ -293,7 +298,7 @@ export function collectProbeConnectors(
             towerId,
             nodeId: tail.model.id,
             kind: 'next',
-            point: toWorld(origin, tailTopLeft, tailNext),
+            bounds: toWorld(origin, tailTopLeft, tailNext),
         });
     }
 

@@ -34,7 +34,7 @@ function makeStatement(id: string): TowerStatementNode {
 
 /** A dragged probe connector; a different tower id than the target so the cycle guard passes. */
 function probe(kind: OpenConnector['kind'], point: Point): OpenConnector {
-    return { towerId: 'dragged', nodeId: 'P', kind, point };
+    return { towerId: 'dragged', nodeId: 'P', kind, bounds: { ...point, w: 0, h: 0 } };
 }
 
 describe('stores/snap', () => {
@@ -86,14 +86,14 @@ describe('stores/snap', () => {
             refreshSnapTargets('tower-a');
 
             // A dragged prev groove over tower B's next tab snaps.
-            const hitB = engine.findSnap(probe('prev', bNext.point));
+            const hitB = engine.findSnap(probe('prev', bNext.bounds));
             expect(hitB).not.toBeNull();
             expect(hitB!.targetTowerId).toBe('tower-b');
             expect(hitB!.targetNodeId).toBe('B');
             expect(hitB!.targetKind).toBe('next');
 
             // The same probe over tower A's (excluded) next tab finds nothing.
-            expect(engine.findSnap(probe('prev', aNext.point))).toBeNull();
+            expect(engine.findSnap(probe('prev', aNext.bounds))).toBeNull();
         });
 
         it('includes occupied connectors as targets (insertion reachable)', () => {
@@ -121,7 +121,7 @@ describe('stores/snap', () => {
             const engine = getSnapEngine(1000, 1000);
             refreshSnapTargets('other');
 
-            const hit = engine.findSnap(probe('prev', headNext.point));
+            const hit = engine.findSnap(probe('prev', headNext.bounds));
             expect(hit).not.toBeNull();
             expect(hit!.targetNodeId).toBe('head');
             expect(hit!.target.occupied).toBe(true);
@@ -181,14 +181,14 @@ describe('stores/snap', () => {
             refreshSnapTargets('dragged');
 
             // Statement snapping still resolves against the arg-bearing tower.
-            const hit = engine.findSnap(probe('prev', hostNext.point));
+            const hit = engine.findSnap(probe('prev', hostNext.bounds));
             expect(hit).not.toBeNull();
             expect(hit!.targetNodeId).toBe('H');
             expect(hit!.targetKind).toBe('next');
 
             // Argument connectors are in the space but never cross-match a statement probe
             // (isValidMate rejects the argument domain until join lands), so no false snap.
-            expect(engine.findSnap(probe('prev', valueOutput.point))).toBeNull();
+            expect(engine.findSnap(probe('prev', valueOutput.bounds))).toBeNull();
         });
     });
 });

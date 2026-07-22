@@ -5,7 +5,7 @@ import type {
     WidgetDisplay,
     WidgetInput,
 } from '@/@types/brick.types';
-import type { Point, Size } from '@/@types/common.types';
+import type { Bounds, Point, Size } from '@/@types/common.types';
 
 import { BrickOutlineGenerator } from '@/utils/brick-shape';
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
@@ -106,9 +106,9 @@ abstract class BrickModelBase {
     }
 
     /**
-     * Reports the centroid of every connector this brick has, in CANVAS PX (scaled for the
+     * Reports the bounds of every connector this brick has, in CANVAS PX (scaled for the
      * current scale level) relative to the brick's top-left origin. The underlying generator
-     * returns unscaled SVG-space coords; each Point is multiplied by `brickScale` here.
+     * returns unscaled SVG-space coords; each connector's bounds are multiplied by `brickScale` here.
      *
      * Optional connectors (prev/next/nestedNext/output) are present only when their feature is
      * enabled; `inputs` is always an array with one entry per argument slot (filled and empty),
@@ -116,21 +116,23 @@ abstract class BrickModelBase {
      */
     public getConnectorCoords(): BrickConnectorCoords {
         const raw = this.outlineGenerator.getConnectorCoords(this._buildOutlineInput());
-        const scalePoint = (point: Point): Point => ({
-            x: this.svgToPx(point.x),
-            y: this.svgToPx(point.y),
+        const scaleBounds = (bounds: Bounds): Bounds => ({
+            x: this.svgToPx(bounds.x),
+            y: this.svgToPx(bounds.y),
+            w: this.svgToPx(bounds.w),
+            h: this.svgToPx(bounds.h),
         });
         const scaled: BrickConnectorCoords = {
             inputs: raw.inputs.map((s) => ({
-                point: scalePoint(s.point),
+                bounds: scaleBounds(s.bounds),
                 index: s.index,
                 filled: s.filled,
             })),
         };
-        if (raw.prev) scaled.prev = scalePoint(raw.prev);
-        if (raw.next) scaled.next = scalePoint(raw.next);
-        if (raw.nestedNext) scaled.nestedNext = scalePoint(raw.nestedNext);
-        if (raw.output) scaled.output = scalePoint(raw.output);
+        if (raw.prev) scaled.prev = scaleBounds(raw.prev);
+        if (raw.next) scaled.next = scaleBounds(raw.next);
+        if (raw.nestedNext) scaled.nestedNext = scaleBounds(raw.nestedNext);
+        if (raw.output) scaled.output = scaleBounds(raw.output);
         return scaled;
     }
 

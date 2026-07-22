@@ -87,15 +87,19 @@ describe('collectOpenConnectors', () => {
         const prev = find(result, 'S', 'prev')[0];
         expect(prev).toBeDefined();
         expect(prev.towerId).toBe('tower-1');
-        expect(prev.point).toEqual({
+        expect(prev.bounds).toEqual({
             x: origin.x + topLeft.x + offsets.prev!.x,
             y: origin.y + topLeft.y + offsets.prev!.y,
+            w: offsets.prev!.w,
+            h: offsets.prev!.h,
         });
 
         const next = find(result, 'S', 'next')[0];
-        expect(next.point).toEqual({
+        expect(next.bounds).toEqual({
             x: origin.x + topLeft.x + offsets.next!.x,
             y: origin.y + topLeft.y + offsets.next!.y,
+            w: offsets.next!.w,
+            h: offsets.next!.h,
         });
     });
 
@@ -352,9 +356,11 @@ describe('collectProbeConnectors', () => {
         expect(result[0].kind).toBe('output');
         expect(result[0].nodeId).toBe(valueTree.model.id);
         expect(result[0].towerId).toBe('t');
-        expect(result[0].point).toEqual({
+        expect(result[0].bounds).toEqual({
             x: origin.x + topLeft.x + output.x,
             y: origin.y + topLeft.y + output.y,
+            w: output.w,
+            h: output.h,
         });
     });
 
@@ -444,16 +450,20 @@ describe('collectArgConnectors', () => {
         expect(slot0.towerId).toBe('tower-1');
         expect(slot0.nodeId).toBe('E');
         expect(slot0.occupied).toBe(true); // node.args[0] is the child
-        expect(slot0.point).toEqual({
-            x: origin.x + topLeft.x + offsets.inputs[0].point.x,
-            y: origin.y + topLeft.y + offsets.inputs[0].point.y,
+        expect(slot0.bounds).toEqual({
+            x: origin.x + topLeft.x + offsets.inputs[0].bounds.x,
+            y: origin.y + topLeft.y + offsets.inputs[0].bounds.y,
+            w: offsets.inputs[0].bounds.w,
+            h: offsets.inputs[0].bounds.h,
         });
 
         const slot1 = inputs.find((c) => c.slotIndex === 1)!;
         expect(slot1.occupied).toBe(false); // node.args[1] is null
-        expect(slot1.point).toEqual({
-            x: origin.x + topLeft.x + offsets.inputs[1].point.x,
-            y: origin.y + topLeft.y + offsets.inputs[1].point.y,
+        expect(slot1.bounds).toEqual({
+            x: origin.x + topLeft.x + offsets.inputs[1].bounds.x,
+            y: origin.y + topLeft.y + offsets.inputs[1].bounds.y,
+            w: offsets.inputs[1].bounds.w,
+            h: offsets.inputs[1].bounds.h,
         });
     });
 
@@ -479,9 +489,11 @@ describe('collectArgConnectors', () => {
         expect(output.kind).toBe('output');
         expect(output.occupied).toBe(false); // parent === null
         expect(output.slotIndex).toBeUndefined();
-        expect(output.point).toEqual({
+        expect(output.bounds).toEqual({
             x: 3 + 10 + offsets.output!.x,
             y: 9 + 20 + offsets.output!.y,
+            w: offsets.output!.w,
+            h: offsets.output!.h,
         });
 
         // A value plugged into a parent reports its output as occupied.

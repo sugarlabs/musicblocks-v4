@@ -909,7 +909,8 @@ export class BrickOutlineGenerator {
      * half-depth inside it.
      *
      * Optional connectors (prev/next/nestedNext/output) are present only when their feature is
-     * enabled; `inputs` is always an array with one entry per filled argument slot, top-to-bottom.
+     * enabled; `inputs` is always an array with one entry per argument slot (filled and empty),
+     * top-to-bottom.
      *
      * @param input - Same input shape as `generate` / `computeDimensions`.
      * @returns Connector bounds, keyed by connector kind.
@@ -938,20 +939,19 @@ export class BrickOutlineGenerator {
         const hWidth = BrickOutlineGenerator.H_NOTCH_WIDTH;
         const hDepth = BrickOutlineGenerator.hNotchDepth(strokeWidth);
 
-        // Right-edge grooves: one footprint per filled arg slot, using the same slotTop
-        // accumulation as segHeadRight so the coords line up with the rendered grooves.
+        // Right-edge grooves: one footprint per arg slot (filled and empty), using the same slotTop
+        // accumulation as segHeadRight so the coords line up with the rendered grooves. The array
+        // stays in declaration order, so `inputs[i]` is slot `i`.
         const inputs: Bounds[] = [];
         let slotTop = 0;
         for (const { arg } of this.input.paramArgDims) {
             const rowH = Math.max(arg?.h ?? 0, this.minimums.minArgHeight);
-            if (arg !== null) {
-                inputs.push({
-                    x: width - strokeWidth / 2 - hDepth / 2,
-                    y: slotTop + BrickOutlineGenerator.H_NOTCH_OFFSET_Y,
-                    w: hDepth,
-                    h: hWidth,
-                });
-            }
+            inputs.push({
+                x: width - strokeWidth / 2 - hDepth / 2,
+                y: slotTop + BrickOutlineGenerator.H_NOTCH_OFFSET_Y,
+                w: hDepth,
+                h: hWidth,
+            });
             slotTop += rowH;
         }
 

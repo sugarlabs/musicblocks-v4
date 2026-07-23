@@ -1,4 +1,5 @@
 import type {
+    BrickConnectorCoords,
     BrickOutlineInput,
     BrickOutlineOutput,
     WidgetDisplay,
@@ -97,6 +98,11 @@ abstract class BrickModelBase {
         this._dims = { w: width, h: height };
         this._path = path;
         this._bounds = bounds;
+    }
+
+    /** Reports the bounds of every connector this brick has; see {@link BrickConnectorCoords}. */
+    public getConnectorCoords(): BrickConnectorCoords {
+        return this.outlineGenerator.getConnectorCoords(this._buildOutlineInput());
     }
 
     private static _buildOutlineGenerator(level: 1 | 2 | 3): BrickOutlineGenerator {

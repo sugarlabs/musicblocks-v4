@@ -86,8 +86,9 @@ export interface BrickOutlineOutput {
  *   next       — hasNextNotch
  *   nestedNext — hasNesting (cavity-roof tab)
  *   output     — hasOutputNotch
- * `inputs` is always present: one Bounds per argument slot whose arg !== null,
- * ordered top-to-bottom; an empty array when the brick has no filled arg slots.
+ * `inputs` is always present: one Bounds per argument slot (filled and empty),
+ * ordered top-to-bottom by declaration order, so array index === slot index;
+ * an empty array when the brick has no arg slots.
  */
 export interface BrickConnectorCoords {
     /** Sequence-in connector bounds (top-edge groove). */
@@ -98,7 +99,7 @@ export interface BrickConnectorCoords {
     nestedNext?: Bounds;
     /** Output connector bounds (left-edge tab). */
     output?: Bounds;
-    /** Argument-slot connector bounds (right-edge grooves), one per filled slot. */
+    /** Argument-slot connector bounds (right-edge grooves), one per slot (filled and empty). */
     inputs: Bounds[];
 }
 

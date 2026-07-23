@@ -33,9 +33,7 @@ const CONNECTOR_COLORS = {
   inputs: '#6c5ce7',
 };
 
-/** Radius (px) of the connector marker dots — small enough to sit inside a notch without
- * overlapping the brick body, while staying visible over the overlays. */
-const MARKER_RADIUS = 1.25;
+
 
 /**
  * Storybook-only debug harness. Renders the raw SVG path from `BrickOutlineGenerator`
@@ -135,8 +133,8 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
           />
         )}
 
-        {/* Connector centres — colour-coded by type (see CONNECTOR_COLORS). Each connector's
-            `bounds` carries a footprint too, but the harness marks only the centre point. */}
+        {/* Connector footprints — colour-coded by type (see CONNECTOR_COLORS). Each connector's
+            `bounds` carries a footprint (width and height), rendered as translucent rectangles. */}
         {(
           [
             connectors.prev && { kind: 'prev', bounds: connectors.prev },
@@ -146,14 +144,16 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
             ...connectors.inputs.map((bounds) => ({ kind: 'inputs' as const, bounds })),
           ].filter(Boolean) as { kind: keyof typeof CONNECTOR_COLORS; bounds: Bounds }[]
         ).map(({ kind, bounds }, i) => (
-          <circle
+          <rect
             key={`${kind}-${i}`}
-            cx={svgToPx(bounds.x)}
-            cy={svgToPx(bounds.y)}
-            r={MARKER_RADIUS}
+            x={svgToPx(bounds.x - bounds.w / 2)}
+            y={svgToPx(bounds.y - bounds.h / 2)}
+            width={svgToPx(bounds.w)}
+            height={svgToPx(bounds.h)}
             fill={CONNECTOR_COLORS[kind]}
+            fillOpacity={0.4}
             stroke="#fff"
-            strokeWidth={0.4}
+            strokeWidth={0.5}
           />
         ))}
       </>

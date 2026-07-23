@@ -897,20 +897,22 @@ export class BrickOutlineGenerator {
     }
 
     /**
-     * Reports the centroid coordinates of every connector the brick actually has, in the same
-     * unscaled SVG space as `generate`'s path/bounds and relative to the brick's top-left origin.
+     * Reports the bounds of every connector the brick actually has, in the same unscaled SVG space
+     * as `generate`'s path/bounds and relative to the brick's top-left origin. Each connector's
+     * `x`/`y` is its centre (on the mating edge) and `w`/`h` is its footprint; see
+     * {@link BrickConnectorCoords}.
      *
-     * Each point sits at the centre of the notch shape rather than on the brick's edge line: the
-     * perpendicular (depth) coordinate is shifted by half the notch depth away from the edge. Along
-     * the edge the coordinate is unchanged. As a consequence, male-tab centroids (next/output) fall
-     * a half-depth outside the brick frame, while female-groove centroids (prev/inputs/nestedNext)
-     * fall a half-depth inside it.
+     * The centre sits at the notch centre rather than on the brick's edge line: the perpendicular
+     * (depth) coordinate is shifted by half the notch depth away from the edge. Along the edge the
+     * coordinate is unchanged. As a consequence, male-tab centres (next/output) fall a half-depth
+     * outside the brick frame, while female-groove centres (prev/inputs/nestedNext) fall a
+     * half-depth inside it.
      *
      * Optional connectors (prev/next/nestedNext/output) are present only when their feature is
      * enabled; `inputs` is always an array with one entry per filled argument slot, top-to-bottom.
      *
      * @param input - Same input shape as `generate` / `computeDimensions`.
-     * @returns Connector centroids, keyed by connector kind.
+     * @returns Connector bounds, keyed by connector kind.
      */
     public getConnectorCoords(input: BrickOutlineInput): BrickConnectorCoords {
         // Recompute dimensions only when the normalised input has actually changed.
@@ -924,22 +926,30 @@ export class BrickOutlineGenerator {
         const { width, headHeight, height } = this.dimensions;
         const { hasPrevNotch, hasNextNotch, hasNesting, hasOutputNotch } = this.input;
 
-        // Distance from an edge line to the centroid of a notch on that edge: half the notch depth.
-        // Uses the same depth helpers the notch-drawing builders derive from, so the dot can never
-        // drift off-centre if the notch geometry is retuned.
-        const vHalfDepth = BrickOutlineGenerator.vNotchDepth(strokeWidth) / 2;
-        const hHalfDepth = BrickOutlineGenerator.hNotchDepth(strokeWidth) / 2;
+        // Connector footprints: `w`/`h` sized to the notch, `x`/`y` at the notch CENTRE. The centre
+        // sits half the notch depth off the edge — grooves in, tabs out — so the box exactly covers
+        // the notch. Depth reuses the notch-drawing helpers (single source of truth), so the box
+        // stays centred if the geometry is retuned. Groove and tab share a depth (tab's outward
+        // lip+radius == groove's inward lip+radius):
+        //   V-notch (top/bottom): V_NOTCH_WIDTH wide × vDepth deep.
+        //   H-notch (left/right): hDepth wide × H_NOTCH_WIDTH tall.
+        const vWidth = BrickOutlineGenerator.V_NOTCH_WIDTH;
+        const vDepth = BrickOutlineGenerator.vNotchDepth(strokeWidth);
+        const hWidth = BrickOutlineGenerator.H_NOTCH_WIDTH;
+        const hDepth = BrickOutlineGenerator.hNotchDepth(strokeWidth);
 
-        // Right-edge grooves: one centroid per filled arg slot, using the same slotTop
+        // Right-edge grooves: one footprint per filled arg slot, using the same slotTop
         // accumulation as segHeadRight so the coords line up with the rendered grooves.
-        const inputs: Point[] = [];
+        const inputs: Bounds[] = [];
         let slotTop = 0;
         for (const { arg } of this.input.paramArgDims) {
             const rowH = Math.max(arg?.h ?? 0, this.minimums.minArgHeight);
             if (arg !== null) {
                 inputs.push({
-                    x: width - strokeWidth / 2 - hHalfDepth,
+                    x: width - strokeWidth / 2 - hDepth / 2,
                     y: slotTop + BrickOutlineGenerator.H_NOTCH_OFFSET_Y,
+                    w: hDepth,
+                    h: hWidth,
                 });
             }
             slotTop += rowH;
@@ -951,7 +961,9 @@ export class BrickOutlineGenerator {
         if (hasPrevNotch) {
             coords.prev = {
                 x: BrickOutlineGenerator.V_NOTCH_OFFSET_X,
-                y: strokeWidth / 2 + vHalfDepth,
+                y: strokeWidth / 2 + vDepth / 2,
+                w: vWidth,
+                h: vDepth,
             };
         }
         // Bottom-edge tab, on the brick's bottom-most edge: the tail-step bottom when nesting,
@@ -959,7 +971,9 @@ export class BrickOutlineGenerator {
         if (hasNextNotch) {
             coords.next = {
                 x: BrickOutlineGenerator.V_NOTCH_OFFSET_X,
-                y: height - strokeWidth / 2 + vHalfDepth,
+                y: height - strokeWidth / 2 + vDepth / 2,
+                w: vWidth,
+                h: vDepth,
             };
         }
         // Cavity-roof tab pointing down into the nesting cavity.
@@ -969,14 +983,18 @@ export class BrickOutlineGenerator {
                     BrickOutlineGenerator.TAIL_INDENT_W +
                     strokeWidth +
                     BrickOutlineGenerator.V_NOTCH_OFFSET_X,
-                y: headHeight - strokeWidth / 2 + vHalfDepth,
+                y: headHeight - strokeWidth / 2 + vDepth / 2,
+                w: vWidth,
+                h: vDepth,
             };
         }
         // Left-edge tab that plugs into a parent's arg slot.
         if (hasOutputNotch) {
             coords.output = {
-                x: strokeWidth / 2 - hHalfDepth,
+                x: strokeWidth / 2 - hDepth / 2,
                 y: BrickOutlineGenerator.H_NOTCH_OFFSET_Y,
+                w: hDepth,
+                h: hWidth,
             };
         }
 

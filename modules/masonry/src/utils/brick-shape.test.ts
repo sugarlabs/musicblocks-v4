@@ -876,6 +876,34 @@ describe('getConnectorCoords', () => {
         expect(output.y).toBe(parentInput.y - parentArg.y);
     });
 
+    it('connector bounds carry the notch footprint (w/h)', () => {
+        const vWidth = BrickOutlineGeneratorTest.V_NOTCH_WIDTH;
+        const vDepth = BrickOutlineGeneratorTest.V_NOTCH_RADIUS + (3 * strokeWidth) / 2;
+        const hWidth = BrickOutlineGeneratorTest.H_NOTCH_WIDTH;
+        const hDepth = BrickOutlineGeneratorTest.H_NOTCH_RADIUS + (3 * strokeWidth) / 2;
+
+        const c = brickOutlineGenerator.getConnectorCoords({
+            strokeWidth,
+            widgetDims: { w: 120, h: 20 },
+            paramArgDims: [{ param: null, arg: { w: 50, h: 40 } }],
+            nestingDims: { w: 60, h: 60 },
+            hasPrevNotch: true,
+            hasNextNotch: true,
+            hasOutputNotch: true,
+        });
+
+        // V-notches (prev/next/nestedNext) span the notch width along the edge and the notch depth
+        // across it; H-notches (output/inputs, left/right edges) are the transpose.
+        for (const v of [c.prev!, c.next!, c.nestedNext!]) {
+            expect(v.w).toBe(vWidth);
+            expect(v.h).toBe(vDepth);
+        }
+        for (const h of [c.output!, c.inputs[0]!]) {
+            expect(h.w).toBe(hDepth);
+            expect(h.h).toBe(hWidth);
+        }
+    });
+
     it('every connector lies within a half-notch-depth margin of the brick frame', () => {
         const input = {
             strokeWidth,

@@ -51,6 +51,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
           const activeTowers = Object.values(store.towers);
           for (const tower of activeTowers) {
             store.syncStatementConnectors(tower.id, tower.root);
+            store.syncArgumentConnectors(tower.id, tower.root);
           }
         });
       },

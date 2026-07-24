@@ -751,7 +751,10 @@ describe('getConnectorCoords', () => {
         expect(full.inputs).toHaveLength(1);
     });
 
-    it('inputs has one entry per filled arg slot, ordered top-to-bottom', () => {
+    it('inputs has one entry per arg slot (filled and empty), ordered top-to-bottom', () => {
+        // A `null` arg is an EMPTY slot (see ExpressionBrickModel: argDims[i] === null), not a
+        // param-only row — so every slot yields an input connector, so they stay addressable as
+        // snap targets. The array is in declaration order, so inputs[i] is slot i.
         const paramArgDims = [
             { param: null, arg: { w: 50, h: 40 } },
             { param: { w: 50, h: 20 }, arg: null },
@@ -763,13 +766,13 @@ describe('getConnectorCoords', () => {
             paramArgDims,
         });
 
-        // Derive the expected count from the input itself — param-only rows contribute nothing.
-        const expected = paramArgDims.filter((r) => r.arg !== null).length;
-        expect(inputs).toHaveLength(expected);
-        expect(expected).toBe(2);
+        // One entry per slot — filled and empty alike.
+        expect(inputs).toHaveLength(paramArgDims.length);
+        expect(inputs).toHaveLength(3);
 
-        // Ordered top-to-bottom: y values strictly increasing.
+        // Ordered top-to-bottom: y values strictly increasing across every slot.
         expect(inputs[1]!.y).toBeGreaterThan(inputs[0]!.y);
+        expect(inputs[2]!.y).toBeGreaterThan(inputs[1]!.y);
     });
 
     it('inputs align with the rendered arg grooves from generate()', () => {

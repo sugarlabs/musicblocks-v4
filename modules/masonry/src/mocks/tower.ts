@@ -96,6 +96,72 @@ function linkStatementChain(statements: TowerStatementNode[]): TowerStatementNod
     return statements[0];
 }
 
+// ─── Empty-slot builders ────────────────────────────────────────────────────
+//
+// The trees below come fully populated; connecting bricks needs the opposite — a brick whose
+// argument slots are all empty, so that something can be plugged into one.
+
+/** Param labels for a brick with `slotCount` empty argument slots. */
+function makeParams(slotCount: number): string[] {
+    return Array.from({ length: slotCount }, (_, index) => String.fromCharCode(65 + index));
+}
+
+/** A free-floating value brick; values own no argument slots. */
+export function makeEmptyValue(id: string): TowerValueNode {
+    return {
+        kind: 'value',
+        model: new ValueBrickModel({
+            id,
+            colorsDefault,
+            tooltipText: '',
+            widget: { type: 'numberbox', value: 0 },
+        }),
+        parent: null,
+    };
+}
+
+/** A free-floating expression brick whose `slotCount` argument slots are all empty. */
+export function makeEmptyExpression(id: string, slotCount: number): TowerExpressionNode {
+    return {
+        kind: 'expression',
+        model: new ExpressionBrickModel({
+            id,
+            colorsDefault,
+            tooltipText: '',
+            widget: { type: 'label', text: lastPathSegment(id) },
+            // An expression always has at least one slot; the cast states that for the tuple type.
+            params: makeParams(slotCount) as [string, ...string[]],
+        }),
+        parent: null,
+        args: Array(slotCount).fill(null),
+    };
+}
+
+/** A free-floating statement brick whose `slotCount` argument slots are all empty. */
+export function makeEmptyStatement(
+    id: string,
+    slotCount: number,
+    hasNesting = false,
+): TowerStatementNode {
+    return {
+        kind: 'statement',
+        model: new StatementBrickModel({
+            id,
+            colorsDefault,
+            tooltipText: '',
+            widget: { type: 'label', text: lastPathSegment(id) },
+            params: makeParams(slotCount),
+            hasNesting,
+            hasConnectionPrev: true,
+            hasConnectionNext: true,
+        }),
+        prev: null,
+        next: null,
+        args: Array(slotCount).fill(null),
+        nestedNext: hasNesting ? null : undefined,
+    };
+}
+
 // ─── Value ──────────────────────────────────────────────────────────────────
 
 /** A single free-floating value node with no children. */

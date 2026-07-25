@@ -1,7 +1,12 @@
 import { act } from '@testing-library/react';
 
 import { useWorkspaceStore } from './workspace';
-import { expressionTree, statementTreeNoNesting } from '@/mocks/tower';
+import {
+    expressionTree,
+    makeEmptyExpression,
+    makeEmptyValue,
+    statementTreeNoNesting,
+} from '@/mocks/tower';
 import { listNodes } from '@/utils/tower-traversal';
 import type { TowerStatementNode } from '@/@types/tower.types';
 
@@ -166,5 +171,105 @@ describe('Workspace Store Collision Space', () => {
 
         // The prev link on the newly detached root should be null
         expect((newTower.root as TowerStatementNode).prev).toBeNull();
+    });
+
+    describe('absorbArgumentTower', () => {
+        /** Two towers, the dragged one already spliced into the host's empty slot by `joinArg`. */
+        function setupJoined() {
+            const host = makeEmptyExpression('host', 1);
+            const dragged = makeEmptyValue('dragged');
+
+            listNodes(host).forEach((node, i) => node.model.setPosition(500 + i * 40, 300));
+            dragged.model.setPosition(900, 300);
+
+            act(() => {
+                const store = useWorkspaceStore.getState();
+                store.createTower({ id: 'host-tower', root: host, position: { x: 500, y: 300 } });
+                store.createTower({
+                    id: 'dragged-tower',
+                    root: dragged,
+                    position: { x: 900, y: 300 },
+                });
+                store.syncArgumentConnectors('host-tower', host);
+                store.syncArgumentConnectors('dragged-tower', dragged);
+            });
+
+            // The join itself is `joinArg`'s job; the store only merges what it produced.
+            host.args[0] = dragged;
+            dragged.parent = host;
+
+            return { host, dragged };
+        }
+
+        it('drops the absorbed tower and keeps its bricks reachable from the host', () => {
+            const { host, dragged } = setupJoined();
+
+            act(() => {
+                useWorkspaceStore.getState().absorbArgumentTower('dragged-tower', 'host-tower');
+            });
+
+            const state = useWorkspaceStore.getState();
+
+            expect(state.towers['dragged-tower']).toBeUndefined();
+            expect(state.towers['host-tower']).toBeDefined();
+
+            // The dragged brick is now part of the host tower's tree, so it still renders.
+            const hostNodeIds = listNodes(state.towers['host-tower'].root).map(
+                (node) => node.model.id,
+            );
+            expect(hostNodeIds).toContain(dragged.model.id);
+            expect(hostNodeIds).toContain(host.model.id);
+        });
+
+        it('replaces the host root reference so the layout re-runs', () => {
+            const { host } = setupJoined();
+            const before = useWorkspaceStore.getState().towers['host-tower'].root;
+
+            act(() => {
+                useWorkspaceStore.getState().absorbArgumentTower('dragged-tower', 'host-tower');
+            });
+
+            const after = useWorkspaceStore.getState().towers['host-tower'].root;
+
+            expect(after).not.toBe(before);
+            // Same brick, same position — only the reference is new.
+            expect(after.model.id).toBe(host.model.id);
+            expect(useWorkspaceStore.getState().towers['host-tower'].position).toEqual({
+                x: 500,
+                y: 300,
+            });
+        });
+
+        it("purges the absorbed tower's connector points", () => {
+            setupJoined();
+
+            expect(
+                Object.values(useWorkspaceStore.getState().argumentConnectors).some(
+                    (meta) => meta.towerId === 'dragged-tower',
+                ),
+            ).toBe(true);
+
+            act(() => {
+                useWorkspaceStore.getState().absorbArgumentTower('dragged-tower', 'host-tower');
+            });
+
+            expect(
+                Object.values(useWorkspaceStore.getState().argumentConnectors).some(
+                    (meta) => meta.towerId === 'dragged-tower',
+                ),
+            ).toBe(false);
+        });
+
+        it('leaves the workspace untouched when the host tower is gone', () => {
+            setupJoined();
+
+            act(() => {
+                const store = useWorkspaceStore.getState();
+                store.removeTower('host-tower');
+                store.absorbArgumentTower('dragged-tower', 'host-tower');
+            });
+
+            expect(Object.keys(useWorkspaceStore.getState().towers)).toEqual([]);
+        });
     });
 });

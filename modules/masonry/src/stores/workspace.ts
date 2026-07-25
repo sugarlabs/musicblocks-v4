@@ -42,13 +42,15 @@ export interface WorkspaceStore {
         nodeId: string,
         position: Point,
     ) => string | null;
+    /** Merges an argument-joined tower into the host tower that now owns its bricks */
+    absorbArgumentTower: (draggedTowerId: string, hostTowerId: string) => void;
 }
 
 /**
  * Tracks the state of the workspace, including all towers positioned within it.
  */
 export const useWorkspaceStore = create<WorkspaceStore>()(
-    subscribeWithSelector((set) => ({
+    subscribeWithSelector((set, get) => ({
         towers: {},
         statementCollisionSpace: new QuadtreeCollisionSpace(4000, 4000),
         statementConnectors: {},
@@ -281,6 +283,26 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 };
             });
             return newTowerId;
+        },
+
+        absorbArgumentTower: (draggedTowerId, hostTowerId) => {
+            // The join already spliced the two node graphs together, so the absorbed tower is
+            // redundant; dropping it also purges its stale collision points.
+            get().removeTower(draggedTowerId);
+
+            set((state) => {
+                const host = state.towers[hostTowerId];
+                if (!host) return state;
+
+                // Replacing the root reference is what makes the layout hook re-run over the
+                // enlarged graph, the same signal `detachBrickToNewTower` uses after severing a link.
+                return {
+                    towers: {
+                        ...state.towers,
+                        [hostTowerId]: { ...host, root: { ...host.root } },
+                    },
+                };
+            });
         },
     })),
 );

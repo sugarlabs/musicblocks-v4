@@ -7,7 +7,7 @@ import type {
     TowerValueNode,
 } from '@/@types/tower.types';
 import { ExpressionBrickModel, StatementBrickModel, ValueBrickModel } from '@/models/brick';
-import { traverseBottomUp, traverseTopDown } from './tower-traversal';
+import { findNode, traverseBottomUp, traverseTopDown } from './tower-traversal';
 
 const colorsDefault = { background: '#3498db', foreground: '#ffffff', border: '#2980b9' };
 
@@ -464,5 +464,45 @@ describe('traverseTopDown', () => {
         traverseTopDown(root);
         expect(st2.model.position).toEqual({ x: 0, y: st1.model.dims.h });
         expect(st2.model.position.y).toBeGreaterThan(20);
+    });
+});
+
+describe('findNode', () => {
+    it('finds the root itself', () => {
+        const root = makeExpression('root', 1);
+
+        expect(findNode(root, 'root')).toBe(root);
+    });
+
+    it('finds a node nested in an argument slot', () => {
+        const root = makeExpression('root', 2);
+        const inner = makeExpression('inner', 1);
+        const leaf = makeValue('leaf');
+
+        inner.args[0] = leaf;
+        root.args[1] = inner;
+
+        expect(findNode(root, 'inner')).toBe(inner);
+        expect(findNode(root, 'leaf')).toBe(leaf);
+    });
+
+    it('finds a node further down a statement chain and inside a cavity', () => {
+        const head = makeStatement('head', 0, true);
+        const tail = makeStatement('tail', 0, false);
+        const nested = makeStatement('nested', 0, false);
+
+        head.next = tail;
+        tail.prev = head;
+        head.nestedNext = nested;
+
+        expect(findNode(head, 'tail')).toBe(tail);
+        expect(findNode(head, 'nested')).toBe(nested);
+    });
+
+    it('returns null for an id that is not in the tower', () => {
+        const root = makeExpression('root', 1);
+        root.args[0] = makeValue('leaf');
+
+        expect(findNode(root, 'absent')).toBeNull();
     });
 });

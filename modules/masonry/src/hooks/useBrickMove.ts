@@ -4,7 +4,32 @@ import { RefObject, useEffect, useRef } from 'react';
 
 import { useBrickLayoutStore } from '@/stores/brick';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
+import { joinArg, resolveArgumentConnection } from '@/utils/argument-connect';
 import type { TowerNode } from '@/@types/tower.types';
+
+/**
+ * Attempts to join the just-dropped tower to a settled tower through an argument slot, in either
+ * direction. The tower that owns the slot survives the merge.
+ *
+ * @param towerId - The ID of the tower that was just dropped.
+ * @returns Whether a join happened, in which case one of the two towers no longer exists.
+ */
+function tryConnectArgument(towerId: string): boolean {
+    const store = useWorkspaceStore.getState();
+
+    const connection = resolveArgumentConnection({
+        draggedTowerId: towerId,
+        space: store.argumentCollisionSpace,
+        connectors: store.argumentConnectors,
+        towers: store.towers,
+    });
+    if (!connection) return false;
+
+    joinArg(connection);
+    store.absorbArgumentTower(connection.absorbedTowerId, connection.hostTowerId);
+
+    return true;
+}
 
 /**
  * Attaches interact.js drag events to a brick's DOM element.
@@ -84,13 +109,17 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                     const state = dragStateRef.current;
                     if (!state) return;
 
-                    const rootNode = useWorkspaceStore.getState().towers[state.towerId]?.root;
-                    if (rootNode) {
-                        queueMicrotask(() => {
-                            useWorkspaceStore
-                                .getState()
-                                .syncStatementConnectors(state.towerId, rootNode);
-                        });
+                    // A successful argument join merges two towers into one, and the host's
+                    // re-layout re-syncs both connector spaces for the whole merged graph.
+                    if (!tryConnectArgument(state.towerId)) {
+                        const rootNode = useWorkspaceStore.getState().towers[state.towerId]?.root;
+                        if (rootNode) {
+                            queueMicrotask(() => {
+                                useWorkspaceStore
+                                    .getState()
+                                    .syncStatementConnectors(state.towerId, rootNode);
+                            });
+                        }
                     }
 
                     dragStateRef.current = null;

@@ -59,6 +59,16 @@ export function listNodes(root: TowerNode): TowerNode[] {
     return nodes;
 }
 
+/**
+ * Finds the node in a tower whose brick model id matches `brickId`, or null if none does.
+ *
+ * Used to resolve a collision-space hit — which carries only ids — back to the live tower node it
+ * refers to.
+ */
+export function findNode(root: TowerNode, brickId: string): TowerNode | null {
+    return listNodes(root).find((node) => node.model.id === brickId) ?? null;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**

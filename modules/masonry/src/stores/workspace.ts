@@ -36,6 +36,12 @@ export interface WorkspaceStore {
     syncStatementConnectors: (towerId: string, root: TowerNode) => void;
     /** Synchronises the argument collision points for a tower after layout */
     syncArgumentConnectors: (towerId: string, root: TowerNode) => void;
+    /** Detaches a brick from its parent and forms a new tower */
+    detachBrickToNewTower: (
+        sourceTowerId: string,
+        nodeId: string,
+        position: Point,
+    ) => string | null;
 }
 
 /**
@@ -179,5 +185,129 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 return { argumentConnectors: newConnectors };
             });
         },
+
+        detachBrickToNewTower: (sourceTowerId, nodeId, position) => {
+            let newTowerId: string | null = null;
+            set((state) => {
+                const tower = state.towers[sourceTowerId];
+                if (!tower) return state;
+
+                // Traverse the tree to find the target node and the node that points to it (its parent)
+                const stack: TowerNode[] = [tower.root];
+                let target: TowerNode | null = null;
+                let foundPrev: Extract<TowerNode, { kind: 'statement' }> | null = null;
+                let foundCavityParent: Extract<TowerNode, { kind: 'statement' }> | null = null;
+
+                while (stack.length > 0) {
+                    const current = stack.pop()!;
+                    if (current.model.id === nodeId) {
+                        target = current;
+                        break; // In a valid tree we won't hit this unless it's the root, but we handle it just in case
+                    }
+                    if (current.kind === 'statement') {
+                        if (current.next) {
+                            if (current.next.model.id === nodeId) {
+                                target = current.next;
+                                foundPrev = current;
+                                break;
+                            }
+                            stack.push(current.next);
+                        }
+                        if (current.nestedNext) {
+                            if (current.nestedNext.model.id === nodeId) {
+                                target = current.nestedNext;
+                                foundCavityParent = current;
+                                break;
+                            }
+                            stack.push(current.nestedNext);
+                        }
+                    } else if (current.kind === 'expression') {
+                        for (let i = 0; i < current.args.length; i++) {
+                            const arg = current.args[i];
+                            if (arg && arg.model.id === nodeId) {
+                                target = arg;
+                                break;
+                            }
+                            if (arg) stack.push(arg);
+                        }
+                    }
+                }
+
+                if (!target) return state;
+
+                // Sever the link from the parent to the target node
+
+                if (foundPrev) {
+                    foundPrev.next = null;
+                } else if (foundCavityParent) {
+                    foundCavityParent.nestedNext = null;
+                } else {
+                    const stack2: TowerNode[] = [tower.root];
+                    while (stack2.length > 0) {
+                        const current = stack2.pop()!;
+                        if (current.kind === 'expression') {
+                            const idx = current.args.findIndex((a) => a === target);
+                            if (idx !== -1) {
+                                current.args[idx] = null;
+                                break;
+                            }
+                            for (const arg of current.args) {
+                                if (arg) stack2.push(arg);
+                            }
+                        } else if (current.kind === 'statement') {
+                            if (current.next) stack2.push(current.next);
+                            if (current.nestedNext) stack2.push(current.nestedNext);
+                        }
+                    }
+                }
+
+                if ('prev' in target) {
+                    target.prev = null;
+                }
+
+                newTowerId = `tower-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+                const newTower: TowerState = {
+                    id: newTowerId,
+                    position,
+                    root: target,
+                };
+
+                return {
+                    towers: {
+                        ...state.towers,
+                        [sourceTowerId]: { ...tower, root: { ...tower.root } },
+                        [newTowerId]: newTower,
+                    },
+                };
+            });
+            return newTowerId;
+        },
     })),
 );
+
+/**
+ * Searches across all towers for a specific node ID.
+ * Returns the node and the tower it belongs to.
+ */
+export function findNodeAndTower(id: string): { node: TowerNode; tower: TowerState } | null {
+    const towers = useWorkspaceStore.getState().towers;
+    for (const tower of Object.values(towers)) {
+        const stack = [tower.root];
+        while (stack.length > 0) {
+            const current = stack.pop()!;
+            if (current.model.id === id) {
+                return { node: current, tower };
+            }
+
+            if (current.kind === 'statement') {
+                if (current.next) stack.push(current.next);
+                if (current.nestedNext) stack.push(current.nestedNext);
+            } else if (current.kind === 'expression') {
+                for (const arg of current.args) {
+                    if (arg) stack.push(arg);
+                }
+            }
+        }
+    }
+    return null;
+}

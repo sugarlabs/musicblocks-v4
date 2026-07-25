@@ -3,6 +3,8 @@ import interact from 'interactjs';
 import { RefObject, useEffect, useRef } from 'react';
 
 import { useBrickLayoutStore } from '@/stores/brick';
+import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
+import type { TowerNode } from '@/@types/tower.types';
 
 /**
  * Attaches interact.js drag events to a brick's DOM element.
@@ -14,6 +16,11 @@ import { useBrickLayoutStore } from '@/stores/brick';
  */
 export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
     const dragPosRef = useRef({ x: 0, y: 0 });
+    const dragStateRef = useRef<{
+        node: TowerNode;
+        towerId: string;
+        towerPosition: { x: number; y: number };
+    } | null>(null);
     const isMounted = useBrickLayoutStore((state) => state.mounted[id]);
 
     useEffect(() => {
@@ -25,27 +32,78 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                 start(_event: DragEvent) {
                     const { coords } = useBrickLayoutStore.getState();
                     const current = coords[id];
-                    if (current) {
-                        dragPosRef.current = { x: current.x, y: current.y };
+
+                    const found = findNodeAndTower(id);
+                    if (!found) return;
+
+                    const { node, tower } = found;
+                    // If the dragged brick is not the root of its tower, it's connected to a parent.
+                    // We must detach it and move it to its own new tower before starting the drag.
+                    const isChild = node !== tower.root;
+                    let targetTowerId = tower.id;
+                    let targetPosition = { x: tower.position.x, y: tower.position.y };
+
+                    if (isChild) {
+                        const absPos = current
+                            ? { x: current.x, y: current.y }
+                            : { x: tower.position.x, y: tower.position.y };
+
+                        // Detach from the parent and create a new tower for this subtree
+                        const newTowerId = useWorkspaceStore
+                            .getState()
+                            .detachBrickToNewTower(tower.id, id, absPos);
+
+                        if (newTowerId) {
+                            targetTowerId = newTowerId;
+                            targetPosition = absPos;
+                        }
                     }
+
+                    dragPosRef.current = { x: 0, y: 0 };
+                    dragStateRef.current = {
+                        node,
+                        towerId: targetTowerId,
+                        towerPosition: targetPosition,
+                    };
                 },
                 move(event: DragEvent) {
                     dragPosRef.current.x += event.dx;
                     dragPosRef.current.y += event.dy;
 
-                    useBrickLayoutStore.getState().setCoords(id, {
-                        x: dragPosRef.current.x,
-                        y: dragPosRef.current.y,
-                    });
+                    const state = dragStateRef.current;
+                    if (!state) return;
+
+                    const newX = state.towerPosition.x + dragPosRef.current.x;
+                    const newY = state.towerPosition.y + dragPosRef.current.y;
+
+                    useWorkspaceStore
+                        .getState()
+                        .updateTowerPosition(state.towerId, { x: newX, y: newY });
                 },
                 end(_event: DragEvent) {
-                    // Placeholder for future drop logic
+                    const state = dragStateRef.current;
+                    if (!state) return;
+
+                    const rootNode = useWorkspaceStore.getState().towers[state.towerId]?.root;
+                    if (rootNode) {
+                        queueMicrotask(() => {
+                            useWorkspaceStore
+                                .getState()
+                                .syncStatementConnectors(state.towerId, rootNode);
+                        });
+                    }
+
+                    dragStateRef.current = null;
                 },
             },
         });
 
         return () => {
-            interactable.unset();
+            // Only unset if not currently dragging, to allow the drag to continue
+            // even if this specific brick unmounts from its old tower and remounts in the new one.
+            if (!dragStateRef.current) {
+                interactable.unset();
+            }
         };
     }, [id, ref, isMounted]);
 }

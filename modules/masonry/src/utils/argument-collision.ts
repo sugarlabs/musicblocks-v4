@@ -43,7 +43,14 @@ export function extractArgumentConnectors(
                         w: bounds.w,
                         h: bounds.h,
                     },
-                    meta: { id, towerId, brickId, type: 'input', slotIndex },
+                    meta: {
+                        id,
+                        towerId,
+                        brickId,
+                        type: 'input',
+                        slotIndex,
+                        occupied: node.args[slotIndex] !== null,
+                    },
                 });
             });
         }

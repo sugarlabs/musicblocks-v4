@@ -7,7 +7,7 @@ import type {
     TowerValueNode,
 } from '@/@types/tower.types';
 import { ExpressionBrickModel, StatementBrickModel, ValueBrickModel } from '@/models/brick';
-import { traverseBottomUp, traverseTopDown } from './tower-traversal';
+import { findNode, traverseBottomUp, traverseTopDown } from './tower-traversal';
 
 const colorsDefault = { background: '#3498db', foreground: '#ffffff', border: '#2980b9' };
 
@@ -464,5 +464,23 @@ describe('traverseTopDown', () => {
         traverseTopDown(root);
         expect(st2.model.position).toEqual({ x: 0, y: st1.model.dims.h });
         expect(st2.model.position.y).toBeGreaterThan(20);
+    });
+});
+
+describe('findNode', () => {
+    it('finds a deeply nested node by its brick id', () => {
+        const v1 = makeValue('v1');
+        const v2 = makeValue('v2');
+        const add = makeExpression('add', 2);
+        add.args = [v1, v2];
+        v1.parent = add;
+        v2.parent = add;
+
+        expect(findNode(add, 'v2')).toBe(v2);
+        expect(findNode(add, 'add')).toBe(add);
+    });
+
+    it('returns null when no node matches', () => {
+        expect(findNode(makeValue('only'), 'missing')).toBeNull();
     });
 });

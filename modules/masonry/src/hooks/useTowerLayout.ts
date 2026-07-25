@@ -15,7 +15,7 @@ import { listNodes, traverseBottomUp, traverseTopDown } from '@/utils/tower-trav
  *
  * Returns the tower's node list.
  */
-export function useTowerLayout(root: TowerNode, origin: Point) {
+export function useTowerLayout(root: TowerNode, origin: Point, layoutVersion = 0) {
     const { setCoords, setMounted, setPositioned } = useBrickLayoutStore.getState();
 
     const isInitialized = useRef(false);
@@ -33,6 +33,19 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
         setPositioned(Object.fromEntries(ids.map((id) => [id, false])));
 
         isInitialized.current = true;
+    } else {
+        // Seed any nodes that appeared since the last render but have no layout entry yet — e.g. a
+        // joined-in argument subtree whose bricks were tracked under a now-absorbed tower. Absorbed
+        // bricks usually keep their entries, so this is a defensive backstop against a missing one
+        // (a TowerBrick reads coords[id] directly and would otherwise crash).
+        const { coords } = useBrickLayoutStore.getState();
+        const newIds = nodes.map((node) => node.model.id).filter((id) => coords[id] === undefined);
+
+        if (newIds.length > 0) {
+            setCoords(Object.fromEntries(newIds.map((id) => [id, { x: 0, y: 0 }])));
+            setMounted(Object.fromEntries(newIds.map((id) => [id, false])));
+            setPositioned(Object.fromEntries(newIds.map((id) => [id, false])));
+        }
     }
 
     useEffect(() => {
@@ -120,7 +133,8 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
         };
         // Depend on the primitive co-ordinates, not the origin object — callers may pass a fresh
         // object literal each render, which would re-trigger the layout on every render.
-    }, [root, origin.x, origin.y, setCoords, setMounted, setPositioned]);
+        // `layoutVersion` re-runs the layout on an in-place graph change (same `root` reference).
+    }, [root, origin.x, origin.y, layoutVersion, setCoords, setMounted, setPositioned]);
 
     return nodes;
 }

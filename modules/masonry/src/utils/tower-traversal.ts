@@ -59,6 +59,29 @@ export function listNodes(root: TowerNode): TowerNode[] {
     return nodes;
 }
 
+/**
+ * Finds the node in a tower whose brick model id matches `brickId`, or null if none does.
+ *
+ * Used to resolve a collision-space hit (which carries only ids) back to the live tower node it
+ * refers to.
+ */
+export function findNode(root: TowerNode, brickId: string): TowerNode | null {
+    return listNodes(root).find((node) => node.model.id === brickId) ?? null;
+}
+
+/**
+ * Walks a statement tower's `next` chain to its last statement — the tower's open BOTTOM end.
+ * Used to find the tail whose `next` tab probes for a snap and onto which a displaced successor is
+ * spliced during a mid-chain insertion.
+ */
+export function findTail(root: TowerStatementNode): TowerStatementNode {
+    let tail: TowerStatementNode = root;
+    while (tail.next !== null && tail.next.kind === 'statement') {
+        tail = tail.next;
+    }
+    return tail;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**

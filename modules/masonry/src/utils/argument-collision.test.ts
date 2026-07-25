@@ -1,6 +1,11 @@
+import type { TowerExpressionNode, TowerValueNode } from '@/@types/tower.types';
+import { ExpressionBrickModel, ValueBrickModel } from '@/models/brick';
+
 import { extractArgumentConnectors } from './argument-collision';
 import { listNodes } from './tower-traversal';
 import { expressionTree, valueTree } from '@/mocks/tower';
+
+const colorsDefault = { background: '#3498db', foreground: '#ffffff', border: '#2980b9' };
 
 describe('extractArgumentConnectors', () => {
     it('emits a single output connector for a lone value brick and no inputs', () => {
@@ -64,5 +69,47 @@ describe('extractArgumentConnectors', () => {
         expect(new Set(ids).size).toBe(ids.length);
         expect(results.every((r) => r.meta.id === r.object.id)).toBe(true);
         expect(results.every((r) => r.meta.towerId === 'tower')).toBe(true);
+    });
+
+    it('marks each input connector occupied iff its slot is filled', () => {
+        // A 2-slot expression: slot 0 filled with a value, slot 1 left empty.
+        const filledChild: TowerValueNode = {
+            kind: 'value',
+            model: new ValueBrickModel({
+                id: 'child',
+                colorsDefault,
+                tooltipText: '',
+                widget: { type: 'numberbox', value: 1 },
+            }),
+            parent: null,
+        };
+        const parent: TowerExpressionNode = {
+            kind: 'expression',
+            model: new ExpressionBrickModel({
+                id: 'parent',
+                colorsDefault,
+                tooltipText: '',
+                widget: { type: 'label', text: '+' },
+                params: ['A', 'B'],
+            }),
+            parent: null,
+            args: [filledChild, null],
+        };
+        filledChild.parent = parent;
+
+        const inputs = extractArgumentConnectors('t', parent)
+            .filter((r) => r.meta.brickId === 'parent' && r.meta.type === 'input')
+            .sort((a, b) => a.meta.slotIndex! - b.meta.slotIndex!);
+
+        expect(inputs.map((r) => r.meta.occupied)).toEqual([true, false]);
+    });
+
+    it('marks the output connector without an occupied flag', () => {
+        valueTree.model.setPosition(300, 400);
+
+        const { meta } = extractArgumentConnectors('t', valueTree)[0]!;
+
+        expect(meta.type).toBe('output');
+        expect(meta.occupied).toBeUndefined();
     });
 });

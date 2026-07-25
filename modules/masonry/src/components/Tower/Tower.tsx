@@ -17,9 +17,9 @@ import { TowerBrickView } from './TowerBrick';
  * letting the parent supply the positioning context instead.
  */
 export const TowerView = memo(function (props: TowerViewProps) {
-  const { origin = { x: 0, y: 0 }, asChild = false } = props;
+  const { origin = { x: 0, y: 0 }, asChild = false, layoutVersion = 0 } = props;
 
-  const nodes = useTowerLayout(props.root, origin);
+  const nodes = useTowerLayout(props.root, origin, layoutVersion);
 
   const bricks = nodes.map((node) => (
     <TowerBrickView key={node.model.id} id={node.model.id} node={node} />

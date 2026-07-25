@@ -36,13 +36,18 @@ export interface WorkspaceStore {
     syncStatementConnectors: (towerId: string, root: TowerNode) => void;
     /** Synchronises the argument collision points for a tower after layout */
     syncArgumentConnectors: (towerId: string, root: TowerNode) => void;
+    /**
+     * Completes a tower join once the node graph has been spliced (statement or argument): removes
+     * the absorbed (dragged) tower and bumps the host tower's `layoutVersion` to re-run its layout.
+     */
+    absorbTower: (draggedId: string, hostId: string) => void;
 }
 
 /**
  * Tracks the state of the workspace, including all towers positioned within it.
  */
 export const useWorkspaceStore = create<WorkspaceStore>()(
-    subscribeWithSelector((set) => ({
+    subscribeWithSelector((set, get) => ({
         towers: {},
         statementCollisionSpace: new QuadtreeCollisionSpace(4000, 4000),
         statementConnectors: {},
@@ -177,6 +182,24 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 for (const r of results) newConnectors[r.meta.id] = r.meta;
 
                 return { argumentConnectors: newConnectors };
+            });
+        },
+
+        absorbTower: (draggedId, hostId) => {
+            // The join has already spliced the dragged root into the host's node graph. Drop the
+            // now-absorbed tower (this also purges its collision points), then bump the host's
+            // layoutVersion so its layout re-runs over the enlarged graph.
+            get().removeTower(draggedId);
+
+            set((state) => {
+                const host = state.towers[hostId];
+                if (!host) return state;
+                return {
+                    towers: {
+                        ...state.towers,
+                        [hostId]: { ...host, layoutVersion: (host.layoutVersion ?? 0) + 1 },
+                    },
+                };
             });
         },
     })),

@@ -1,8 +1,14 @@
 import { act } from '@testing-library/react';
 
+import type { TowerExpressionNode, TowerValueNode } from '@/@types/tower.types';
+import { ExpressionBrickModel, ValueBrickModel } from '@/models/brick';
+
 import { useWorkspaceStore } from './workspace';
 import { expressionTree, statementTreeNoNesting } from '@/mocks/tower';
+import { joinArg } from '@/utils/argument-connect';
 import { listNodes } from '@/utils/tower-traversal';
+
+const colorsDefault = { background: '#3498db', foreground: '#ffffff', border: '#2980b9' };
 
 describe('Workspace Store Collision Space', () => {
     beforeEach(() => {
@@ -130,5 +136,63 @@ describe('Workspace Store Collision Space', () => {
             state.argumentCollisionSpace as unknown as { _itemsById: Map<number, unknown> }
         )._itemsById.size;
         expect(spaceObjects).toBe(0);
+    });
+
+    it('absorbs the dragged tower and bumps the host layoutVersion on an argument join', () => {
+        const host: TowerExpressionNode = {
+            kind: 'expression',
+            model: new ExpressionBrickModel({
+                id: 'host',
+                colorsDefault,
+                tooltipText: '',
+                widget: { type: 'label', text: '+' },
+                params: ['A'],
+            }),
+            parent: null,
+            args: [null],
+        };
+        host.model.setPosition(400, 300);
+
+        const dragged: TowerValueNode = {
+            kind: 'value',
+            model: new ValueBrickModel({
+                id: 'dragged',
+                colorsDefault,
+                tooltipText: '',
+                widget: { type: 'numberbox', value: 7 },
+            }),
+            parent: null,
+        };
+        dragged.model.setPosition(900, 300);
+
+        act(() => {
+            const store = useWorkspaceStore.getState();
+            store.createTower({ id: 'host-tower', root: host, position: { x: 0, y: 0 } });
+            store.createTower({ id: 'dragged-tower', root: dragged, position: { x: 0, y: 0 } });
+            store.syncArgumentConnectors('host-tower', host);
+            store.syncArgumentConnectors('dragged-tower', dragged);
+        });
+
+        // Splice the graph (as the drop handler does), then let the store finish the merge.
+        act(() => {
+            joinArg({ draggedRoot: dragged, target: host, slotIndex: 0 });
+            useWorkspaceStore.getState().absorbTower('dragged-tower', 'host-tower');
+        });
+
+        const state = useWorkspaceStore.getState();
+
+        // The dragged tower is gone; the host remains with a bumped layoutVersion.
+        expect(state.towers['dragged-tower']).toBeUndefined();
+        expect(state.towers['host-tower']).toBeDefined();
+        expect(state.towers['host-tower'].layoutVersion).toBe(1);
+
+        // The dragged tower's own connector book-keeping was purged.
+        expect(
+            Object.values(state.argumentConnectors).some((m) => m.towerId === 'dragged-tower'),
+        ).toBe(false);
+
+        // The node graph reflects the join.
+        expect(host.args[0]).toBe(dragged);
+        expect(dragged.parent).toBe(host);
     });
 });

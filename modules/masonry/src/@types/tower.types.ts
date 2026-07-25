@@ -112,4 +112,9 @@ export interface TowerViewProps {
     origin?: Point;
     /** If true, renders bricks directly without a wrapping container; defaults to false. */
     asChild?: boolean;
+    /**
+     * Bumped by the workspace when the tower's node graph changes in place (e.g. an argument brick
+     * is joined in). Forces the layout to re-run even though `root`'s identity is unchanged.
+     */
+    layoutVersion?: number;
 }

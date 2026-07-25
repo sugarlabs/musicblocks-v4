@@ -33,6 +33,12 @@ export interface TowerState {
     root: TowerNode;
     /** The absolute position of the tower in the workspace */
     position: Point;
+    /**
+     * Monotonic counter bumped when the tower's node graph changes in place (e.g. an argument brick
+     * is joined into a slot). The layout depends on it so a structural change re-runs the layout
+     * even though the `root` object reference is unchanged.
+     */
+    layoutVersion?: number;
 }
 
 /**
@@ -65,4 +71,9 @@ export interface ArgumentConnectorMeta {
     type: 'input' | 'output';
     /** The declaration-order index of the argument slot; present only on `input` connectors */
     slotIndex?: number;
+    /**
+     * Whether the argument slot is currently filled; present only on `input` connectors.
+     * A dragged output snaps only into an empty (`occupied === false`) slot.
+     */
+    occupied?: boolean;
 }

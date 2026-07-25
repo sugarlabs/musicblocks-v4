@@ -4,8 +4,10 @@ import type { CollisionObject } from './collision';
 import { listNodes } from './tower-traversal';
 
 // Notch layout constants (matching BrickOutlineGenerator geometry)
-const TAIL_INDENT_W = 8;
-const V_NOTCH_OFFSET_X = 18;
+// Exported so the drag-snap probe (statement-connect.ts) measures the dragged tower's open ends
+// with the exact same geometry these collision targets are built from.
+export const TAIL_INDENT_W = 8;
+export const V_NOTCH_OFFSET_X = 18;
 
 let nextCollisionId = 1;
 

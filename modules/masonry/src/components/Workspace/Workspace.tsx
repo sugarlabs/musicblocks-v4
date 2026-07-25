@@ -71,6 +71,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
             id={tower.id}
             root={tower.root}
             origin={tower.position}
+            layoutVersion={tower.layoutVersion}
             asChild
           />
         ))}

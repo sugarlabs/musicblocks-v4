@@ -1,4 +1,5 @@
 import type { Point } from '@/@types/common.types';
+import type { TowerNode } from '@/@types/tower.types';
 
 import type { CollisionSpace } from './collision';
 
@@ -33,4 +34,24 @@ export function querySnap(space: CollisionSpace, center: Point): number[] {
         w: SNAP_PROBE_SIZE,
         h: SNAP_PROBE_SIZE,
     });
+}
+
+/**
+ * World-space centre of a connector on `node`, which sits in a tower rooted at `root` and placed at
+ * `towerPosition`. The node's in-tower offset is taken relative to the root rather than read
+ * absolutely: absolute positions trail a drag by up to a frame, while `towerPosition` is written on
+ * every drag move.
+ *
+ * @param offset - The connector's bounds centre, relative to its own brick's top-left origin.
+ */
+export function connectorCenter(
+    root: TowerNode,
+    node: TowerNode,
+    towerPosition: Point,
+    offset: Point,
+): Point {
+    return {
+        x: towerPosition.x + (node.model.position.x - root.model.position.x) + offset.x,
+        y: towerPosition.y + (node.model.position.y - root.model.position.y) + offset.y,
+    };
 }

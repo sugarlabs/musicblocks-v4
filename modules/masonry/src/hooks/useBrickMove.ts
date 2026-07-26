@@ -115,9 +115,9 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                         const rootNode = useWorkspaceStore.getState().towers[state.towerId]?.root;
                         if (rootNode) {
                             queueMicrotask(() => {
-                                useWorkspaceStore
-                                    .getState()
-                                    .syncStatementConnectors(state.towerId, rootNode);
+                                const store = useWorkspaceStore.getState();
+                                store.syncStatementConnectors(state.towerId, rootNode);
+                                store.syncArgumentConnectors(state.towerId, rootNode);
                             });
                         }
                     }

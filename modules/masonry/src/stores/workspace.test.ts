@@ -8,7 +8,7 @@ import {
     statementTreeNoNesting,
 } from '@/mocks/tower';
 import { listNodes } from '@/utils/tower-traversal';
-import type { TowerStatementNode } from '@/@types/tower.types';
+import type { TowerExpressionNode, TowerStatementNode } from '@/@types/tower.types';
 
 describe('Workspace Store Collision Space', () => {
     beforeEach(() => {
@@ -171,6 +171,41 @@ describe('Workspace Store Collision Space', () => {
 
         // The prev link on the newly detached root should be null
         expect((newTower.root as TowerStatementNode).prev).toBeNull();
+    });
+
+    it('detaches an argument brick to a new tower correctly', () => {
+        const root = expressionTree;
+        const firstArg = root.args[0]!;
+        act(() => {
+            useWorkspaceStore.getState().createTower({
+                id: 'tower-expr-1',
+                root: root,
+                position: { x: 0, y: 0 },
+            });
+        });
+
+        let newTowerId: string | null = null;
+        act(() => {
+            newTowerId = useWorkspaceStore
+                .getState()
+                .detachBrickToNewTower('tower-expr-1', firstArg.model.id, { x: 80, y: 80 });
+        });
+
+        expect(newTowerId).toBeTruthy();
+
+        const state = useWorkspaceStore.getState();
+        const oldTower = state.towers['tower-expr-1'];
+        const newTower = state.towers[newTowerId!];
+
+        // The old tower should have the argument slot cleared to null
+        expect((oldTower.root as TowerExpressionNode).args[0]).toBeNull();
+
+        // The new tower should be created at the requested position with the detached arg as root
+        expect(newTower.position).toEqual({ x: 80, y: 80 });
+        expect(newTower.root.model.id).toBe(firstArg.model.id);
+
+        // The parent link on the newly detached root should be null
+        expect((newTower.root as TowerExpressionNode).parent).toBeNull();
     });
 
     describe('absorbArgumentTower', () => {

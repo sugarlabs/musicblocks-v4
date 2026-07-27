@@ -1,4 +1,9 @@
-import type { TowerNode, TowerStatementNode } from '@/@types/tower.types';
+import type {
+    TowerExpressionNode,
+    TowerNode,
+    TowerStatementNode,
+    TowerValueNode,
+} from '@/@types/tower.types';
 import { mockPaletteConfig } from '@/mocks/palette';
 import { createBrickModel, wrapAsRootNode } from '@/utils/brick-model-factory';
 
@@ -23,43 +28,109 @@ export function createMockTowerRoot(): TowerNode {
         return brickObj.brick;
     };
 
-    const stmt = (id: string) =>
-        wrapAsRootNode(createBrickModel(getProps(id))) as TowerStatementNode;
+    const stmt = (id: string) => {
+        const props = structuredClone(getProps(id));
+        return wrapAsRootNode(createBrickModel(props)) as TowerStatementNode;
+    };
+
+    const expr = (id: string, customValue?: string) => {
+        const props = structuredClone(getProps(id));
+        if (customValue !== undefined && 'value' in props.widget) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (props.widget as any).value = customValue;
+        }
+        return wrapAsRootNode(createBrickModel(props)) as TowerExpressionNode;
+    };
+
+    const val = (id: string, customValue?: number | string) => {
+        const props = structuredClone(getProps(id));
+        if (customValue !== undefined && 'value' in props.widget) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (props.widget as any).value = customValue;
+        }
+        return wrapAsRootNode(createBrickModel(props)) as TowerValueNode;
+    };
+
+    const plugArg = (
+        parent: TowerStatementNode | TowerExpressionNode,
+        slotIndex: number,
+        child: TowerValueNode | TowerExpressionNode,
+    ) => {
+        parent.args[slotIndex] = child;
+        child.parent = parent;
+    };
+
+    const linkNext = (prevStmt: TowerStatementNode, nextStmt: TowerStatementNode) => {
+        prevStmt.next = nextStmt;
+        nextStmt.prev = prevStmt;
+    };
+
+    const nestInside = (parentStmt: TowerStatementNode, childStmt: TowerStatementNode) => {
+        parentStmt.nestedNext = childStmt;
+        childStmt.prev = null;
+    };
 
     // ── Tower layout ─────────────────────────────────────────────────────────
-    //  Note
-    //  Repeat
-    //    ├─ Pitch       (nested chain)
-    //    └─ Rest        (nested chain, next of Pitch)
-    //  Note             (next of Repeat)
-    //  Tone/Sharp       (next of second Note)
+    // start
+    //   └─ set instrument (nested chain inside start) [guitar]
+    //        ├─ note [value: / (1, 4)]
+    //        │    └─ pitch [sol, 4]
+    //        ├─ note [value: / (1, 4)]
+    //        │    └─ pitch [mi, 4]
+    //        └─ note [value: / (1, 2)]
+    //             └─ pitch [sol, 4]
 
-    const note1 = stmt('rhythm.note.1');
-    const repeat = stmt('flow.repeat.1');
-    const note2 = stmt('rhythm.note.1');
-    const sharp = stmt('tone.sharp.1');
+    const startNode = stmt('mock.start.1');
 
-    // flat chain: note1 → repeat → note2 → sharp
-    note1.next = repeat;
-    repeat.prev = note1;
+    const setInstNode = stmt('mock.setinstrument.1');
+    nestInside(startNode, setInstNode);
 
-    repeat.next = note2;
-    note2.prev = repeat;
+    const guitarNode = val('mock.guitar.1', 'guitar');
+    plugArg(setInstNode, 0, guitarNode);
 
-    note2.next = sharp;
-    sharp.prev = note2;
+    // Note 1
+    const note1 = stmt('mock.note.1');
+    nestInside(setInstNode, note1);
 
-    // nested chain inside repeat: pitch → rest
-    const pitch = stmt('pitch.pitch.1');
-    const rest = stmt('rhythm.rest.1');
+    const div1 = expr('mock.expression.1', '/');
+    plugArg(note1, 0, div1);
+    plugArg(div1, 0, val('mock.number.1', 1));
+    plugArg(div1, 1, val('mock.number.1', 4));
 
-    repeat.nestedNext = pitch;
-    pitch.prev = null;
+    const pitch1 = stmt('mock.pitch.1');
+    nestInside(note1, pitch1);
+    plugArg(pitch1, 0, val('mock.sol.1', 'sol'));
+    plugArg(pitch1, 1, val('mock.number.1', 4));
 
-    pitch.next = rest;
-    rest.prev = pitch;
+    // Note 2
+    const note2 = stmt('mock.note.1');
+    linkNext(note1, note2);
 
-    return note1;
+    const div2 = expr('mock.expression.1', '/');
+    plugArg(note2, 0, div2);
+    plugArg(div2, 0, val('mock.number.1', 1));
+    plugArg(div2, 1, val('mock.number.1', 4));
+
+    const pitch2 = stmt('mock.pitch.1');
+    nestInside(note2, pitch2);
+    plugArg(pitch2, 0, val('mock.sol.1', 'mi'));
+    plugArg(pitch2, 1, val('mock.number.1', 4));
+
+    // Note 3
+    const note3 = stmt('mock.note.1');
+    linkNext(note2, note3);
+
+    const div3 = expr('mock.expression.1', '/');
+    plugArg(note3, 0, div3);
+    plugArg(div3, 0, val('mock.number.1', 1));
+    plugArg(div3, 1, val('mock.number.1', 2));
+
+    const pitch3 = stmt('mock.pitch.1');
+    nestInside(note3, pitch3);
+    plugArg(pitch3, 0, val('mock.sol.1', 'sol'));
+    plugArg(pitch3, 1, val('mock.number.1', 4));
+
+    return startNode;
 }
 
 export const mockWorkspaceTower = {

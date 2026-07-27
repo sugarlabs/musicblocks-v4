@@ -199,6 +199,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 let target: TowerNode | null = null;
                 let foundPrev: Extract<TowerNode, { kind: 'statement' }> | null = null;
                 let foundCavityParent: Extract<TowerNode, { kind: 'statement' }> | null = null;
+                let foundArgParent: TowerNode | null = null;
+                let foundArgIndex: number | null = null;
 
                 while (stack.length > 0) {
                     const current = stack.pop()!;
@@ -223,15 +225,21 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                             }
                             stack.push(current.nestedNext);
                         }
-                    } else if (current.kind === 'expression') {
+                    }
+                    if (current.kind === 'statement' || current.kind === 'expression') {
                         for (let i = 0; i < current.args.length; i++) {
                             const arg = current.args[i];
-                            if (arg && arg.model.id === nodeId) {
-                                target = arg;
-                                break;
+                            if (arg) {
+                                if (arg.model.id === nodeId) {
+                                    target = arg;
+                                    foundArgParent = current;
+                                    foundArgIndex = i;
+                                    break;
+                                }
+                                stack.push(arg);
                             }
-                            if (arg) stack.push(arg);
                         }
+                        if (target) break;
                     }
                 }
 
@@ -243,28 +251,15 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                     foundPrev.next = null;
                 } else if (foundCavityParent) {
                     foundCavityParent.nestedNext = null;
-                } else {
-                    const stack2: TowerNode[] = [tower.root];
-                    while (stack2.length > 0) {
-                        const current = stack2.pop()!;
-                        if (current.kind === 'expression') {
-                            const idx = current.args.findIndex((a) => a === target);
-                            if (idx !== -1) {
-                                current.args[idx] = null;
-                                break;
-                            }
-                            for (const arg of current.args) {
-                                if (arg) stack2.push(arg);
-                            }
-                        } else if (current.kind === 'statement') {
-                            if (current.next) stack2.push(current.next);
-                            if (current.nestedNext) stack2.push(current.nestedNext);
-                        }
-                    }
+                } else if (foundArgParent && foundArgIndex !== null) {
+                    foundArgParent.args[foundArgIndex] = null;
                 }
 
                 if ('prev' in target) {
                     target.prev = null;
+                }
+                if ('parent' in target) {
+                    target.parent = null;
                 }
 
                 newTowerId = `tower-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -324,7 +319,8 @@ export function findNodeAndTower(id: string): { node: TowerNode; tower: TowerSta
             if (current.kind === 'statement') {
                 if (current.next) stack.push(current.next);
                 if (current.nestedNext) stack.push(current.nestedNext);
-            } else if (current.kind === 'expression') {
+            }
+            if (current.kind === 'statement' || current.kind === 'expression') {
                 for (const arg of current.args) {
                     if (arg) stack.push(arg);
                 }

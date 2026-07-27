@@ -30,6 +30,8 @@ import type {
 } from '@/@types/brick.types';
 import type { PaletteConfig } from '@/@types/palette.types';
 
+import mouseSvg from '@/assets/mouse.svg';
+
 // -------------------------------------------------------------------------------------------------
 
 // The palette shell never renders these `brick` configs (bricks show as placeholders), so each is a
@@ -1151,6 +1153,190 @@ export const mockPaletteConfig: PaletteConfig = {
                                     border: '#cc9900',
                                 },
                                 tooltipText: '',
+                            },
+                        },
+                    ],
+                },
+                {
+                    name: 'Mock',
+                    icon: Settings,
+                    color: '#f5a623',
+                    bricks: [
+                        {
+                            id: 'mock.start.1',
+                            name: 'Start',
+                            description: 'Start brick',
+                            brick: {
+                                kind: 'statement',
+                                widget: { type: 'label', text: 'start', glyph: { src: mouseSvg } },
+                                colorsDefault: {
+                                    background: '#ffb703',
+                                    foreground: '#000000',
+                                    border: '#d99b00',
+                                },
+                                tooltipText: 'Start',
+                                hasConnectionPrev: false,
+                                hasConnectionNext: false,
+                                nesting: { dims: null, isFolded: false },
+                            },
+                        },
+                        {
+                            id: 'mock.setinstrument.1',
+                            name: 'Set Instrument',
+                            description: 'Set instrument for contained notes',
+                            brick: {
+                                kind: 'statement',
+                                widget: { type: 'label', text: 'set' },
+                                paramArgs: [{ param: 'instrument', argDims: null }],
+                                colorsDefault: {
+                                    background: '#29b6f6',
+                                    foreground: '#000000',
+                                    border: '#0288d1',
+                                },
+                                tooltipText: 'Set Instrument',
+                                hasConnectionPrev: true,
+                                hasConnectionNext: true,
+                                nesting: { dims: null, isFolded: false },
+                            },
+                        },
+                        {
+                            id: 'mock.guitar.1',
+                            name: 'Instrument',
+                            description: 'Instrument selection',
+                            brick: {
+                                kind: 'value',
+                                widget: {
+                                    type: 'select',
+                                    options: [
+                                        'guitar',
+                                        'flute',
+                                        'drum',
+                                        'piano',
+                                        'violin',
+                                        'trumpet',
+                                        'sitar',
+                                    ],
+                                    value: 'guitar',
+                                },
+                                colorsDefault: {
+                                    background: '#4fc3f7',
+                                    foreground: '#000000',
+                                    border: '#0288d1',
+                                },
+                                tooltipText: 'Instrument',
+                            },
+                        },
+                        {
+                            id: 'mock.note.1',
+                            name: 'Note',
+                            description: 'Note brick',
+                            brick: {
+                                kind: 'statement',
+                                widget: { type: 'label', text: 'note' },
+                                paramArgs: [{ param: 'value', argDims: null }],
+                                colorsDefault: {
+                                    background: '#ff7043',
+                                    foreground: '#000000',
+                                    border: '#d84315',
+                                },
+                                tooltipText: 'Note',
+                                hasConnectionPrev: true,
+                                hasConnectionNext: true,
+                                nesting: { dims: null, isFolded: false },
+                            },
+                        },
+                        {
+                            id: 'mock.expression.1',
+                            name: 'Math Operator',
+                            description: 'Math expression with variant operator',
+                            brick: {
+                                kind: 'expression',
+                                widget: {
+                                    type: 'variant',
+                                    options: ['+', '-', '*', '/'],
+                                    value: '/',
+                                },
+                                paramArgs: [
+                                    { param: 'num1', argDims: null },
+                                    { param: 'num2', argDims: null },
+                                ],
+                                colorsDefault: {
+                                    background: '#ec4899',
+                                    foreground: '#ffffff',
+                                    border: '#be185d',
+                                },
+                                tooltipText: 'Math Operator',
+                            },
+                        },
+                        {
+                            id: 'mock.number.1',
+                            name: 'Number',
+                            description: 'Number value from 1 to 10',
+                            brick: {
+                                kind: 'value',
+                                widget: {
+                                    type: 'numberbox',
+                                    value: 1,
+                                    min: 1,
+                                    max: 10,
+                                    step: 1,
+                                },
+                                colorsDefault: {
+                                    background: '#f472b6',
+                                    foreground: '#000000',
+                                    border: '#be185d',
+                                },
+                                tooltipText: 'Number',
+                            },
+                        },
+                        {
+                            id: 'mock.pitch.1',
+                            name: 'Pitch',
+                            description: 'Pitch expression brick',
+                            brick: {
+                                kind: 'statement',
+                                widget: { type: 'label', text: 'pitch' },
+                                paramArgs: [
+                                    { param: 'name', argDims: null },
+                                    { param: 'octave', argDims: null },
+                                ],
+                                colorsDefault: {
+                                    background: '#84cc16',
+                                    foreground: '#000000',
+                                    border: '#4d7c0f',
+                                },
+                                tooltipText: 'Pitch',
+                                hasConnectionPrev: true,
+                                hasConnectionNext: true,
+                            },
+                        },
+                        {
+                            id: 'mock.sol.1',
+                            name: 'Solfege',
+                            description: 'Solfege note selection',
+                            brick: {
+                                kind: 'value',
+                                widget: {
+                                    type: 'select',
+                                    options: [
+                                        'do',
+                                        're',
+                                        'mi',
+                                        'fa',
+                                        'sa',
+                                        'sol',
+                                        'la',
+                                        'ti',
+                                        'do',
+                                    ],
+                                    value: 'sol',
+                                },
+                                colorsDefault: {
+                                    background: '#a3e635',
+                                    foreground: '#000000',
+                                    border: '#4d7c0f',
+                                },
+                                tooltipText: 'Solfege',
                             },
                         },
                     ],

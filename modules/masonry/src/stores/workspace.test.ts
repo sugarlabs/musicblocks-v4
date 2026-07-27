@@ -208,7 +208,7 @@ describe('Workspace Store Collision Space', () => {
         expect((newTower.root as TowerExpressionNode).parent).toBeNull();
     });
 
-    describe('absorbArgumentTower', () => {
+    describe('absorbTower', () => {
         /** Two towers, the dragged one already spliced into the host's empty slot by `joinArg`. */
         function setupJoined() {
             const host = makeEmptyExpression('host', 1);
@@ -240,7 +240,7 @@ describe('Workspace Store Collision Space', () => {
             const { host, dragged } = setupJoined();
 
             act(() => {
-                useWorkspaceStore.getState().absorbArgumentTower('dragged-tower', 'host-tower');
+                useWorkspaceStore.getState().absorbTower('dragged-tower', 'host-tower');
             });
 
             const state = useWorkspaceStore.getState();
@@ -261,7 +261,7 @@ describe('Workspace Store Collision Space', () => {
             const before = useWorkspaceStore.getState().towers['host-tower'].root;
 
             act(() => {
-                useWorkspaceStore.getState().absorbArgumentTower('dragged-tower', 'host-tower');
+                useWorkspaceStore.getState().absorbTower('dragged-tower', 'host-tower');
             });
 
             const after = useWorkspaceStore.getState().towers['host-tower'].root;
@@ -285,7 +285,7 @@ describe('Workspace Store Collision Space', () => {
             ).toBe(true);
 
             act(() => {
-                useWorkspaceStore.getState().absorbArgumentTower('dragged-tower', 'host-tower');
+                useWorkspaceStore.getState().absorbTower('dragged-tower', 'host-tower');
             });
 
             expect(
@@ -301,7 +301,7 @@ describe('Workspace Store Collision Space', () => {
             act(() => {
                 const store = useWorkspaceStore.getState();
                 store.removeTower('host-tower');
-                store.absorbArgumentTower('dragged-tower', 'host-tower');
+                store.absorbTower('dragged-tower', 'host-tower');
             });
 
             expect(Object.keys(useWorkspaceStore.getState().towers)).toEqual([]);

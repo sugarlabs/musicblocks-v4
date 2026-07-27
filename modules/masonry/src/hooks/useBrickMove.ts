@@ -5,30 +5,51 @@ import { RefObject, useEffect, useRef } from 'react';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 import { joinArg, resolveArgumentConnection } from '@/utils/argument-connect';
+import { joinStatement, resolveStatementConnection } from '@/utils/statement-connect';
 import type { TowerNode } from '@/@types/tower.types';
 
 /**
- * Attempts to join the just-dropped tower to a settled tower through an argument slot, in either
- * direction. The tower that owns the slot survives the merge.
+ * Attempts to join the just-dropped tower to a settled tower, through either an argument slot or a
+ * statement notch, in either direction. The tower that stays rooted survives the merge.
+ *
+ * Both kinds are resolved before either is applied: a statement brick has argument slots as well as
+ * notches, so one drop can be in range of both, and the closer connector is the intended one.
  *
  * @param towerId - The ID of the tower that was just dropped.
  * @returns Whether a join happened, in which case one of the two towers no longer exists.
  */
-function tryConnectArgument(towerId: string): boolean {
+function tryConnect(towerId: string): boolean {
     const store = useWorkspaceStore.getState();
 
-    const connection = resolveArgumentConnection({
+    const argument = resolveArgumentConnection({
         draggedTowerId: towerId,
         space: store.argumentCollisionSpace,
         connectors: store.argumentConnectors,
         towers: store.towers,
     });
-    if (!connection) return false;
 
-    joinArg(connection);
-    store.absorbArgumentTower(connection.absorbedTowerId, connection.hostTowerId);
+    const statement = resolveStatementConnection({
+        draggedTowerId: towerId,
+        space: store.statementCollisionSpace,
+        connectors: store.statementConnectors,
+        towers: store.towers,
+    });
 
-    return true;
+    if (statement !== null && (argument === null || statement.distance < argument.distance)) {
+        joinStatement(statement);
+        store.absorbTower(statement.absorbedTowerId, statement.hostTowerId);
+
+        return true;
+    }
+
+    if (argument !== null) {
+        joinArg(argument);
+        store.absorbTower(argument.absorbedTowerId, argument.hostTowerId);
+
+        return true;
+    }
+
+    return false;
 }
 
 /**
@@ -109,9 +130,11 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                     const state = dragStateRef.current;
                     if (!state) return;
 
-                    // A successful argument join merges two towers into one, and the host's
-                    // re-layout re-syncs both connector spaces for the whole merged graph.
-                    if (!tryConnectArgument(state.towerId)) {
+                    // A successful join merges two towers into one, and the host's re-layout re-syncs
+                    // both connector spaces for the whole merged graph. A plain move only runs the
+                    // layout's position fast-path, which never touches `positioned` and so never
+                    // triggers the Workspace's sync — hence the refresh here.
+                    if (!tryConnect(state.towerId)) {
                         const rootNode = useWorkspaceStore.getState().towers[state.towerId]?.root;
                         if (rootNode) {
                             queueMicrotask(() => {

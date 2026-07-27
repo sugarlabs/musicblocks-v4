@@ -1,14 +1,8 @@
-import type { Point } from '@/@types/common.types';
-import type {
-    TowerExpressionNode,
-    TowerNode,
-    TowerStatementNode,
-    TowerValueNode,
-} from '@/@types/tower.types';
+import type { TowerExpressionNode, TowerStatementNode, TowerValueNode } from '@/@types/tower.types';
 import type { ArgumentConnectorMeta, TowerState } from '@/@types/workspace.types';
 
 import type { CollisionSpace } from './collision';
-import { querySnap } from './snap-config';
+import { connectorCenter, querySnap } from './snap-config';
 import { findNode, listNodes } from './tower-traversal';
 
 /** A node that owns argument slots, and can therefore receive an argument. */
@@ -42,24 +36,6 @@ export interface ResolveArgumentConnectionParams {
     connectors: Record<number, ArgumentConnectorMeta>;
     /** All towers currently in the workspace, used to resolve a hit back to its live node. */
     towers: Record<string, TowerState>;
-}
-
-/**
- * World-space centre of a connector on `node`, which sits in a tower rooted at `root` and placed at
- * `towerPosition`. The node's in-tower offset is taken relative to the root rather than read
- * absolutely: absolute positions trail a drag by up to a frame, while `towerPosition` is written on
- * every drag move.
- */
-function connectorCenter(
-    root: TowerNode,
-    node: TowerNode,
-    towerPosition: Point,
-    offset: Point,
-): Point {
-    return {
-        x: towerPosition.x + (node.model.position.x - root.model.position.x) + offset.x,
-        y: towerPosition.y + (node.model.position.y - root.model.position.y) + offset.y,
-    };
 }
 
 /**

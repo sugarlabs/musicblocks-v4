@@ -42,8 +42,8 @@ export interface WorkspaceStore {
         nodeId: string,
         position: Point,
     ) => string | null;
-    /** Merges an argument-joined tower into the host tower that now owns its bricks */
-    absorbArgumentTower: (draggedTowerId: string, hostTowerId: string) => void;
+    /** Merges a joined tower into the host tower that now owns its bricks */
+    absorbTower: (draggedTowerId: string, hostTowerId: string) => void;
 }
 
 /**
@@ -280,7 +280,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             return newTowerId;
         },
 
-        absorbArgumentTower: (draggedTowerId, hostTowerId) => {
+        absorbTower: (draggedTowerId, hostTowerId) => {
             // The join already spliced the two node graphs together, so the absorbed tower is
             // redundant; dropping it also purges its stale collision points.
             get().removeTower(draggedTowerId);

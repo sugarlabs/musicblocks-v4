@@ -9,6 +9,7 @@ import { resolveCandidateConnection } from '@/utils/snap-preview-calculator';
 import { joinStatement, resolveStatementConnection } from '@/utils/statement-connect';
 import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import type { TowerNode } from '@/@types/tower.types';
+import { listNodes } from '@/utils/tower-traversal';
 
 export function triggerBrickAnimation(brickId: string, animationClass: string) {
     const el = document.querySelector(`[data-brick-id="${brickId}"]`);
@@ -113,37 +114,43 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                         let shadowSocket: 'next' | 'nestedNext' | 'output' | number | null = null;
                         let shadowParentId: string | null = null;
 
-                        import('@/utils/tower-traversal').then(({ listNodes }) => {
-                            const nodes = listNodes(tower.root);
-                            for (const n of nodes) {
-                                if (n.kind === 'statement' && n.next?.model.id === id) {
+                        const nodes = listNodes(tower.root);
+                        for (const n of nodes) {
+                            if (n.kind === 'statement' && n.next?.model.id === id) {
+                                shadowParentId = n.model.id;
+                                shadowSocket = 'next';
+                                break;
+                            }
+                            if (n.kind === 'statement' && n.nestedNext?.model.id === id) {
+                                shadowParentId = n.model.id;
+                                shadowSocket = 'nestedNext';
+                                break;
+                            }
+                            if ('args' in n) {
+                                const idx = n.args.findIndex((a) => a?.model.id === id);
+                                if (idx !== -1) {
                                     shadowParentId = n.model.id;
-                                    shadowSocket = 'next';
+                                    shadowSocket = idx;
                                     break;
-                                }
-                                if (n.kind === 'statement' && n.nestedNext?.model.id === id) {
-                                    shadowParentId = n.model.id;
-                                    shadowSocket = 'nestedNext';
-                                    break;
-                                }
-                                if ('args' in n) {
-                                    const idx = n.args.findIndex((a) => a?.model.id === id);
-                                    if (idx !== -1) {
-                                        shadowParentId = n.model.id;
-                                        shadowSocket = idx;
-                                        break;
-                                    }
                                 }
                             }
+                        }
 
-                            if (shadowParentId && shadowSocket !== null) {
-                                useConnectionPreviewStore.getState().setDisconnectShadow({
-                                    hostTowerId: tower.id,
-                                    hostBrickId: shadowParentId,
-                                    socket: shadowSocket,
-                                });
-                            }
-                        });
+                        if (shadowParentId && shadowSocket !== null) {
+                            useConnectionPreviewStore.getState().setDisconnectShadow({
+                                hostTowerId: tower.id,
+                                hostBrickId: shadowParentId,
+                                socket: shadowSocket,
+                            });
+                        }
+
+                        // Pre-emptively set dragStateRef so that if detachBrickToNewTower triggers a synchronous React
+                        // unmount/remount, the cleanup function knows a drag is active and won't clear the shadow.
+                        dragStateRef.current = {
+                            node,
+                            towerId: '', // Will be updated immediately below
+                            towerPosition: { x: 0, y: 0 },
+                        };
 
                         // Detach from the parent and create a new tower for this subtree
                         const newTowerId = useWorkspaceStore
@@ -226,7 +233,6 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
             if (!dragStateRef.current) {
                 interactable.unset();
                 useConnectionPreviewStore.getState().clearPreviewTarget();
-                useConnectionPreviewStore.getState().clearDisconnectShadow();
             }
         };
     }, [id, ref, isMounted]);

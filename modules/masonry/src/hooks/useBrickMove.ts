@@ -109,6 +109,42 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                             ? { x: current.x, y: current.y }
                             : { x: tower.position.x, y: tower.position.y };
 
+                        // Find parent to leave a disconnect shadow
+                        let shadowSocket: 'next' | 'nestedNext' | 'output' | number | null = null;
+                        let shadowParentId: string | null = null;
+
+                        import('@/utils/tower-traversal').then(({ listNodes }) => {
+                            const nodes = listNodes(tower.root);
+                            for (const n of nodes) {
+                                if (n.kind === 'statement' && n.next?.model.id === id) {
+                                    shadowParentId = n.model.id;
+                                    shadowSocket = 'next';
+                                    break;
+                                }
+                                if (n.kind === 'statement' && n.nestedNext?.model.id === id) {
+                                    shadowParentId = n.model.id;
+                                    shadowSocket = 'nestedNext';
+                                    break;
+                                }
+                                if ('args' in n) {
+                                    const idx = n.args.findIndex((a) => a?.model.id === id);
+                                    if (idx !== -1) {
+                                        shadowParentId = n.model.id;
+                                        shadowSocket = idx;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (shadowParentId && shadowSocket !== null) {
+                                useConnectionPreviewStore.getState().setDisconnectShadow({
+                                    hostTowerId: tower.id,
+                                    hostBrickId: shadowParentId,
+                                    socket: shadowSocket,
+                                });
+                            }
+                        });
+
                         // Detach from the parent and create a new tower for this subtree
                         const newTowerId = useWorkspaceStore
                             .getState()
@@ -162,6 +198,7 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                     if (!state) return;
 
                     useConnectionPreviewStore.getState().clearPreviewTarget();
+                    useConnectionPreviewStore.getState().clearDisconnectShadow();
 
                     // A successful join merges two towers into one, and the host's re-layout re-syncs
                     // both connector spaces for the whole merged graph. A plain move only runs the
@@ -188,6 +225,8 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
             // even if this specific brick unmounts from its old tower and remounts in the new one.
             if (!dragStateRef.current) {
                 interactable.unset();
+                useConnectionPreviewStore.getState().clearPreviewTarget();
+                useConnectionPreviewStore.getState().clearDisconnectShadow();
             }
         };
     }, [id, ref, isMounted]);

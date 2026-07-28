@@ -27,7 +27,7 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
 
   useBrickMove(id, ref);
 
-  const { x, y } = useBrickLayoutStore((state) => state.coords[id]);
+  const { x, y } = useBrickLayoutStore((state) => state.coords[id] || { x: 0, y: 0 });
   const isMounted = useBrickLayoutStore((state) => state.mounted[id]);
   const isPositioned = useBrickLayoutStore((state) => state.positioned[id]);
 

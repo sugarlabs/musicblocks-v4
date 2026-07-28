@@ -32,8 +32,11 @@ export function computeStatementPreview(
     const dx = draggedBounds ? draggedBounds.x * draggedScale : 0;
     const dy = draggedBounds ? draggedBounds.y * draggedScale : 0;
 
+    const strokeWidthOffset = 2 * hostScale; // STROKE_WIDTH = 2
     const snapX = hx - dx;
-    const snapY = hy - dy;
+    // The layout engine makes strokes abut rather than overlap, which introduces a gap
+    // equal to the stroke width between the mathematical notch centres.
+    const snapY = hy - dy + strokeWidthOffset;
 
     return {
         isValid: true,
@@ -63,7 +66,9 @@ export function computeArgumentPreview(
     const dx = draggedBounds ? draggedBounds.x * draggedScale : 0;
     const dy = draggedBounds ? draggedBounds.y * draggedScale : 0;
 
-    const snapX = hx - dx;
+    const strokeWidthOffset = 2 * hostScale; // STROKE_WIDTH = 2
+    // Abut strokes horizontally
+    const snapX = hx - dx + strokeWidthOffset;
     const snapY = hy - dy;
 
     return {

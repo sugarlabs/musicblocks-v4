@@ -4,6 +4,12 @@ import type { Point } from '@/@types/common.types';
 
 export type CandidateConnectionType = 'statement' | 'argument';
 
+export interface DisconnectShadowMeta {
+    hostTowerId: string;
+    hostBrickId: string;
+    socket: 'next' | 'nestedNext' | 'output' | number;
+}
+
 export interface ActiveTargetMeta {
     draggedTowerId: string;
     targetTowerId: string;
@@ -18,6 +24,7 @@ export interface ConnectionPreviewState {
     activeTarget: ActiveTargetMeta | null;
     isValid: boolean;
     snapPosition: Point | null;
+    disconnectShadow: DisconnectShadowMeta | null;
 }
 
 interface ConnectionPreviewStore extends ConnectionPreviewState {
@@ -27,6 +34,8 @@ interface ConnectionPreviewStore extends ConnectionPreviewState {
         snapPosition: Point | null,
     ) => void;
     clearPreviewTarget: () => void;
+    setDisconnectShadow: (shadow: DisconnectShadowMeta) => void;
+    clearDisconnectShadow: () => void;
 }
 
 export const useConnectionPreviewStore = create<ConnectionPreviewStore>()(
@@ -34,6 +43,7 @@ export const useConnectionPreviewStore = create<ConnectionPreviewStore>()(
         activeTarget: null,
         isValid: false,
         snapPosition: null,
+        disconnectShadow: null,
 
         setPreviewTarget: (target, isValid, snapPosition) => {
             if (
@@ -51,6 +61,16 @@ export const useConnectionPreviewStore = create<ConnectionPreviewStore>()(
         clearPreviewTarget: () => {
             if (get().activeTarget !== null) {
                 set({ activeTarget: null, isValid: false, snapPosition: null });
+            }
+        },
+
+        setDisconnectShadow: (shadow) => {
+            set({ disconnectShadow: shadow });
+        },
+
+        clearDisconnectShadow: () => {
+            if (get().disconnectShadow !== null) {
+                set({ disconnectShadow: null });
             }
         },
     })),

@@ -5,8 +5,21 @@ import { RefObject, useEffect, useRef } from 'react';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 import { joinArg, resolveArgumentConnection } from '@/utils/argument-connect';
+import { resolveCandidateConnection } from '@/utils/snap-preview-calculator';
 import { joinStatement, resolveStatementConnection } from '@/utils/statement-connect';
+import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import type { TowerNode } from '@/@types/tower.types';
+
+export function triggerBrickAnimation(brickId: string, animationClass: string) {
+    const el = document.querySelector(`[data-brick-id="${brickId}"]`);
+    if (el) {
+        el.classList.remove(animationClass);
+        // Force reflow to restart animation
+        void (el as HTMLElement).offsetWidth;
+        el.classList.add(animationClass);
+        setTimeout(() => el.classList.remove(animationClass), 400);
+    }
+}
 
 /**
  * Attempts to join the just-dropped tower to a settled tower, through either an argument slot or a
@@ -18,7 +31,7 @@ import type { TowerNode } from '@/@types/tower.types';
  * @param towerId - The ID of the tower that was just dropped.
  * @returns Whether a join happened, in which case one of the two towers no longer exists.
  */
-function tryConnect(towerId: string): boolean {
+export function tryConnect(towerId: string): boolean {
     const store = useWorkspaceStore.getState();
 
     const argument = resolveArgumentConnection({
@@ -38,6 +51,7 @@ function tryConnect(towerId: string): boolean {
     if (statement !== null && (argument === null || statement.distance < argument.distance)) {
         joinStatement(statement);
         store.absorbTower(statement.absorbedTowerId, statement.hostTowerId);
+        triggerBrickAnimation(towerId, 'brick-snap-pulse');
 
         return true;
     }
@@ -45,6 +59,7 @@ function tryConnect(towerId: string): boolean {
     if (argument !== null) {
         joinArg(argument);
         store.absorbTower(argument.absorbedTowerId, argument.hostTowerId);
+        triggerBrickAnimation(towerId, 'brick-snap-pulse');
 
         return true;
     }
@@ -119,16 +134,34 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                     const state = dragStateRef.current;
                     if (!state) return;
 
-                    const newX = state.towerPosition.x + dragPosRef.current.x;
-                    const newY = state.towerPosition.y + dragPosRef.current.y;
+                    const nextX = state.towerPosition.x + dragPosRef.current.x;
+                    const nextY = state.towerPosition.y + dragPosRef.current.y;
 
                     useWorkspaceStore
                         .getState()
-                        .updateTowerPosition(state.towerId, { x: newX, y: newY });
+                        .updateTowerPosition(state.towerId, { x: nextX, y: nextY });
+
+                    const candidate = resolveCandidateConnection(
+                        state.towerId,
+                        useWorkspaceStore.getState(),
+                    );
+                    if (candidate) {
+                        useConnectionPreviewStore
+                            .getState()
+                            .setPreviewTarget(
+                                candidate.target,
+                                candidate.isValid,
+                                candidate.snapPosition,
+                            );
+                    } else {
+                        useConnectionPreviewStore.getState().clearPreviewTarget();
+                    }
                 },
                 end(_event: DragEvent) {
                     const state = dragStateRef.current;
                     if (!state) return;
+
+                    useConnectionPreviewStore.getState().clearPreviewTarget();
 
                     // A successful join merges two towers into one, and the host's re-layout re-syncs
                     // both connector spaces for the whole merged graph. A plain move only runs the

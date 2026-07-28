@@ -1,6 +1,13 @@
 import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { useWorkspaceStore } from '@/stores/workspace';
 
+/**
+ * Renders a glowing dot (hint overlay) precisely at the socket or slot centroid when a user
+ * drags a brick close to a valid or invalid connection candidate.
+ *
+ * - If the connection is valid, it pulses slightly larger and matches the color of the brick being dragged.
+ * - If the connection is invalid, it shows a red glow to indicate a connection cannot be made here.
+ */
 export function SnapHintOverlay() {
   const activeTarget = useConnectionPreviewStore((state) => state.activeTarget);
   const isValid = useConnectionPreviewStore((state) => state.isValid);
@@ -10,9 +17,11 @@ export function SnapHintOverlay() {
 
   const { centroid, draggedTowerId } = activeTarget;
 
+  // We look up the dragged brick to match its theme colors for a seamless visual experience.
   const draggedTower = towers[draggedTowerId];
   const modelColors = draggedTower?.root?.model?.colorsDefault;
 
+  // Generate dynamic styles based on validity and the source brick's color palette
   const bgColor = isValid
     ? modelColors
       ? `${modelColors.background}80`

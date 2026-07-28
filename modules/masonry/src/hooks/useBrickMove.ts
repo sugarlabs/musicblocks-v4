@@ -11,6 +11,11 @@ import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import type { TowerNode } from '@/@types/tower.types';
 import { listNodes } from '@/utils/tower-traversal';
 
+/**
+ * Triggers a CSS keyframe animation on a specific brick by temporarily removing
+ * and re-adding the animation class, forcing a DOM reflow in between.
+ * This is used to create visual "pulses" when bricks connect or disconnect.
+ */
 export function triggerBrickAnimation(brickId: string, animationClass: string) {
     const el = document.querySelector(`[data-brick-id="${brickId}"]`);
     if (el) {

@@ -4,11 +4,18 @@ import { BrickView } from '@/components/Brick/Brick';
 import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { createBrickModel } from '@/utils/brick-model-factory';
 
+/**
+ * Renders a semi-transparent "ghost" brick precisely at the snapped position
+ * when the user drags a brick close enough to a valid connection point.
+ * This gives the user exact visual confirmation of where the brick will land if they drop it.
+ */
 export function SnapPreviewView() {
   const activeTarget = useConnectionPreviewStore((state) => state.activeTarget);
   const isValid = useConnectionPreviewStore((state) => state.isValid);
   const snapPosition = useConnectionPreviewStore((state) => state.snapPosition);
 
+  // We generate a dummy model on the fly that mimics the shape (statement vs value)
+  // of the brick the user is dragging, but we hardcode the colors to a neutral grey.
   const shadowModel = useMemo(() => {
     if (!activeTarget) return null;
 

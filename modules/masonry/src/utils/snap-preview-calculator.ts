@@ -10,6 +10,12 @@ import { ActiveTargetMeta } from '@/stores/connection-preview';
 
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
 
+/**
+ * Calculates the exact X/Y workspace coordinate where a dragged brick should snap
+ * if it connects to a Statement socket (like 'next' or 'nestedNext').
+ * It computes the delta between the dragged brick's connector and the host's connector,
+ * accounting for scale and stroke width.
+ */
 export function computeStatementPreview(
     connection: StatementConnection,
     store: ReturnType<typeof useWorkspaceStore.getState>,
@@ -44,6 +50,11 @@ export function computeStatementPreview(
     };
 }
 
+/**
+ * Calculates the exact X/Y workspace coordinate where a dragged brick should snap
+ * if it connects to an Argument socket (an input slot).
+ * Similar to statement preview but adjusts coordinates specifically for horizontal abutment.
+ */
 export function computeArgumentPreview(
     connection: ArgumentConnection,
     store: ReturnType<typeof useWorkspaceStore.getState>,
@@ -77,6 +88,15 @@ export function computeArgumentPreview(
     };
 }
 
+/**
+ * Analyzes the workspace to find the closest valid connection point for a dragged tower.
+ *
+ * 1. Queries the collision engine for the closest statement and argument connections.
+ * 2. Compares the two to find the absolute closest candidate.
+ * 3. Calculates the geometric centroid (for the hint overlay) and the snap position (for the ghost block).
+ *
+ * @returns Metadata about the target connection, or null if nothing is close enough.
+ */
 export function resolveCandidateConnection(
     draggedTowerId: string,
     store: ReturnType<typeof useWorkspaceStore.getState>,

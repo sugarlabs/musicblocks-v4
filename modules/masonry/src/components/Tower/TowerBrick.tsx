@@ -27,6 +27,9 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
 
   useBrickMove(id, ref);
 
+  // We explicitly extract coords without returning a fallback object in the selector.
+  // Returning a new `{ x: 0, y: 0 }` object inside the selector would cause useSyncExternalStore
+  // to detect a new reference on every render, triggering an infinite re-render loop.
   const coords = useBrickLayoutStore((state) => state.coords[id]);
   const x = coords?.x ?? 0;
   const y = coords?.y ?? 0;

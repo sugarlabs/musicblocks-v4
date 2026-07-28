@@ -7,12 +7,21 @@ import { useBrickLayoutStore } from '@/stores/brick';
 import { createBrickModel } from '@/utils/brick-model-factory';
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
 
+/**
+ * Renders a "ghost" footprint (DisconnectShadow) exactly where a brick was just disconnected from.
+ * This provides visual feedback to the user, showing them the empty slot where the brick
+ * previously lived before they dropped it somewhere else or deleted it.
+ * It automatically disappears once the user finishes dragging and drops the brick.
+ */
 export function DisconnectShadowView() {
   const disconnectShadow = useConnectionPreviewStore((state) => state.disconnectShadow);
+
+  // We need the exact coordinates of the host brick to render the shadow at the correct location
   const hostCoords = useBrickLayoutStore((state) =>
     disconnectShadow ? state.coords[disconnectShadow.hostBrickId] : null,
   );
 
+  // Generate a dummy grey "ghost" model that perfectly matches the shape of the disconnected brick
   const shadowModel = useMemo(() => {
     if (!disconnectShadow || !hostCoords) return null;
 
@@ -45,6 +54,8 @@ export function DisconnectShadowView() {
     }
   }, [disconnectShadow, hostCoords]);
 
+  // Calculate the precise absolute coordinates on the workspace where the shadow should render.
+  // We extract the exact connector bounds (e.g. the notch for 'next') and scale it.
   const snapPosition = useMemo(() => {
     if (!disconnectShadow || !shadowModel || !hostCoords) return null;
 

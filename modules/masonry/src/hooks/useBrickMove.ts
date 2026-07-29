@@ -3,8 +3,10 @@ import interact from 'interactjs';
 import { RefObject, useEffect, useRef } from 'react';
 
 import { useBrickLayoutStore } from '@/stores/brick';
+import { useTrashStore } from '@/stores/trash';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 import { joinArg, resolveArgumentConnection } from '@/utils/argument-connect';
+import { isPointInsideBounds } from '@/utils/geometry';
 import { joinStatement, resolveStatementConnection } from '@/utils/statement-connect';
 import type { TowerNode } from '@/@types/tower.types';
 
@@ -125,8 +127,19 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                     useWorkspaceStore
                         .getState()
                         .updateTowerPosition(state.towerId, { x: newX, y: newY });
+
+                    // interact.js has pointer capture for the whole drag, so the Trash can never
+                    // see a hover of its own — the pointer is tested against its published rect
+                    // here instead. `setHovered` ignores no-op writes, so running this every frame
+                    // only wakes the Trash on an actual crossing.
+                    const { bounds, setHovered } = useTrashStore.getState();
+                    setHovered(isPointInsideBounds({ x: event.clientX, y: event.clientY }, bounds));
                 },
                 end(_event: DragEvent) {
+                    // Before the early return: a drag that ends without a tracked state must still
+                    // leave the Trash unhighlighted.
+                    useTrashStore.getState().setHovered(false);
+
                     const state = dragStateRef.current;
                     if (!state) return;
 

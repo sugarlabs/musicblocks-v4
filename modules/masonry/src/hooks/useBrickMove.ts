@@ -8,6 +8,7 @@ import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 import { joinArg, resolveArgumentConnection } from '@/utils/argument-connect';
 import { isPointInsideBounds } from '@/utils/geometry';
 import { joinStatement, resolveStatementConnection } from '@/utils/statement-connect';
+import { discardTower } from '@/utils/towerDiscard';
 import type { TowerNode } from '@/@types/tower.types';
 
 /**
@@ -135,13 +136,30 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                     const { bounds, setHovered } = useTrashStore.getState();
                     setHovered(isPointInsideBounds({ x: event.clientX, y: event.clientY }, bounds));
                 },
-                end(_event: DragEvent) {
+                end(event: DragEvent) {
                     // Before the early return: a drag that ends without a tracked state must still
                     // leave the Trash unhighlighted.
                     useTrashStore.getState().setHovered(false);
 
                     const state = dragStateRef.current;
                     if (!state) return;
+
+                    // Cleared up front so no exit path can leave it set: the effect's cleanup reads
+                    // it to decide whether the drag is still in flight, and a stale value would keep
+                    // the interactable alive past unmount.
+                    dragStateRef.current = null;
+
+                    // Where the pointer came to rest decides the drop, rather than the hover flag
+                    // the last `move` frame happened to leave behind. Discarding the tower also
+                    // rules out a connection: returning here skips the join attempt, and skips the
+                    // connector re-sync that would otherwise re-add the points `removeTower` just
+                    // purged for a tower that no longer exists.
+                    const { bounds } = useTrashStore.getState();
+                    if (isPointInsideBounds({ x: event.clientX, y: event.clientY }, bounds)) {
+                        discardTower(state.towerId);
+
+                        return;
+                    }
 
                     // A successful join merges two towers into one, and the host's re-layout re-syncs
                     // both connector spaces for the whole merged graph. A plain move only runs the
@@ -157,8 +175,6 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                             });
                         }
                     }
-
-                    dragStateRef.current = null;
                 },
             },
         });

@@ -14,6 +14,8 @@ import { useWorkspaceStore } from '@/stores/workspace';
 import { listNodes } from '@/utils/tower-traversal';
 
 import { DragGhost } from './DragGhost';
+import { SnapHintOverlay } from './SnapHintOverlay';
+import { SnapPreviewView } from './SnapPreviewView';
 
 function TowerLayoutEngine({ root, origin }: { root: TowerNode; origin: Point }) {
   useTowerLayout(root, origin);
@@ -89,6 +91,9 @@ export function Workspace({ config }: WorkspaceViewProps) {
         {allNodes.map((node) => (
           <TowerBrickView key={node.model.id} id={node.model.id} node={node} />
         ))}
+
+        <SnapHintOverlay />
+        <SnapPreviewView />
       </div>
 
       <DragGhost ref={ghostRef} />

@@ -6,7 +6,25 @@ import { useBrickLayoutStore } from '@/stores/brick';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 import { joinArg, resolveArgumentConnection } from '@/utils/argument-connect';
 import { joinStatement, resolveStatementConnection } from '@/utils/statement-connect';
+import { resolveCandidateConnection } from '@/utils/snap-preview-calculator';
+import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import type { TowerNode } from '@/@types/tower.types';
+
+/**
+ * Triggers a CSS keyframe animation on a specific brick by temporarily removing
+ * and re-adding the animation class, forcing a DOM reflow in between.
+ * This is used to create visual "pulses" when bricks connect or disconnect.
+ */
+export function triggerBrickAnimation(brickId: string, animationClass: string) {
+    const el = document.querySelector(`[data-brick-id="${brickId}"]`);
+    if (el) {
+        el.classList.remove(animationClass);
+        // Force reflow to restart animation
+        void (el as HTMLElement).offsetWidth;
+        el.classList.add(animationClass);
+        setTimeout(() => el.classList.remove(animationClass), 400);
+    }
+}
 
 /**
  * Attempts to join the just-dropped tower to a settled tower, through either an argument slot or a
@@ -18,7 +36,7 @@ import type { TowerNode } from '@/@types/tower.types';
  * @param towerId - The ID of the tower that was just dropped.
  * @returns Whether a join happened, in which case one of the two towers no longer exists.
  */
-function tryConnect(towerId: string): boolean {
+export function tryConnect(towerId: string): boolean {
     const store = useWorkspaceStore.getState();
 
     const argument = resolveArgumentConnection({
@@ -38,6 +56,7 @@ function tryConnect(towerId: string): boolean {
     if (statement !== null && (argument === null || statement.distance < argument.distance)) {
         joinStatement(statement);
         store.absorbTower(statement.absorbedTowerId, statement.hostTowerId);
+        triggerBrickAnimation(towerId, 'brick-snap-pulse');
 
         return true;
     }
@@ -45,6 +64,7 @@ function tryConnect(towerId: string): boolean {
     if (argument !== null) {
         joinArg(argument);
         store.absorbTower(argument.absorbedTowerId, argument.hostTowerId);
+        triggerBrickAnimation(towerId, 'brick-snap-pulse');
 
         return true;
     }
@@ -125,10 +145,28 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                     useWorkspaceStore
                         .getState()
                         .updateTowerPosition(state.towerId, { x: newX, y: newY });
+
+                    const candidate = resolveCandidateConnection(
+                        state.towerId,
+                        useWorkspaceStore.getState(),
+                    );
+                    if (candidate) {
+                        useConnectionPreviewStore
+                            .getState()
+                            .setPreviewTarget(
+                                candidate.target,
+                                candidate.isValid,
+                                candidate.snapPosition,
+                            );
+                    } else {
+                        useConnectionPreviewStore.getState().clearPreviewTarget();
+                    }
                 },
                 end(_event: DragEvent) {
                     const state = dragStateRef.current;
                     if (!state) return;
+
+                    useConnectionPreviewStore.getState().clearPreviewTarget();
 
                     // A successful join merges two towers into one, and the host's re-layout re-syncs
                     // both connector spaces for the whole merged graph. A plain move only runs the
@@ -155,6 +193,7 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
             // even if this specific brick unmounts from its old tower and remounts in the new one.
             if (!dragStateRef.current) {
                 interactable.unset();
+                useConnectionPreviewStore.getState().clearPreviewTarget();
             }
         };
     }, [id, ref, isMounted]);

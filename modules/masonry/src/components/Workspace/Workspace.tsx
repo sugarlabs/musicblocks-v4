@@ -16,6 +16,7 @@ import { listNodes } from '@/utils/tower-traversal';
 import { DragGhost } from './DragGhost';
 import { SnapHintOverlay } from './SnapHintOverlay';
 import { SnapPreviewView } from './SnapPreviewView';
+import { DisconnectShadowView } from './DisconnectShadowView';
 
 function TowerLayoutEngine({ root, origin }: { root: TowerNode; origin: Point }) {
   useTowerLayout(root, origin);
@@ -94,6 +95,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
 
         <SnapHintOverlay />
         <SnapPreviewView />
+        <DisconnectShadowView />
       </div>
 
       <DragGhost ref={ghostRef} />

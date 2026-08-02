@@ -25,3 +25,14 @@ export const SCALE_LEVEL_CONFIG = {
         lineHeight: 20,
     },
 } as const;
+
+/** A brick's scale level; mirrors the model's own default of 2. */
+export type ScaleLevel = keyof typeof SCALE_LEVEL_CONFIG;
+export const DEFAULT_SCALE_LEVEL: ScaleLevel = 2;
+
+/** Derived from the config so stepping and clamping never hard-code the bounds. */
+export const SCALE_LEVELS = Object.keys(SCALE_LEVEL_CONFIG)
+    .map(Number)
+    .sort((a, b) => a - b) as ScaleLevel[];
+export const MIN_SCALE_LEVEL = SCALE_LEVELS[0];
+export const MAX_SCALE_LEVEL = SCALE_LEVELS[SCALE_LEVELS.length - 1];

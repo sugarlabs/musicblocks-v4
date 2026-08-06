@@ -5,7 +5,7 @@ import type {
     WidgetDisplay,
     WidgetInput,
 } from '@/@types/brick.types';
-import type { Point, Size } from '@/@types/common.types';
+import type { Bounds, Point, Size } from '@/@types/common.types';
 
 import { BrickOutlineGenerator } from '@/utils/brick-shape';
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
@@ -33,14 +33,17 @@ abstract class BrickModelBase {
     private _bounds: BrickOutlineOutput['bounds'] = { widget: { x: 0, y: 0, w: 0, h: 0 } };
     private _position: Point = { x: 0, y: 0 };
 
+    /** Outer size of the brick, in pixels. */
     get dims(): Size {
         return this._dims;
     }
 
+    /** Outline path, in SVG units; the view renders it under a `scale(brickScale)` transform. */
     get path(): string {
         return this._path;
     }
 
+    /** Bounds of each layout region, in pixels relative to the brick's top-left. */
     get bounds(): BrickOutlineOutput['bounds'] {
         return this._bounds;
     }
@@ -74,9 +77,29 @@ abstract class BrickModelBase {
         return this._outlineGenerator;
     }
 
+    // The outline generator works in SVG units, the canvas in pixels, related by `brickScale`.
+    // Measurements come in through `pxToSvg`; `dims`, `bounds` and connector coords go back out
+    // through `svgToPx`, so callers can add them straight to a brick's canvas position.
+
     /** Converts a pixel value to SVG units for the current scale level. */
     protected pxToSvg(px: number): number {
         return px / SCALE_LEVEL_CONFIG[this._scaleLevel].brickScale;
+    }
+
+    /** Converts an SVG-unit value to pixels for the current scale level. */
+    protected svgToPx(u: number): number {
+        return u * SCALE_LEVEL_CONFIG[this._scaleLevel].brickScale;
+    }
+
+    /** Scales a generator-space rectangle into pixel space. */
+    private _boundsToPx<T extends Bounds | null | undefined>(b: T): T {
+        if (!b) return b;
+        return {
+            x: this.svgToPx(b.x),
+            y: this.svgToPx(b.y),
+            w: this.svgToPx(b.w),
+            h: this.svgToPx(b.h),
+        } as T;
     }
 
     /** Assembles the generator input from this brick's current state. */
@@ -87,7 +110,7 @@ abstract class BrickModelBase {
         const { width, height } = this.outlineGenerator.computeDimensions(
             this._buildOutlineInput(),
         );
-        this._dims = { w: width, h: height };
+        this._dims = { w: this.svgToPx(width), h: this.svgToPx(height) };
     }
 
     /** Generates the SVG path and layout bounds and stores them in `path` and `bounds`. */
@@ -95,14 +118,27 @@ abstract class BrickModelBase {
         const { width, height, path, bounds } = this.outlineGenerator.generate(
             this._buildOutlineInput(),
         );
-        this._dims = { w: width, h: height };
+        this._dims = { w: this.svgToPx(width), h: this.svgToPx(height) };
+        // Scaling `path` here too would apply `brickScale` twice; the view already transforms it.
         this._path = path;
-        this._bounds = bounds;
+        this._bounds = {
+            widget: this._boundsToPx(bounds.widget),
+            params: bounds.params?.map((b) => this._boundsToPx(b)),
+            args: bounds.args?.map((b) => this._boundsToPx(b)),
+            nesting: this._boundsToPx(bounds.nesting),
+        };
     }
 
     /** Reports the bounds of every connector this brick has; see {@link BrickConnectorCoords}. */
     public getConnectorCoords(): BrickConnectorCoords {
-        return this.outlineGenerator.getConnectorCoords(this._buildOutlineInput());
+        const coords = this.outlineGenerator.getConnectorCoords(this._buildOutlineInput());
+        return {
+            prev: this._boundsToPx(coords.prev),
+            next: this._boundsToPx(coords.next),
+            nestedNext: this._boundsToPx(coords.nestedNext),
+            output: this._boundsToPx(coords.output),
+            inputs: coords.inputs.map((b) => this._boundsToPx(b)),
+        };
     }
 
     private static _buildOutlineGenerator(level: 1 | 2 | 3): BrickOutlineGenerator {

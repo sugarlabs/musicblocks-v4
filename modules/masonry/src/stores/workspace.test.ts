@@ -9,7 +9,10 @@ import {
     statementTreeNoNesting,
 } from '@/mocks/tower';
 import { listNodes } from '@/utils/tower-traversal';
+import type { Bounds, Point } from '@/@types/common.types';
 import type { TowerExpressionNode, TowerStatementNode } from '@/@types/tower.types';
+import type { BrickModel } from '@/models/brick';
+import type { QuadtreeCollisionSpace } from '@/utils/collision';
 
 describe('Workspace Store Collision Space', () => {
     beforeEach(() => {
@@ -373,6 +376,126 @@ describe('Workspace Store Collision Space', () => {
             });
 
             expect(useWorkspaceStore.getState().towers).toEqual({});
+        });
+    });
+
+    describe('connector points after a scale change', () => {
+        /** A statement carrying a value in its one slot, so both collision spaces have work to do. */
+        function setupScaledTower() {
+            const root = makeEmptyStatement('scaled', 1, false);
+            const arg = makeEmptyValue('scaled-arg');
+            root.args[0] = arg;
+            arg.parent = root;
+
+            for (const node of listNodes(root)) {
+                node.model.widgetDims = { w: 40, h: 14 };
+            }
+
+            /** Lays the tower out at `level`, the way `useTowerLayout` would, and re-syncs. */
+            function layoutAt(level: 1 | 2 | 3) {
+                for (const node of listNodes(root)) {
+                    node.model.scaleLevel = level;
+                }
+                arg.model.computeDims();
+                root.model.argDims = [{ w: arg.model.dims.w, h: arg.model.dims.h }];
+                root.model.computeOutline();
+
+                root.model.setPosition(300, 200);
+                const slot = root.model.bounds.args![0]!;
+                arg.model.setPosition(300 + slot.x, 200 + slot.y);
+
+                act(() => {
+                    const store = useWorkspaceStore.getState();
+                    store.syncStatementConnectors('scaled-tower', root);
+                    store.syncArgumentConnectors('scaled-tower', root);
+                });
+            }
+
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'scaled-tower',
+                    root,
+                    position: { x: 300, y: 200 },
+                });
+            });
+
+            return { root, arg, layoutAt };
+        }
+
+        /** Ids in `space` whose registered box covers `point`. */
+        function hitsAt(space: QuadtreeCollisionSpace, point: Point): number[] {
+            return space.checkCollision({ id: -1, x: point.x, y: point.y, w: 1, h: 1 });
+        }
+
+        /** World point of a brick's connector, as the collision space should have recorded it. */
+        function worldPoint(model: BrickModel, bounds: Bounds): Point {
+            return { x: model.position.x + bounds.x, y: model.position.y + bounds.y };
+        }
+
+        it('holds the statement points at their new co-ordinates', () => {
+            const { root, layoutAt } = setupScaledTower();
+
+            layoutAt(2);
+            const before = root.model.getConnectorCoords();
+
+            layoutAt(3);
+            const after = root.model.getConnectorCoords();
+            const state = useWorkspaceStore.getState();
+            const metas = Object.values(state.statementConnectors);
+
+            // The notches genuinely moved, so agreeing with them is a real assertion.
+            expect(after.prev!.y).not.toBeCloseTo(before.prev!.y, 6);
+            expect(metas.length).toBeGreaterThan(0);
+
+            for (const meta of metas) {
+                const point = worldPoint(root.model, after[meta.type]!);
+                expect(hitsAt(state.statementCollisionSpace, point)).toContain(meta.id);
+            }
+        });
+
+        it('holds the argument points at their new co-ordinates', () => {
+            const { root, arg, layoutAt } = setupScaledTower();
+
+            layoutAt(2);
+            const beforeInput = root.model.getConnectorCoords().inputs[0];
+
+            layoutAt(1);
+            const afterInput = root.model.getConnectorCoords().inputs[0];
+            const afterOutput = arg.model.getConnectorCoords().output!;
+            const state = useWorkspaceStore.getState();
+            const metas = Object.values(state.argumentConnectors);
+
+            expect(afterInput.x).not.toBeCloseTo(beforeInput.x, 6);
+            expect(metas.some((meta) => meta.type === 'input')).toBe(true);
+            expect(metas.some((meta) => meta.type === 'output')).toBe(true);
+
+            for (const meta of metas) {
+                const owner = meta.brickId === arg.model.id ? arg.model : root.model;
+                const bounds = meta.type === 'output' ? afterOutput : afterInput;
+                const hits = hitsAt(state.argumentCollisionSpace, worldPoint(owner, bounds));
+                expect(hits).toContain(meta.id);
+            }
+        });
+
+        it('leaves no stale points behind from the previous level', () => {
+            const { layoutAt } = setupScaledTower();
+
+            layoutAt(2);
+            const atDefault = {
+                statement: Object.keys(useWorkspaceStore.getState().statementConnectors).length,
+                argument: Object.keys(useWorkspaceStore.getState().argumentConnectors).length,
+            };
+
+            layoutAt(1);
+            layoutAt(3);
+
+            // Each sync replaces the tower's points rather than adding a fresh set beside them.
+            expect(Object.keys(useWorkspaceStore.getState().statementConnectors).length).toBe(
+                atDefault.statement,
+            );
+            expect(Object.keys(useWorkspaceStore.getState().argumentConnectors).length).toBe(
+                atDefault.argument,
+            );
         });
     });
 });

@@ -4,6 +4,7 @@ import { useWorkspaceStore } from './workspace';
 import {
     expressionTree,
     makeEmptyExpression,
+    makeEmptyStatement,
     makeEmptyValue,
     statementTreeNoNesting,
 } from '@/mocks/tower';
@@ -305,6 +306,73 @@ describe('Workspace Store Collision Space', () => {
             });
 
             expect(Object.keys(useWorkspaceStore.getState().towers)).toEqual([]);
+        });
+    });
+
+    describe('refreshTowerLayouts', () => {
+        /** Two independent towers, as a scale change would find them. */
+        function setupTwoTowers() {
+            act(() => {
+                const store = useWorkspaceStore.getState();
+                store.createTower({
+                    id: 'tower-a',
+                    root: makeEmptyStatement('a', 1, true),
+                    position: { x: 120, y: 80 },
+                });
+                store.createTower({
+                    id: 'tower-b',
+                    root: makeEmptyExpression('b', 2),
+                    position: { x: 640, y: 300 },
+                });
+            });
+        }
+
+        it('replaces every tower root reference so each layout re-runs', () => {
+            setupTwoTowers();
+            const before = useWorkspaceStore.getState().towers;
+            const rootsBefore = { a: before['tower-a'].root, b: before['tower-b'].root };
+
+            act(() => {
+                useWorkspaceStore.getState().refreshTowerLayouts();
+            });
+
+            const after = useWorkspaceStore.getState().towers;
+
+            expect(after['tower-a'].root).not.toBe(rootsBefore.a);
+            expect(after['tower-b'].root).not.toBe(rootsBefore.b);
+            // Same bricks either side — only the reference is new.
+            expect(after['tower-a'].root.model).toBe(rootsBefore.a.model);
+            expect(after['tower-b'].root.model).toBe(rootsBefore.b.model);
+        });
+
+        it('keeps each tower anchored, position identity included', () => {
+            setupTwoTowers();
+            const before = useWorkspaceStore.getState().towers;
+            const positionsBefore = {
+                a: before['tower-a'].position,
+                b: before['tower-b'].position,
+            };
+
+            act(() => {
+                useWorkspaceStore.getState().refreshTowerLayouts();
+            });
+
+            const after = useWorkspaceStore.getState().towers;
+
+            // Identity, not just value: `useTowerLayout`'s origin fast-path keys on `origin.x`/
+            // `origin.y`, so a new object here would re-position the tower mid-relayout.
+            expect(after['tower-a'].position).toBe(positionsBefore.a);
+            expect(after['tower-b'].position).toBe(positionsBefore.b);
+            expect(after['tower-a'].position).toEqual({ x: 120, y: 80 });
+            expect(after['tower-b'].position).toEqual({ x: 640, y: 300 });
+        });
+
+        it('does nothing on an empty workspace', () => {
+            act(() => {
+                useWorkspaceStore.getState().refreshTowerLayouts();
+            });
+
+            expect(useWorkspaceStore.getState().towers).toEqual({});
         });
     });
 });

@@ -9,6 +9,7 @@ import { Palette } from '@/components/Palette/Palette';
 import { TowerBrickView } from '@/components/Tower/TowerBrick';
 import { useDragFromPalette } from '@/hooks/useDragFromPalette';
 import { useTowerLayout } from '@/hooks/useTowerLayout';
+import { useWorkspaceScale } from '@/hooks/useWorkspaceScale';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { listNodes } from '@/utils/tower-traversal';
@@ -52,6 +53,9 @@ export function Workspace({ config }: WorkspaceViewProps) {
   }, [palette]);
 
   useDragFromPalette({ rootRef, canvasRef, ghostRef, bricksById });
+
+  // Resize every brick and re-run the layouts whenever the scale level changes
+  useWorkspaceScale();
 
   // Sync collision space whenever the layout finishes positioning bricks
   useEffect(() => {

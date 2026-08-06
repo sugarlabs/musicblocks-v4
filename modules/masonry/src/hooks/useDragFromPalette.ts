@@ -8,6 +8,7 @@ import type { Point } from '@/@types/common.types';
 import type { PaletteBrickConfig } from '@/@types/palette.types';
 
 import { usePaletteDragStore } from '@/stores/palette';
+import { useWorkspaceScaleStore } from '@/stores/scale';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { createBrickModel, wrapAsRootNode } from '@/utils/brick-model-factory';
 
@@ -141,7 +142,12 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                     if (!isInsideCanvas) return;
 
                     // A brand-new model instance per drop — never reuse the palette entry's id.
-                    const model = createBrickModel(drag.config.brick);
+                    // The level is read here rather than closed over, since these listeners bind
+                    // once on mount; the Palette keeps its own size and does not follow it.
+                    const model = createBrickModel({
+                        ...drag.config.brick,
+                        scaleLevel: useWorkspaceScaleStore.getState().level,
+                    });
                     const position = clientToLocalPoint(
                         { x: event.clientX, y: event.clientY },
                         { x: canvasRect.left, y: canvasRect.top },

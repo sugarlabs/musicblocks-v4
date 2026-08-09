@@ -5,7 +5,7 @@
 // Scope note: jsdom does no layout and does not implement scrollIntoView, so scroll-to is asserted
 // by spying on Element.prototype.scrollIntoView rather than checking real scroll position.
 
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { BrickViewProps } from '@/@types/brick.types';
@@ -113,6 +113,13 @@ const configSingle: PaletteConfig = {
 const search = (value: string) =>
   fireEvent.change(screen.getByPlaceholderText('Search bricks'), { target: { value } });
 
+/**
+ * Reads the flash marker off a category's header row. The heading is the queryable node;
+ * the marker sits on the row that wraps it alongside the icon.
+ */
+const flashState = (name: string) =>
+  screen.getByRole('heading', { name }).parentElement?.getAttribute('data-flashing') ?? null;
+
 // -------------------------------------------------------------------------------------------------
 
 describe('Palette', () => {
@@ -151,6 +158,14 @@ describe('Palette', () => {
       // Music is active by default; disambiguated from same-named headings via role='button'.
       expect(screen.getByRole('button', { name: 'Rhythm' })).toBeTruthy();
       expect(screen.getByRole('button', { name: 'Meter' })).toBeTruthy();
+    });
+
+    it('renders each sidebar category button with its name as a title attribute', () => {
+      render(<Palette config={config} />);
+
+      // The label is truncated when the sidebar is narrow, so the tooltip carries the full name.
+      expect(screen.getByRole('button', { name: 'Rhythm' }).getAttribute('title')).toBe('Rhythm');
+      expect(screen.getByRole('button', { name: 'Meter' }).getAttribute('title')).toBe('Meter');
     });
 
     it('renders a section heading (h3) for each active-classification category', () => {
@@ -235,6 +250,57 @@ describe('Palette', () => {
         behavior: 'smooth',
         block: 'start',
       });
+    });
+
+    it('flashes the target category header when its sidebar button is clicked', () => {
+      render(<Palette config={config} />);
+
+      expect(flashState('Meter')).toBeNull();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Meter' }));
+
+      // The list may already be scrolled to the end, where scrollIntoView is a no-op; the flash
+      // is what tells the user the click landed.
+      expect(flashState('Meter')).toBe('true');
+    });
+
+    it('clears the category header flash once it has elapsed', () => {
+      vi.useFakeTimers();
+      try {
+        render(<Palette config={config} />);
+        fireEvent.click(screen.getByRole('button', { name: 'Meter' }));
+        expect(flashState('Meter')).toBe('true');
+
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+
+        expect(flashState('Meter')).toBeNull();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('flashes only the clicked category, leaving the others unmarked', () => {
+      render(<Palette config={config} />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Meter' }));
+
+      expect(flashState('Meter')).toBe('true');
+      expect(flashState('Rhythm')).toBeNull();
+    });
+
+    it('drops a pending flash when another classification is selected', () => {
+      render(<Palette config={config} />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Meter' }));
+      expect(flashState('Meter')).toBe('true');
+
+      // Leaving and returning must not resurrect the flash: the indices are per classification.
+      fireEvent.click(screen.getByRole('button', { name: 'Logic' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Music' }));
+
+      expect(flashState('Meter')).toBeNull();
     });
 
     it('filters bricks as the user types in the search input', () => {

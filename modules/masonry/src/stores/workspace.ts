@@ -11,6 +11,8 @@ import type { TowerNode } from '@/@types/tower.types';
 import { QuadtreeCollisionSpace } from '@/utils/collision';
 import { extractArgumentConnectors } from '@/utils/argument-collision';
 import { extractStatementConnectors } from '@/utils/statement-collision';
+import { exportWorkspace as exportWorkspaceUtil } from '@/utils/import-export';
+import type { ExportedProject } from '@/@types/import-export.types';
 
 export interface WorkspaceStore {
     /** Record of all towers currently in the workspace, keyed by their unique ID */
@@ -44,6 +46,8 @@ export interface WorkspaceStore {
     ) => string | null;
     /** Merges a joined tower into the host tower that now owns its bricks */
     absorbTower: (draggedTowerId: string, hostTowerId: string) => void;
+    /** Serializes the entire workspace into a flat JSON-serializable structure */
+    exportWorkspace: () => ExportedProject;
 }
 
 /**
@@ -56,6 +60,10 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         statementConnectors: {},
         argumentCollisionSpace: new QuadtreeCollisionSpace(4000, 4000),
         argumentConnectors: {},
+
+        exportWorkspace: () => {
+            return exportWorkspaceUtil(get().towers);
+        },
 
         createTower: (tower) => {
             set((state) => ({

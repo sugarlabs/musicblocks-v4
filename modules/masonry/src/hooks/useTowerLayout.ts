@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 
 import type { Point } from '@/@types/common.types';
 import { TowerNode } from '@/@types/tower.types';
@@ -25,31 +25,33 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
     const nodes = listNodes(root);
     nodesRef.current = nodes;
 
-    if (!isInitialized.current) {
-        const storeState = useBrickLayoutStore.getState();
-        const newCoords: Record<string, Point> = {};
-        const newMounted: Record<string, boolean> = {};
-        const newPositioned: Record<string, boolean> = {};
+    useLayoutEffect(() => {
+        if (!isInitialized.current) {
+            const storeState = useBrickLayoutStore.getState();
+            const newCoords: Record<string, Point> = {};
+            const newMounted: Record<string, boolean> = {};
+            const newPositioned: Record<string, boolean> = {};
 
-        for (const node of nodes) {
-            const id = node.model.id;
-            if (storeState.coords[id] === undefined) {
-                newCoords[id] = { x: 0, y: 0 };
+            for (const node of nodesRef.current) {
+                const id = node.model.id;
+                if (storeState.coords[id] === undefined) {
+                    newCoords[id] = { x: 0, y: 0 };
+                }
+                if (storeState.mounted[id] === undefined) {
+                    newMounted[id] = false;
+                }
+                if (storeState.positioned[id] === undefined) {
+                    newPositioned[id] = false;
+                }
             }
-            if (storeState.mounted[id] === undefined) {
-                newMounted[id] = false;
-            }
-            if (storeState.positioned[id] === undefined) {
-                newPositioned[id] = false;
-            }
+
+            if (Object.keys(newCoords).length > 0) setCoords(newCoords);
+            if (Object.keys(newMounted).length > 0) setMounted(newMounted);
+            if (Object.keys(newPositioned).length > 0) setPositioned(newPositioned);
+
+            isInitialized.current = true;
         }
-
-        if (Object.keys(newCoords).length > 0) setCoords(newCoords);
-        if (Object.keys(newMounted).length > 0) setMounted(newMounted);
-        if (Object.keys(newPositioned).length > 0) setPositioned(newPositioned);
-
-        isInitialized.current = true;
-    }
+    }, [setCoords, setMounted, setPositioned]);
 
     // We need to keep a ref to the latest origin to avoid stale closures in the async process
     const originRef = useRef(origin);

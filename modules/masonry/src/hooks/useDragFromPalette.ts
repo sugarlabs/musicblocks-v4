@@ -10,6 +10,9 @@ import type { PaletteBrickConfig } from '@/@types/palette.types';
 import { usePaletteDragStore } from '@/stores/palette';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { createBrickModel, wrapAsRootNode } from '@/utils/brick-model-factory';
+import { useConnectionPreviewStore } from '@/stores/connection-preview';
+import { resolveCandidateConnection } from '@/utils/snap-preview-calculator';
+import { tryConnect } from '@/hooks/useBrickMove';
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -108,8 +111,11 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                     startDrag(config);
                 },
                 move(event: DragEvent) {
+                    const drag = dragRef.current;
+                    if (!drag) return;
+
                     const ghost = ghostRef.current;
-                    if (!ghost || !dragRef.current) return;
+                    if (!ghost) return;
 
                     // Accumulate position on the DOM node itself (not React state) so each
                     // pointermove updates the transform directly instead of triggering a
@@ -119,6 +125,52 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                     ghost.style.transform = `translate(${x}px, ${y}px)`;
                     ghost.dataset.x = String(x);
                     ghost.dataset.y = String(y);
+
+                    const canvas = canvasRef.current;
+                    if (!canvas) return;
+
+                    const canvasRect = canvas.getBoundingClientRect();
+                    const isInsideCanvas =
+                        event.clientX >= canvasRect.left &&
+                        event.clientX <= canvasRect.right &&
+                        event.clientY >= canvasRect.top &&
+                        event.clientY <= canvasRect.bottom;
+
+                    if (isInsideCanvas) {
+                        const position = clientToLocalPoint(
+                            { x: event.clientX, y: event.clientY },
+                            { x: canvasRect.left, y: canvasRect.top },
+                            drag.grabOffset,
+                        );
+
+                        // Temporarily mock a tower ID for collision detection
+                        const mockTowerId = 'temp-palette-drag';
+                        useWorkspaceStore.getState().towers[mockTowerId] = {
+                            id: mockTowerId,
+                            root: wrapAsRootNode(createBrickModel(drag.config.brick)),
+                            position,
+                        };
+
+                        const candidate = resolveCandidateConnection(
+                            mockTowerId,
+                            useWorkspaceStore.getState(),
+                        );
+                        if (candidate) {
+                            useConnectionPreviewStore
+                                .getState()
+                                .setPreviewTarget(
+                                    candidate.target,
+                                    candidate.isValid,
+                                    candidate.snapPosition,
+                                );
+                        } else {
+                            useConnectionPreviewStore.getState().clearPreviewTarget();
+                        }
+
+                        delete useWorkspaceStore.getState().towers[mockTowerId];
+                    } else {
+                        useConnectionPreviewStore.getState().clearPreviewTarget();
+                    }
                 },
                 end(event: DragEvent) {
                     const drag = dragRef.current;
@@ -151,11 +203,25 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                     // Prevent placing the brick if it is still partially over the palette
                     if (position.x < 0) return;
 
+                    const newTowerId = crypto.randomUUID();
                     createTower({
-                        id: crypto.randomUUID(),
+                        id: newTowerId,
                         root: wrapAsRootNode(model),
                         position,
                     });
+
+                    useConnectionPreviewStore.getState().clearPreviewTarget();
+
+                    if (!tryConnect(newTowerId)) {
+                        const rootNode = useWorkspaceStore.getState().towers[newTowerId]?.root;
+                        if (rootNode) {
+                            queueMicrotask(() => {
+                                const store = useWorkspaceStore.getState();
+                                store.syncStatementConnectors(newTowerId, rootNode);
+                                store.syncArgumentConnectors(newTowerId, rootNode);
+                            });
+                        }
+                    }
                 },
             },
         });

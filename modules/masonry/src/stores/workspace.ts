@@ -142,20 +142,6 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                     newConnectors[r.meta.id] = r.meta;
                 }
 
-                console.groupCollapsed(
-                    `[Collision Space] Synced ${results.length} connectors for tower ${towerId}`,
-                );
-                console.log('Connectors:');
-                console.table(
-                    results.map((r) => ({
-                        type: r.meta.type,
-                        brickId: r.meta.brickId,
-                        x: r.object.x,
-                        y: r.object.y,
-                    })),
-                );
-                console.groupEnd();
-
                 return { statementConnectors: newConnectors };
             });
         },

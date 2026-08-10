@@ -14,6 +14,9 @@ import { useWorkspaceStore } from '@/stores/workspace';
 import { listNodes } from '@/utils/tower-traversal';
 
 import { DragGhost } from './DragGhost';
+import { SnapHintOverlay } from './SnapHintOverlay';
+import { SnapPreviewView } from './SnapPreviewView';
+import { DisconnectShadowView } from './DisconnectShadowView';
 import { Trash } from './Trash';
 
 function TowerLayoutEngine({ root, origin }: { root: TowerNode; origin: Point }) {
@@ -90,6 +93,10 @@ export function Workspace({ config }: WorkspaceViewProps) {
         {allNodes.map((node) => (
           <TowerBrickView key={node.model.id} id={node.model.id} node={node} />
         ))}
+
+        <SnapHintOverlay />
+        <SnapPreviewView />
+        <DisconnectShadowView />
         {/* The Trash is only useful once there is something to remove */}
         {towers.length > 0 && <Trash canvasRef={canvasRef} />}
       </div>

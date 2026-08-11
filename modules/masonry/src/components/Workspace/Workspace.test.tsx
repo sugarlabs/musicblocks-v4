@@ -8,9 +8,12 @@ import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import type { PaletteConfig } from '@/@types/palette.types';
+import type { TowerState } from '@/@types/workspace.types';
 
 import { usePaletteDragStore } from '@/stores/palette';
+import { useTrashStore } from '@/stores/trash';
 import { useWorkspaceStore } from '@/stores/workspace';
+import { createBrickModel, wrapAsRootNode } from '@/utils/brick-model-factory';
 
 import { Workspace } from './Workspace';
 
@@ -18,6 +21,7 @@ afterEach(() => {
   cleanup();
   usePaletteDragStore.setState({ dragged: null });
   useWorkspaceStore.setState({ towers: {} });
+  useTrashStore.setState({ bounds: null, isHovered: false });
 });
 
 // -------------------------------------------------------------------------------------------------
@@ -61,6 +65,18 @@ const paletteConfig: PaletteConfig = {
     },
   ],
 };
+
+/** Builds a one-brick tower the same way a palette drop does, so the canvas holds something. */
+function makeTower(id: string): TowerState {
+  const entry = paletteConfig.classifications[0].categories[0].bricks[0];
+
+  return { id, root: wrapAsRootNode(createBrickModel(entry.brick)), position: { x: 0, y: 0 } };
+}
+
+/** The Trash's positioning node, or null while it is off the canvas. */
+function queryTrash(container: HTMLElement) {
+  return container.querySelector<HTMLElement>('[data-testid="workspace-trash"]');
+}
 
 // -------------------------------------------------------------------------------------------------
 
@@ -115,5 +131,102 @@ describe('Workspace', () => {
     unmount();
 
     expect(usePaletteDragStore.getState().dragged).toBeNull();
+  });
+
+  describe('trash', () => {
+    it('keeps the trash off an empty canvas, since there is nothing to remove yet', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      expect(queryTrash(container)).toBeNull();
+    });
+
+    it('renders the trash as soon as the workspace holds a tower', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      act(() => {
+        useWorkspaceStore.getState().createTower(makeTower('t1'));
+      });
+
+      expect(queryTrash(container)).not.toBeNull();
+    });
+
+    it('publishes its bounds while mounted and drops them once the canvas empties', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      act(() => {
+        useWorkspaceStore.getState().createTower(makeTower('t1'));
+      });
+
+      // jsdom reports a zero rect, so only the shape is asserted — the numbers come from layout.
+      expect(useTrashStore.getState().bounds).toEqual({
+        x: expect.any(Number),
+        y: expect.any(Number),
+        w: expect.any(Number),
+        h: expect.any(Number),
+      });
+
+      act(() => {
+        useWorkspaceStore.getState().removeTower('t1');
+      });
+
+      expect(queryTrash(container)).toBeNull();
+      expect(useTrashStore.getState().bounds).toBeNull();
+    });
+
+    it('keeps the trash while any tower remains and removes it with the last one', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      act(() => {
+        useWorkspaceStore.getState().createTower(makeTower('t1'));
+        useWorkspaceStore.getState().createTower(makeTower('t2'));
+      });
+
+      act(() => {
+        useWorkspaceStore.getState().removeTower('t1');
+      });
+      expect(queryTrash(container)).not.toBeNull();
+
+      act(() => {
+        useWorkspaceStore.getState().removeTower('t2');
+      });
+      expect(queryTrash(container)).toBeNull();
+    });
+
+    it('swaps to its destructive styling while the drag store reports a hover', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      act(() => {
+        useWorkspaceStore.getState().createTower(makeTower('t1'));
+      });
+
+      const trash = queryTrash(container) as HTMLElement;
+      expect(trash.classList.contains('border-border')).toBe(true);
+      expect(trash.classList.contains('border-destructive')).toBe(false);
+
+      act(() => {
+        useTrashStore.getState().setHovered(true);
+      });
+
+      expect(trash.classList.contains('border-destructive')).toBe(true);
+      expect(trash.classList.contains('text-destructive')).toBe(true);
+      expect(trash.classList.contains('border-border')).toBe(false);
+
+      act(() => {
+        useTrashStore.getState().setHovered(false);
+      });
+
+      expect(trash.classList.contains('border-border')).toBe(true);
+      expect(trash.classList.contains('border-destructive')).toBe(false);
+    });
+
+    it('stays transparent to pointer events so it never swallows the drag of a brick beneath it', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      act(() => {
+        useWorkspaceStore.getState().createTower(makeTower('t1'));
+      });
+
+      expect(queryTrash(container)?.classList.contains('pointer-events-none')).toBe(true);
+    });
   });
 });

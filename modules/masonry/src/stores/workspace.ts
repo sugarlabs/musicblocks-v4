@@ -11,8 +11,10 @@ import type { TowerNode } from '@/@types/tower.types';
 import { QuadtreeCollisionSpace } from '@/utils/collision';
 import { extractArgumentConnectors } from '@/utils/argument-collision';
 import { extractStatementConnectors } from '@/utils/statement-collision';
-import { exportWorkspace as exportWorkspaceUtil } from '@/utils/import-export';
-import type { ExportedProject } from '@/@types/import-export.types';
+import { exportWorkspace as exportWorkspaceUtil, importProject } from '@/utils/import-export';
+import type { ExportedProject, ImportIdStrategy } from '@/@types/import-export.types';
+import { useBrickLayoutStore } from '@/stores/brick';
+import { listNodes } from '@/utils/tower-traversal';
 
 export interface WorkspaceStore {
     /** Record of all towers currently in the workspace, keyed by their unique ID */
@@ -48,6 +50,11 @@ export interface WorkspaceStore {
     absorbTower: (draggedTowerId: string, hostTowerId: string) => void;
     /** Serializes the entire workspace into a flat JSON-serializable structure */
     exportWorkspace: () => ExportedProject;
+    /**
+     * Replaces the workspace with the project a payload describes, throwing it out unchanged if the
+     * payload is invalid. Merging into the current workspace is not supported yet.
+     */
+    importWorkspace: (payload: unknown, strategy?: ImportIdStrategy) => void;
 }
 
 /**
@@ -60,10 +67,6 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         statementConnectors: {},
         argumentCollisionSpace: new QuadtreeCollisionSpace(4000, 4000),
         argumentConnectors: {},
-
-        exportWorkspace: () => {
-            return exportWorkspaceUtil(get().towers);
-        },
 
         createTower: (tower) => {
             set((state) => ({
@@ -292,6 +295,27 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                     },
                 };
             });
+        },
+
+        exportWorkspace: () => exportWorkspaceUtil(get().towers),
+
+        importWorkspace: (payload, strategy) => {
+            // Everything that can reject the payload happens first, and reads nothing from the
+            // store: if this throws, the workspace below is still whole.
+            const towers = importProject(payload, strategy);
+
+            const stale = Object.values(get().towers).flatMap((tower) =>
+                listNodes(tower.root).map((node) => node.model.id),
+            );
+
+            // `removeTower` per tower rather than a bulk wipe, so purging the Collision spaces and
+            // their book-keeping stays in the one place that owns it. The layout entries then go in
+            // a single write, and only after their towers have left the graph — `TowerBrick` reads
+            // `coords[id]` unguarded, the ordering `discardTower` documents for the same reason.
+            for (const id of Object.keys(get().towers)) get().removeTower(id);
+            useBrickLayoutStore.getState().clearBricks(stale);
+
+            set({ towers });
         },
     })),
 );

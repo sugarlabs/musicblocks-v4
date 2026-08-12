@@ -14,6 +14,7 @@ import { useWorkspaceStore } from '@/stores/workspace';
 import { listNodes } from '@/utils/tower-traversal';
 
 import { DragGhost } from './DragGhost';
+import { ScaleControl } from './ScaleControl';
 import { SnapHintOverlay } from './SnapHintOverlay';
 import { SnapPreviewView } from './SnapPreviewView';
 import { DisconnectShadowView } from './DisconnectShadowView';
@@ -97,6 +98,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
         <SnapHintOverlay />
         <SnapPreviewView />
         <DisconnectShadowView />
+        <ScaleControl />
         {/* The Trash is only useful once there is something to remove */}
         {towers.length > 0 && <Trash canvasRef={canvasRef} />}
       </div>

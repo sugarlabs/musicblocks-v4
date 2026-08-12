@@ -407,6 +407,72 @@ describe('resolveStatementConnection', () => {
             expect(result?.hostTowerId).toBe('dragged-tower');
         });
     });
+
+    describe('after a scale change', () => {
+        // Everything above runs at the default level, where `brickScale` is 1 and the notch
+        // geometry happens to read the same in generator units as in pixels. These two run the
+        // same snap at the levels where it does not.
+        it.each([1, 3] as const)('still snaps onto a tab at level %i', (level) => {
+            const host = makeEmptyStatement('host', 0);
+            const dragged = makeEmptyStatement('dragged', 0);
+            for (const node of [host, dragged]) node.model.scaleLevel = level;
+
+            host.model.setPosition(500, 500);
+
+            const { space, connectors, towers } = workspace([
+                { id: 'host-tower', root: host, position: { x: 500, y: 500 } },
+                {
+                    id: 'dragged-tower',
+                    root: dragged,
+                    position: positionNotchAt(dragged, 'prev', notchCenter(host, 'next')),
+                },
+            ]);
+
+            const result = resolveStatementConnection({
+                draggedTowerId: 'dragged-tower',
+                space,
+                connectors,
+                towers,
+            });
+
+            expect(result).toMatchObject({
+                parent: host,
+                child: dragged,
+                socket: 'next',
+                hostTowerId: 'host-tower',
+                absorbedTowerId: 'dragged-tower',
+            });
+        });
+
+        it('snaps at a level whose notch boxes it never saw at the default', () => {
+            const host = makeEmptyStatement('host', 0);
+            const dragged = makeEmptyStatement('dragged', 0);
+
+            // Laid out at the default, then rescaled — the order a real scale change happens in.
+            host.model.setPosition(500, 500);
+            for (const node of [host, dragged]) node.model.scaleLevel = 3;
+
+            const { space, connectors, towers } = workspace([
+                { id: 'host-tower', root: host, position: { x: 500, y: 500 } },
+                {
+                    id: 'dragged-tower',
+                    root: dragged,
+                    position: positionNotchAt(dragged, 'prev', notchCenter(host, 'next')),
+                },
+            ]);
+
+            const result = resolveStatementConnection({
+                draggedTowerId: 'dragged-tower',
+                space,
+                connectors,
+                towers,
+            });
+
+            expect(result?.socket).toBe('next');
+            // The tab sits at the taller brick's foot, not where level 2 would have put it.
+            expect(notchCenter(host, 'next').y).toBeGreaterThan(500 + host.model.dims.h / 2);
+        });
+    });
 });
 
 describe('joinStatement', () => {

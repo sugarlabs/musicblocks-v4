@@ -44,6 +44,8 @@ export interface WorkspaceStore {
     ) => string | null;
     /** Merges a joined tower into the host tower that now owns its bricks */
     absorbTower: (draggedTowerId: string, hostTowerId: string) => void;
+    /** Re-runs every tower's layout, leaving the towers where they are */
+    refreshTowerLayouts: () => void;
 }
 
 /**
@@ -283,6 +285,23 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                         [hostTowerId]: { ...host, root: { ...host.root } },
                     },
                 };
+            });
+        },
+
+        refreshTowerLayouts: () => {
+            set((state) => {
+                const ids = Object.keys(state.towers);
+                if (ids.length === 0) return state;
+
+                const towers: Record<string, TowerState> = {};
+                for (const id of ids) {
+                    const tower = state.towers[id];
+                    // Only the root reference changes — `position` keeps its identity, so the
+                    // layout's origin fast-path stays quiet and the tower does not move.
+                    towers[id] = { ...tower, root: { ...tower.root } };
+                }
+
+                return { towers };
             });
         },
     })),

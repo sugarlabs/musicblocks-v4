@@ -9,11 +9,13 @@ import { Palette } from '@/components/Palette/Palette';
 import { TowerBrickView } from '@/components/Tower/TowerBrick';
 import { useDragFromPalette } from '@/hooks/useDragFromPalette';
 import { useTowerLayout } from '@/hooks/useTowerLayout';
+import { useWorkspaceScale } from '@/hooks/useWorkspaceScale';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { listNodes } from '@/utils/tower-traversal';
 
 import { DragGhost } from './DragGhost';
+import { ScaleControl } from './ScaleControl';
 import { SnapHintOverlay } from './SnapHintOverlay';
 import { SnapPreviewView } from './SnapPreviewView';
 import { DisconnectShadowView } from './DisconnectShadowView';
@@ -56,6 +58,9 @@ export function Workspace({ config }: WorkspaceViewProps) {
 
   useDragFromPalette({ rootRef, canvasRef, ghostRef, bricksById });
 
+  // Resize every brick and re-run the layouts whenever the scale level changes
+  useWorkspaceScale();
+
   // Sync collision space whenever the layout finishes positioning bricks
   useEffect(() => {
     return useBrickLayoutStore.subscribe(
@@ -97,6 +102,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
         <SnapHintOverlay />
         <SnapPreviewView />
         <DisconnectShadowView />
+        <ScaleControl />
         {/* The Trash is only useful once there is something to remove */}
         {towers.length > 0 && <Trash canvasRef={canvasRef} />}
       </div>

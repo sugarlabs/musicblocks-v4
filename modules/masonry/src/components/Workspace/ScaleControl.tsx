@@ -1,0 +1,44 @@
+import { ZoomIn, ZoomOut } from 'lucide-react';
+
+import { useWorkspaceScaleStore } from '@/stores/scale';
+import { Button } from '@/ui/button';
+import { MAX_SCALE_LEVEL, MIN_SCALE_LEVEL } from '@/utils/constants';
+
+/**
+ * Workspace-wide zoom control: two magnifier buttons that step the scale store's level.
+ *
+ * Unlike Trash this needs real pointer events, so it renders as ordinary buttons rather than
+ * `pointer-events-none` — safe since `useDragFromPalette`'s delegated selector only ever matches
+ * `.palette-brick-slot`, never a button.
+ */
+export function ScaleControl() {
+  const level = useWorkspaceScaleStore((state) => state.level);
+  const { zoomIn, zoomOut } = useWorkspaceScaleStore.getState();
+
+  return (
+    <div className="absolute right-26 bottom-6 z-40 flex h-14 items-center gap-6">
+      <Button
+        variant="outline"
+        size="icon"
+        className="size-14 rounded-full border-2"
+        aria-label="Zoom out"
+        disabled={level === MIN_SCALE_LEVEL}
+        onClick={zoomOut}
+      >
+        <ZoomOut className="size-6" />
+      </Button>
+      <Button
+        variant="outline"
+        size="icon"
+        className="size-14 rounded-full border-2"
+        aria-label="Zoom in"
+        disabled={level === MAX_SCALE_LEVEL}
+        onClick={zoomIn}
+      >
+        <ZoomIn className="size-6" />
+      </Button>
+    </div>
+  );
+}
+
+export default ScaleControl;

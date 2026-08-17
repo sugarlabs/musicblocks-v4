@@ -47,5 +47,5 @@ export type TEventMenu =
 export type TPropsMenu = {
     injected: TInjectedMenu;
     states: Record<'running', boolean>;
-    handlers: Partial<Record<'run' | 'stop' | 'reset', CallableFunction>>;
+    handlers: Partial<Record<'run' | 'stop' | 'reset' | 'exportDrawing', CallableFunction>>;
 };

@@ -1,13 +1,16 @@
 import { act } from '@testing-library/react';
 
 import { useWorkspaceStore } from './workspace';
+import { useBrickLayoutStore } from './brick';
 import {
     expressionTree,
     makeEmptyExpression,
     makeEmptyStatement,
     makeEmptyValue,
     statementTreeNoNesting,
+    statementTreeWithNesting,
 } from '@/mocks/tower';
+import { exportWorkspace } from '@/utils/import-export';
 import { listNodes } from '@/utils/tower-traversal';
 import type { Bounds, Point } from '@/@types/common.types';
 import type { TowerExpressionNode, TowerStatementNode } from '@/@types/tower.types';
@@ -309,6 +312,172 @@ describe('Workspace Store Collision Space', () => {
             });
 
             expect(Object.keys(useWorkspaceStore.getState().towers)).toEqual([]);
+        });
+    });
+
+    describe('importWorkspace', () => {
+        /** A payload as it would arrive from a file: exported, then through JSON text. */
+        function payload() {
+            return JSON.parse(
+                JSON.stringify(
+                    exportWorkspace({
+                        source: {
+                            id: 'source',
+                            root: statementTreeWithNesting,
+                            position: { x: 10, y: 20 },
+                        },
+                    }),
+                ),
+            );
+        }
+
+        /** Seeds a settled workspace: one tower, its connectors synced, its layout recorded. */
+        function setupSettled(): string[] {
+            const brickIds = listNodes(statementTreeNoNesting).map((node) => node.model.id);
+
+            act(() => {
+                const store = useWorkspaceStore.getState();
+                store.createTower({
+                    id: 'existing',
+                    root: statementTreeNoNesting,
+                    position: { x: 0, y: 0 },
+                });
+                store.syncStatementConnectors('existing', statementTreeNoNesting);
+                store.syncArgumentConnectors('existing', statementTreeNoNesting);
+
+                const layout = useBrickLayoutStore.getState();
+                layout.setCoords(Object.fromEntries(brickIds.map((id) => [id, { x: 1, y: 1 }])));
+                layout.setMounted(Object.fromEntries(brickIds.map((id) => [id, true])));
+                layout.setPositioned(Object.fromEntries(brickIds.map((id) => [id, true])));
+            });
+
+            return brickIds;
+        }
+
+        beforeEach(() => {
+            act(() => {
+                useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
+            });
+        });
+
+        it('replaces the workspace with the imported project', () => {
+            setupSettled();
+
+            act(() => {
+                useWorkspaceStore.getState().importWorkspace(payload());
+            });
+
+            const towers = Object.values(useWorkspaceStore.getState().towers);
+            expect(towers).toHaveLength(1);
+            expect(towers[0].id).not.toBe('existing');
+            expect(towers[0].position).toEqual({ x: 10, y: 20 });
+            expect(listNodes(towers[0].root)).toHaveLength(
+                listNodes(statementTreeWithNesting).length,
+            );
+        });
+
+        it('purges the collision points and book-keeping of the towers it replaced', () => {
+            setupSettled();
+            expect(
+                Object.keys(useWorkspaceStore.getState().statementConnectors).length,
+            ).toBeGreaterThan(0);
+
+            act(() => {
+                useWorkspaceStore.getState().importWorkspace(payload());
+            });
+
+            const state = useWorkspaceStore.getState();
+            expect(state.towers['existing']).toBeUndefined();
+            expect(
+                Object.values(state.statementConnectors).filter((m) => m.towerId === 'existing'),
+            ).toEqual([]);
+            expect(
+                Object.values(state.argumentConnectors).filter((m) => m.towerId === 'existing'),
+            ).toEqual([]);
+        });
+
+        it('drops the layout entries of every brick it replaced', () => {
+            const staleIds = setupSettled();
+
+            act(() => {
+                useWorkspaceStore.getState().importWorkspace(payload());
+            });
+
+            const layout = useBrickLayoutStore.getState();
+            for (const id of staleIds) {
+                expect(layout.coords[id]).toBeUndefined();
+                expect(layout.mounted[id]).toBeUndefined();
+                expect(layout.positioned[id]).toBeUndefined();
+            }
+        });
+
+        it('gives the imported bricks ids no stale layout entry can shadow', () => {
+            // The mock trees share brick ids, so preserving them would have the purge above delete
+            // the very entries the new bricks need. Minted ids cannot collide either way.
+            const staleIds = new Set(setupSettled());
+
+            act(() => {
+                useWorkspaceStore.getState().importWorkspace(payload());
+            });
+
+            const towers = Object.values(useWorkspaceStore.getState().towers);
+            const importedIds = towers.flatMap((t) => listNodes(t.root).map((n) => n.model.id));
+            expect(importedIds.some((id) => staleIds.has(id))).toBe(false);
+
+            const layout = useBrickLayoutStore.getState();
+            for (const id of importedIds) {
+                expect(layout.positioned[id]).toBeUndefined();
+            }
+        });
+
+        it('reinitializes cleanly when the same project is imported twice', () => {
+            act(() => {
+                useWorkspaceStore.getState().importWorkspace(payload());
+            });
+            const firstIds = Object.values(useWorkspaceStore.getState().towers).flatMap((t) =>
+                listNodes(t.root).map((n) => n.model.id),
+            );
+            act(() => {
+                const layout = useBrickLayoutStore.getState();
+                layout.setPositioned(Object.fromEntries(firstIds.map((id) => [id, true])));
+            });
+
+            act(() => {
+                useWorkspaceStore.getState().importWorkspace(payload());
+            });
+
+            const state = useWorkspaceStore.getState();
+            expect(Object.keys(state.towers)).toHaveLength(1);
+
+            const layout = useBrickLayoutStore.getState();
+            for (const id of firstIds) {
+                expect(layout.positioned[id]).toBeUndefined();
+            }
+            const secondIds = Object.values(state.towers).flatMap((t) =>
+                listNodes(t.root).map((n) => n.model.id),
+            );
+            expect(secondIds.some((id) => firstIds.includes(id))).toBe(false);
+        });
+
+        it('leaves the workspace untouched when the payload is invalid', () => {
+            const staleIds = setupSettled();
+            const before = useWorkspaceStore.getState();
+            const towersBefore = before.towers;
+            const connectorsBefore = before.statementConnectors;
+
+            expect(() =>
+                useWorkspaceStore.getState().importWorkspace({ version: 1, towers: [], nodes: 7 }),
+            ).toThrow(/importWorkspace:/);
+
+            // Identity, not equality: a rejected import must not have written to the store at all.
+            const after = useWorkspaceStore.getState();
+            expect(after.towers).toBe(towersBefore);
+            expect(after.statementConnectors).toBe(connectorsBefore);
+
+            const layout = useBrickLayoutStore.getState();
+            for (const id of staleIds) {
+                expect(layout.positioned[id]).toBe(true);
+            }
         });
     });
 

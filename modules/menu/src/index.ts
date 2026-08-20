@@ -42,6 +42,10 @@ export async function setup(): Promise<void> {
         updateState('running', false);
         emitEvent('menu.reset');
     });
+
+    await updateHandler('exportDrawing', () => {
+        emitEvent('menu.exportDrawing');
+    });
 }
 
 // -- public variables -----------------------------------------------------------------------------

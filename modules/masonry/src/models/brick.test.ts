@@ -39,6 +39,33 @@ function filledSlot(level: ScaleLevel) {
     return { parent: parent.model, child: child.model };
 }
 
+/** The cavity height, in pixels, that a folded brick collapses to at the default scale level. */
+const MIN_CAVITY = SCALE_LEVEL_CONFIG[2].minArgNestHeight;
+
+/**
+ * A statement whose cavity has been measured at `cavityDims`, laid out folded or unfolded.
+ *
+ * Mirrors the order the layout works in: the nested chain is measured into `nestingDims`, then the
+ * brick is laid out around it. Left at the default scale level, where `brickScale` is 1 and pixels
+ * and generator units coincide, so the expected sizes below read directly.
+ */
+function nestingStatement(cavityDims: { w: number; h: number }, isFolded: boolean) {
+    const node = makeEmptyStatement('nesting', 0, true);
+    node.model.widgetDims = { w: 60, h: 14 };
+    node.model.nestingDims = cavityDims;
+    node.model.isNestingFolded = isFolded;
+    node.model.computeOutline();
+    return node.model;
+}
+
+/** A statement with no cavity at all, sized like `nestingStatement`'s head. */
+function plainStatement() {
+    const node = makeEmptyStatement('plain', 0);
+    node.model.widgetDims = { w: 60, h: 14 };
+    node.model.computeOutline();
+    return node.model;
+}
+
 // -------------------------------------------------------------------------------------------------
 
 describe('BrickModel scale level', () => {
@@ -170,6 +197,87 @@ describe('StatementBrickModel nesting fold', () => {
 
             expect(model.isNestingFolded).toBe(true);
             expect(notifications).toBe(0);
+        });
+    });
+
+    describe('dimensions', () => {
+        it('collapses the cavity to the minimum, keeping the brick anchored at its top', () => {
+            const expanded = nestingStatement({ w: 120, h: 200 }, false);
+            const folded = nestingStatement({ w: 120, h: 200 }, true);
+
+            // The height the fold reclaims is what #768 hands to the bricks below.
+            expect(expanded.dims.h - folded.dims.h).toBeCloseTo(200 - MIN_CAVITY, 6);
+            expect(folded.bounds.nesting!.h).toBeCloseTo(MIN_CAVITY, 6);
+        });
+
+        it('keeps its width, so folding changes the height alone', () => {
+            const expanded = nestingStatement({ w: 300, h: 200 }, false);
+            const folded = nestingStatement({ w: 300, h: 200 }, true);
+
+            // A cavity wider than the head stretches the brick. Reporting the cavity as fully
+            // zero would let it snap back to the minimum width, redrawing a brick the user only
+            // asked to fold.
+            expect(folded.dims.w).toBeCloseTo(expanded.dims.w, 6);
+            expect(folded.dims.w).toBeGreaterThan(plainStatement().dims.w);
+        });
+
+        it('reports the same height whatever the hidden chain measures', () => {
+            const tall = nestingStatement({ w: 120, h: 400 }, true);
+            const short = nestingStatement({ w: 120, h: 60 }, true);
+
+            expect(tall.dims.h).toBeCloseTo(short.dims.h, 6);
+        });
+    });
+
+    describe('outline', () => {
+        it('keeps the cavity rather than flattening into a plain statement', () => {
+            const folded = nestingStatement({ w: 120, h: 200 }, true);
+            const plain = plainStatement();
+
+            // `BrickOutlineGenerator` infers `hasNesting` from the cavity dims being present at
+            // all, so a folded brick that dropped them would lose its C shape entirely.
+            expect(folded.bounds.nesting).toBeDefined();
+            expect(plain.bounds.nesting).toBeUndefined();
+            expect(folded.path).not.toBe(plain.path);
+            expect(folded.dims.h).toBeGreaterThan(plain.dims.h);
+        });
+
+        it('leaves the head untouched', () => {
+            const expanded = nestingStatement({ w: 120, h: 200 }, false);
+            const folded = nestingStatement({ w: 120, h: 200 }, true);
+
+            // Everything above the cavity belongs to the brick itself, not to what it holds.
+            expect(folded.bounds.widget).toEqual(expanded.bounds.widget);
+            expect(folded.bounds.nesting!.x).toBeCloseTo(expanded.bounds.nesting!.x, 6);
+            expect(folded.bounds.nesting!.y).toBeCloseTo(expanded.bounds.nesting!.y, 6);
+        });
+    });
+
+    describe('connector coordinates', () => {
+        it('keeps the cavity connector, at the same roof, while folded', () => {
+            const expanded = nestingStatement({ w: 120, h: 200 }, false).getConnectorCoords();
+            const folded = nestingStatement({ w: 120, h: 200 }, true).getConnectorCoords();
+
+            // The hidden sub-tree still hangs off this notch, and the roof it sits on is the head's
+            // bottom edge, which the fold does not move.
+            expect(folded.nestedNext).toBeDefined();
+            expect(folded.nestedNext!.x).toBeCloseTo(expanded.nestedNext!.x, 6);
+            expect(folded.nestedNext!.y).toBeCloseTo(expanded.nestedNext!.y, 6);
+        });
+
+        it('brings the sequence notches in with the folded edges', () => {
+            const expanded = nestingStatement({ w: 120, h: 200 }, false);
+            const folded = nestingStatement({ w: 120, h: 200 }, true);
+
+            const expandedCoords = expanded.getConnectorCoords();
+            const foldedCoords = folded.getConnectorCoords();
+
+            // `prev` rides the top edge, which never moves; `next` rides the bottom, which rises by
+            // the collapsed height. Reporting the expanded `next` is what would leave the brick
+            // below snapping to a notch that is no longer drawn there.
+            expect(foldedCoords.prev!.y).toBeCloseTo(expandedCoords.prev!.y, 6);
+            expect(expandedCoords.next!.y - foldedCoords.next!.y).toBeCloseTo(200 - MIN_CAVITY, 6);
+            expect(foldedCoords.next!.y).toBeGreaterThan(folded.dims.h / 2);
         });
     });
 });

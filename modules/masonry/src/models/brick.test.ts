@@ -1,11 +1,12 @@
-// Unit tests for the brick model's scale handling. The outline generator works in SVG units and
-// the canvas in pixels, related by `brickScale`; these cover the conversion the model does on the
-// way out. Pure model logic — no DOM — so this runs in the node environment, with `widgetDims` set
-// directly rather than measured.
+// Unit tests for the brick model's scale handling and its nesting fold state. The outline generator
+// works in SVG units and the canvas in pixels, related by `brickScale`; these cover the conversion
+// the model does on the way out. Pure model logic — no DOM — so this runs in the node environment,
+// with `widgetDims` set directly rather than measured.
 
 import { describe, expect, it } from 'vitest';
 
 import { makeEmptyExpression, makeEmptyStatement, makeEmptyValue } from '@/mocks/tower';
+import { StatementBrickModel } from '@/models/brick';
 import { SCALE_LEVEL_CONFIG, SCALE_LEVELS, type ScaleLevel } from '@/utils/constants';
 
 // -------------------------------------------------------------------------------------------------
@@ -121,6 +122,54 @@ describe('BrickModel scale level', () => {
                 expect(next!.y).toBeGreaterThan(model.dims.h / 2);
                 expect(next!.y - model.dims.h).toBeLessThan(SCALE_LEVEL_CONFIG[level].minWidth / 8);
             }
+        });
+    });
+});
+
+// -------------------------------------------------------------------------------------------------
+
+describe('StatementBrickModel nesting fold', () => {
+    describe('update notification', () => {
+        it('notifies on a change, matching the other rendering state', () => {
+            const model = makeEmptyStatement('folds', 0, true).model;
+            const notifications: boolean[] = [];
+            model.registerUpdateCallback(() => notifications.push(model.isNestingFolded));
+
+            model.isNestingFolded = true;
+            model.isNestingFolded = false;
+
+            // Without the notification the view never learns the flag moved: `BrickViewFixed`
+            // re-renders off these callbacks alone.
+            expect(notifications).toEqual([true, false]);
+        });
+
+        it('stays quiet on a write that changes nothing', () => {
+            const model = makeEmptyStatement('folds', 0, true).model;
+            let notifications = 0;
+            model.registerUpdateCallback(() => notifications++);
+
+            model.isNestingFolded = false;
+            model.isNestingFolded = true;
+            model.isNestingFolded = true;
+
+            // Each notification re-renders the brick and, in the workspace, re-runs its tower's
+            // layout, so a redundant write must not reach the callbacks.
+            expect(notifications).toBe(1);
+        });
+
+        it('does not notify while being constructed folded', () => {
+            let notifications = 0;
+            const model = new StatementBrickModel({
+                colorsDefault: { background: '#000', foreground: '#fff', border: '#000' },
+                tooltipText: '',
+                widget: { type: 'label', text: 'folded' },
+                hasNesting: true,
+                isNestingFolded: true,
+            });
+            model.registerUpdateCallback(() => notifications++);
+
+            expect(model.isNestingFolded).toBe(true);
+            expect(notifications).toBe(0);
         });
     });
 });

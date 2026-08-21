@@ -158,7 +158,8 @@ abstract class BrickModelBase {
 
     /**
      * The set of registered update callbacks. These functions are called whenever
-     * model state that affects rendering changes (argDims, nestingDims, scaleLevel).
+     * model state that affects rendering changes (argDims, nestingDims, isNestingFolded,
+     * scaleLevel).
      *
      * Note: `widgetDims` is written by the view after measuring the DOM and
      * intentionally does NOT trigger this callback to avoid a re-render loop.
@@ -343,8 +344,24 @@ export class StatementBrickModel extends BrickModelBase {
     hasConnectionPrev: boolean;
     hasConnectionNext: boolean;
 
-    // Mutable: toggled by the user to collapse or expand the nesting cavity.
-    isNestingFolded: boolean;
+    private _isNestingFolded: boolean;
+
+    /**
+     * Whether the nesting cavity is collapsed. Folding is visual only — the nested sub-tree stays
+     * in the tower graph either way.
+     */
+    get isNestingFolded(): boolean {
+        return this._isNestingFolded;
+    }
+
+    set isNestingFolded(value: boolean) {
+        // A write that changes nothing must not notify: every notification re-renders the brick,
+        // and in the workspace it drags a tower re-layout behind it.
+        if (this._isNestingFolded === value) return;
+
+        this._isNestingFolded = value;
+        this._notifyUpdate();
+    }
 
     protected _buildOutlineInput(): BrickOutlineInput {
         let nestingDims: Size | null | undefined;
@@ -394,7 +411,7 @@ export class StatementBrickModel extends BrickModelBase {
         this._nestingDims = config.nestingDims ?? null;
         this.hasConnectionPrev = config.hasConnectionPrev ?? false;
         this.hasConnectionNext = config.hasConnectionNext ?? false;
-        this.isNestingFolded = config.isNestingFolded ?? false;
+        this._isNestingFolded = config.isNestingFolded ?? false;
     }
 }
 

@@ -3,17 +3,21 @@ import { useEffect, useLayoutEffect, useRef } from 'react';
 import type { Point } from '@/@types/common.types';
 import { TowerNode } from '@/@types/tower.types';
 import { useBrickLayoutStore } from '@/stores/brick';
-import { listNodes, traverseBottomUp, traverseTopDown } from '@/utils/tower-traversal';
+import { listVisibleNodes, traverseBottomUp, traverseTopDown } from '@/utils/tower-traversal';
 
 /**
  * Resolves the layout of a tower rooted at `root`.
  *
- * Lists every node in the tree and ensures each has an entry in the brick layout store,
+ * Lists the tower's visible nodes and ensures each has an entry in the brick layout store,
  * initializing it once per node so consumers can read and update its sizing and position state.
+ *
+ * Bricks held inside a folded cavity are left out: nothing renders them, so they have no sizing or
+ * position to resolve. Their entries are seeded again by the fold being lifted, which puts them
+ * back on this list.
  *
  * Bricks are positioned relative to the tower's origin.
  *
- * Returns the tower's node list.
+ * Returns the tower's visible node list.
  */
 export function useTowerLayout(root: TowerNode, origin: Point) {
     const { setCoords, setMounted, setPositioned } = useBrickLayoutStore.getState();
@@ -22,7 +26,7 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
 
     const nodesRef = useRef<TowerNode[]>([]);
 
-    const nodes = listNodes(root);
+    const nodes = listVisibleNodes(root);
     nodesRef.current = nodes;
 
     useLayoutEffect(() => {

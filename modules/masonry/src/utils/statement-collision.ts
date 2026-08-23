@@ -38,12 +38,17 @@ export function extractStatementConnectors(
 
         const coords = node.model.getConnectorCoords();
 
+        // A folded brick keeps its place in the sequence, so `prev` and `next` stay, but its cavity
+        // is shut: the model still reports where the roof notch sits, and it is this space that
+        // decides nothing may snap into it. It is offered again when the fold is lifted.
+        const nestedNext = node.model.isNestingFolded ? undefined : coords.nestedNext;
+
         // Each notch's bounds are centred on the notch, so the box covers exactly what a snap has to
         // line up with.
         const notches: { type: StatementConnectorMeta['type']; bounds: typeof coords.prev }[] = [
             { type: 'prev', bounds: coords.prev },
             { type: 'next', bounds: coords.next },
-            { type: 'nestedNext', bounds: coords.nestedNext },
+            { type: 'nestedNext', bounds: nestedNext },
         ];
 
         for (const { type, bounds } of notches) {

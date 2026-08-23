@@ -1,17 +1,20 @@
 import type { TowerNode } from '@/@types/tower.types';
 import type { StatementConnectorMeta } from '@/@types/workspace.types';
 import type { CollisionObject } from './collision';
-import { listNodes } from './tower-traversal';
+import { listVisibleNodes } from './tower-traversal';
 
 let nextCollisionId = 1;
 
 /**
- * Extracts statement connection points (notches) from all Statement bricks in a tower — the `prev`
+ * Extracts statement connection points (notches) from every visible Statement brick in a tower — the `prev`
  * groove on the top edge, the `next` tab on the bottom edge, and the `nestedNext` tab on the cavity
  * roof. Calculates their absolute positions based on the `model.position` which must be up-to-date
  * from the tower layout pass.
  *
  * Only the notches a brick actually has are emitted; `getConnectorCoords` omits the rest.
+ *
+ * Bricks hidden inside a folded cavity contribute nothing: they are not drawn, so a snap onto one
+ * would land on a notch that is not there. They rejoin the space when the fold is lifted.
  *
  * @param towerId - The ID of the tower these bricks belong to.
  * @param root - The root node of the tower tree.
@@ -21,7 +24,7 @@ export function extractStatementConnectors(
     towerId: string,
     root: TowerNode,
 ): { object: CollisionObject; meta: StatementConnectorMeta }[] {
-    const nodes = listNodes(root);
+    const nodes = listVisibleNodes(root);
     const results: { object: CollisionObject; meta: StatementConnectorMeta }[] = [];
 
     for (const node of nodes) {

@@ -365,17 +365,14 @@ export class StatementBrickModel extends BrickModelBase {
 
     protected _buildOutlineInput(): BrickOutlineInput {
         let nestingDims: Size | null | undefined;
-        if (this.hasNesting) {
-            // A folded cavity reports zero height, never `undefined`: the generator reads
-            // `hasNesting` off this field being present, so dropping it would flatten the brick
-            // into a plain Statement rather than collapse it, and the generator clamps the height
-            // back up to the minimum cavity. The width is reported as measured, so folding moves
-            // the brick's height alone and leaves the rest of its outline where it was.
+        // A folded cavity is withheld, not reported as zero height: the generator reads
+        // `hasNesting` off this field being present and clamps a zero height back up to the
+        // minimum cavity, so reporting dims at all is what keeps a collapsed hollow on screen.
+        // Leaving the field out draws the brick flat instead — cavity, tail and roof notch gone.
+        // The sub-tree is untouched either way; the fold only decides what is drawn.
+        if (this.hasNesting && !this._isNestingFolded) {
             nestingDims = this._nestingDims
-                ? {
-                      w: this.pxToSvg(this._nestingDims.w),
-                      h: this._isNestingFolded ? 0 : this.pxToSvg(this._nestingDims.h),
-                  }
+                ? { w: this.pxToSvg(this._nestingDims.w), h: this.pxToSvg(this._nestingDims.h) }
                 : null;
         }
         return {

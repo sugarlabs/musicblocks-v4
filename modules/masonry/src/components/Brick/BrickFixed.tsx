@@ -132,12 +132,13 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
     if (model.kind === 'statement') {
       hasPrevNotch = hasConnectionPrev;
       hasNextNotch = hasConnectionNext;
-      if (hasNesting) {
+      // A fold withholds the cavity dims rather than zeroing them: the generator reads
+      // `hasNesting` off them being present and clamps a zero height back up to the minimum
+      // cavity, so leaving them out is what draws the brick flat. Same input the model builds,
+      // so the two agree on the folded geometry.
+      if (hasNesting && !nestingIsFolded) {
         if (nestingDimsW !== undefined && nestingDimsH !== undefined) {
-          // A fold reports zero height, never `undefined`: the generator reads `hasNesting` off
-          // the cavity dims being present, so dropping them draws a plain Statement instead of a
-          // collapsed one. Same input the model builds, so the two agree on the folded geometry.
-          computedNestingDims = { w: nestingDimsW, h: nestingIsFolded ? 0 : nestingDimsH };
+          computedNestingDims = { w: nestingDimsW, h: nestingDimsH };
         } else {
           computedNestingDims = null;
         }

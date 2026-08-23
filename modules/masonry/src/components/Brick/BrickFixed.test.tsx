@@ -113,7 +113,6 @@ describe('BrickViewFixed param label', () => {
 
 describe('BrickViewFixed nesting fold', () => {
   const CAVITY_HEIGHT = 200;
-  const MIN_CAVITY = SCALE_LEVEL_CONFIG[2].minArgNestHeight;
 
   it('redraws the brick shorter when the flag is set on a mounted model', () => {
     const { model, container } = renderStatementBrick({ w: 120, h: CAVITY_HEIGHT });
@@ -125,10 +124,10 @@ describe('BrickViewFixed nesting fold', () => {
 
     // The component re-renders off the model's update callbacks alone, so a flag that did not
     // notify would leave the brick drawn at its expanded height.
-    expect(outlineHeight(container)).toBeCloseTo(expanded - (CAVITY_HEIGHT - MIN_CAVITY), 6);
+    expect(outlineHeight(container)).toBeLessThan(expanded);
   });
 
-  it('keeps the cavity rather than flattening into a plain statement', () => {
+  it('flattens into a plain statement rather than keeping a collapsed cavity', () => {
     const folded = renderStatementBrick({ w: 120, h: CAVITY_HEIGHT });
     act(() => {
       folded.model.isNestingFolded = true;
@@ -136,11 +135,11 @@ describe('BrickViewFixed nesting fold', () => {
 
     const plain = renderStatementBrick(null);
 
-    // Reporting the cavity as `undefined` while folded drops it from the outline entirely, which
-    // is what this pins: the folded brick still draws a stub, and its own notch to hang the
-    // hidden sub-tree from.
-    expect(outlineHeight(folded.container)).toBeGreaterThan(outlineHeight(plain.container));
-    expect(outlinePath(folded.container)).not.toBe(outlinePath(plain.container));
+    // Withholding the cavity dims while folded drops the C shape, its tail and its roof notch, so
+    // a folded brick draws exactly what a statement with no cavity draws. Same input the model
+    // builds, so this also pins the view and the model to the same folded geometry.
+    expect(outlineHeight(folded.container)).toBe(outlineHeight(plain.container));
+    expect(outlinePath(folded.container)).toBe(outlinePath(plain.container));
   });
 
   it('restores the outline unchanged on unfolding', () => {

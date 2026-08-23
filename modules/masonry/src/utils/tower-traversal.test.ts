@@ -7,7 +7,13 @@ import type {
     TowerValueNode,
 } from '@/@types/tower.types';
 import { ExpressionBrickModel, StatementBrickModel, ValueBrickModel } from '@/models/brick';
-import { findNode, traverseBottomUp, traverseTopDown } from './tower-traversal';
+import {
+    findNode,
+    listNodes,
+    listVisibleNodes,
+    traverseBottomUp,
+    traverseTopDown,
+} from './tower-traversal';
 
 const colorsDefault = { background: '#3498db', foreground: '#ffffff', border: '#2980b9' };
 
@@ -504,5 +510,178 @@ describe('findNode', () => {
         root.args[0] = makeValue('leaf');
 
         expect(findNode(root, 'absent')).toBeNull();
+    });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The model ids of `nodes`, sorted, so a comparison speaks about membership and not walk order. */
+function idsOf(nodes: TowerNode[]): string[] {
+    return nodes.map((node) => node.model.id).sort();
+}
+
+/**
+ * A tower deep enough for a fold to have something to hide at every turn:
+ *
+ * ```
+ * outer ┬ arg
+ *   ╠═▶ mid ┬ arg
+ *   ║    ╠═▶ deep
+ *   ║   next: sibling
+ *   next: tail
+ * ```
+ *
+ * `outer` and `mid` both carry a cavity, so a fold can be placed inside another one.
+ */
+function makeFoldableTower() {
+    const outer = makeStatement('outer', 1, true);
+    const tail = makeStatement('tail', 0, false);
+    const mid = makeStatement('mid', 1, true);
+    const sibling = makeStatement('sibling', 0, false);
+    const deep = makeStatement('deep', 0, false);
+
+    const outerArg = makeValue('outer-arg');
+    const midArg = makeValue('mid-arg');
+
+    outer.args[0] = outerArg;
+    outerArg.parent = outer;
+    outer.next = tail;
+    tail.prev = outer;
+    outer.nestedNext = mid;
+    mid.prev = outer;
+
+    mid.args[0] = midArg;
+    midArg.parent = mid;
+    mid.next = sibling;
+    sibling.prev = mid;
+    mid.nestedNext = deep;
+    deep.prev = mid;
+
+    return { outer, tail, mid, sibling, deep, outerArg, midArg };
+}
+
+describe('listNodes', () => {
+    it('collects every node in the graph', () => {
+        const { outer } = makeFoldableTower();
+
+        expect(idsOf(listNodes(outer))).toEqual(
+            ['outer', 'outer-arg', 'tail', 'mid', 'mid-arg', 'sibling', 'deep'].sort(),
+        );
+    });
+
+    it('reports the same list whatever is folded', () => {
+        const { outer, mid } = makeFoldableTower();
+        const before = idsOf(listNodes(outer));
+
+        outer.model.isNestingFolded = true;
+        mid.model.isNestingFolded = true;
+
+        // Export, discard and re-scale all read this list, and every one of them has to reach a
+        // hidden brick.
+        expect(idsOf(listNodes(outer))).toEqual(before);
+    });
+});
+
+describe('listVisibleNodes', () => {
+    it('matches listNodes while nothing is folded', () => {
+        const { outer } = makeFoldableTower();
+
+        expect(idsOf(listVisibleNodes(outer))).toEqual(idsOf(listNodes(outer)));
+    });
+
+    it('drops what a folded cavity holds, keeping the brick, its arguments and its next chain', () => {
+        const { outer } = makeFoldableTower();
+
+        outer.model.isNestingFolded = true;
+
+        // A fold hides what a brick holds, not the brick, what plugs into it, or what follows it.
+        expect(idsOf(listVisibleNodes(outer))).toEqual(['outer', 'outer-arg', 'tail'].sort());
+    });
+
+    it('drops the whole nested chain, not just the brick at the cavity head', () => {
+        const { outer } = makeFoldableTower();
+
+        outer.model.isNestingFolded = true;
+
+        // `sibling` follows `mid` inside the cavity, so the fold covers it too.
+        const visible = idsOf(listVisibleNodes(outer));
+        expect(visible).not.toContain('mid');
+        expect(visible).not.toContain('sibling');
+        expect(visible).not.toContain('deep');
+    });
+
+    it('drops only the cavity of the brick that is folded', () => {
+        const { outer, mid } = makeFoldableTower();
+
+        mid.model.isNestingFolded = true;
+
+        // Every level folds on its own, so folding an inner brick leaves the outer one open.
+        expect(idsOf(listVisibleNodes(outer))).toEqual(
+            ['outer', 'outer-arg', 'tail', 'mid', 'mid-arg', 'sibling'].sort(),
+        );
+    });
+
+    it('changes nothing when a brick is folded inside a cavity that is already folded', () => {
+        const { outer, mid } = makeFoldableTower();
+
+        outer.model.isNestingFolded = true;
+        const outerFolded = idsOf(listVisibleNodes(outer));
+
+        mid.model.isNestingFolded = true;
+
+        expect(idsOf(listVisibleNodes(outer))).toEqual(outerFolded);
+    });
+
+    it('ignores a fold on a brick whose cavity is empty', () => {
+        const head = makeStatement('head', 0, true);
+        const tail = makeStatement('tail', 0, false);
+
+        head.next = tail;
+        tail.prev = head;
+
+        head.model.isNestingFolded = true;
+
+        // An empty cavity hides nothing, so the fold has no sub-tree to skip.
+        expect(idsOf(listVisibleNodes(head))).toEqual(idsOf(listNodes(head)));
+    });
+
+    it('leaves the graph untouched, so a skipped sub-tree stays linked', () => {
+        const { outer, mid, sibling, deep, midArg } = makeFoldableTower();
+
+        outer.model.isNestingFolded = true;
+        listVisibleNodes(outer);
+
+        // The walk only reads pointers. Nothing is detached, so nothing has to be restored.
+        expect(outer.nestedNext).toBe(mid);
+        expect(mid.prev).toBe(outer);
+        expect(mid.next).toBe(sibling);
+        expect(mid.nestedNext).toBe(deep);
+        expect(mid.args[0]).toBe(midArg);
+    });
+
+    it('restores the hidden sub-tree, nested fold states included, on unfolding', () => {
+        const { outer, mid } = makeFoldableTower();
+
+        mid.model.isNestingFolded = true;
+        const withMidFolded = idsOf(listVisibleNodes(outer));
+
+        outer.model.isNestingFolded = true;
+        outer.model.isNestingFolded = false;
+
+        // `mid` was folded before the round trip and is still folded after it: the fold state of a
+        // hidden brick lives on the brick, so hiding it never touched it.
+        expect(mid.model.isNestingFolded).toBe(true);
+        expect(idsOf(listVisibleNodes(outer))).toEqual(withMidFolded);
+    });
+
+    it('hides the cavity of a folded root', () => {
+        const { mid, deep } = makeFoldableTower();
+
+        mid.model.isNestingFolded = true;
+
+        // The walk starts at `mid` here rather than reaching it, and the fold still applies.
+        const visible = idsOf(listVisibleNodes(mid));
+        expect(visible).toEqual(['mid', 'mid-arg', 'sibling'].sort());
+        expect(visible).not.toContain(deep.model.id);
     });
 });

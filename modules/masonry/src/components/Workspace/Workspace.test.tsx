@@ -10,6 +10,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { PaletteConfig } from '@/@types/palette.types';
 import type { TowerState } from '@/@types/workspace.types';
 
+import { makeEmptyStatement } from '@/mocks/tower';
+import { useBrickLayoutStore } from '@/stores/brick';
 import { usePaletteDragStore } from '@/stores/palette';
 import { useTrashStore } from '@/stores/trash';
 import { useWorkspaceStore } from '@/stores/workspace';
@@ -22,6 +24,7 @@ afterEach(() => {
   usePaletteDragStore.setState({ dragged: null });
   useWorkspaceStore.setState({ towers: {} });
   useTrashStore.setState({ bounds: null, isHovered: false });
+  useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
 });
 
 // -------------------------------------------------------------------------------------------------
@@ -71,6 +74,32 @@ function makeTower(id: string): TowerState {
   const entry = paletteConfig.classifications[0].categories[0].bricks[0];
 
   return { id, root: wrapAsRootNode(createBrickModel(entry.brick)), position: { x: 0, y: 0 } };
+}
+
+/**
+ * A two-brick tower whose cavity holds the second brick, so a fold has something to hide.
+ *
+ * Both bricks are marked mounted up front: `TowerBrick` renders nothing until they are, and the
+ * point of the fold test is what the canvas lists, not when the layout pass gets to it.
+ */
+function makeNestingTower(id: string, folded = false): TowerState {
+  const outer = makeEmptyStatement(`${id}-outer`, 0, true);
+  const inner = makeEmptyStatement(`${id}-inner`, 0, false);
+
+  outer.nestedNext = inner;
+  inner.prev = outer;
+  outer.model.isNestingFolded = folded;
+
+  useBrickLayoutStore.getState().setMounted({ [outer.model.id]: true, [inner.model.id]: true });
+
+  return { id, root: outer, position: { x: 0, y: 0 } };
+}
+
+/** The ids of the bricks the canvas has actually put in the DOM. */
+function renderedBrickIds(container: HTMLElement) {
+  return Array.from(container.querySelectorAll<HTMLElement>('[data-id]')).map(
+    (el) => el.dataset.id,
+  );
 }
 
 /** The Trash's positioning node, or null while it is off the canvas. */
@@ -227,6 +256,33 @@ describe('Workspace', () => {
       });
 
       expect(queryTrash(container)?.classList.contains('pointer-events-none')).toBe(true);
+    });
+  });
+
+  describe('folded bricks', () => {
+    it('renders both bricks of a nesting tower while the cavity is open', () => {
+      const tower = makeNestingTower('t1');
+
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      act(() => {
+        useWorkspaceStore.getState().createTower(tower);
+      });
+
+      expect(renderedBrickIds(container)).toEqual(expect.arrayContaining(['t1-outer', 't1-inner']));
+    });
+
+    it('leaves the brick inside a folded cavity out of the canvas', () => {
+      const tower = makeNestingTower('t1', true);
+
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      act(() => {
+        useWorkspaceStore.getState().createTower(tower);
+      });
+
+      // The brick is mounted and still in the graph; the fold is the only reason it is not drawn.
+      const ids = renderedBrickIds(container);
+      expect(ids).toContain('t1-outer');
+      expect(ids).not.toContain('t1-inner');
     });
   });
 });

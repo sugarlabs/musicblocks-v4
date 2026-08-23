@@ -22,13 +22,32 @@ function pushChain(start: TowerNode, stack: TowerNode[]) {
 }
 
 /**
- * Collects every node reachable from `root` in a tower's connected graph.
+ * Whether `node` hides what its cavity holds.
+ *
+ * Only a statement brick has a cavity to fold, so every other kind answers false. The fold is the
+ * one reason a node in the graph is not on screen, so this is the single predicate the visible
+ * walk consults; anything else that can hide a sub-tree later belongs here rather than at a call
+ * site.
+ */
+function hidesCavity(node: TowerNode): boolean {
+    return node.kind === 'statement' && node.model.isNestingFolded;
+}
+
+/**
+ * Collects the nodes reachable from `root` in a tower's connected graph.
  *
  * Walks the tree with an explicit stack, following `args` and `nestedNext` connections and
  * pulling in each statement's full `next` chain via `pushChain`. The result is unordered — it's
  * meant to be reduced per node (e.g. into layout state), not walked in tree order.
+ *
+ * With `skipFolded` set, a folded brick's `nestedNext` is left unvisited, so its cavity contents
+ * drop out of the result. The brick itself, its arguments and its `next` chain stay: a fold hides
+ * what a brick holds, not the brick or what follows it.
+ *
+ * The walk only reads pointers, so a skipped sub-tree is untouched rather than detached, and it
+ * comes back whole — nested fold states included — the moment the fold is lifted.
  */
-export function listNodes(root: TowerNode): TowerNode[] {
+function walk(root: TowerNode, skipFolded: boolean): TowerNode[] {
     const nodes: TowerNode[] = [];
     const stack: TowerNode[] = [];
 
@@ -49,7 +68,7 @@ export function listNodes(root: TowerNode): TowerNode[] {
                     if (arg) pushChain(arg, stack);
                 }
 
-                if (node.nestedNext) {
+                if (node.nestedNext && !(skipFolded && hidesCavity(node))) {
                     pushChain(node.nestedNext, stack);
                 }
                 break;
@@ -57,6 +76,29 @@ export function listNodes(root: TowerNode): TowerNode[] {
     }
 
     return nodes;
+}
+
+/**
+ * Collects every node reachable from `root` in a tower's connected graph, folded or not.
+ *
+ * This is the graph-complete list: the one to use whenever a hidden brick still has to be counted,
+ * such as serialising a tower, re-scaling its bricks, or clearing their layout entries. Callers
+ * that speak for what is on screen want {@link listVisibleNodes} instead.
+ */
+export function listNodes(root: TowerNode): TowerNode[] {
+    return walk(root, false);
+}
+
+/**
+ * Collects the nodes of a tower that a fold leaves on screen, skipping every sub-tree held inside
+ * a folded cavity, however deeply the folds nest.
+ *
+ * This is the list to render from and to build the Collision spaces from, so a hidden brick is
+ * neither drawn nor offered as a snap candidate. It is a view of the graph, not a change to it:
+ * the skipped nodes are still linked exactly as they were.
+ */
+export function listVisibleNodes(root: TowerNode): TowerNode[] {
+    return walk(root, true);
 }
 
 /**

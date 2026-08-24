@@ -26,10 +26,10 @@ function pushChain(start: TowerNode, stack: TowerNode[]) {
  *
  * Only a statement brick has a cavity to fold, so every other kind answers false. The fold is the
  * one reason a node in the graph is not on screen, so this is the single predicate the visible
- * walk consults; anything else that can hide a sub-tree later belongs here rather than at a call
- * site.
+ * walk and the layout consult; anything else that can hide a sub-tree later belongs here rather
+ * than at a call site.
  */
-function hidesCavity(node: TowerNode): boolean {
+export function hidesCavity(node: TowerNode): boolean {
     return node.kind === 'statement' && node.model.isNestingFolded;
 }
 
@@ -124,6 +124,10 @@ export function findNode(root: TowerNode, brickId: string): TowerNode | null {
  *
  * Uses a strict iterative two-pass approach to prevent call stack issues on deeply nested trees.
  *
+ * A folded cavity is left out: nothing renders what it holds, so there is nothing to measure in
+ * there, and the brick's own height no longer depends on it. The chain is measured again by the
+ * fold being lifted, which brings it back into this walk.
+ *
  * @param root - The root node of the tower tree.
  */
 export function* traverseBottomUp(root: TowerNode): Generator<TowerNode[]> {
@@ -142,7 +146,9 @@ export function* traverseBottomUp(root: TowerNode): Generator<TowerNode[]> {
         }
         if (node.kind === 'statement') {
             if (node.next !== null) traversalStack.push(node.next);
-            if (node.nestedNext != null) traversalStack.push(node.nestedNext);
+            if (node.nestedNext != null && !hidesCavity(node)) {
+                traversalStack.push(node.nestedNext);
+            }
         }
     }
 
@@ -166,8 +172,9 @@ export function* traverseBottomUp(root: TowerNode): Generator<TowerNode[]> {
                 }
             }
         } else if (node.kind === 'statement') {
-            // Statements only depend on their nesting cavity chain
-            if (node.nestedNext != null) {
+            // Statements only depend on their nesting cavity chain, and a folded one holds them
+            // to nothing: it is not on this walk, so it cannot be waited on either.
+            if (node.nestedNext != null && !hidesCavity(node)) {
                 let current: TowerNode | null = node.nestedNext;
                 while (current !== null) {
                     const h = heights.get(current) ?? 0;
@@ -217,6 +224,10 @@ export function* traverseBottomUp(root: TowerNode): Generator<TowerNode[]> {
  * by the nesting cavity bounds, and an argument sits at its parent's position offset by its
  * argument slot bounds.
  *
+ * A folded brick reports no cavity bounds to offset by, so its chain is left where it stood rather
+ * than stacked on top of it. Everything after the fold rides the brick's collapsed height, which is
+ * what closes the gap it used to hold open.
+ *
  * @param root - The root node of the tower tree.
  * @param origin - The tower's origin co-ordinates; every brick is positioned relative to it.
  * @returns The positioned nodes, each parent preceding its children.
@@ -246,7 +257,7 @@ export function traverseTopDown(root: TowerNode, origin: Point = { x: 0, y: 0 })
             if (node.next?.kind === 'statement') {
                 stack.push({ node: node.next, x, y: y + node.model.dims.h });
             }
-            if (node.nestedNext?.kind === 'statement') {
+            if (node.nestedNext?.kind === 'statement' && !hidesCavity(node)) {
                 const nesting = node.model.bounds.nesting;
                 stack.push({
                     node: node.nestedNext,

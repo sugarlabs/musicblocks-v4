@@ -548,6 +548,175 @@ describe('Workspace Store Collision Space', () => {
         });
     });
 
+    describe('setNestingFold', () => {
+        /** A nesting brick holding a two-brick chain, with a brick following it. */
+        function setupFoldableTower() {
+            const outer = makeEmptyStatement('outer', 0, true);
+            const inner = makeEmptyStatement('inner', 0, false);
+            const innerNext = makeEmptyStatement('inner-next', 0, false);
+            const tail = makeEmptyStatement('tail', 0, false);
+
+            outer.nestedNext = inner;
+            inner.prev = outer;
+            inner.next = innerNext;
+            innerNext.prev = inner;
+            outer.next = tail;
+            tail.prev = outer;
+
+            act(() => {
+                useBrickLayoutStore.setState({
+                    coords: {},
+                    mounted: {},
+                    positioned: Object.fromEntries(
+                        listNodes(outer).map((node) => [node.model.id, true]),
+                    ),
+                });
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-f',
+                    root: outer,
+                    position: { x: 200, y: 150 },
+                });
+            });
+
+            return { outer, inner, innerNext, tail };
+        }
+
+        it('flips the flag and re-seats the tower so its layout re-runs', () => {
+            const { outer } = setupFoldableTower();
+            const before = useWorkspaceStore.getState().towers['tower-f'].root;
+
+            act(() => {
+                useWorkspaceStore.getState().setNestingFold('outer', true);
+            });
+
+            const after = useWorkspaceStore.getState().towers['tower-f'].root;
+
+            expect(outer.model.isNestingFolded).toBe(true);
+            // Re-seating the root is the whole signal: `useTowerLayout` re-runs off it and the
+            // canvas re-lists what the fold leaves on screen.
+            expect(after).not.toBe(before);
+            expect(after.model).toBe(before.model);
+        });
+
+        it('keeps the tower anchored, position identity included', () => {
+            setupFoldableTower();
+            const before = useWorkspaceStore.getState().towers['tower-f'].position;
+
+            act(() => {
+                useWorkspaceStore.getState().setNestingFold('outer', true);
+            });
+
+            const after = useWorkspaceStore.getState().towers['tower-f'].position;
+
+            // A fold moves the bricks below the cavity, never the tower: a new object here would
+            // trip the layout's origin fast-path.
+            expect(after).toBe(before);
+            expect(after).toEqual({ x: 200, y: 150 });
+        });
+
+        it('leaves the graph and the fold states of the hidden bricks alone', () => {
+            const { outer, inner, innerNext } = setupFoldableTower();
+
+            act(() => {
+                useWorkspaceStore.getState().setNestingFold('outer', true);
+            });
+
+            expect(outer.nestedNext).toBe(inner);
+            expect(inner.next).toBe(innerNext);
+            expect(listNodes(useWorkspaceStore.getState().towers['tower-f'].root)).toHaveLength(4);
+        });
+
+        it('does nothing when the brick is already in that state', () => {
+            setupFoldableTower();
+
+            act(() => {
+                useWorkspaceStore.getState().setNestingFold('outer', true);
+            });
+            const folded = useWorkspaceStore.getState().towers['tower-f'].root;
+
+            act(() => {
+                useWorkspaceStore.getState().setNestingFold('outer', true);
+            });
+
+            // A re-seat costs a full re-layout of the tower, so a write that changes nothing must
+            // not trigger one.
+            expect(useWorkspaceStore.getState().towers['tower-f'].root).toBe(folded);
+        });
+
+        it('ignores an unknown brick and one that cannot fold', () => {
+            setupFoldableTower();
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-v',
+                    root: makeEmptyValue('lone-value'),
+                    position: { x: 0, y: 0 },
+                });
+            });
+
+            const before = useWorkspaceStore.getState().towers;
+
+            act(() => {
+                useWorkspaceStore.getState().setNestingFold('absent', true);
+                useWorkspaceStore.getState().setNestingFold('lone-value', true);
+            });
+
+            expect(useWorkspaceStore.getState().towers).toBe(before);
+        });
+
+        it('hides the bricks a lifted fold hands back until the layout places them', () => {
+            const { inner, innerNext } = setupFoldableTower();
+
+            act(() => {
+                useWorkspaceStore.getState().setNestingFold('outer', true);
+            });
+            act(() => {
+                useWorkspaceStore.getState().setNestingFold('outer', false);
+            });
+
+            // They come back at whatever position they held when the cavity shut, which the tower
+            // may have moved away from since; `positioned` is what `TowerBrick` hides behind until
+            // the pass that follows places them.
+            const { positioned } = useBrickLayoutStore.getState();
+            expect(positioned[inner.model.id]).toBe(false);
+            expect(positioned[innerNext.model.id]).toBe(false);
+            // The fold never hid the brick itself or what follows it, so neither flickers.
+            expect(positioned['outer']).toBe(true);
+            expect(positioned['tail']).toBe(true);
+        });
+
+        it('leaves the layout entries alone while shutting a cavity', () => {
+            setupFoldableTower();
+            const before = useBrickLayoutStore.getState().positioned;
+
+            act(() => {
+                useWorkspaceStore.getState().setNestingFold('outer', true);
+            });
+
+            // Nothing new comes on screen, so there is nothing to hide.
+            expect(useBrickLayoutStore.getState().positioned).toBe(before);
+        });
+
+        it('holds back only what is on screen inside the cavity', () => {
+            const { inner, innerNext } = setupFoldableTower();
+
+            act(() => {
+                useWorkspaceStore.getState().setNestingFold('outer', true);
+                // A fold inside a folded cavity: `inner-next` stays hidden by it after the outer
+                // one is lifted, so it is not a brick coming back on screen.
+                inner.nestedNext = innerNext;
+                inner.next = null;
+                inner.model.isNestingFolded = true;
+            });
+            act(() => {
+                useWorkspaceStore.getState().setNestingFold('outer', false);
+            });
+
+            const { positioned } = useBrickLayoutStore.getState();
+            expect(positioned[inner.model.id]).toBe(false);
+            expect(positioned[innerNext.model.id]).toBe(true);
+        });
+    });
+
     describe('connector points after a scale change', () => {
         /** A statement carrying a value in its one slot, so both collision spaces have work to do. */
         function setupScaledTower() {

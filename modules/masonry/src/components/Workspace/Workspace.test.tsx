@@ -284,5 +284,28 @@ describe('Workspace', () => {
       expect(ids).toContain('t1-outer');
       expect(ids).not.toContain('t1-inner');
     });
+
+    it('takes the cavity off the canvas and gives it back as the fold is toggled', () => {
+      const tower = makeNestingTower('t1');
+
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      act(() => {
+        useWorkspaceStore.getState().createTower(tower);
+      });
+
+      act(() => {
+        useWorkspaceStore.getState().setNestingFold('t1-outer', true);
+      });
+
+      // Re-seating the tower is what the canvas listens to, so the fold reaches the DOM without
+      // waiting on the layout pass it also starts.
+      expect(renderedBrickIds(container)).not.toContain('t1-inner');
+
+      act(() => {
+        useWorkspaceStore.getState().setNestingFold('t1-outer', false);
+      });
+
+      expect(renderedBrickIds(container)).toContain('t1-inner');
+    });
   });
 });

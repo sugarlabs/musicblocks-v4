@@ -685,3 +685,174 @@ describe('listVisibleNodes', () => {
         expect(visible).not.toContain(deep.model.id);
     });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('layout traversals with a folded cavity', () => {
+    /** Every node `traverseBottomUp` hands out, flattened across its batches. */
+    function bottomUpIds(root: TowerNode): string[] {
+        return idsOf([...traverseBottomUp(root)].flat());
+    }
+
+    /** Simulates the measurement pass: sets a widget size and computes dims like the layout hook. */
+    function measure(node: TowerNode, widgetH = 20): void {
+        node.model.widgetDims = { w: 60, h: widgetH };
+        node.model.computeDims();
+    }
+
+    /**
+     * Sizes `parent`'s cavity from the chain inside it and computes its outline, the way the layout
+     * hook does — a folded cavity is left collapsed rather than measured.
+     */
+    function resolveCavity(parent: TowerStatementNode): void {
+        let current = parent.nestedNext;
+
+        if (current === null || current === undefined || parent.model.isNestingFolded) {
+            parent.model.nestingDims = null;
+        } else {
+            let totalH = 0;
+            let maxW = 0;
+            while (current !== null) {
+                totalH += current.model.dims.h;
+                maxW = Math.max(maxW, current.model.dims.w);
+                current = current.kind === 'statement' ? current.next : null;
+            }
+            parent.model.nestingDims = { w: maxW, h: totalH };
+        }
+
+        parent.model.computeDims();
+        parent.model.computeOutline();
+    }
+
+    /** A nesting brick holding a two-brick chain, with a brick following it. */
+    function makeMeasuredCavity() {
+        const outer = makeStatement('outer', 0, true);
+        const inner = makeStatement('inner', 0, false);
+        const innerNext = makeStatement('inner-next', 0, false);
+        const tail = makeStatement('tail', 0, false);
+
+        outer.nestedNext = inner;
+        inner.prev = outer;
+        inner.next = innerNext;
+        innerNext.prev = inner;
+        outer.next = tail;
+        tail.prev = outer;
+
+        [inner, innerNext, tail].forEach((node) => measure(node));
+        measure(outer);
+        resolveCavity(outer);
+
+        return { outer, inner, innerNext, tail };
+    }
+
+    describe('traverseBottomUp', () => {
+        it('leaves the contents of a folded cavity unmeasured', () => {
+            const { outer } = makeFoldableTower();
+
+            outer.model.isNestingFolded = true;
+
+            // Nothing renders them, so there is no DOM for the pass to measure; the brick, its
+            // argument and its next chain still come through.
+            expect(bottomUpIds(outer)).toEqual(['outer', 'outer-arg', 'tail'].sort());
+        });
+
+        it('measures the chain again once the fold is lifted', () => {
+            const { outer } = makeFoldableTower();
+            const open = bottomUpIds(outer);
+
+            outer.model.isNestingFolded = true;
+            outer.model.isNestingFolded = false;
+
+            expect(bottomUpIds(outer)).toEqual(open);
+        });
+
+        it('skips only the cavity of the brick that is folded', () => {
+            const { outer, mid } = makeFoldableTower();
+
+            mid.model.isNestingFolded = true;
+
+            expect(bottomUpIds(outer)).toEqual(
+                ['outer', 'outer-arg', 'tail', 'mid', 'mid-arg', 'sibling'].sort(),
+            );
+        });
+
+        it('stops a folded brick from waiting on the chain it hides', () => {
+            const { outer, mid } = makeFoldableTower();
+
+            outer.model.isNestingFolded = true;
+            const batches = [...traverseBottomUp(outer)];
+
+            // A brick is batched behind whatever its cavity holds, so that its dims are known by
+            // the time it is sized. A folded one holds nothing back and lands in the first batch.
+            const statementBatches = batches.filter((batch) =>
+                batch.every((node) => node.kind === 'statement'),
+            );
+            expect(idsOf(statementBatches[0])).toEqual(['outer', 'tail'].sort());
+            expect(batches.flat()).not.toContain(mid);
+        });
+    });
+
+    describe('traverseTopDown', () => {
+        it('moves what follows a folded brick up by the height the cavity held', () => {
+            const { outer, tail } = makeMeasuredCavity();
+
+            traverseTopDown(outer, { x: 40, y: 60 });
+            const openHeight = outer.model.dims.h;
+            const openTailY = tail.model.position.y;
+
+            outer.model.isNestingFolded = true;
+            resolveCavity(outer);
+            traverseTopDown(outer, { x: 40, y: 60 });
+
+            // The brick is anchored at its top either way, so everything below it rides up by
+            // exactly what the fold reclaimed.
+            expect(outer.model.position).toEqual({ x: 40, y: 60 });
+            expect(outer.model.dims.h).toBeLessThan(openHeight);
+            expect(tail.model.position.y).toBeCloseTo(60 + outer.model.dims.h, 6);
+            expect(openTailY - tail.model.position.y).toBeCloseTo(
+                openHeight - outer.model.dims.h,
+                6,
+            );
+        });
+
+        it('leaves the hidden chain where it stood rather than stacking it on its parent', () => {
+            const { outer, inner, innerNext } = makeMeasuredCavity();
+
+            traverseTopDown(outer, { x: 40, y: 60 });
+            const openInner = { ...inner.model.position };
+            const openInnerNext = { ...innerNext.model.position };
+
+            outer.model.isNestingFolded = true;
+            resolveCavity(outer);
+            const positioned = traverseTopDown(outer, { x: 40, y: 60 });
+
+            // A folded brick reports no cavity bounds, so positioning the chain off them would
+            // pile it onto the brick itself — and it is still on the canvas' books.
+            expect(positioned).not.toContain(inner);
+            expect(positioned).not.toContain(innerNext);
+            expect(inner.model.position).toEqual(openInner);
+            expect(innerNext.model.position).toEqual(openInnerNext);
+        });
+
+        it('restores every position on a fold and unfold round trip', () => {
+            const { outer, inner, innerNext, tail } = makeMeasuredCavity();
+
+            traverseTopDown(outer, { x: 40, y: 60 });
+            const before = [outer, inner, innerNext, tail].map((node) => ({
+                ...node.model.position,
+            }));
+
+            outer.model.isNestingFolded = true;
+            resolveCavity(outer);
+            traverseTopDown(outer, { x: 40, y: 60 });
+
+            outer.model.isNestingFolded = false;
+            resolveCavity(outer);
+            traverseTopDown(outer, { x: 40, y: 60 });
+
+            expect(
+                [outer, inner, innerNext, tail].map((node) => ({ ...node.model.position })),
+            ).toEqual(before);
+        });
+    });
+});

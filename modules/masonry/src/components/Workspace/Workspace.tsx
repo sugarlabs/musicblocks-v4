@@ -33,8 +33,8 @@ export function Workspace({ config }: WorkspaceViewProps) {
   const towers = useMemo(() => Object.values(towersRecord), [towersRecord]);
 
   // Only what a fold leaves on screen: a brick inside a folded cavity is never rendered. The
-  // memo re-runs off the towers record, so whatever flips a fold has to re-seat its tower for the
-  // canvas to follow — the same refresh a re-layout already needs.
+  // memo re-runs off the towers record, which is why `setNestingFold` re-seats the tower it folds:
+  // the canvas and the re-layout both follow off that one signal.
   const visibleNodes = useMemo(() => {
     return towers.flatMap((tower) => listVisibleNodes(tower.root));
   }, [towers]);

@@ -14,7 +14,7 @@ import { extractStatementConnectors } from '@/utils/statement-collision';
 import { exportWorkspace as exportWorkspaceUtil, importProject } from '@/utils/import-export';
 import type { ExportedProject, ImportIdStrategy } from '@/@types/import-export.types';
 import { useBrickLayoutStore } from '@/stores/brick';
-import { listNodes } from '@/utils/tower-traversal';
+import { listNodes, listVisibleNodes } from '@/utils/tower-traversal';
 
 export interface WorkspaceStore {
     /** Record of all towers currently in the workspace, keyed by their unique ID */
@@ -50,6 +50,8 @@ export interface WorkspaceStore {
     absorbTower: (draggedTowerId: string, hostTowerId: string) => void;
     /** Re-runs every tower's layout, leaving the towers where they are */
     refreshTowerLayouts: () => void;
+    /** Folds or unfolds a brick's nesting cavity and re-runs the layout of the tower holding it */
+    setNestingFold: (brickId: string, isFolded: boolean) => void;
     /** Serializes the entire workspace into a flat JSON-serializable structure */
     exportWorkspace: () => ExportedProject;
     /**
@@ -313,6 +315,46 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 }
 
                 return { towers };
+            });
+        },
+
+        setNestingFold: (brickId, isFolded) => {
+            const found = findNodeAndTower(brickId);
+            if (!found || found.node.kind !== 'statement') return;
+
+            const { node, tower } = found;
+            // A write that changes nothing must not cost a re-layout; the model swallows it anyway.
+            if (node.model.isNestingFolded === isFolded) return;
+
+            // Written outside the store update because the flag notifies synchronously, and doing
+            // that inside a `set` would update React from within a store update — the same reason
+            // `useWorkspaceScale` writes `scaleLevel` before refreshing the layouts.
+            node.model.isNestingFolded = isFolded;
+
+            // A cavity opening again hands its bricks back to the canvas at whatever position they
+            // held when it shut, which the tower may have moved away from since. `positioned` is
+            // what `TowerBrick` hides behind, so dropping it keeps them out of sight until the pass
+            // below places them.
+            if (!isFolded && node.nestedNext) {
+                const reshown = listVisibleNodes(node.nestedNext).map((node) => node.model.id);
+                useBrickLayoutStore
+                    .getState()
+                    .setPositioned(Object.fromEntries(reshown.map((id) => [id, false])));
+            }
+
+            set((state) => {
+                const current = state.towers[tower.id];
+                if (!current) return state;
+
+                // Only the root reference changes: the layout hook re-runs off it and `Workspace`
+                // re-lists what the fold leaves on screen. `position` keeps its identity, so the
+                // origin fast-path stays quiet and the tower stays anchored.
+                return {
+                    towers: {
+                        ...state.towers,
+                        [tower.id]: { ...current, root: { ...current.root } },
+                    },
+                };
             });
         },
 

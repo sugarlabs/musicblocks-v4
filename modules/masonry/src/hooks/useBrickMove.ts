@@ -7,6 +7,7 @@ import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { useTrashStore } from '@/stores/trash';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 import { joinArg, resolveArgumentConnection } from '@/utils/argument-connect';
+import { FOLD_TOGGLE_SELECTOR } from '@/utils/constants';
 import { isPointInsideBounds } from '@/utils/geometry';
 import { resolveCandidateConnection } from '@/utils/snap-preview-calculator';
 import { joinStatement, resolveStatementConnection } from '@/utils/statement-connect';
@@ -98,6 +99,12 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
         if (!el) return;
 
         const interactable = interact(el).draggable({
+            // The fold chevron is overlaid on the brick, so every press on it is also a press on
+            // the brick. Without this, folding a cavity would tear the brick out of its tower on
+            // the way: the pointer moves a few pixels between press and release, which is a drag as
+            // far as interact.js is concerned. The chevron stops its own pointerdown too, but only
+            // this covers the press that has already become a drag.
+            ignoreFrom: FOLD_TOGGLE_SELECTOR,
             listeners: {
                 start(_event: DragEvent) {
                     const { coords } = useBrickLayoutStore.getState();

@@ -36,3 +36,14 @@ export const SCALE_LEVELS = Object.keys(SCALE_LEVEL_CONFIG)
     .sort((a, b) => a - b) as ScaleLevel[];
 export const MIN_SCALE_LEVEL = SCALE_LEVELS[0];
 export const MAX_SCALE_LEVEL = SCALE_LEVELS[SCALE_LEVELS.length - 1];
+
+// ── Interaction ──
+
+/**
+ * Marks the fold toggle overlaid on a nesting brick's head.
+ *
+ * Shared because two places need to agree on it: the toggle stamps the attribute on itself, and
+ * `useBrickMove` passes this selector as the draggable's `ignoreFrom`, so a press that lands on the
+ * toggle folds the cavity instead of dragging the brick out of its tower.
+ */
+export const FOLD_TOGGLE_SELECTOR = '[data-fold-toggle]';

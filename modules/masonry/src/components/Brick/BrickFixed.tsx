@@ -18,12 +18,6 @@ const DEFAULT_SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
 const PARAM_FONT_SCALE = 0.8;
 
 /**
- * Marks the fold toggle for interact.js. `useBrickMove` passes this as the draggable's `ignoreFrom`,
- * so a press that lands on the toggle never starts dragging the brick out of its tower.
- */
-export const FOLD_TOGGLE_SELECTOR = '[data-fold-toggle]';
-
-/**
  * Renders a brick whose widget is fixed — no free user input. The variant widget is the sole
  * exception, using a select UI, but it remains semantically fixed: the brick represents a
  * predetermined concept, and the select only switches between its predefined forms.

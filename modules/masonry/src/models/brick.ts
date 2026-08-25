@@ -126,6 +126,7 @@ abstract class BrickModelBase {
             params: bounds.params?.map((b) => this._boundsToPx(b)),
             args: bounds.args?.map((b) => this._boundsToPx(b)),
             nesting: this._boundsToPx(bounds.nesting),
+            foldToggle: this._boundsToPx(bounds.foldToggle),
         };
     }
 
@@ -388,6 +389,10 @@ export class StatementBrickModel extends BrickModelBase {
                 arg: dim ? { w: this.pxToSvg(dim.w), h: this.pxToSvg(dim.h) } : null,
             })),
             nestingDims,
+            // Off `hasNesting`, not off the cavity dims above: a cavity always comes with the
+            // toggle that folds it, and a folded brick withholds its dims yet must keep the toggle
+            // that unfolds it again. Costs the outline nothing, being overlaid on the head.
+            hasFoldToggle: this.hasNesting,
             hasPrevNotch: this.hasConnectionPrev,
             hasNextNotch: this.hasConnectionNext,
         };

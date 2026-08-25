@@ -5,7 +5,7 @@
 // Scope note: jsdom does no layout and does not implement scrollIntoView, so scroll-to is asserted
 // by spying on Element.prototype.scrollIntoView rather than checking real scroll position.
 
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { BrickViewProps } from '@/@types/brick.types';
@@ -189,6 +189,9 @@ describe('Palette', () => {
       // touch-action must be disabled so touch drags reach interact.js instead of scrolling.
       expect(note?.classList.contains('palette-brick-slot')).toBe(true);
       expect(note?.classList.contains('touch-none')).toBe(true);
+      // The slot shrinkwraps the brick preview so the grab cursor only appears over the brick
+      // itself, not across the whole white row.
+      expect(note?.classList.contains('w-fit')).toBe(true);
       // Every slot carries the markup, not just the first.
       expect(container.querySelectorAll('.palette-brick-slot')).toHaveLength(3);
     });
@@ -235,6 +238,31 @@ describe('Palette', () => {
         behavior: 'smooth',
         block: 'start',
       });
+    });
+
+    it('flashes a category header when its button cannot scroll the list', () => {
+      vi.useFakeTimers();
+      try {
+        render(<Palette config={config} />);
+
+        // jsdom fires no scroll events for scrollIntoView, so the click resolves to "nothing
+        // moved" and the header is flashed as feedback.
+        fireEvent.click(screen.getByRole('button', { name: 'Meter' }));
+
+        // The flash lands after the scroll-settle window and then clears itself.
+        act(() => {
+          vi.advanceTimersByTime(800);
+        });
+        const meterHeader = screen.getByRole('heading', { name: 'Meter' }).parentElement as Element;
+        expect(meterHeader.classList.contains('bg-primary/15')).toBe(true);
+
+        act(() => {
+          vi.advanceTimersByTime(700);
+        });
+        expect(meterHeader.classList.contains('bg-primary/15')).toBe(false);
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     it('filters bricks as the user types in the search input', () => {
@@ -361,6 +389,25 @@ describe('Palette', () => {
 
       expect(screen.getByRole('heading', { level: 3, name: 'Rhythm' })).toBeTruthy();
       expect(screen.getByRole('heading', { level: 3, name: 'Meter' })).toBeTruthy();
+    });
+
+    it('titles each sidebar category button with the category name', () => {
+      render(<Palette config={config} />);
+
+      expect(screen.getByRole('button', { name: 'Rhythm' }).getAttribute('title')).toBe('Rhythm');
+      expect(screen.getByRole('button', { name: 'Meter' }).getAttribute('title')).toBe('Meter');
+    });
+
+    it('shows the pointer cursor on every clickable button in the palette', () => {
+      render(<Palette config={config} />);
+
+      // Classification tabs and sidebar category buttons are clickable, so both carry
+      // cursor-pointer; the shared Button base does not set a cursor itself.
+      for (const name of ['Music', 'Logic', 'Rhythm', 'Meter']) {
+        expect(screen.getByRole('button', { name }).classList.contains('cursor-pointer')).toBe(
+          true,
+        );
+      }
     });
 
     it('exposes the search field as a textbox reachable by its placeholder', () => {

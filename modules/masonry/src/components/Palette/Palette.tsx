@@ -1,5 +1,5 @@
 import { Search } from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import type { PaletteViewProps } from '@/@types/palette.types';
 
@@ -32,11 +32,23 @@ import { BrickSlot } from './BrickSlot';
  * placeholder receives the whole `PaletteBrickConfig` so a later PR can turn it into a drag source
  * that carries the config as its payload without changing the prop contract.
  */
+/** How long a category header stays flashed when its button can't scroll the list. */
+const HEADER_FLASH_MS = 700;
+
 export function Palette({ config }: PaletteViewProps) {
   const [activeClassification, setActiveClassification] = useState(0);
   const [query, setQuery] = useState('');
+  const [flashedCategory, setFlashedCategory] = useState<number | null>(null);
   const categoryRefs = useRef<Array<HTMLElement | null>>([]);
+  const flashTimerRef = useRef<number | null>(null);
   const isDragging = usePaletteDragStore((state) => state.dragged !== null);
+
+  useEffect(
+    () => () => {
+      if (flashTimerRef.current !== null) window.clearTimeout(flashTimerRef.current);
+    },
+    [],
+  );
 
   const classifications = config.classifications;
 
@@ -72,8 +84,31 @@ export function Palette({ config }: PaletteViewProps) {
       .filter(({ category }) => category.bricks.length > 0);
   }, [activeCategories, query]);
 
+  const flashHeader = (index: number) => {
+    if (flashTimerRef.current !== null) window.clearTimeout(flashTimerRef.current);
+    setFlashedCategory(index);
+    flashTimerRef.current = window.setTimeout(() => setFlashedCategory(null), HEADER_FLASH_MS);
+  };
+
+  // Scroll the list to a category's section. When the section is already as far in view as the
+  // scroll container can take it (e.g. pinned at the end of the list), no movement happens, so
+  // the section header is flashed briefly instead to acknowledge the click.
   const scrollToCategory = (index: number) => {
-    categoryRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const target = categoryRefs.current[index];
+    if (!target) return;
+    const container = target.closest('[data-palette-scroll]') as HTMLElement | null;
+
+    let moved = false;
+    const onScroll = () => {
+      moved = true;
+    };
+    container?.addEventListener('scroll', onScroll, { passive: true });
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    window.setTimeout(() => {
+      container?.removeEventListener('scroll', onScroll);
+      if (!moved) flashHeader(index);
+    }, HEADER_FLASH_MS + 100);
   };
 
   const selectClassification = (index: number) => {
@@ -93,8 +128,9 @@ export function Palette({ config }: PaletteViewProps) {
               key={index}
               variant="ghost"
               size="default"
+              title={category.name}
               onClick={() => scrollToCategory(index)}
-              className="h-auto flex-col gap-1 px-1 py-2 text-[0.7rem]"
+              className="h-auto cursor-pointer flex-col gap-1 px-1 py-2 text-[0.7rem]"
             >
               <Icon className="size-5" style={{ color: category.color }} />
               <span className="w-full truncate text-center">{category.name}</span>
@@ -117,7 +153,7 @@ export function Palette({ config }: PaletteViewProps) {
                 aria-pressed={isActive}
                 title={classification.name}
                 onClick={() => selectClassification(index)}
-                className="h-9 flex-1"
+                className="h-9 flex-1 cursor-pointer"
               >
                 <Icon className="size-5" />
                 <span className="sr-only">{classification.name}</span>
@@ -145,6 +181,7 @@ export function Palette({ config }: PaletteViewProps) {
           </div>
         ) : (
           <div
+            data-palette-scroll
             className={cn(
               'flex-1 overflow-y-auto p-4 transition-[padding-bottom] duration-500',
               isDragging && 'pb-32',
@@ -152,6 +189,7 @@ export function Palette({ config }: PaletteViewProps) {
           >
             {visibleCategories.map(({ category, index }) => {
               const Icon = category.icon;
+              const flashed = flashedCategory === index;
               return (
                 <section
                   key={index}
@@ -160,7 +198,12 @@ export function Palette({ config }: PaletteViewProps) {
                   }}
                   className="mb-6 scroll-mt-4"
                 >
-                  <div className="mb-2 flex items-center gap-2">
+                  <div
+                    className={cn(
+                      'mb-2 flex items-center gap-2 rounded-md px-1 py-0.5 transition-colors duration-300',
+                      flashed ? 'bg-primary/15' : 'bg-transparent',
+                    )}
+                  >
                     <Icon className="size-4" style={{ color: category.color }} />
                     <h3 className="text-sm font-semibold" style={{ color: category.color }}>
                       {category.name}

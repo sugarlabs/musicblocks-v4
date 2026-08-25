@@ -123,6 +123,68 @@ export const StatementNested: Story = {
   ),
 };
 
+/**
+ * The fold chevron every nesting brick carries, live. Pressing it flips the model's
+ * `isNestingFolded`, which is what collapses the cavity and turns the chevron to point right; the
+ * brick redraws off the model's own notification, so no story state is involved.
+ *
+ * In the workspace the press goes through the tower store instead, since the fold also decides what
+ * the tower lays out and what the canvas draws. Here there is no tower, so it writes the flag.
+ */
+export const StatementFoldToggle: Story = {
+  render: () => {
+    const model = new StatementBrickModel({
+      colorsDefault: { background: '#f1c40f', foreground: '#333333', border: '#f39c12' },
+      tooltipText: '',
+      widget: { type: 'label', text: 'Repeat' },
+      params: ['times'],
+      argDims: [{ w: 30, h: 20 }],
+      hasNesting: true,
+      nestingDims: { w: 100, h: 60 },
+      hasConnectionPrev: true,
+      hasConnectionNext: true,
+    });
+
+    return (
+      <BrickView
+        kind="statement"
+        model={model}
+        fold={{
+          isCavityEmpty: false,
+          onToggle: () => {
+            model.isNestingFolded = !model.isNestingFolded;
+          },
+        }}
+      />
+    );
+  },
+};
+StatementFoldToggle.storyName = 'Statement - Fold Toggle';
+
+/** An empty cavity has nothing to fold, so the chevron is still shown, disabled. */
+export const StatementFoldToggleEmpty: Story = {
+  render: () => (
+    <BrickView
+      kind="statement"
+      model={
+        new StatementBrickModel({
+          colorsDefault: { background: '#f1c40f', foreground: '#333333', border: '#f39c12' },
+          tooltipText: '',
+          widget: { type: 'label', text: 'Repeat' },
+          params: ['times'],
+          argDims: [{ w: 30, h: 20 }],
+          hasNesting: true,
+          nestingDims: null,
+          hasConnectionPrev: true,
+          hasConnectionNext: true,
+        })
+      }
+      fold={{ isCavityEmpty: true, onToggle: () => {} }}
+    />
+  ),
+};
+StatementFoldToggleEmpty.storyName = 'Statement - Fold Toggle (empty cavity)';
+
 // ─── Input ───────────────────────────────────────────────────────────────────
 
 const inputColors = { background: '#f1c40f', foreground: '#333333', border: '#f39c12' };

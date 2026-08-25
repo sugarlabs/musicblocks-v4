@@ -43,9 +43,10 @@ import type { Bounds, Point } from '@/@types/common.types';
 
 interface NormalizedInput extends Omit<
     BrickOutlineInput,
-    'hasPrevNotch' | 'hasNextNotch' | 'hasOutputNotch'
+    'hasFoldToggle' | 'hasPrevNotch' | 'hasNextNotch' | 'hasOutputNotch'
 > {
     hasNesting: boolean;
+    hasFoldToggle: boolean;
     hasPrevNotch: boolean;
     hasNextNotch: boolean;
     hasOutputNotch: boolean;
@@ -67,6 +68,8 @@ export class BrickOutlineGenerator {
     protected static readonly WIDGET_PARAM_GUTTER_X = 12;
     /** Vertical gap between stacked parameter labels */
     protected static readonly PARAM_GUTTER_Y = 12;
+    /** Horizontal gap between the fold toggle and the parameter labels it sits beside */
+    protected static readonly PARAM_FOLD_TOGGLE_GUTTER_X = 4;
 
     // ── Tail ──
     /** Horizontal width of the tail's indent that forms the nesting cavity notch */
@@ -108,6 +111,7 @@ export class BrickOutlineGenerator {
         widgetDims: { w: 0, h: 0 },
         paramArgDims: [],
         hasNesting: false,
+        hasFoldToggle: false,
         hasPrevNotch: false,
         hasNextNotch: false,
         hasOutputNotch: false,
@@ -128,6 +132,7 @@ export class BrickOutlineGenerator {
 
     private normalizeInput(input: BrickOutlineInput): NormalizedInput {
         const hasNesting = input.nestingDims !== undefined;
+        const hasFoldToggle = input.hasFoldToggle ?? false;
         const hasPrevNotch = input.hasPrevNotch ?? false;
         const hasNextNotch = input.hasNextNotch ?? false;
         const hasOutputNotch = input.hasOutputNotch ?? false;
@@ -135,6 +140,7 @@ export class BrickOutlineGenerator {
         return {
             ...input,
             hasNesting,
+            hasFoldToggle,
             hasPrevNotch,
             hasNextNotch,
             hasOutputNotch,
@@ -144,11 +150,16 @@ export class BrickOutlineGenerator {
     /**
      * Shallow-plus-array equality for two `NormalizedInput` objects.
      * Avoids JSON serialisation on the render-critical path.
+     *
+     * `hasFoldToggle` counts even though no dimension reads it: the cached input is what
+     * `generateBounds` works off, so leaving the flag out would hand back a stale param column the
+     * first time a brick gains or loses its toggle.
      */
     private inputsEqual(a: NormalizedInput, b: NormalizedInput): boolean {
         if (
             a.strokeWidth !== b.strokeWidth ||
             a.hasNesting !== b.hasNesting ||
+            a.hasFoldToggle !== b.hasFoldToggle ||
             a.hasPrevNotch !== b.hasPrevNotch ||
             a.hasNextNotch !== b.hasNextNotch ||
             a.hasOutputNotch !== b.hasOutputNotch ||
@@ -671,8 +682,8 @@ export class BrickOutlineGenerator {
 
     /**
      * Computes the bounding boxes for each visual region of a brick (widget, nesting area,
-     * params, and args), applying minimum dimension constraints and aligning each region
-     * to its corresponding slot in the outline geometry.
+     * params, args, and the fold toggle), applying minimum dimension constraints and aligning each
+     * region to its corresponding slot in the outline geometry.
      */
     private generateBounds(): BrickOutlineOutput['bounds'] {
         const input = this.input;
@@ -699,6 +710,21 @@ export class BrickOutlineGenerator {
             };
         }
 
+        // Overlaid on the head's top-right content corner, honouring the same padding as everything
+        // else in the head, so it never rides over the border or an arg groove. A square of the
+        // head's minimum content height: the smallest head is exactly this tall between its
+        // paddings, so the box fits any brick that has one.
+        let foldToggle: Bounds | undefined;
+        if (input.hasFoldToggle) {
+            const side = minWidgetHeight;
+            foldToggle = {
+                x: width - strokeWidth / 2 - BrickOutlineGenerator.HEAD_PAD_X2 - side,
+                y: strokeWidth / 2 + BrickOutlineGenerator.HEAD_PAD_Y1,
+                w: side,
+                h: side,
+            };
+        }
+
         const params: (Bounds | null)[] = [];
         const args: (Bounds | null)[] = [];
         let y = 0;
@@ -718,9 +744,31 @@ export class BrickOutlineGenerator {
                 // fall back to centring within the row when the slot has no arg (no notch).
                 const paramCentreY =
                     arg !== null ? BrickOutlineGenerator.H_NOTCH_OFFSET_Y : rowH / 2;
+                const paramY = y + paramCentreY - paramH / 2;
+
+                // Param labels are right aligned against HEAD_PAD_X2, which is where the fold
+                // toggle sits, so the rows level with it give way and align against it instead.
+                // Only those rows move: a label two rows down is already clear of it.
+                //
+                // The room for that comes out of WIDGET_PARAM_GUTTER_X, since the toggle is
+                // overlaid and so has no width of its own in the head. A brick whose head is its
+                // widest part can run that gutter out, and the label then stops at the widget
+                // rather than climbing over it: the toggle is drawn over the tail of the label
+                // instead. Nothing to reclaim there — widening the head is what "overlaid" rules
+                // out. Slack from a wider tail or from minWidth spares most bricks the squeeze.
+                const paramRight =
+                    foldToggle &&
+                    paramY < foldToggle.y + foldToggle.h &&
+                    paramY + paramH > foldToggle.y
+                        ? Math.max(
+                              foldToggle.x - BrickOutlineGenerator.PARAM_FOLD_TOGGLE_GUTTER_X,
+                              widget.x + widget.w + param.w,
+                          )
+                        : width - strokeWidth / 2 - BrickOutlineGenerator.HEAD_PAD_X2;
+
                 params.push({
-                    x: width - strokeWidth / 2 - BrickOutlineGenerator.HEAD_PAD_X2 - param.w,
-                    y: y + paramCentreY - paramH / 2,
+                    x: paramRight - param.w,
+                    y: paramY,
                     w: param.w,
                     h: paramH,
                 });
@@ -736,6 +784,7 @@ export class BrickOutlineGenerator {
             params: params.some((p) => p !== null) ? params : undefined,
             args: args.some((a) => a !== null) ? args : undefined,
             nesting,
+            foldToggle,
         };
     }
 

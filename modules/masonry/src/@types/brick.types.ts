@@ -44,6 +44,18 @@ export interface BrickOutlineInput {
      * - `Size` — nesting exists with known content dimensions
      */
     nestingDims?: Size | null;
+    /**
+     * Whether the brick carries a fold toggle for its nesting cavity. Defaults to false.
+     *
+     * Purely a bounds concern: the toggle is overlaid on the head rather than given its own space
+     * in the outline, so this never reaches `computeDimensions` and the outer geometry is the same
+     * either way. It only asks `generate` for a box to draw the toggle in, and moves the param
+     * labels off that box.
+     *
+     * Read independently of `nestingDims`, because a folded brick withholds its cavity dims and
+     * still has to show the toggle that unfolds it.
+     */
+    hasFoldToggle?: boolean;
     /** Sequence-in notch: accepts a chain from the preceding brick. Defaults to false. */
     hasPrevNotch?: boolean;
     /** Sequence-out notch: chains into the following brick. Defaults to false. */
@@ -69,6 +81,8 @@ export interface BrickOutlineOutput {
         args?: (Bounds | null)[];
         /** Bounds of the nesting cavity. */
         nesting?: Bounds;
+        /** Bounds of the fold toggle overlaid on the head; present only with `hasFoldToggle`. */
+        foldToggle?: Bounds;
     };
 }
 

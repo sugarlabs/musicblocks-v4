@@ -83,9 +83,9 @@ export function Palette({ config }: PaletteViewProps) {
   };
 
   return (
-    <div className="border-border bg-background text-foreground flex h-full min-h-0 w-full overflow-hidden rounded-lg border">
+    <div className="border-border bg-background text-foreground font-sans flex h-full min-h-0 w-full overflow-hidden rounded-lg border">
       {/* Category sidebar: one button per (filtered) category of the active classification. */}
-      <nav className="border-border bg-muted/40 flex w-20 shrink-0 flex-col gap-1 overflow-y-auto border-r px-2 pt-[104px] pb-2">
+      <nav className="border-border bg-muted/40 flex w-[72px] shrink-0 flex-col gap-1 overflow-y-auto border-r px-1 pt-[96px] pb-2">
         {visibleCategories.map(({ category, index }) => {
           const Icon = category.icon;
           return (
@@ -94,7 +94,7 @@ export function Palette({ config }: PaletteViewProps) {
               variant="ghost"
               size="default"
               onClick={() => scrollToCategory(index)}
-              className="h-auto flex-col gap-1 px-1 py-2 text-[0.7rem]"
+              className="h-auto flex-col gap-1 px-1 py-1.5 text-xs active:transform-none active:scale-100 select-none"
             >
               <Icon className="size-5" style={{ color: category.color }} />
               <span className="w-full truncate text-center">{category.name}</span>
@@ -105,7 +105,7 @@ export function Palette({ config }: PaletteViewProps) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Classification tabs: fixed-height bar spanning the list width; tabs share it equally. */}
-        <div className="border-border flex h-12 shrink-0 items-center gap-1 border-b px-2">
+        <div className="border-border flex h-11 shrink-0 items-center gap-1 border-b px-2">
           {classifications.map((classification, index) => {
             const Icon = classification.icon;
             const isActive = index === activeIndex;
@@ -117,7 +117,12 @@ export function Palette({ config }: PaletteViewProps) {
                 aria-pressed={isActive}
                 title={classification.name}
                 onClick={() => selectClassification(index)}
-                className="h-9 flex-1"
+                className={cn(
+                  'h-8 flex-1 transition-colors active:transform-none active:scale-100 select-none',
+                  isActive
+                    ? 'bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/90 focus-visible:ring-1 focus-visible:ring-ring'
+                    : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring',
+                )}
               >
                 <Icon className="size-5" />
                 <span className="sr-only">{classification.name}</span>
@@ -126,13 +131,13 @@ export function Palette({ config }: PaletteViewProps) {
           })}
         </div>
 
-        <div className="border-border flex h-14 shrink-0 items-center border-b px-3">
+        <div className="border-border flex h-11 shrink-0 items-center border-b px-3">
           <div className="relative w-full">
             <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search bricks"
+              placeholder="Search"
               className="pl-8"
             />
           </div>
@@ -140,13 +145,13 @@ export function Palette({ config }: PaletteViewProps) {
 
         {/* Main list: every visible category of the active classification stacked in one container. */}
         {visibleCategories.length === 0 ? (
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-3">
             <p className="text-muted-foreground text-sm">No bricks match your search.</p>
           </div>
         ) : (
           <div
             className={cn(
-              'flex-1 overflow-y-auto p-4 transition-[padding-bottom] duration-500',
+              'flex-1 overflow-y-auto p-3 transition-[padding-bottom] duration-500',
               isDragging && 'pb-32',
             )}
           >
@@ -158,7 +163,7 @@ export function Palette({ config }: PaletteViewProps) {
                   ref={(el) => {
                     categoryRefs.current[index] = el;
                   }}
-                  className="mb-6 scroll-mt-4"
+                  className="mb-6 scroll-mt-3 last:mb-0"
                 >
                   <div className="mb-2 flex items-center gap-2">
                     <Icon className="size-4" style={{ color: category.color }} />

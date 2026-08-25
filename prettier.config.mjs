@@ -9,7 +9,7 @@ export default {
     trailingComma: 'all',
     bracketSpacing: true,
     arrowParens: 'always',
-    endOfLine: 'lf',
+    endOfLine: 'auto',
     overrides: [
         {
             files: ['*.json', '*.jsonc', '*.yml', '*.html', '*.css', '*.scss', '*.tsx'],

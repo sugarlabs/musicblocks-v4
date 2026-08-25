@@ -246,6 +246,19 @@ export interface ExpressionBrickViewPropsWithModel {
 export interface StatementBrickViewPropsWithModel {
     kind: 'statement';
     model: StatementBrickModel;
+    /**
+     * Wiring for the fold toggle a brick with a nesting cavity always carries.
+     *
+     * Omit it and the toggle still draws, disabled — which is what a brick outside a tower wants: a
+     * palette preview, a drag ghost, a snap preview. Nothing there has a cavity to fold, and a
+     * nesting brick that dropped its toggle would read as a plain statement brick.
+     */
+    fold?: {
+        /** Whether the cavity holds nothing, which leaves the toggle disabled. */
+        isCavityEmpty: boolean;
+        /** Flips the model's `isNestingFolded`, through whoever owns the brick's tower. */
+        onToggle: () => void;
+    };
 }
 
 /** Discriminated union of all model-based brick view prop shapes; narrow via `kind`. */

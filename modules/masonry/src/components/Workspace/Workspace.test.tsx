@@ -4,10 +4,11 @@
 // pure-function tests in useDragFromPalette.test.tsx and exercised manually via the playground;
 // this file verifies the pieces mount and react to the drag store correctly.
 
-import { act, cleanup, render } from '@testing-library/react';
+import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import type { PaletteConfig } from '@/@types/palette.types';
+import type { TowerStatementNode } from '@/@types/tower.types';
 import type { TowerState } from '@/@types/workspace.types';
 
 import { makeEmptyStatement } from '@/mocks/tower';
@@ -16,6 +17,7 @@ import { usePaletteDragStore } from '@/stores/palette';
 import { useTrashStore } from '@/stores/trash';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { createBrickModel, wrapAsRootNode } from '@/utils/brick-model-factory';
+import { FOLD_TOGGLE_SELECTOR } from '@/utils/constants';
 
 import { Workspace } from './Workspace';
 
@@ -99,6 +101,13 @@ function makeNestingTower(id: string, folded = false): TowerState {
 function renderedBrickIds(container: HTMLElement) {
   return Array.from(container.querySelectorAll<HTMLElement>('[data-id]')).map(
     (el) => el.dataset.id,
+  );
+}
+
+/** The fold toggle on the named brick, or null when that brick has none. */
+function foldToggleOf(container: HTMLElement, brickId: string) {
+  return container.querySelector<HTMLButtonElement>(
+    `[data-id="${brickId}"] ${FOLD_TOGGLE_SELECTOR}`,
   );
 }
 
@@ -306,6 +315,56 @@ describe('Workspace', () => {
       });
 
       expect(renderedBrickIds(container)).toContain('t1-inner');
+    });
+
+    it('folds the cavity from the chevron on the brick itself', () => {
+      const tower = makeNestingTower('t1');
+
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      act(() => {
+        useWorkspaceStore.getState().createTower(tower);
+      });
+
+      act(() => {
+        foldToggleOf(container, 't1-outer')!.click();
+      });
+
+      expect((tower.root as TowerStatementNode).model.isNestingFolded).toBe(true);
+      expect(renderedBrickIds(container)).not.toContain('t1-inner');
+    });
+
+    it('leaves the tower where it is when the chevron is pressed', () => {
+      const tower = makeNestingTower('t1');
+      tower.position = { x: 140, y: 60 };
+
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      act(() => {
+        useWorkspaceStore.getState().createTower(tower);
+      });
+
+      act(() => {
+        const toggle = foldToggleOf(container, 't1-outer')!;
+        // The press, not just the click: interact.js starts a brick drag off a pointerdown, and the
+        // toggle is overlaid on the brick, so this is the event the fold has to keep to itself.
+        fireEvent.pointerDown(toggle);
+        toggle.click();
+      });
+
+      expect(useWorkspaceStore.getState().towers['t1'].position).toEqual({ x: 140, y: 60 });
+    });
+
+    it('disables the chevron on a nesting brick with nothing in its cavity', () => {
+      const outer = makeEmptyStatement('t1-outer', 0, true);
+      useBrickLayoutStore.getState().setMounted({ 't1-outer': true });
+
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      act(() => {
+        useWorkspaceStore
+          .getState()
+          .createTower({ id: 't1', root: outer, position: { x: 0, y: 0 } });
+      });
+
+      expect(foldToggleOf(container, 't1-outer')!.disabled).toBe(true);
     });
   });
 });

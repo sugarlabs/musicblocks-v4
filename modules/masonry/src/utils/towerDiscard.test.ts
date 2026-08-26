@@ -199,6 +199,65 @@ describe('discardTower', () => {
         expect(Object.keys(useBrickLayoutStore.getState().coords)).toHaveLength(4);
     });
 
+    describe('discarding a folded tower', () => {
+        /**
+         * A stack whose middle brick is a folded clamp holding a chain, with a second fold nested
+         * inside it. Positioned and folded the way the workspace leaves it: the layout ran while
+         * the cavity was open, so the hidden bricks carry layout entries the discard has to clear.
+         */
+        function buildFoldedStack(origin: Point) {
+            const head = makeEmptyStatement('folded-head', 0);
+            const clamp = makeEmptyStatement('folded-clamp', 0, true);
+            const inner = makeEmptyStatement('folded-inner', 0, true);
+            const deep = makeEmptyStatement('folded-deep', 0);
+
+            head.next = clamp;
+            clamp.prev = head;
+            clamp.nestedNext = inner;
+            inner.prev = clamp;
+            inner.nestedNext = deep;
+            deep.prev = inner;
+
+            traverseTopDown(head, origin);
+
+            clamp.model.isNestingFolded = true;
+            inner.model.isNestingFolded = true;
+
+            return { head, clamp, inner, deep };
+        }
+
+        it('drops the layout entries of the bricks the fold hides, along with the rest', () => {
+            const stack = buildFoldedStack({ x: 400, y: 300 });
+            const brickIds = place('folded-tower', stack.head, { x: 400, y: 300 });
+
+            // Every brick in the graph is entered, folded or not — the fold decides what is drawn,
+            // not what exists.
+            expect(brickIds).toHaveLength(4);
+
+            expect(discardTower('folded-tower')).toBe(true);
+
+            const { coords, mounted, positioned } = useBrickLayoutStore.getState();
+            for (const node of [stack.head, stack.clamp, stack.inner, stack.deep]) {
+                const id = node.model.id;
+                expect(id in coords).toBe(false);
+                expect(id in mounted).toBe(false);
+                expect(id in positioned).toBe(false);
+            }
+        });
+
+        it('takes the whole tower off the workspace, leaving no connector point behind', () => {
+            const stack = buildFoldedStack({ x: 400, y: 300 });
+            place('folded-tower', stack.head, { x: 400, y: 300 });
+
+            discardTower('folded-tower');
+
+            const after = useWorkspaceStore.getState();
+            expect(after.towers).toEqual({});
+            expect(spaceIds(after.statementCollisionSpace)).toEqual([]);
+            expect(connectedBrickIds()).toEqual([]);
+        });
+    });
+
     describe('discarding a brick dragged out of a stack', () => {
         /**
          * Reproduces what a drag to the Trash does to a connected brick: `useBrickMove` detaches it

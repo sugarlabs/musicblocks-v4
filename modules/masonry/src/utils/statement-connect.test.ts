@@ -5,6 +5,7 @@ import { makeEmptyStatement, makeEmptyValue } from '@/mocks/tower';
 
 import { QuadtreeCollisionSpace } from './collision';
 import { extractStatementConnectors } from './statement-collision';
+import { traverseTopDown } from './tower-traversal';
 import {
     joinStatement,
     resolveStatementConnection,
@@ -405,6 +406,225 @@ describe('resolveStatementConnection', () => {
             expect(result?.parent).toBe(dragged);
             expect(result?.child).toBe(settled);
             expect(result?.hostTowerId).toBe('dragged-tower');
+        });
+    });
+
+    describe('with a folded cavity', () => {
+        /**
+         * A clamp whose cavity holds `contents`, laid out at `position` the way the tower layout
+         * pass would: the chain measured into the clamp's `nestingDims`, every outline generated
+         * off that, and the whole tree positioned from the origin down.
+         *
+         * The fold comes afterwards, as the user's does — so what the cavity holds keeps the
+         * positions the open cavity gave it, which is exactly what a stale hit would snap onto.
+         */
+        function layOutClamp(position: Point, contents: TowerStatementNode[]) {
+            const clamp = makeEmptyStatement('clamp', 0, true);
+
+            contents.forEach((node, index) => {
+                node.prev = contents[index - 1] ?? clamp;
+                node.next = contents[index + 1] ?? null;
+            });
+            clamp.nestedNext = contents[0] ?? null;
+
+            for (const node of [...contents].reverse()) node.model.computeOutline();
+            clamp.model.nestingDims = contents.length
+                ? {
+                      w: Math.max(...contents.map((node) => node.model.dims.w)),
+                      h: contents.reduce((total, node) => total + node.model.dims.h, 0),
+                  }
+                : null;
+            clamp.model.computeOutline();
+
+            traverseTopDown(clamp, position);
+
+            return clamp;
+        }
+
+        it('refuses a drop into the cavity of a settled folded brick, taking it below instead', () => {
+            const clamp = layOutClamp({ x: 500, y: 500 }, []);
+            const cavity = notchCenter(clamp, 'nestedNext');
+
+            clamp.model.isNestingFolded = true;
+
+            const dragged = makeEmptyStatement('dragged', 0);
+            const { space, connectors, towers } = workspace([
+                { id: 'clamp-tower', root: clamp, position: { x: 500, y: 500 } },
+                {
+                    id: 'dragged-tower',
+                    root: dragged,
+                    position: positionNotchAt(dragged, 'prev', cavity),
+                },
+            ]);
+
+            const result = resolveStatementConnection({
+                draggedTowerId: 'dragged-tower',
+                space,
+                connectors,
+                towers,
+            });
+
+            // The cavity is shut, so the drop lands on the tab that is on screen — under the
+            // folded brick, where the user can still see what they dropped.
+            expect(result?.parent).toBe(clamp);
+            expect(result?.socket).toBe('next');
+        });
+
+        it('nests into that same cavity once the fold is lifted', () => {
+            const clamp = layOutClamp({ x: 500, y: 500 }, []);
+            const cavity = notchCenter(clamp, 'nestedNext');
+
+            clamp.model.isNestingFolded = true;
+            clamp.model.isNestingFolded = false;
+
+            const dragged = makeEmptyStatement('dragged', 0);
+            const { space, connectors, towers } = workspace([
+                { id: 'clamp-tower', root: clamp, position: { x: 500, y: 500 } },
+                {
+                    id: 'dragged-tower',
+                    root: dragged,
+                    position: positionNotchAt(dragged, 'prev', cavity),
+                },
+            ]);
+
+            const result = resolveStatementConnection({
+                draggedTowerId: 'dragged-tower',
+                space,
+                connectors,
+                towers,
+            });
+
+            expect(result?.parent).toBe(clamp);
+            expect(result?.socket).toBe('nestedNext');
+        });
+
+        it('refuses to pick anything up into the shut cavity of the brick being dragged', () => {
+            const clamp = layOutClamp({ x: 500, y: 500 }, []);
+            const cavity = notchCenter(clamp, 'nestedNext');
+
+            clamp.model.isNestingFolded = true;
+
+            // The settled brick sits exactly where the shut cavity's roof notch would be.
+            const settled = makeEmptyStatement('settled', 0);
+            const settledPosition = positionNotchAt(settled, 'prev', cavity);
+            settled.model.setPosition(settledPosition.x, settledPosition.y);
+
+            const { space, connectors, towers } = workspace([
+                { id: 'settled-tower', root: settled, position: settledPosition },
+                { id: 'clamp-tower', root: clamp, position: { x: 500, y: 500 } },
+            ]);
+
+            const result = resolveStatementConnection({
+                draggedTowerId: 'clamp-tower',
+                space,
+                connectors,
+                towers,
+            });
+
+            // Picked up below the folded brick rather than swallowed into it.
+            expect(result?.child).toBe(settled);
+            expect(result?.socket).toBe('next');
+        });
+
+        it('offers no tab of a brick the fold hides, however free that tab is', () => {
+            const first = makeEmptyStatement('first', 0);
+            const last = makeEmptyStatement('last', 0);
+            const clamp = layOutClamp({ x: 500, y: 500 }, [first, last]);
+
+            // The tail of the cavity chain: its `next` tab is free, and far enough below the
+            // clamp's own for this to be about that tab and no other.
+            const hiddenTab = notchCenter(last, 'next');
+
+            clamp.model.isNestingFolded = true;
+
+            const settled = makeEmptyStatement('settled', 0);
+            const settledPosition = positionNotchAt(settled, 'prev', hiddenTab);
+            settled.model.setPosition(settledPosition.x, settledPosition.y);
+
+            const { space, connectors, towers } = workspace([
+                { id: 'settled-tower', root: settled, position: settledPosition },
+                { id: 'clamp-tower', root: clamp, position: { x: 500, y: 500 } },
+            ]);
+
+            const result = resolveStatementConnection({
+                draggedTowerId: 'clamp-tower',
+                space,
+                connectors,
+                towers,
+            });
+
+            // A hidden brick is drawn nowhere and stands wherever the layout left it before the
+            // fold shut; a snap onto it would join two bricks that never met on screen.
+            expect(result).toBeNull();
+        });
+
+        it('offers that tab again once the fold is lifted', () => {
+            const first = makeEmptyStatement('first', 0);
+            const last = makeEmptyStatement('last', 0);
+            const clamp = layOutClamp({ x: 500, y: 500 }, [first, last]);
+            const hiddenTab = notchCenter(last, 'next');
+
+            clamp.model.isNestingFolded = true;
+            clamp.model.isNestingFolded = false;
+
+            const settled = makeEmptyStatement('settled', 0);
+            const settledPosition = positionNotchAt(settled, 'prev', hiddenTab);
+            settled.model.setPosition(settledPosition.x, settledPosition.y);
+
+            const { space, connectors, towers } = workspace([
+                { id: 'settled-tower', root: settled, position: settledPosition },
+                { id: 'clamp-tower', root: clamp, position: { x: 500, y: 500 } },
+            ]);
+
+            const result = resolveStatementConnection({
+                draggedTowerId: 'clamp-tower',
+                space,
+                connectors,
+                towers,
+            });
+
+            expect(result?.parent).toBe(last);
+            expect(result?.child).toBe(settled);
+            expect(result?.socket).toBe('next');
+        });
+
+        it('hangs a folded tower off a settled tab, carrying its hidden bricks and their folds', () => {
+            const inner = makeEmptyStatement('inner', 0, true);
+            const deep = makeEmptyStatement('deep', 0);
+            inner.nestedNext = deep;
+            deep.prev = inner;
+            inner.model.isNestingFolded = true;
+
+            const clamp = layOutClamp({ x: 900, y: 900 }, [inner]);
+            clamp.model.isNestingFolded = true;
+
+            const host = makeEmptyStatement('host', 0);
+            host.model.setPosition(500, 500);
+            const draggedPosition = positionNotchAt(clamp, 'prev', notchCenter(host, 'next'));
+
+            const { space, connectors, towers } = workspace([
+                { id: 'host-tower', root: host, position: { x: 500, y: 500 } },
+                { id: 'clamp-tower', root: clamp, position: draggedPosition },
+            ]);
+
+            const result = resolveStatementConnection({
+                draggedTowerId: 'clamp-tower',
+                space,
+                connectors,
+                towers,
+            });
+
+            expect(result).toMatchObject({ parent: host, child: clamp, socket: 'next' });
+
+            joinStatement(result!);
+
+            // The join edits pointers only, so the whole hidden sub-tree comes across still folded
+            // exactly as it was — the fold is a way of looking at the graph, not a cut in it.
+            expect(host.next).toBe(clamp);
+            expect(clamp.nestedNext).toBe(inner);
+            expect(inner.nestedNext).toBe(deep);
+            expect(clamp.model.isNestingFolded).toBe(true);
+            expect(inner.model.isNestingFolded).toBe(true);
         });
     });
 

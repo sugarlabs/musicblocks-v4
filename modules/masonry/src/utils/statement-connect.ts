@@ -3,7 +3,7 @@ import type { StatementConnectorMeta, TowerState } from '@/@types/workspace.type
 
 import type { CollisionSpace } from './collision';
 import { connectorCenter, querySnap } from './snap-config';
-import { findNode, listNodes } from './tower-traversal';
+import { findNode, hidesCavity, listVisibleNodes } from './tower-traversal';
 
 /** The two tabs a statement can carry the sequence onward through; both mate with a `prev` groove. */
 export type StatementSocket = 'next' | 'nestedNext';
@@ -40,9 +40,15 @@ const SOCKETS: StatementSocket[] = ['next', 'nestedNext'];
 /**
  * Whether `parent`'s `socket` tab is free to take a brick. A `nestedNext` of `undefined` means the
  * brick has no cavity at all rather than an empty one, so only an explicit `null` is a candidate.
+ *
+ * A folded cavity is never free, however empty it is: it is shut, so a brick dropped into it would
+ * vanish where it landed. The folded outline reports no roof notch to aim at either, so this states
+ * the rule where a socket's freedom is decided rather than leaving it to the geometry.
  */
 function isSocketFree(parent: TowerStatementNode, socket: StatementSocket): boolean {
-    return socket === 'next' ? parent.next === null : parent.nestedNext === null;
+    if (socket === 'next') return parent.next === null;
+
+    return parent.nestedNext === null && !hidesCavity(parent);
 }
 
 /**
@@ -108,6 +114,10 @@ function resolvePrevOntoTab(
  * Direction 2 — the dragged tower picks something up: one of its own free `next` or `nestedNext`
  * tabs seeks the `prev` groove of a settled tower, which is absorbed into it. Every free tab in the
  * dragged tower is a candidate, not just its outer tail's, since an empty cavity is equally free.
+ *
+ * Only what the drag carries in plain sight, though: a brick hidden inside a folded cavity offers
+ * no tab, since it is drawn nowhere and its recorded position is wherever the layout left it before
+ * the fold shut over it. It offers its tabs again when the fold is lifted.
  */
 function resolveTabOntoPrev(
     dragged: TowerState,
@@ -115,7 +125,7 @@ function resolveTabOntoPrev(
 ): StatementConnection | null {
     let best: StatementConnection | null = null;
 
-    for (const parent of listNodes(dragged.root)) {
+    for (const parent of listVisibleNodes(dragged.root)) {
         if (parent.kind !== 'statement') continue;
 
         const coords = parent.model.getConnectorCoords();

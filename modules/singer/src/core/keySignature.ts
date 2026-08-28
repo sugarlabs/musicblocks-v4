@@ -1120,10 +1120,12 @@ export default class KeySignature implements IKeySignature {
     public modalPitchToLetter(modalIndex: number): [string, number] {
         const modeLength = this.modeLength;
         modalIndex = Math.floor(Number(modalIndex));
-        let deltaOctave = Math.floor(modalIndex / modeLength);
+        // Floor division already reports the octave change for negative
+        // indices: -1 wraps to the last note of the previous octave, so the
+        // delta is -1, not -2.
+        const deltaOctave = Math.floor(modalIndex / modeLength);
 
         if (modalIndex < 0) {
-            deltaOctave--;
             while (modalIndex < 0) {
                 modalIndex += modeLength;
             }

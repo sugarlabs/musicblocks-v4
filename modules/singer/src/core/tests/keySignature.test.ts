@@ -260,6 +260,11 @@ describe('Key Signature', () => {
 
         // Modal pitch starts at 0
         expect(ks.modalPitchToLetter(4)[0]).toBe('g');
+        // Modal indices past the ends of the mode wrap around, reporting the
+        // relative change in octave.
+        expect(ks.modalPitchToLetter(7)).toEqual(['c', 1]);
+        expect(ks.modalPitchToLetter(-1)).toEqual(['b', -1]);
+        expect(ks.modalPitchToLetter(-7)).toEqual(['c', -1]);
     });
 
     test('pitch type check', () => {

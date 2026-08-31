@@ -32,6 +32,27 @@ const ALGORITHM_OPTIONS: { value: Algorithm; label: string }[] = [
   { value: 'quadtree', label: 'Quadtree' },
 ];
 
+// Demo-only instrumentation. Both spaces run every candidate check through the protected
+// `_collides`, so subclassing and recording each call reveals not just how many comparisons an
+// algorithm performs per `checkCollision`, but which objects it compared against - without
+// touching the library's collision.ts. Reset `comparedIds` before a `checkCollision`, read after.
+// Every `_collides` call pairs the cursor probe with one candidate; we log the candidate's id.
+class CountingBruteForceCollisionSpace extends BruteForceCollisionSpace {
+  public comparedIds: number[] = [];
+  protected override _collides(objA: CollisionObject, objB: CollisionObject): boolean {
+    this.comparedIds.push(objA.id === CURSOR_OBJECT_ID ? objB.id : objA.id);
+    return super._collides(objA, objB);
+  }
+}
+
+class CountingQuadtreeCollisionSpace extends QuadtreeCollisionSpace {
+  public comparedIds: number[] = [];
+  protected override _collides(objA: CollisionObject, objB: CollisionObject): boolean {
+    this.comparedIds.push(objA.id === CURSOR_OBJECT_ID ? objB.id : objA.id);
+    return super._collides(objA, objB);
+  }
+}
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
@@ -106,9 +127,11 @@ export default function Collision() {
   const [cursorPosition, setCursorPosition] = useState<Point | null>(null);
   const [collidingIds, setCollidingIds] = useState<Set<number>>(new Set());
 
+  const [comparedIds, setComparedIds] = useState<number[]>([]);
+
   const workspaceRef = useRef<HTMLDivElement>(null);
-  const bruteForceSpaceRef = useRef<BruteForceCollisionSpace | null>(null);
-  const quadtreeSpaceRef = useRef<QuadtreeCollisionSpace | null>(null);
+  const bruteForceSpaceRef = useRef<CountingBruteForceCollisionSpace | null>(null);
+  const quadtreeSpaceRef = useRef<CountingQuadtreeCollisionSpace | null>(null);
 
   const getActiveSpace = useCallback(
     () => (algorithm === 'brute-force' ? bruteForceSpaceRef.current : quadtreeSpaceRef.current),
@@ -120,11 +143,11 @@ export default function Collision() {
     const workspace = workspaceRef.current;
     if (!workspace) return;
 
-    bruteForceSpaceRef.current = new BruteForceCollisionSpace(
+    bruteForceSpaceRef.current = new CountingBruteForceCollisionSpace(
       workspace.clientWidth,
       workspace.clientHeight,
     );
-    quadtreeSpaceRef.current = new QuadtreeCollisionSpace(
+    quadtreeSpaceRef.current = new CountingQuadtreeCollisionSpace(
       workspace.clientWidth,
       workspace.clientHeight,
     );
@@ -192,16 +215,25 @@ export default function Collision() {
 
     const space = getActiveSpace();
     if (space) {
-      setCollidingIds(
-        new Set(space.checkCollision({ id: CURSOR_OBJECT_ID, x, y, w: size, h: size })),
-      );
+      space.comparedIds = [];
+      const hits = space.checkCollision({ id: CURSOR_OBJECT_ID, x, y, w: size, h: size });
+      setCollidingIds(new Set(hits));
+      setComparedIds(space.comparedIds);
     }
   };
 
   const handleWorkspacePointerLeave = () => {
     setCursorPosition(null);
     setCollidingIds(new Set());
+    setComparedIds([]);
   };
+
+  // Lets the line overlay resolve each compared id back to the object's live position.
+  const objectsById = new Map(objects.map((object) => [object.id, object]));
+
+  // A set rather than the raw array: the object list tests membership once per object, which
+  // would otherwise be a linear scan of every comparison the algorithm just made.
+  const comparedIdSet = new Set(comparedIds);
 
   return (
     <div className="h-full w-full bg-indigo-100 p-2">
@@ -285,6 +317,13 @@ export default function Collision() {
           </Field>
 
           <Button onClick={handleRefresh}>Refresh</Button>
+
+          <div className="mt-2 flex flex-col gap-1 border-t border-slate-200 pt-3">
+            <span className="text-xs font-medium text-slate-600">Comparisons / move</span>
+            <span className="font-mono text-2xl leading-none font-semibold text-indigo-600">
+              {cursorPosition ? comparedIds.length : '—'}
+            </span>
+          </div>
         </div>
 
         <div
@@ -293,8 +332,37 @@ export default function Collision() {
           onMouseMove={handleWorkspacePointerMove}
           onMouseLeave={handleWorkspacePointerLeave}
         >
+          {/* One line from the cursor to every object the active algorithm compared against
+              this move. Brute Force fans out to all objects; Quadtree only to nearby candidates.
+              Rendered first so the lines sit beneath the shapes. */}
+          {cursorPosition && (
+            <svg className="pointer-events-none absolute inset-0 h-full w-full">
+              {comparedIds.map((id) => {
+                const target = objectsById.get(id);
+                if (!target) return null;
+
+                return (
+                  <line
+                    key={id}
+                    x1={cursorPosition.x}
+                    y1={cursorPosition.y}
+                    x2={target.x}
+                    y2={target.y}
+                    // Same hue family as the object at the far end, so a line and the brick it
+                    // points at read as one thing: amber for a hit, orange for a plain check.
+                    stroke={collidingIds.has(id) ? '#f59e0b' : '#fed7aa'}
+                    strokeWidth={1}
+                  />
+                );
+              })}
+            </svg>
+          )}
+
           {objects.map((object) => {
             const isColliding = collidingIds.has(object.id);
+            // The far end of a line: the algorithm checked this object but it wasn't a hit.
+            // Colouring it makes the checked set readable without tracing every line back.
+            const isCompared = !isColliding && comparedIdSet.has(object.id);
 
             return (
               <div
@@ -302,7 +370,9 @@ export default function Collision() {
                 className={cn(
                   'absolute top-0 left-0 box-border flex items-center justify-center border-2',
                   objectShape === 'circle' && 'rounded-full',
-                  isColliding ? 'border-amber-500' : 'border-indigo-600',
+                  isColliding && 'border-amber-600 bg-amber-500',
+                  isCompared && 'border-orange-400',
+                  !isColliding && !isCompared && 'border-indigo-600',
                 )}
                 style={{
                   width: object.w,
@@ -315,7 +385,9 @@ export default function Collision() {
                 <span
                   className={cn(
                     'rounded-sm bg-white px-0.5 text-[8px] leading-none font-medium',
-                    isColliding ? 'text-amber-500' : 'text-indigo-600',
+                    isColliding && 'text-amber-600',
+                    isCompared && 'text-orange-400',
+                    !isColliding && !isCompared && 'text-indigo-600',
                   )}
                 >
                   {object.id}

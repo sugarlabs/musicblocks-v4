@@ -6,6 +6,7 @@ import { makeEmptyExpression, makeEmptyStatement, makeEmptyValue } from '@/mocks
 import { extractArgumentConnectors } from './argument-collision';
 import { joinArg, resolveArgumentConnection } from './argument-connect';
 import { QuadtreeCollisionSpace } from './collision';
+import { traverseTopDown } from './tower-traversal';
 
 /**
  * Builds a workspace the way the store does: every tower placed at its own position, with all of
@@ -332,6 +333,79 @@ describe('resolveArgumentConnection', () => {
 
             expect(result?.parent).toBe(inner);
             expect(result?.child).toBe(settled);
+        });
+    });
+
+    describe('with a folded cavity', () => {
+        /**
+         * A clamp holding one statement in its cavity, laid out at `position` the way the tower
+         * layout pass would, and folded afterwards — so the hidden brick keeps the slot positions
+         * the open cavity gave it, which is what a stale hit would snap onto.
+         */
+        function foldedClampAt(position: Point) {
+            const clamp = makeEmptyStatement('clamp', 0, true);
+            const hidden = makeEmptyStatement('hidden', 1);
+
+            clamp.nestedNext = hidden;
+            hidden.prev = clamp;
+
+            hidden.model.computeOutline();
+            clamp.model.nestingDims = { w: hidden.model.dims.w, h: hidden.model.dims.h };
+            clamp.model.computeOutline();
+
+            traverseTopDown(clamp, position);
+            clamp.model.isNestingFolded = true;
+
+            return { clamp, hidden };
+        }
+
+        it('offers no slot of a brick the fold hides, however empty that slot is', () => {
+            const { clamp, hidden } = foldedClampAt({ x: 500, y: 500 });
+
+            const settled = makeEmptyValue('settled');
+            const settledPosition = positionOutputAt(settled, slotCenter(hidden, 0));
+            settled.model.setPosition(settledPosition.x, settledPosition.y);
+
+            const { space, connectors, towers } = workspace([
+                { id: 'settled-tower', root: settled, position: settledPosition },
+                { id: 'clamp-tower', root: clamp, position: { x: 500, y: 500 } },
+            ]);
+
+            const result = resolveArgumentConnection({
+                draggedTowerId: 'clamp-tower',
+                space,
+                connectors,
+                towers,
+            });
+
+            // A hidden brick is drawn nowhere and stands wherever the layout left it before the
+            // fold shut; a snap into it would fill a slot the user cannot see.
+            expect(result).toBeNull();
+        });
+
+        it('offers that slot again once the fold is lifted', () => {
+            const { clamp, hidden } = foldedClampAt({ x: 500, y: 500 });
+            clamp.model.isNestingFolded = false;
+
+            const settled = makeEmptyValue('settled');
+            const settledPosition = positionOutputAt(settled, slotCenter(hidden, 0));
+            settled.model.setPosition(settledPosition.x, settledPosition.y);
+
+            const { space, connectors, towers } = workspace([
+                { id: 'settled-tower', root: settled, position: settledPosition },
+                { id: 'clamp-tower', root: clamp, position: { x: 500, y: 500 } },
+            ]);
+
+            const result = resolveArgumentConnection({
+                draggedTowerId: 'clamp-tower',
+                space,
+                connectors,
+                towers,
+            });
+
+            expect(result?.parent).toBe(hidden);
+            expect(result?.child).toBe(settled);
+            expect(result?.slotIndex).toBe(0);
         });
     });
 

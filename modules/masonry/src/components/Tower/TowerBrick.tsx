@@ -1,10 +1,11 @@
-import { memo, useRef } from 'react';
+import { memo, useCallback, useRef } from 'react';
 
 import type { TowerNode } from '@/@types/tower.types';
 
 import { BrickView } from '@/components/Brick/Brick';
 import { useBrickMove } from '@/hooks/useBrickMove';
 import { useBrickLayoutStore } from '@/stores/brick';
+import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 
 export interface TowerBrickViewProps {
   /** Unique identifier, kept separate from `node` since `node`'s identity changes every render. */
@@ -36,6 +37,17 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
   const isMounted = useBrickLayoutStore((state) => state.mounted[id]);
   const isPositioned = useBrickLayoutStore((state) => state.positioned[id]);
 
+  // The fold goes through the store rather than straight onto the model: it decides what the tower
+  // lays out and what the canvas draws, and `setNestingFold` is what re-seats the tower for both.
+  // The node is looked up at press time, the same way `useBrickMove` does it, so the handler stays
+  // keyed on `id` alone — `node`'s identity changes on every render.
+  const toggleFold = useCallback(() => {
+    const found = findNodeAndTower(id);
+    if (!found || found.node.kind !== 'statement') return;
+
+    useWorkspaceStore.getState().setNestingFold(id, !found.node.model.isNestingFolded);
+  }, [id]);
+
   if (!isMounted) return null;
 
   const brick = (() => {
@@ -45,7 +57,13 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
       case 'expression':
         return <BrickView kind={node.kind} model={node.model} />;
       case 'statement':
-        return <BrickView kind={node.kind} model={node.model} />;
+        return (
+          <BrickView
+            kind={node.kind}
+            model={node.model}
+            fold={{ isCavityEmpty: node.nestedNext == null, onToggle: toggleFold }}
+          />
+        );
     }
   })();
 

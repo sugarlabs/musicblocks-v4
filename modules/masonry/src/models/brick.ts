@@ -126,6 +126,7 @@ abstract class BrickModelBase {
             params: bounds.params?.map((b) => this._boundsToPx(b)),
             args: bounds.args?.map((b) => this._boundsToPx(b)),
             nesting: this._boundsToPx(bounds.nesting),
+            foldToggle: this._boundsToPx(bounds.foldToggle),
         };
     }
 
@@ -158,7 +159,8 @@ abstract class BrickModelBase {
 
     /**
      * The set of registered update callbacks. These functions are called whenever
-     * model state that affects rendering changes (argDims, nestingDims, scaleLevel).
+     * model state that affects rendering changes (argDims, nestingDims, isNestingFolded,
+     * scaleLevel).
      *
      * Note: `widgetDims` is written by the view after measuring the DOM and
      * intentionally does NOT trigger this callback to avoid a re-render loop.
@@ -343,12 +345,33 @@ export class StatementBrickModel extends BrickModelBase {
     hasConnectionPrev: boolean;
     hasConnectionNext: boolean;
 
-    // Mutable: toggled by the user to collapse or expand the nesting cavity.
-    isNestingFolded: boolean;
+    private _isNestingFolded: boolean;
+
+    /**
+     * Whether the nesting cavity is collapsed. Folding is visual only — the nested sub-tree stays
+     * in the tower graph either way.
+     */
+    get isNestingFolded(): boolean {
+        return this._isNestingFolded;
+    }
+
+    set isNestingFolded(value: boolean) {
+        // A write that changes nothing must not notify: every notification re-renders the brick,
+        // and in the workspace it drags a tower re-layout behind it.
+        if (this._isNestingFolded === value) return;
+
+        this._isNestingFolded = value;
+        this._notifyUpdate();
+    }
 
     protected _buildOutlineInput(): BrickOutlineInput {
         let nestingDims: Size | null | undefined;
-        if (this.hasNesting) {
+        // A folded cavity is withheld, not reported as zero height: the generator reads
+        // `hasNesting` off this field being present and clamps a zero height back up to the
+        // minimum cavity, so reporting dims at all is what keeps a collapsed hollow on screen.
+        // Leaving the field out draws the brick flat instead — cavity, tail and roof notch gone.
+        // The sub-tree is untouched either way; the fold only decides what is drawn.
+        if (this.hasNesting && !this._isNestingFolded) {
             nestingDims = this._nestingDims
                 ? { w: this.pxToSvg(this._nestingDims.w), h: this.pxToSvg(this._nestingDims.h) }
                 : null;
@@ -366,6 +389,10 @@ export class StatementBrickModel extends BrickModelBase {
                 arg: dim ? { w: this.pxToSvg(dim.w), h: this.pxToSvg(dim.h) } : null,
             })),
             nestingDims,
+            // Off `hasNesting`, not off the cavity dims above: a cavity always comes with the
+            // toggle that folds it, and a folded brick withholds its dims yet must keep the toggle
+            // that unfolds it again. Costs the outline nothing, being overlaid on the head.
+            hasFoldToggle: this.hasNesting,
             hasPrevNotch: this.hasConnectionPrev,
             hasNextNotch: this.hasConnectionNext,
         };
@@ -394,7 +421,7 @@ export class StatementBrickModel extends BrickModelBase {
         this._nestingDims = config.nestingDims ?? null;
         this.hasConnectionPrev = config.hasConnectionPrev ?? false;
         this.hasConnectionNext = config.hasConnectionNext ?? false;
-        this.isNestingFolded = config.isNestingFolded ?? false;
+        this._isNestingFolded = config.isNestingFolded ?? false;
     }
 }
 

@@ -1,6 +1,6 @@
 import { extractArgumentConnectors } from './argument-collision';
 import { listNodes } from './tower-traversal';
-import { expressionTree, valueTree } from '@/mocks/tower';
+import { expressionTree, makeEmptyStatement, makeEmptyValue, valueTree } from '@/mocks/tower';
 
 describe('extractArgumentConnectors', () => {
     it('emits a single output connector for a lone value brick and no inputs', () => {
@@ -64,5 +64,77 @@ describe('extractArgumentConnectors', () => {
         expect(new Set(ids).size).toBe(ids.length);
         expect(results.every((r) => r.meta.id === r.object.id)).toBe(true);
         expect(results.every((r) => r.meta.towerId === 'tower')).toBe(true);
+    });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * A folded brick with an argument, holding a brick that has an argument of its own:
+ *
+ * ```
+ * outer ┬ outer-arg
+ *   ╠═▶ inner ┬ inner-arg
+ * ```
+ *
+ * Built locally rather than folded into a shared mock, so the fold cannot leak into the tests above.
+ */
+function makeFoldedTower() {
+    const outer = makeEmptyStatement('outer', 1, true);
+    const outerArg = makeEmptyValue('outer-arg');
+    const inner = makeEmptyStatement('inner', 1, false);
+    const innerArg = makeEmptyValue('inner-arg');
+
+    outer.args[0] = outerArg;
+    outerArg.parent = outer;
+    inner.args[0] = innerArg;
+    innerArg.parent = inner;
+    outer.nestedNext = inner;
+    inner.prev = outer;
+
+    return { outer, outerArg, inner, innerArg };
+}
+
+describe('extractArgumentConnectors with a folded brick', () => {
+    it('emits no slots or tabs for the bricks the cavity hides', () => {
+        const { outer, inner, innerArg } = makeFoldedTower();
+
+        outer.model.isNestingFolded = true;
+
+        const brickIds = extractArgumentConnectors('tower', outer).map((r) => r.meta.brickId);
+        expect(brickIds).not.toContain(inner.model.id);
+        expect(brickIds).not.toContain(innerArg.model.id);
+    });
+
+    it('keeps the folded brick’s own slot and what is plugged into it', () => {
+        const { outer, outerArg } = makeFoldedTower();
+
+        outer.model.isNestingFolded = true;
+
+        const results = extractArgumentConnectors('tower', outer);
+
+        // A fold hides what the cavity holds; the arguments hang off the head, which stays drawn.
+        expect(results).toContainEqual(
+            expect.objectContaining({
+                meta: expect.objectContaining({ brickId: outer.model.id, type: 'input' }),
+            }),
+        );
+        expect(results.map((r) => r.meta.brickId)).toContain(outerArg.model.id);
+    });
+
+    it('offers every dropped connector again once the fold is lifted', () => {
+        const { outer } = makeFoldedTower();
+
+        const asEmitted = () =>
+            extractArgumentConnectors('tower', outer)
+                .map((r) => `${r.meta.brickId}:${r.meta.type}:${r.meta.slotIndex ?? '-'}`)
+                .sort();
+
+        const before = asEmitted();
+
+        outer.model.isNestingFolded = true;
+        outer.model.isNestingFolded = false;
+
+        expect(asEmitted()).toEqual(before);
     });
 });

@@ -22,13 +22,32 @@ function pushChain(start: TowerNode, stack: TowerNode[]) {
 }
 
 /**
- * Collects every node reachable from `root` in a tower's connected graph.
+ * Whether `node` hides what its cavity holds.
+ *
+ * Only a statement brick has a cavity to fold, so every other kind answers false. The fold is the
+ * one reason a node in the graph is not on screen, so this is the single predicate the visible
+ * walk and the layout consult; anything else that can hide a sub-tree later belongs here rather
+ * than at a call site.
+ */
+export function hidesCavity(node: TowerNode): boolean {
+    return node.kind === 'statement' && node.model.isNestingFolded;
+}
+
+/**
+ * Collects the nodes reachable from `root` in a tower's connected graph.
  *
  * Walks the tree with an explicit stack, following `args` and `nestedNext` connections and
  * pulling in each statement's full `next` chain via `pushChain`. The result is unordered — it's
  * meant to be reduced per node (e.g. into layout state), not walked in tree order.
+ *
+ * With `skipFolded` set, a folded brick's `nestedNext` is left unvisited, so its cavity contents
+ * drop out of the result. The brick itself, its arguments and its `next` chain stay: a fold hides
+ * what a brick holds, not the brick or what follows it.
+ *
+ * The walk only reads pointers, so a skipped sub-tree is untouched rather than detached, and it
+ * comes back whole — nested fold states included — the moment the fold is lifted.
  */
-export function listNodes(root: TowerNode): TowerNode[] {
+function walk(root: TowerNode, skipFolded: boolean): TowerNode[] {
     const nodes: TowerNode[] = [];
     const stack: TowerNode[] = [];
 
@@ -49,7 +68,7 @@ export function listNodes(root: TowerNode): TowerNode[] {
                     if (arg) pushChain(arg, stack);
                 }
 
-                if (node.nestedNext) {
+                if (node.nestedNext && !(skipFolded && hidesCavity(node))) {
                     pushChain(node.nestedNext, stack);
                 }
                 break;
@@ -57,6 +76,29 @@ export function listNodes(root: TowerNode): TowerNode[] {
     }
 
     return nodes;
+}
+
+/**
+ * Collects every node reachable from `root` in a tower's connected graph, folded or not.
+ *
+ * This is the graph-complete list: the one to use whenever a hidden brick still has to be counted,
+ * such as serialising a tower, re-scaling its bricks, or clearing their layout entries. Callers
+ * that speak for what is on screen want {@link listVisibleNodes} instead.
+ */
+export function listNodes(root: TowerNode): TowerNode[] {
+    return walk(root, false);
+}
+
+/**
+ * Collects the nodes of a tower that a fold leaves on screen, skipping every sub-tree held inside
+ * a folded cavity, however deeply the folds nest.
+ *
+ * This is the list to render from and to build the Collision spaces from, so a hidden brick is
+ * neither drawn nor offered as a snap candidate. It is a view of the graph, not a change to it:
+ * the skipped nodes are still linked exactly as they were.
+ */
+export function listVisibleNodes(root: TowerNode): TowerNode[] {
+    return walk(root, true);
 }
 
 /**
@@ -82,6 +124,10 @@ export function findNode(root: TowerNode, brickId: string): TowerNode | null {
  *
  * Uses a strict iterative two-pass approach to prevent call stack issues on deeply nested trees.
  *
+ * A folded cavity is left out: nothing renders what it holds, so there is nothing to measure in
+ * there, and the brick's own height no longer depends on it. The chain is measured again by the
+ * fold being lifted, which brings it back into this walk.
+ *
  * @param root - The root node of the tower tree.
  */
 export function* traverseBottomUp(root: TowerNode): Generator<TowerNode[]> {
@@ -100,7 +146,9 @@ export function* traverseBottomUp(root: TowerNode): Generator<TowerNode[]> {
         }
         if (node.kind === 'statement') {
             if (node.next !== null) traversalStack.push(node.next);
-            if (node.nestedNext != null) traversalStack.push(node.nestedNext);
+            if (node.nestedNext != null && !hidesCavity(node)) {
+                traversalStack.push(node.nestedNext);
+            }
         }
     }
 
@@ -124,8 +172,9 @@ export function* traverseBottomUp(root: TowerNode): Generator<TowerNode[]> {
                 }
             }
         } else if (node.kind === 'statement') {
-            // Statements only depend on their nesting cavity chain
-            if (node.nestedNext != null) {
+            // Statements only depend on their nesting cavity chain, and a folded one holds them
+            // to nothing: it is not on this walk, so it cannot be waited on either.
+            if (node.nestedNext != null && !hidesCavity(node)) {
                 let current: TowerNode | null = node.nestedNext;
                 while (current !== null) {
                     const h = heights.get(current) ?? 0;
@@ -175,6 +224,10 @@ export function* traverseBottomUp(root: TowerNode): Generator<TowerNode[]> {
  * by the nesting cavity bounds, and an argument sits at its parent's position offset by its
  * argument slot bounds.
  *
+ * A folded brick reports no cavity bounds to offset by, so its chain is left where it stood rather
+ * than stacked on top of it. Everything after the fold rides the brick's collapsed height, which is
+ * what closes the gap it used to hold open.
+ *
  * @param root - The root node of the tower tree.
  * @param origin - The tower's origin co-ordinates; every brick is positioned relative to it.
  * @returns The positioned nodes, each parent preceding its children.
@@ -204,7 +257,7 @@ export function traverseTopDown(root: TowerNode, origin: Point = { x: 0, y: 0 })
             if (node.next?.kind === 'statement') {
                 stack.push({ node: node.next, x, y: y + node.model.dims.h });
             }
-            if (node.nestedNext?.kind === 'statement') {
+            if (node.nestedNext?.kind === 'statement' && !hidesCavity(node)) {
                 const nesting = node.model.bounds.nesting;
                 stack.push({
                     node: node.nestedNext,

@@ -3,7 +3,7 @@ import type { ArgumentConnectorMeta, TowerState } from '@/@types/workspace.types
 
 import type { CollisionSpace } from './collision';
 import { connectorCenter, querySnap } from './snap-config';
-import { findNode, listNodes } from './tower-traversal';
+import { findNode, listVisibleNodes } from './tower-traversal';
 
 /** A node that owns argument slots, and can therefore receive an argument. */
 export type ArgumentParentNode = TowerExpressionNode | TowerStatementNode;
@@ -101,6 +101,10 @@ function resolveOutputIntoSlot(
  * Direction 2 — the dragged tower picks something up: one of its own empty argument slots seeks the
  * free output tab of a settled tower, which is absorbed into it. Every empty slot in the dragged
  * tower is a candidate, not just the root's, since all of them are equally free to be filled.
+ *
+ * Only the slots the drag carries in plain sight, though: a brick hidden inside a folded cavity
+ * offers none, since it is drawn nowhere and its recorded position is wherever the layout left it
+ * before the fold shut over it. Its slots are open to a drop again when the fold is lifted.
  */
 function resolveSlotOntoOutput(
     dragged: TowerState,
@@ -108,7 +112,7 @@ function resolveSlotOntoOutput(
 ): ArgumentConnection | null {
     let best: ArgumentConnection | null = null;
 
-    for (const parent of listNodes(dragged.root)) {
+    for (const parent of listVisibleNodes(dragged.root)) {
         if (parent.kind !== 'expression' && parent.kind !== 'statement') continue;
 
         const inputs = parent.model.getConnectorCoords().inputs;

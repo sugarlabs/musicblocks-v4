@@ -2,14 +2,17 @@ import type { TowerNode } from '@/@types/tower.types';
 import type { ArgumentConnectorMeta } from '@/@types/workspace.types';
 
 import type { CollisionObject } from './collision';
-import { listNodes } from './tower-traversal';
+import { listVisibleNodes } from './tower-traversal';
 
 let nextCollisionId = 1;
 
 /**
- * Extracts argument connection points from all bricks in a tower — `input` grooves (one per
+ * Extracts argument connection points from every visible brick in a tower — `input` grooves (one per
  * argument slot, filled and empty) and `output` tabs. Calculates their absolute positions based
  * on the `model.position` which must be up-to-date from the tower layout pass.
+ *
+ * Bricks hidden inside a folded cavity contribute nothing: they are not drawn, so a snap onto one
+ * would land on a slot that is not there. They rejoin the space when the fold is lifted.
  *
  * @param towerId - The ID of the tower these bricks belong to.
  * @param root - The root node of the tower tree.
@@ -19,7 +22,7 @@ export function extractArgumentConnectors(
     towerId: string,
     root: TowerNode,
 ): { object: CollisionObject; meta: ArgumentConnectorMeta }[] {
-    const nodes = listNodes(root);
+    const nodes = listVisibleNodes(root);
     const results: { object: CollisionObject; meta: ArgumentConnectorMeta }[] = [];
 
     for (const node of nodes) {

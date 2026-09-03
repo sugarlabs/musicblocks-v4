@@ -1,3 +1,4 @@
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import type { BrickViewPropsWithModel } from '@/@types/brick.types';
@@ -74,6 +75,12 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
   const nestingDimsH =
     model.kind === 'statement' ? (model as StatementBrickModel).nestingDims?.h : undefined;
 
+  // Every nesting brick carries a fold toggle, folded or not: a folded brick that dropped it would
+  // read as a plain statement brick, with nothing left to say the cavity is still there. Without
+  // the `fold` prop there is no tower behind it, so it draws disabled — see the prop's docs.
+  const fold = props.kind === 'statement' ? props.fold : undefined;
+  const isFoldDisabled = fold === undefined || fold.isCavityEmpty;
+
   // ── Local layout state ───────────────────────────────────────────────────────
   const [path, setPath] = useState('');
   const [dims, setDims] = useState<Size>({ w: 0, h: 0 });
@@ -83,6 +90,8 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
 
   const [paramDimsList, setParamDimsList] = useState<Size[]>(paramArgs.map(() => ({ w: 0, h: 0 })));
   const [paramBoundsList, setParamBoundsList] = useState<(Bounds | null)[]>([]);
+
+  const [foldToggleBounds, setFoldToggleBounds] = useState<Bounds | null>(null);
 
   const labelRef = useRef<HTMLDivElement>(null);
   const paramRefs = useRef<(HTMLParagraphElement | null)[]>([]);
@@ -132,10 +141,12 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
     if (model.kind === 'statement') {
       hasPrevNotch = hasConnectionPrev;
       hasNextNotch = hasConnectionNext;
-      if (hasNesting) {
-        if (nestingIsFolded) {
-          computedNestingDims = undefined;
-        } else if (nestingDimsW !== undefined && nestingDimsH !== undefined) {
+      // A fold withholds the cavity dims rather than zeroing them: the generator reads
+      // `hasNesting` off them being present and clamps a zero height back up to the minimum
+      // cavity, so leaving them out is what draws the brick flat. Same input the model builds,
+      // so the two agree on the folded geometry.
+      if (hasNesting && !nestingIsFolded) {
+        if (nestingDimsW !== undefined && nestingDimsH !== undefined) {
           computedNestingDims = { w: nestingDimsW, h: nestingDimsH };
         } else {
           computedNestingDims = null;
@@ -228,6 +239,9 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
       widgetDims: scaledWidgetDims,
       paramArgDims: scaledParamArgDims,
       nestingDims: scaledNestingDims,
+      // Read off `hasNesting` rather than the cavity dims withheld by a fold, so the toggle
+      // outlives the cavity it collapsed. Matches what the model feeds the generator.
+      hasFoldToggle: hasNesting,
       hasPrevNotch,
       hasNextNotch,
       hasOutputNotch,
@@ -257,12 +271,24 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
         ),
       );
     }
+
+    setFoldToggleBounds(
+      bounds.foldToggle
+        ? {
+            x: svgToPx(bounds.foldToggle.x),
+            y: svgToPx(bounds.foldToggle.y),
+            w: svgToPx(bounds.foldToggle.w),
+            h: svgToPx(bounds.foldToggle.h),
+          }
+        : null,
+    );
   }, [
     labelDims.w,
     labelDims.h,
     paramArgsString,
     paramDimsList,
     nestingDims,
+    hasNesting,
     hasPrevNotch,
     hasNextNotch,
     hasOutputNotch,
@@ -428,6 +454,61 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
           </foreignObject>
         );
       })}
+
+      {/*
+        Fold toggle. Drawn last so it sits over the outline: it is overlaid on the head rather than
+        given space in it, which is what leaves the brick's outer geometry the same either way.
+        Points down at an open cavity and right at a folded one, the way the cavity's own contents
+        do. Disabled while there is nothing in there to fold.
+      */}
+      {foldToggleBounds && (
+        <foreignObject
+          x={foldToggleBounds.x}
+          y={foldToggleBounds.y}
+          width={foldToggleBounds.w}
+          height={foldToggleBounds.h}
+        >
+          <button
+            type="button"
+            data-fold-toggle=""
+            disabled={isFoldDisabled}
+            aria-expanded={!nestingIsFolded}
+            aria-label={nestingIsFolded ? 'Unfold cavity' : 'Fold cavity'}
+            title={
+              isFoldDisabled
+                ? 'Nothing in the cavity to fold'
+                : nestingIsFolded
+                  ? 'Unfold cavity'
+                  : 'Fold cavity'
+            }
+            // interact.js starts a brick drag off a pointerdown anywhere on the brick, so the
+            // toggle swallows its own: a press here folds rather than tearing the brick out of its
+            // tower. `useBrickMove` also names this button in the draggable's `ignoreFrom`, which
+            // is what covers the press that turns into a drag. A disabled toggle dispatches no
+            // pointer events at all, so the drag it would have blocked reaches the brick instead.
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={() => fold?.onToggle()}
+            className={cn(
+              'flex items-center justify-center rounded-sm border-0 bg-transparent p-0',
+              isFoldDisabled
+                ? 'cursor-default opacity-40'
+                : 'cursor-pointer transition-colors hover:bg-black/10 dark:hover:bg-white/10',
+            )}
+            style={{
+              width: foldToggleBounds.w,
+              height: foldToggleBounds.h,
+              color: colorsDefault.foreground,
+            }}
+          >
+            {/* Sized off the box the generator reserved, itself derived from SCALE_LEVEL_CONFIG. */}
+            {nestingIsFolded ? (
+              <ChevronRight size={foldToggleBounds.w} strokeWidth={2.5} aria-hidden="true" />
+            ) : (
+              <ChevronDown size={foldToggleBounds.w} strokeWidth={2.5} aria-hidden="true" />
+            )}
+          </button>
+        </foreignObject>
+      )}
     </svg>
   );
 }

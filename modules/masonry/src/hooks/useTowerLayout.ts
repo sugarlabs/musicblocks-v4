@@ -3,17 +3,29 @@ import { useEffect, useLayoutEffect, useRef } from 'react';
 import type { Point } from '@/@types/common.types';
 import { TowerNode } from '@/@types/tower.types';
 import { useBrickLayoutStore } from '@/stores/brick';
-import { listNodes, traverseBottomUp, traverseTopDown } from '@/utils/tower-traversal';
+import {
+    hidesCavity,
+    listVisibleNodes,
+    traverseBottomUp,
+    traverseTopDown,
+} from '@/utils/tower-traversal';
 
 /**
  * Resolves the layout of a tower rooted at `root`.
  *
- * Lists every node in the tree and ensures each has an entry in the brick layout store,
+ * Lists the tower's visible nodes and ensures each has an entry in the brick layout store,
  * initializing it once per node so consumers can read and update its sizing and position state.
+ *
+ * Bricks held inside a folded cavity are left out: nothing renders them, so they have no sizing or
+ * position to resolve. Their entries are seeded again by the fold being lifted, which puts them
+ * back on this list.
+ *
+ * A fold change re-runs the whole pass, which is what closes the gap the cavity held open — the
+ * tower is re-seated for it by `setNestingFold`, the same signal a scale change uses.
  *
  * Bricks are positioned relative to the tower's origin.
  *
- * Returns the tower's node list.
+ * Returns the tower's visible node list.
  */
 export function useTowerLayout(root: TowerNode, origin: Point) {
     const { setCoords, setMounted, setPositioned } = useBrickLayoutStore.getState();
@@ -22,7 +34,7 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
 
     const nodesRef = useRef<TowerNode[]>([]);
 
-    const nodes = listNodes(root);
+    const nodes = listVisibleNodes(root);
     nodesRef.current = nodes;
 
     useLayoutEffect(() => {
@@ -76,7 +88,10 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
                         );
                     }
                     if (node.kind === 'statement') {
-                        if (node.nestedNext) {
+                        // A folded cavity is left collapsed rather than measured: its chain is off
+                        // this pass, so the brick reports its head alone and everything below it
+                        // rides up by what the cavity held.
+                        if (node.nestedNext && !hidesCavity(node)) {
                             // Sum heights and find max width of the inner statement chain
                             let current: TowerNode | null = node.nestedNext;
                             let totalH = 0;
@@ -87,7 +102,9 @@ export function useTowerLayout(root: TowerNode, origin: Point) {
                                 current = current.kind === 'statement' ? current.next : null;
                             }
                             node.model.nestingDims = { w: maxW, h: totalH };
-                        } else {
+                        } else if (node.model.nestingDims !== null) {
+                            // Guarded because the write notifies: a brick that is already
+                            // collapsed must not re-render on every pass over its tower.
                             node.model.nestingDims = null;
                         }
                     }

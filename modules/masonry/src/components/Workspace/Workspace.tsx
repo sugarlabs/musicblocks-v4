@@ -12,7 +12,7 @@ import { useTowerLayout } from '@/hooks/useTowerLayout';
 import { useWorkspaceScale } from '@/hooks/useWorkspaceScale';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { useWorkspaceStore } from '@/stores/workspace';
-import { listNodes } from '@/utils/tower-traversal';
+import { listVisibleNodes } from '@/utils/tower-traversal';
 
 import { DragGhost } from './DragGhost';
 import { ScaleControl } from './ScaleControl';
@@ -32,8 +32,11 @@ export function Workspace({ config }: WorkspaceViewProps) {
   const towersRecord = useWorkspaceStore((state) => state.towers);
   const towers = useMemo(() => Object.values(towersRecord), [towersRecord]);
 
-  const allNodes = useMemo(() => {
-    return towers.flatMap((tower) => listNodes(tower.root));
+  // Only what a fold leaves on screen: a brick inside a folded cavity is never rendered. The
+  // memo re-runs off the towers record, which is why `setNestingFold` re-seats the tower it folds:
+  // the canvas and the re-layout both follow off that one signal.
+  const visibleNodes = useMemo(() => {
+    return towers.flatMap((tower) => listVisibleNodes(tower.root));
   }, [towers]);
 
   // palette drag-and-drop wiring: the root element scopes the delegated drag
@@ -94,8 +97,8 @@ export function Workspace({ config }: WorkspaceViewProps) {
         {towers.map((tower) => (
           <TowerLayoutEngine key={`layout-${tower.id}`} root={tower.root} origin={tower.position} />
         ))}
-        {/* TowerBrickView renders the actual DOM nodes for all bricks in a flattened list */}
-        {allNodes.map((node) => (
+        {/* TowerBrickView renders the actual DOM nodes for the visible bricks in a flattened list */}
+        {visibleNodes.map((node) => (
           <TowerBrickView key={node.model.id} id={node.model.id} node={node} />
         ))}
 

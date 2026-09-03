@@ -9,6 +9,7 @@ class BrickOutlineGeneratorTest extends BrickOutlineGenerator {
     static readonly HEAD_PAD_X2 = BrickOutlineGenerator.HEAD_PAD_X2;
     static readonly WIDGET_PARAM_GUTTER_X = BrickOutlineGenerator.WIDGET_PARAM_GUTTER_X;
     static readonly PARAM_GUTTER_Y = BrickOutlineGenerator.PARAM_GUTTER_Y;
+    static readonly PARAM_FOLD_TOGGLE_GUTTER_X = BrickOutlineGenerator.PARAM_FOLD_TOGGLE_GUTTER_X;
     static readonly TAIL_INDENT_W = BrickOutlineGenerator.TAIL_INDENT_W;
     static readonly TAIL_STEP_W = BrickOutlineGenerator.TAIL_STEP_W;
     static readonly TAIL_STEP_H = BrickOutlineGenerator.TAIL_STEP_H;
@@ -673,6 +674,125 @@ describe('generate', () => {
 
                 expect(bounds.nesting!.x).toBe(
                     BrickOutlineGeneratorTest.TAIL_INDENT_W + strokeWidth,
+                );
+            });
+        });
+
+        describe('fold toggle', () => {
+            // A cavity wide enough that the tail, not the head, sizes the brick. That leaves the
+            // param column slack to give up, which is the case the toggle is designed around.
+            const tailBound = {
+                strokeWidth,
+                widgetDims: { w: 100, h: 20 },
+                paramArgDims: [{ param: { w: 30, h: 20 }, arg: { w: 50, h: 40 } }],
+                nestingDims: { w: 200, h: 40 },
+            };
+
+            it('no fold toggle: bounds.foldToggle is undefined', () => {
+                const { bounds } = brickOutlineGenerator.generate(tailBound);
+
+                expect(bounds.foldToggle).toBeUndefined();
+            });
+
+            it('sits in the top-right corner of the head, inside its padding', () => {
+                const result = brickOutlineGenerator.generate({
+                    ...tailBound,
+                    hasFoldToggle: true,
+                });
+                const toggle = result.bounds.foldToggle!;
+
+                // A square of the head's minimum content height, so it fits even the shortest head.
+                expect(toggle.w).toBe(MINIMUMS.minWidgetHeight);
+                expect(toggle.h).toBe(MINIMUMS.minWidgetHeight);
+                expect(toggle.x + toggle.w).toBe(
+                    result.width - strokeWidth / 2 - BrickOutlineGeneratorTest.HEAD_PAD_X2,
+                );
+                expect(toggle.y).toBe(strokeWidth / 2 + BrickOutlineGeneratorTest.HEAD_PAD_Y1);
+            });
+
+            it('is reported with the cavity dims withheld, so a folded brick keeps its toggle', () => {
+                const { bounds } = brickOutlineGenerator.generate({
+                    strokeWidth,
+                    widgetDims: { w: 100, h: 20 },
+                    paramArgDims: [],
+                    hasFoldToggle: true,
+                });
+
+                // What a folded statement brick reports: no cavity to lay out, toggle still there.
+                expect(bounds.nesting).toBeUndefined();
+                expect(bounds.foldToggle).toBeDefined();
+            });
+
+            it('leaves the outer geometry untouched, being overlaid rather than laid out', () => {
+                const without = brickOutlineGenerator.generate(tailBound);
+                const withToggle = brickOutlineGenerator.generate({
+                    ...tailBound,
+                    hasFoldToggle: true,
+                });
+
+                expect(withToggle.width).toBe(without.width);
+                expect(withToggle.height).toBe(without.height);
+                expect(withToggle.path).toBe(without.path);
+            });
+
+            it('right aligns a param label level with it against the toggle, not HEAD_PAD_X2', () => {
+                const result = brickOutlineGenerator.generate({
+                    ...tailBound,
+                    hasFoldToggle: true,
+                });
+                const param = result.bounds.params![0]!;
+                const toggle = result.bounds.foldToggle!;
+
+                expect(param.x + param.w).toBe(
+                    toggle.x - BrickOutlineGeneratorTest.PARAM_FOLD_TOGGLE_GUTTER_X,
+                );
+            });
+
+            it('leaves a param label clear of it where it is, further down the head', () => {
+                const result = brickOutlineGenerator.generate({
+                    ...tailBound,
+                    paramArgDims: [
+                        { param: { w: 30, h: 20 }, arg: { w: 50, h: 40 } },
+                        { param: { w: 30, h: 20 }, arg: { w: 50, h: 40 } },
+                    ],
+                    hasFoldToggle: true,
+                });
+                const second = result.bounds.params![1]!;
+                const toggle = result.bounds.foldToggle!;
+
+                // The second row starts below the toggle, so it keeps the full head width.
+                expect(second.y).toBeGreaterThanOrEqual(toggle.y + toggle.h);
+                expect(second.x + second.w).toBe(
+                    result.width - strokeWidth / 2 - BrickOutlineGeneratorTest.HEAD_PAD_X2,
+                );
+            });
+
+            it('stops a shifted label at the widget when the head has no gutter left to give', () => {
+                // Head-bound: a wide widget and a wide param label outrun both the tail and
+                // minWidth, so the whole shift has to come out of WIDGET_PARAM_GUTTER_X, which is
+                // narrower than the toggle. The label stops rather than climbing over the widget.
+                const result = brickOutlineGenerator.generate({
+                    strokeWidth,
+                    widgetDims: { w: 100, h: 20 },
+                    paramArgDims: [{ param: { w: 50, h: 20 }, arg: { w: 50, h: 40 } }],
+                    nestingDims: { w: 0, h: 0 },
+                    hasFoldToggle: true,
+                });
+                const widget = result.bounds.widget;
+                const param = result.bounds.params![0]!;
+                const toggle = result.bounds.foldToggle!;
+
+                expect(result.width).toBe(
+                    brickOutlineGenerator.computeDimensions({
+                        strokeWidth,
+                        widgetDims: { w: 100, h: 20 },
+                        paramArgDims: [{ param: { w: 50, h: 20 }, arg: { w: 50, h: 40 } }],
+                        nestingDims: { w: 0, h: 0 },
+                    }).headWidth,
+                );
+                expect(param.x).toBe(widget.x + widget.w);
+                expect(param.x + param.w).toBeGreaterThan(
+                    toggle.x - BrickOutlineGeneratorTest.PARAM_FOLD_TOGGLE_GUTTER_X,
                 );
             });
         });

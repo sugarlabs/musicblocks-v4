@@ -44,6 +44,18 @@ export interface BrickOutlineInput {
      * - `Size` — nesting exists with known content dimensions
      */
     nestingDims?: Size | null;
+    /**
+     * Whether the brick carries a fold toggle for its nesting cavity. Defaults to false.
+     *
+     * Purely a bounds concern: the toggle is overlaid on the head rather than given its own space
+     * in the outline, so this never reaches `computeDimensions` and the outer geometry is the same
+     * either way. It only asks `generate` for a box to draw the toggle in, and moves the param
+     * labels off that box.
+     *
+     * Read independently of `nestingDims`, because a folded brick withholds its cavity dims and
+     * still has to show the toggle that unfolds it.
+     */
+    hasFoldToggle?: boolean;
     /** Sequence-in notch: accepts a chain from the preceding brick. Defaults to false. */
     hasPrevNotch?: boolean;
     /** Sequence-out notch: chains into the following brick. Defaults to false. */
@@ -69,6 +81,8 @@ export interface BrickOutlineOutput {
         args?: (Bounds | null)[];
         /** Bounds of the nesting cavity. */
         nesting?: Bounds;
+        /** Bounds of the fold toggle overlaid on the head; present only with `hasFoldToggle`. */
+        foldToggle?: Bounds;
     };
 }
 
@@ -232,6 +246,19 @@ export interface ExpressionBrickViewPropsWithModel {
 export interface StatementBrickViewPropsWithModel {
     kind: 'statement';
     model: StatementBrickModel;
+    /**
+     * Wiring for the fold toggle a brick with a nesting cavity always carries.
+     *
+     * Omit it and the toggle still draws, disabled — which is what a brick outside a tower wants: a
+     * palette preview, a drag ghost, a snap preview. Nothing there has a cavity to fold, and a
+     * nesting brick that dropped its toggle would read as a plain statement brick.
+     */
+    fold?: {
+        /** Whether the cavity holds nothing, which leaves the toggle disabled. */
+        isCavityEmpty: boolean;
+        /** Flips the model's `isNestingFolded`, through whoever owns the brick's tower. */
+        onToggle: () => void;
+    };
 }
 
 /** Discriminated union of all model-based brick view prop shapes; narrow via `kind`. */

@@ -44,7 +44,7 @@ export function BrickSlot({ brick }: BrickSlotProps) {
         <div
           title={brick.description}
           data-brick-id={brick.id}
-          className="palette-brick-slot flex min-h-11 cursor-grab touch-none items-center px-1 py-1 transition-colors select-none hover:brightness-110 active:cursor-grabbing"
+          className="palette-brick-slot flex min-h-11 cursor-grab touch-none items-center py-1 transition-colors select-none hover:brightness-110 active:cursor-grabbing"
         >
           <div className="pointer-events-none">
             <BrickView {...viewProps} />

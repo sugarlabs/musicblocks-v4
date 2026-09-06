@@ -57,6 +57,13 @@ export const FOLD_TOGGLE_SELECTOR = '[data-fold-toggle]';
  */
 export const TOWER_BRICK_SELECTOR = '[data-tower-brick]';
 
+/**
+ * Marks the action menu's own DOM, so a press inside it is not an outside press: the menu stamps
+ * the attribute on its root, and `useActionMenuDismiss` tests against it before closing. Nothing
+ * carries it until the menu lands, which is the point, until then every press is outside.
+ */
+export const ACTION_MENU_SELECTOR = '[data-action-menu]';
+
 /** How far (in pixels) the canvas pans per arrow-key press. */
 export const PAN_STEP = 50;
 /** How far (in pixels) the canvas pans per accelerated arrow-key press (Shift held). */

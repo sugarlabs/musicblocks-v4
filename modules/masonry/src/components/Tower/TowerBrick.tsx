@@ -1,9 +1,10 @@
-import { memo, useCallback, useRef } from 'react';
+import { memo, useCallback, useRef, type MouseEvent } from 'react';
 
 import type { TowerNode } from '@/@types/tower.types';
 
 import { BrickView } from '@/components/Brick/Brick';
 import { useBrickMove } from '@/hooks/useBrickMove';
+import { useActionMenuStore } from '@/stores/actionMenu';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 import { darkenColor } from '@/utils/color';
@@ -72,6 +73,18 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
     `drop-shadow(0 0 1px ${highlight}) drop-shadow(0 0 2px ${highlight}) ` +
     `drop-shadow(0 0 4px ${highlight}) drop-shadow(0 ${LIFT_PX + 1}px 3px rgb(0 0 0 / 0.3))`;
 
+  // Opened from the brick rather than a document listener, so the menu keys off the brick the
+  // press actually landed on. `preventDefault` swallows the browser's own menu, and interact.js
+  // drags on the primary button alone, so this press cannot also tear the brick out of its tower.
+  const openActionMenu = useCallback(
+    (event: MouseEvent<HTMLDivElement>) => {
+      event.preventDefault();
+
+      useActionMenuStore.getState().open(id);
+    },
+    [id],
+  );
+
   if (!isMounted) return null;
 
   const brick = (() => {
@@ -98,6 +111,7 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
       data-tower-brick=""
       className="absolute"
       onClick={handleClick}
+      onContextMenu={openActionMenu}
       style={{
         transform: `translate(${x}px, ${y}px)`,
         visibility: isPositioned ? 'visible' : 'hidden',

@@ -2,6 +2,7 @@ import type { DragEvent } from '@interactjs/types';
 import interact from 'interactjs';
 import { RefObject, useEffect, useRef } from 'react';
 
+import { useActionMenuStore } from '@/stores/actionMenu';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { useTrashStore } from '@/stores/trash';
@@ -107,6 +108,10 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
             ignoreFrom: FOLD_TOGGLE_SELECTOR,
             listeners: {
                 start(_event: DragEvent) {
+                    // The pointerdown behind this drag has closed the menu already; kept for the
+                    // drag that starts on the menu itself, and ahead of the early return below.
+                    useActionMenuStore.getState().close();
+
                     const { coords } = useBrickLayoutStore.getState();
                     const current = coords[id];
 

@@ -1,8 +1,8 @@
-import { ZoomIn, ZoomOut } from 'lucide-react';
+import { RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
 
 import { useWorkspaceScaleStore } from '@/stores/scale';
 import { Button } from '@/ui/button';
-import { MAX_SCALE_LEVEL, MIN_SCALE_LEVEL } from '@/utils/constants';
+import { DEFAULT_SCALE_LEVEL, MAX_SCALE_LEVEL, MIN_SCALE_LEVEL } from '@/utils/constants';
 
 /**
  * Workspace-wide zoom control: two magnifier buttons that step the scale store's level.
@@ -13,7 +13,7 @@ import { MAX_SCALE_LEVEL, MIN_SCALE_LEVEL } from '@/utils/constants';
  */
 export function ScaleControl() {
   const level = useWorkspaceScaleStore((state) => state.level);
-  const { zoomIn, zoomOut } = useWorkspaceScaleStore.getState();
+  const { reset, zoomIn, zoomOut } = useWorkspaceScaleStore.getState();
 
   return (
     <div className="absolute right-26 bottom-6 z-40 flex h-14 items-center gap-6">
@@ -27,6 +27,7 @@ export function ScaleControl() {
       >
         <ZoomOut className="size-6" />
       </Button>
+      <span aria-live="polite">Zoom level: {level}</span>
       <Button
         variant="outline"
         size="icon"
@@ -36,6 +37,16 @@ export function ScaleControl() {
         onClick={zoomIn}
       >
         <ZoomIn className="size-6" />
+      </Button>
+      <Button
+        variant="outline"
+        size="icon"
+        className="size-14 rounded-full border-2"
+        aria-label="Reset zoom"
+        disabled={level === DEFAULT_SCALE_LEVEL}
+        onClick={reset}
+      >
+        <RotateCcw className="size-6" />
       </Button>
     </div>
   );

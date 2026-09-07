@@ -15,11 +15,12 @@ afterEach(() => {
 });
 
 describe('ScaleControl', () => {
-  it('renders zoom in and zoom out buttons with correct accessibility labels', () => {
+  it('renders zoom controls with correct accessibility labels', () => {
     render(<ScaleControl />);
 
     expect(screen.getByRole('button', { name: 'Zoom in' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Zoom out' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Reset zoom' })).toBeTruthy();
   });
 
   it('enables both buttons at the default scale level', () => {
@@ -29,6 +30,18 @@ describe('ScaleControl', () => {
       false,
     );
     expect((screen.getByRole('button', { name: 'Zoom out' }) as HTMLButtonElement).disabled).toBe(
+      false,
+    );
+    expect((screen.getByRole('button', { name: 'Reset zoom' }) as HTMLButtonElement).disabled).toBe(
+      true,
+    );
+  });
+
+  it('enables Reset zoom away from the default scale level', () => {
+    useWorkspaceScaleStore.setState({ level: MAX_SCALE_LEVEL });
+    render(<ScaleControl />);
+
+    expect((screen.getByRole('button', { name: 'Reset zoom' }) as HTMLButtonElement).disabled).toBe(
       false,
     );
   });
@@ -45,6 +58,22 @@ describe('ScaleControl', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Zoom out' }));
     expect(useWorkspaceScaleStore.getState().level).toBe(DEFAULT_SCALE_LEVEL - 1);
+  });
+
+  it('resets the scale level when Reset zoom is clicked', () => {
+    useWorkspaceScaleStore.setState({ level: MAX_SCALE_LEVEL });
+    render(<ScaleControl />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reset zoom' }));
+
+    expect(useWorkspaceScaleStore.getState().level).toBe(DEFAULT_SCALE_LEVEL);
+  });
+
+  it('shows the current scale level', () => {
+    useWorkspaceScaleStore.setState({ level: MAX_SCALE_LEVEL });
+    render(<ScaleControl />);
+
+    expect(screen.getByText(`Zoom level: ${MAX_SCALE_LEVEL}`)).toBeTruthy();
   });
 
   it('disables Zoom In button and enables Zoom Out button at MAX_SCALE_LEVEL', () => {

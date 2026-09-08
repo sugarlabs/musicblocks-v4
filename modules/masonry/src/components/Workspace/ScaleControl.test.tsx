@@ -69,13 +69,6 @@ describe('ScaleControl', () => {
     expect(useWorkspaceScaleStore.getState().level).toBe(DEFAULT_SCALE_LEVEL);
   });
 
-  it('shows the current scale level', () => {
-    useWorkspaceScaleStore.setState({ level: MAX_SCALE_LEVEL });
-    render(<ScaleControl />);
-
-    expect(screen.getByText(`Zoom level: ${MAX_SCALE_LEVEL}`)).toBeTruthy();
-  });
-
   it('disables Zoom In button and enables Zoom Out button at MAX_SCALE_LEVEL', () => {
     useWorkspaceScaleStore.setState({ level: MAX_SCALE_LEVEL });
     render(<ScaleControl />);

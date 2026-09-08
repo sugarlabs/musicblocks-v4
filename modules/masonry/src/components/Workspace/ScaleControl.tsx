@@ -27,7 +27,6 @@ export function ScaleControl() {
       >
         <ZoomOut className="size-6" />
       </Button>
-      <span aria-live="polite">Zoom level: {level}</span>
       <Button
         variant="outline"
         size="icon"

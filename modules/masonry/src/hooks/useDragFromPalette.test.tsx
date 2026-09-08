@@ -35,4 +35,34 @@ describe('clientToLocalPoint', () => {
 
     expect(local).toEqual({ x: -315, y: -25 });
   });
+
+  it('takes the viewport offset back out, so a drop on a panned canvas lands unpanned', () => {
+    // The content is panned 100 right and 40 down, so the pointer at canvas-local (180, 260) is
+    // over the unpanned point (80, 220).
+    const local = clientToLocalPoint(
+      { x: 500, y: 300 },
+      { x: 320, y: 40 },
+      { x: 0, y: 0 },
+      { x: 100, y: 40 },
+    );
+
+    expect(local).toEqual({ x: 80, y: 220 });
+  });
+
+  it('assumes an unpanned viewport when no offset is given', () => {
+    const withoutOffset = clientToLocalPoint(
+      { x: 500, y: 300 },
+      { x: 320, y: 40 },
+      { x: 12, y: 7 },
+    );
+    const zeroOffset = clientToLocalPoint(
+      { x: 500, y: 300 },
+      { x: 320, y: 40 },
+      { x: 12, y: 7 },
+      { x: 0, y: 0 },
+    );
+
+    expect(withoutOffset).toEqual({ x: 168, y: 253 });
+    expect(zeroOffset).toEqual(withoutOffset);
+  });
 });

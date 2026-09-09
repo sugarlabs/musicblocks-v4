@@ -15,6 +15,7 @@ import { makeEmptyStatement } from '@/mocks/tower';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { usePaletteDragStore } from '@/stores/palette';
 import { useTrashStore } from '@/stores/trash';
+import { useViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { createBrickModel, wrapAsRootNode } from '@/utils/brick-model-factory';
 import { FOLD_TOGGLE_SELECTOR } from '@/utils/constants';
@@ -27,6 +28,7 @@ afterEach(() => {
   useWorkspaceStore.setState({ towers: {} });
   useTrashStore.setState({ bounds: null, isHovered: false });
   useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
+  useViewportStore.setState({ offset: { x: 0, y: 0 } });
 });
 
 // -------------------------------------------------------------------------------------------------
@@ -365,6 +367,59 @@ describe('Workspace', () => {
       });
 
       expect(foldToggleOf(container, 't1-outer')!.disabled).toBe(true);
+    });
+  });
+
+  describe('canvas accessibility and keyboard navigation', () => {
+    it('gives the canvas container tabIndex={0} and a visible focus ring', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const canvas = container.querySelector('[role="region"][aria-label="Workspace Canvas"]');
+
+      expect(canvas).not.toBeNull();
+      expect(canvas?.getAttribute('tabindex')).toBe('0');
+      expect(canvas?.classList.contains('focus-visible:ring-2')).toBe(true);
+      expect(canvas?.classList.contains('focus-visible:ring-ring')).toBe(true);
+    });
+
+    it('translates the world layer when viewport offset updates', () => {
+      const { getByTestId } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const world = getByTestId('workspace-world');
+
+      expect(world.style.transform).toBe('translate(0px, 0px)');
+
+      act(() => {
+        useViewportStore.getState().setOffset({ x: 120, y: -80 });
+      });
+
+      expect(world.style.transform).toBe('translate(120px, -80px)');
+    });
+
+    it('pans the canvas using arrow keys, PageUp/PageDown, and Home/End', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const canvas = container.querySelector('[role="region"][aria-label="Workspace Canvas"]') as HTMLElement;
+
+      fireEvent.keyDown(canvas, { key: 'ArrowUp' });
+      expect(useViewportStore.getState().offset).toEqual({ x: 0, y: -50 });
+
+      fireEvent.keyDown(canvas, { key: 'ArrowLeft' });
+      expect(useViewportStore.getState().offset).toEqual({ x: -50, y: -50 });
+
+      fireEvent.keyDown(canvas, { key: 'PageDown' });
+      expect(useViewportStore.getState().offset).toEqual({ x: -50, y: 250 });
+
+      fireEvent.keyDown(canvas, { key: 'Home' });
+      expect(useViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+    });
+
+    it('does not pan the canvas when typing inside the palette search box', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const searchInput = container.querySelector('input[placeholder="Search bricks"]') as HTMLElement;
+
+      fireEvent.keyDown(searchInput, { key: 'ArrowLeft' });
+      fireEvent.keyDown(searchInput, { key: 'Home' });
+      fireEvent.keyDown(searchInput, { key: 'ArrowUp' });
+
+      expect(useViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
     });
   });
 });

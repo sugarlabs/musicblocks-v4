@@ -7,10 +7,12 @@ import type { Point } from '@/@types/common.types';
 
 import { Palette } from '@/components/Palette/Palette';
 import { TowerBrickView } from '@/components/Tower/TowerBrick';
+import { useCanvasKeyboardNav } from '@/hooks/useCanvasKeyboardNav';
 import { useDragFromPalette } from '@/hooks/useDragFromPalette';
 import { useTowerLayout } from '@/hooks/useTowerLayout';
 import { useWorkspaceScale } from '@/hooks/useWorkspaceScale';
 import { useBrickLayoutStore } from '@/stores/brick';
+import { useViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { listVisibleNodes } from '@/utils/tower-traversal';
 
@@ -38,6 +40,9 @@ export function Workspace({ config }: WorkspaceViewProps) {
   const visibleNodes = useMemo(() => {
     return towers.flatMap((tower) => listVisibleNodes(tower.root));
   }, [towers]);
+
+  const offset = useViewportStore((state) => state.offset);
+  const { handleKeyDown } = useCanvasKeyboardNav();
 
   // palette drag-and-drop wiring: the root element scopes the delegated drag
   // selector and positions the ghost overlay; the canvas element anchors drop coordinates.
@@ -91,20 +96,32 @@ export function Workspace({ config }: WorkspaceViewProps) {
 
       <div
         ref={canvasRef}
-        className="bg-background relative h-full w-full shrink overflow-hidden select-none"
+        tabIndex={0}
+        role="region"
+        aria-label="Workspace Canvas"
+        onKeyDown={handleKeyDown}
+        className="bg-background relative h-full w-full shrink overflow-hidden select-none outline-none focus:ring-2 focus:ring-ring focus:ring-inset focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
       >
-        {/* TowerLayoutEngine runs the layout hooks for each tower to compute brick positions */}
-        {towers.map((tower) => (
-          <TowerLayoutEngine key={`layout-${tower.id}`} root={tower.root} origin={tower.position} />
-        ))}
-        {/* TowerBrickView renders the actual DOM nodes for the visible bricks in a flattened list */}
-        {visibleNodes.map((node) => (
-          <TowerBrickView key={node.model.id} id={node.model.id} node={node} />
-        ))}
+        {/* World layer translated by the canvas viewport offset */}
+        <div
+          data-testid="workspace-world"
+          className="absolute inset-0 origin-top-left pointer-events-auto"
+          style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}
+        >
+          {/* TowerLayoutEngine runs the layout hooks for each tower to compute brick positions */}
+          {towers.map((tower) => (
+            <TowerLayoutEngine key={`layout-${tower.id}`} root={tower.root} origin={tower.position} />
+          ))}
+          {/* TowerBrickView renders the actual DOM nodes for the visible bricks in a flattened list */}
+          {visibleNodes.map((node) => (
+            <TowerBrickView key={node.model.id} id={node.model.id} node={node} />
+          ))}
 
-        <SnapHintOverlay />
-        <SnapPreviewView />
-        <DisconnectShadowView />
+          <SnapHintOverlay />
+          <SnapPreviewView />
+          <DisconnectShadowView />
+        </div>
+
         <ScaleControl />
         {/* The Trash is only useful once there is something to remove */}
         {towers.length > 0 && <Trash canvasRef={canvasRef} />}

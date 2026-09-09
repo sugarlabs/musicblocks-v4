@@ -93,12 +93,17 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
         towerPosition: { x: number; y: number };
     } | null>(null);
     const isMounted = useBrickLayoutStore((state) => state.mounted[id]);
+    const areBricksHidden = useWorkspaceStore((state) => state.areBricksHidden);
 
     useEffect(() => {
         const el = ref.current;
         if (!el) return;
 
         const interactable = interact(el).draggable({
+            // While bricks are hidden, nothing invisible should be grabbable — disabling the
+            // interaction here means `start`/`move`/`end` never fire at all, which is also what
+            // keeps the Trash hover and snap preview quiet without touching their stores directly.
+            enabled: !areBricksHidden,
             // The fold chevron is overlaid on the brick, so every press on it is also a press on
             // the brick. Without this, folding a cavity would tear the brick out of its tower on
             // the way: the pointer moves a few pixels between press and release, which is a drag as
@@ -290,5 +295,5 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                 useConnectionPreviewStore.getState().clearPreviewTarget();
             }
         };
-    }, [id, ref, isMounted]);
+    }, [id, ref, isMounted, areBricksHidden]);
 }

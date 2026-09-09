@@ -921,4 +921,44 @@ describe('Workspace Store Collision Space', () => {
             );
         });
     });
+
+    describe('setBricksHidden', () => {
+        afterEach(() => {
+            act(() => {
+                useWorkspaceStore.setState({ areBricksHidden: false });
+            });
+        });
+
+        it('flips areBricksHidden without touching the tower graph', () => {
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-visibility',
+                    root: makeEmptyValue('lone-visibility-brick'),
+                    position: { x: 0, y: 0 },
+                });
+            });
+
+            const towersBefore = useWorkspaceStore.getState().towers;
+
+            act(() => {
+                useWorkspaceStore.getState().setBricksHidden(true);
+            });
+
+            expect(useWorkspaceStore.getState().areBricksHidden).toBe(true);
+            // A pure view flag: toggling it must not touch the tower graph.
+            expect(useWorkspaceStore.getState().towers).toBe(towersBefore);
+        });
+
+        it('toggles back to visible', () => {
+            act(() => {
+                useWorkspaceStore.getState().setBricksHidden(true);
+            });
+            expect(useWorkspaceStore.getState().areBricksHidden).toBe(true);
+
+            act(() => {
+                useWorkspaceStore.getState().setBricksHidden(false);
+            });
+            expect(useWorkspaceStore.getState().areBricksHidden).toBe(false);
+        });
+    });
 });

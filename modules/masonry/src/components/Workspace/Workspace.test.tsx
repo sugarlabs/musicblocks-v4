@@ -171,6 +171,56 @@ describe('Workspace', () => {
     expect(usePaletteDragStore.getState().dragged).toBeNull();
   });
 
+  it('selects a brick, clears it from the background, and clears it with Escape', () => {
+    const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+    const tower = makeNestingTower('selection');
+
+    act(() => {
+      useWorkspaceStore.getState().createTower(tower);
+    });
+
+    const canvas = container.querySelector('[data-testid="workspace-canvas"]') as HTMLElement;
+    const brick = container.querySelector('[data-id="selection-outer"]') as HTMLElement;
+
+    fireEvent.click(brick);
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('selection-outer');
+
+    fireEvent.click(canvas);
+    expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
+
+    fireEvent.click(brick);
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
+  });
+
+  it('deletes a selected root and extracts then discards a selected nested brick', () => {
+    const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+    const tower = makeNestingTower('keyboard');
+
+    act(() => {
+      useWorkspaceStore.getState().createTower(tower);
+    });
+
+    const root = container.querySelector('[data-id="keyboard-outer"]') as HTMLElement;
+    fireEvent.click(root);
+    fireEvent.keyDown(window, { key: 'Delete' });
+    expect(useWorkspaceStore.getState().towers).toEqual({});
+
+    const secondTower = makeNestingTower('keyboard-nested');
+    act(() => {
+      useWorkspaceStore.getState().createTower(secondTower);
+    });
+
+    const nested = container.querySelector('[data-id="keyboard-nested-inner"]') as HTMLElement;
+    fireEvent.click(nested);
+    fireEvent.keyDown(window, { key: 'Backspace' });
+
+    const remaining = useWorkspaceStore.getState().towers['keyboard-nested'];
+    expect(remaining).toBeDefined();
+    expect((remaining?.root as TowerStatementNode).nestedNext).toBeNull();
+    expect(Object.keys(useWorkspaceStore.getState().towers)).toEqual(['keyboard-nested']);
+  });
+
   describe('trash', () => {
     it('keeps the trash off an empty canvas, since there is nothing to remove yet', () => {
       const { container } = render(<Workspace config={{ palette: paletteConfig }} />);

@@ -19,6 +19,8 @@ import { listNodes, listVisibleNodes } from '@/utils/tower-traversal';
 export interface WorkspaceStore {
     /** Record of all towers currently in the workspace, keyed by their unique ID */
     towers: Record<string, TowerState>;
+    /** ID of the currently selected brick, or null when nothing is selected */
+    selectedBrickId: string | null;
 
     /** Collision space tracking statement connection points */
     statementCollisionSpace: QuadtreeCollisionSpace;
@@ -34,6 +36,11 @@ export interface WorkspaceStore {
     createTower: (tower: TowerState) => void;
     /** Removes a tower from the workspace by its ID. */
     removeTower: (id: string) => void;
+    /** Selects a brick by its ID */
+    selectBrick: (id: string) => void;
+
+    /** Clears the current brick selection */
+    clearSelection: () => void;
     /** Updates the position of an existing tower. */
     updateTowerPosition: (id: string, position: Point) => void;
     /** Synchronises the statement collision points for a tower after layout */
@@ -67,6 +74,7 @@ export interface WorkspaceStore {
 export const useWorkspaceStore = create<WorkspaceStore>()(
     subscribeWithSelector((set, get) => ({
         towers: {},
+        selectedBrickId: null,
         statementCollisionSpace: new QuadtreeCollisionSpace(4000, 4000),
         statementConnectors: {},
         argumentCollisionSpace: new QuadtreeCollisionSpace(4000, 4000),
@@ -77,11 +85,24 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 towers: { ...state.towers, [tower.id]: tower },
             }));
         },
+        selectBrick: (id) => {
+            set({ selectedBrickId: id });
+        },
+        clearSelection: () => {
+            set({ selectedBrickId: null });
+        },
 
         removeTower: (id) => {
             set((state) => {
                 const newTowers = { ...state.towers };
                 delete newTowers[id];
+                const selectedBrickId = state.selectedBrickId;
+                const removedTower = state.towers[id];
+                const selectedNodeBelongsToTower = selectedBrickId && removedTower
+                    ? listNodes(removedTower.root).some(
+                          (node) => node.model.id === selectedBrickId,
+                      )
+                    : false;
 
                 // Cleanup statement collision points
                 const stmtIds = Object.values(state.statementConnectors)
@@ -105,6 +126,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
                 return {
                     towers: newTowers,
+                    selectedBrickId: selectedNodeBelongsToTower ? null : state.selectedBrickId,
                     statementConnectors: newStatementConnectors,
                     argumentConnectors: newArgumentConnectors,
                 };

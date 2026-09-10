@@ -26,10 +26,41 @@ describe('Workspace Store Collision Space', () => {
         act(() => {
             useWorkspaceStore.setState({
                 towers: {},
+                selectedBrickId: null,
                 statementConnectors: {},
                 argumentConnectors: {},
             });
         });
+    });
+
+    it('selects and clears a brick', () => {
+        const store = useWorkspaceStore.getState();
+
+        act(() => {
+            store.selectBrick('brick-1');
+        });
+        expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+
+        act(() => {
+            useWorkspaceStore.getState().clearSelection();
+        });
+        expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
+    });
+
+    it('clears the selection when the selected tower is removed', () => {
+        const root = makeEmptyStatement('selected-root', 0, false);
+
+        act(() => {
+            useWorkspaceStore.getState().createTower({
+                id: 'selected-tower',
+                root,
+                position: { x: 0, y: 0 },
+            });
+            useWorkspaceStore.getState().selectBrick(root.model.id);
+            useWorkspaceStore.getState().removeTower('selected-tower');
+        });
+
+        expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
     });
 
     it('extracts and syncs statement connectors correctly', () => {

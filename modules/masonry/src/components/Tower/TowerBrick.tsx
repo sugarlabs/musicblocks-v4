@@ -26,6 +26,9 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
   const { id, node } = props;
   const ref = useRef<HTMLDivElement>(null);
 
+  const selectedBrickId = useWorkspaceStore((state) => state.selectedBrickId);
+  const selectBrick = useWorkspaceStore((state) => state.selectBrick);
+
   useBrickMove(id, ref);
 
   // We explicitly extract coords without returning a fallback object in the selector.
@@ -47,6 +50,11 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
 
     useWorkspaceStore.getState().setNestingFold(id, !found.node.model.isNestingFolded);
   }, [id]);
+  const handleClick = useCallback(() => {
+    selectBrick(id);
+  }, [id, selectBrick]);
+
+  const isSelected = selectedBrickId === id;
 
   if (!isMounted) return null;
 
@@ -72,9 +80,12 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
       ref={ref}
       data-id={id}
       className="absolute"
+      onClick={handleClick}
       style={{
         transform: `translate(${x}px, ${y}px)`,
         visibility: isPositioned ? 'visible' : 'hidden',
+        outline: isSelected ? '2px solid currentColor' : 'none',
+        outlineOffset: '2px',
       }}
     >
       {brick}

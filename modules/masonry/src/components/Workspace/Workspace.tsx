@@ -11,7 +11,8 @@ import { useDragFromPalette } from '@/hooks/useDragFromPalette';
 import { useTowerLayout } from '@/hooks/useTowerLayout';
 import { useWorkspaceScale } from '@/hooks/useWorkspaceScale';
 import { useBrickLayoutStore } from '@/stores/brick';
-import { useWorkspaceStore } from '@/stores/workspace';
+import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
+import { discardTower } from '@/utils/towerDiscard';
 import { listVisibleNodes } from '@/utils/tower-traversal';
 
 import { DragGhost } from './DragGhost';
@@ -30,8 +31,77 @@ export function Workspace({ config }: WorkspaceViewProps) {
   const { palette } = config;
 
   const towersRecord = useWorkspaceStore((state) => state.towers);
+  const clearSelection = useWorkspaceStore((state) => state.clearSelection);
   const towers = useMemo(() => Object.values(towersRecord), [towersRecord]);
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
 
+      // Do not delete bricks while the user is typing in an input.
+      if (
+        target?.tagName === 'INPUT' ||
+        target?.tagName === 'TEXTAREA' ||
+        target?.tagName === 'SELECT' ||
+        target?.isContentEditable
+      ) {
+        return;
+      }
+
+      const store = useWorkspaceStore.getState();
+
+      // Escape clears the current selection.
+      if (event.key === 'Escape') {
+        store.clearSelection();
+        return;
+      }
+
+      // Only Delete and Backspace remove bricks.
+      if (event.key !== 'Delete' && event.key !== 'Backspace') {
+        return;
+      }
+
+      const selectedBrickId = store.selectedBrickId;
+
+      // Nothing is selected, so there is nothing to delete.
+      if (!selectedBrickId) return;
+
+      event.preventDefault();
+
+      const found = findNodeAndTower(selectedBrickId);
+
+      // The selected brick may have already been removed.
+      if (!found) {
+        store.clearSelection();
+        return;
+      }
+
+      const { node, tower } = found;
+
+      if (node.model.id === tower.root.model.id) {
+        // The selected brick is the root of the tower.
+        discardTower(tower.id);
+      } else {
+        // Detach the selected brick into its own tower, then discard that tower.
+        const newTowerId = store.detachBrickToNewTower(
+          tower.id,
+          selectedBrickId,
+          tower.position,
+        );
+
+        if (newTowerId) {
+          discardTower(newTowerId);
+        }
+      }
+
+      store.clearSelection();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
   // Only what a fold leaves on screen: a brick inside a folded cavity is never rendered. The
   // memo re-runs off the towers record, which is why `setNestingFold` re-seats the tower it folds:
   // the canvas and the re-layout both follow off that one signal.
@@ -91,7 +161,11 @@ export function Workspace({ config }: WorkspaceViewProps) {
 
       <div
         ref={canvasRef}
+        data-testid="workspace-canvas"
         className="bg-background relative h-full w-full shrink overflow-hidden select-none"
+        onClick={(event) => {
+          if (event.target === event.currentTarget) clearSelection();
+        }}
       >
         {/* TowerLayoutEngine runs the layout hooks for each tower to compute brick positions */}
         {towers.map((tower) => (

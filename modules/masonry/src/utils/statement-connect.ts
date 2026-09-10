@@ -3,7 +3,7 @@ import type { StatementConnectorMeta, TowerState } from '@/@types/workspace.type
 
 import type { CollisionSpace } from './collision';
 import { connectorCenter, querySnap } from './snap-config';
-import { findNode, hidesCavity, listVisibleNodes } from './tower-traversal';
+import { findNode, findTail, hidesCavity, listVisibleNodes } from './tower-traversal';
 
 /** The two tabs a statement can carry the sequence onward through; both mate with a `prev` groove. */
 export type StatementSocket = 'next' | 'nestedNext';
@@ -51,6 +51,11 @@ function isSocketFree(parent: TowerStatementNode, socket: StatementSocket): bool
     return parent.nestedNext === null && !hidesCavity(parent);
 }
 
+function hasFreeTailNext(child: TowerStatementNode): boolean {
+    const tail = findTail(child);
+    return tail.next === null && tail.model.hasConnectionNext;
+}
+
 /**
  * Direction 1 — the dragged tower hangs itself below: its root's `prev` groove seeks a free `next`
  * or `nestedNext` tab on a settled tower, which becomes the host. Only the root is considered, since
@@ -85,7 +90,9 @@ function resolvePrevOntoTab(
         if (parent === null || parent.kind !== 'statement') continue;
 
         // Empty-only: no insertion between two bricks that are already linked.
-        if (!isSocketFree(parent, meta.type)) continue;
+        if (!isSocketFree(parent, meta.type)) {
+            if (meta.type !== 'next' || !hasFreeTailNext(child)) continue;
+        }
 
         const tab = parent.model.getConnectorCoords()[meta.type];
         if (!tab) continue;
@@ -225,7 +232,13 @@ export function joinStatement({
     socket: StatementSocket;
 }): void {
     if (socket === 'next') {
+        const displaced = parent.next;
         parent.next = child;
+        if (displaced !== null && displaced.kind === 'statement') {
+            const tail = findTail(child);
+            tail.next = displaced;
+            displaced.prev = tail;
+        }
     } else {
         parent.nestedNext = child;
     }

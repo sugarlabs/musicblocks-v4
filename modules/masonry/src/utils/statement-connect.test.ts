@@ -140,9 +140,10 @@ describe('resolveStatementConnection', () => {
             });
         });
 
-        it('skips a tab that already has a brick on it', () => {
+        it('inserts between two connected bricks when the dragged tail is free', () => {
             const host = makeEmptyStatement('host', 0);
             host.model.setPosition(500, 500);
+            const tenant = makeEmptyStatement('sitting-tenant', 0);
             const dragged = makeEmptyStatement('dragged', 0);
 
             const { space, connectors, towers } = workspace([
@@ -155,7 +156,49 @@ describe('resolveStatementConnection', () => {
             ]);
 
             // Linked after the space was seeded, so only the live graph knows the tab is taken.
-            host.next = makeEmptyStatement('sitting-tenant', 0);
+            host.next = tenant;
+            tenant.prev = host;
+
+            const result = resolveStatementConnection({
+                draggedTowerId: 'dragged-tower',
+                space,
+                connectors,
+                towers,
+            });
+
+            expect(result).not.toBeNull();
+            expect(result).toMatchObject({
+                parent: host,
+                child: dragged,
+                socket: 'next',
+                hostTowerId: 'host-tower',
+                absorbedTowerId: 'dragged-tower',
+            });
+
+            joinStatement(result!);
+            expect(host.next).toBe(dragged);
+            expect(dragged.prev).toBe(host);
+            expect(dragged.next).toBe(tenant);
+            expect(tenant.prev).toBe(dragged);
+        });
+
+        it('refuses insertion when the dragged tower’s tail has no next notch', () => {
+            const host = makeEmptyStatement('host', 0);
+            host.model.setPosition(500, 500);
+            const tenant = makeEmptyStatement('sitting-tenant', 0);
+            const dragged = makeEmptyStatement('dragged', 0, false, false);
+
+            const { space, connectors, towers } = workspace([
+                { id: 'host-tower', root: host, position: { x: 500, y: 500 } },
+                {
+                    id: 'dragged-tower',
+                    root: dragged,
+                    position: positionNotchAt(dragged, 'prev', notchCenter(host, 'next')),
+                },
+            ]);
+
+            host.next = tenant;
+            tenant.prev = host;
 
             const result = resolveStatementConnection({
                 draggedTowerId: 'dragged-tower',
@@ -735,5 +778,26 @@ describe('joinStatement', () => {
         expect(parent.next).toBe(child);
         expect(child.next).toBe(tail);
         expect(tail.prev).toBe(child);
+    });
+
+    it('inserts a child chain between parent and its existing next node', () => {
+        const parent = makeEmptyStatement('parent', 0);
+        const displaced = makeEmptyStatement('displaced', 0);
+        parent.next = displaced;
+        displaced.prev = parent;
+
+        const child = makeEmptyStatement('child', 0);
+        const tail = makeEmptyStatement('tail', 0);
+        child.next = tail;
+        tail.prev = child;
+
+        joinStatement({ parent, child, socket: 'next' });
+
+        expect(parent.next).toBe(child);
+        expect(child.prev).toBe(parent);
+        expect(child.next).toBe(tail);
+        expect(tail.prev).toBe(child);
+        expect(tail.next).toBe(displaced);
+        expect(displaced.prev).toBe(tail);
     });
 });

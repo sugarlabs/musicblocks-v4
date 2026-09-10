@@ -111,6 +111,15 @@ export function findNode(root: TowerNode, brickId: string): TowerNode | null {
     return listNodes(root).find((node) => node.model.id === brickId) ?? null;
 }
 
+/**
+ * Walks down the linear `next` chain from `node` to find its bottom-most statement.
+ */
+export function findTail(node: TowerStatementNode): TowerStatementNode {
+    let tail = node;
+    while (tail.next !== null && tail.next.kind === 'statement') tail = tail.next as TowerStatementNode;
+    return tail;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**

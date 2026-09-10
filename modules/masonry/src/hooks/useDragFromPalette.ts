@@ -10,6 +10,7 @@ import type { PaletteBrickConfig } from '@/@types/palette.types';
 import { usePaletteDragStore } from '@/stores/palette';
 import { useWorkspaceScaleStore } from '@/stores/scale';
 import { useWorkspaceStore } from '@/stores/workspace';
+import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { createBrickModel, wrapAsRootNode } from '@/utils/brick-model-factory';
 import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { resolveCandidateConnection } from '@/utils/snap-preview-calculator';
@@ -29,10 +30,11 @@ export const PALETTE_DRAG_SOURCE_SELECTOR = '.palette-brick-slot';
  * top-left corner rather than the pointer position.
  */
 export function clientToLocalPoint(client: Point, origin: Point, grabOffset: Point): Point {
-    return {
-        x: client.x - origin.x - grabOffset.x,
-        y: client.y - origin.y - grabOffset.y,
-    };
+  const { offsetX, offsetY } = useWorkspaceViewportStore.getState();
+  return {
+    x: client.x - origin.x - grabOffset.x - offsetX,
+    y: client.y - origin.y - grabOffset.y - offsetY,
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -123,7 +125,8 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                     // re-render per pixel; dataset.x/y is the running total between events.
                     const x = (parseFloat(ghost.dataset.x ?? '0') || 0) + event.dx;
                     const y = (parseFloat(ghost.dataset.y ?? '0') || 0) + event.dy;
-                    ghost.style.transform = `translate(${x}px, ${y}px)`;
+                    const { offsetX, offsetY } = useWorkspaceViewportStore.getState();
+                    ghost.style.transform = `translate(${x + offsetX}px, ${y + offsetY}px)`;
                     ghost.dataset.x = String(x);
                     ghost.dataset.y = String(y);
 
@@ -206,8 +209,11 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                         drag.grabOffset,
                     );
 
-                    // Prevent placing the brick if it is still partially over the palette
-                    if (position.x < 0) return;
+                    const { offsetX } = useWorkspaceViewportStore.getState();
+
+                    // Prevent placing the brick if it is still over the palette 
+                    // Subtracting offsetX neutralizes the pan shift for this screen-space check
+                    if (position.x + offsetX < 0) return;
 
                     const newTowerId = crypto.randomUUID();
                     createTower({

@@ -11,6 +11,7 @@ import { useDragFromPalette } from '@/hooks/useDragFromPalette';
 import { useTowerLayout } from '@/hooks/useTowerLayout';
 import { useWorkspaceScale } from '@/hooks/useWorkspaceScale';
 import { useBrickLayoutStore } from '@/stores/brick';
+import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { listVisibleNodes } from '@/utils/tower-traversal';
 
@@ -27,6 +28,7 @@ function TowerLayoutEngine({ root, origin }: { root: TowerNode; origin: Point })
 }
 
 export function Workspace({ config }: WorkspaceViewProps) {
+  const { offsetX, offsetY } = useWorkspaceViewportStore();
   const { palette } = config;
 
   const towersRecord = useWorkspaceStore((state) => state.towers);
@@ -83,6 +85,59 @@ export function Workspace({ config }: WorkspaceViewProps) {
     );
   }, []);
 
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      let dx = e.deltaX;
+      let dy = e.deltaY;
+
+      // Normalize Shift+Wheel for browsers that do not natively map it to deltaX
+      if (e.shiftKey && dx === 0) {
+        dx = dy;
+        dy = 0;
+      }
+
+      const current = useWorkspaceViewportStore.getState();
+      const workspaceState = useWorkspaceStore.getState();
+
+      // Calculate dynamic bounds based on existing towers/blocks
+      const towers = Object.values(workspaceState.towers || {});
+      let minContentX = -1000;
+      let maxContentX = 3000;
+      let minContentY = -1000;
+      let maxContentY = 3000;
+
+      if (towers.length > 0) {
+        const padding = 500;
+        const xs = towers.map(t => t.position?.x ?? 0);
+        const ys = towers.map(t => t.position?.y ?? 0);
+        
+        minContentX = Math.min(...xs) - padding;
+        maxContentX = Math.max(...xs) + padding;
+        minContentY = Math.min(...ys) - padding;
+        maxContentY = Math.max(...ys) + padding;
+      }
+
+      const nextX = Math.min(Math.max(current.offsetX - dx, -maxContentX), -minContentX);
+      const nextY = Math.min(Math.max(current.offsetY - dy, -maxContentY), -minContentY);
+
+      // Only preventDefault and update if the canvas actually moves
+      if (nextX !== current.offsetX || nextY !== current.offsetY) {
+        e.preventDefault();
+        useWorkspaceViewportStore.getState().setOffset(nextX, nextY);
+      }
+    };
+
+    // passive: false is required to safely call preventDefault on wheel events
+    canvas.addEventListener('wheel', handleWheel, { passive: false });
+    
+    return () => {
+      canvas.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
+
   return (
     <div ref={rootRef} className="relative flex h-full w-full">
       <div className="h-full max-w-80">
@@ -97,14 +152,22 @@ export function Workspace({ config }: WorkspaceViewProps) {
         {towers.map((tower) => (
           <TowerLayoutEngine key={`layout-${tower.id}`} root={tower.root} origin={tower.position} />
         ))}
-        {/* TowerBrickView renders the actual DOM nodes for the visible bricks in a flattened list */}
-        {visibleNodes.map((node) => (
-          <TowerBrickView key={node.model.id} id={node.model.id} node={node} />
-        ))}
+        
+        {/* Dedicated layer for panning transforms */}
+        <div 
+          className="brick-layer absolute top-0 left-0 h-full w-full"
+          style={{ transform: `translate(${offsetX}px, ${offsetY}px)` }}
+        >
+          {/* TowerBrickView renders the actual DOM nodes for the visible bricks in a flattened list */}
+          {visibleNodes.map((node) => (
+            <TowerBrickView key={node.model.id} id={node.model.id} node={node} />
+          ))}
 
-        <SnapHintOverlay />
-        <SnapPreviewView />
-        <DisconnectShadowView />
+          <SnapHintOverlay />
+          <SnapPreviewView />
+          <DisconnectShadowView />
+        </div>
+
         <ScaleControl />
         {/* The Trash is only useful once there is something to remove */}
         {towers.length > 0 && <Trash canvasRef={canvasRef} />}

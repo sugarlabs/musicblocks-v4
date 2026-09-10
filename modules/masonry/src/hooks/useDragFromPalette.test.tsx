@@ -7,6 +7,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { clientToLocalPoint } from './useDragFromPalette';
+import { useWorkspaceViewportStore } from '@/stores/viewport';
 
 // -------------------------------------------------------------------------------------------------
 
@@ -34,5 +35,12 @@ describe('clientToLocalPoint', () => {
     const local = clientToLocalPoint({ x: 10, y: 20 }, { x: 320, y: 40 }, { x: 5, y: 5 });
 
     expect(local).toEqual({ x: -315, y: -25 });
+  });
+  
+  it('accounts for viewport pan offsets when converting points', () => {
+    useWorkspaceViewportStore.setState({ offsetX: -100, offsetY: -50 });
+    const local = clientToLocalPoint({ x: 500, y: 300 }, { x: 320, y: 40 }, { x: 0, y: 0 });
+
+    expect(local).toEqual({ x: 280, y: 310 });
   });
 });

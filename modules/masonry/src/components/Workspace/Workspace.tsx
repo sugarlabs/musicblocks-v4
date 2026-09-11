@@ -14,6 +14,7 @@ import { useBrickLayoutStore } from '@/stores/brick';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { listVisibleNodes } from '@/utils/tower-traversal';
 
+import { CleanControl } from './CleanControl';
 import { DragGhost } from './DragGhost';
 import { ScaleControl } from './ScaleControl';
 import { SnapHintOverlay } from './SnapHintOverlay';
@@ -105,6 +106,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
         <SnapHintOverlay />
         <SnapPreviewView />
         <DisconnectShadowView />
+        <CleanControl canvasRef={canvasRef} />
         <ScaleControl />
         {/* The Trash is only useful once there is something to remove */}
         {towers.length > 0 && <Trash canvasRef={canvasRef} />}

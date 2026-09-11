@@ -135,6 +135,21 @@
             background-color: $mb-accent;
           }
 
+          .config-module-list-item-subitems-note,
+          .config-module-list-item-subitems-status {
+            margin: 0;
+            padding: 10px 12px 0;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            color: $text-light;
+          }
+
+          .config-module-list-item-subitems-status {
+            padding-top: 6px;
+            font-weight: bold;
+            color: $mb-accent-light;
+          }
+
           .config-module-list-item-subitem-list {
             display: flex;
             flex-direction: column;
@@ -164,6 +179,52 @@
                 font-size: 0.9rem;
                 font-weight: bold;
                 color: $mb-accent-dark;
+              }
+
+              .config-module-list-item-subitem-copy {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                padding-right: 12px;
+              }
+
+              .config-module-list-item-subitem-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100%;
+              }
+            }
+
+            .config-module-list-item-flag {
+              align-items: flex-start;
+              padding: 10px 12px;
+
+              .config-module-list-item-flag-title {
+                margin: 0;
+                font-size: 0.95rem;
+                font-weight: bold;
+                color: $mb-accent-dark;
+              }
+
+              .config-module-list-item-flag-desc {
+                margin: 0;
+                font-size: 0.8rem;
+                line-height: 1.4;
+                color: rgba($mb-accent-dark, 0.9);
+              }
+
+              .config-module-list-item-flag-name {
+                font-size: 0.75rem;
+
+                code {
+                  font-size: 0.75rem;
+                }
+              }
+
+              .config-module-list-item-subitem-toggle {
+                padding-top: 4px;
               }
             }
           }

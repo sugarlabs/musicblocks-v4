@@ -43,6 +43,9 @@ export function Menu(props: TPropsMenu): JSX.Element {
 
         <button
           className={`menu-btn ${!props.injected.flags.exportDrawing ? 'menu-btn-hidden' : ''}`}
+          onClick={() =>
+            props.handlers.exportDrawing ? props.handlers.exportDrawing() : undefined
+          }
         >
           <p className="menu-btn-label">
             <span>{'Save mouse artwork as PNG'}</span>

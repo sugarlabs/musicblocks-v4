@@ -47,3 +47,14 @@ export const MAX_SCALE_LEVEL = SCALE_LEVELS[SCALE_LEVELS.length - 1];
  * toggle folds the cavity instead of dragging the brick out of its tower.
  */
 export const FOLD_TOGGLE_SELECTOR = '[data-fold-toggle]';
+
+// ── Workspace ──
+
+/**
+ * How far `cleanWorkspace` keeps the towers from the canvas edges, in pixels: the first tower of
+ * every column starts here, and a column may run down to this far from the bottom.
+ */
+export const CLEAN_WORKSPACE_PADDING = 24;
+
+/** The room `cleanWorkspace` leaves between one tower and the next, and between columns. */
+export const CLEAN_WORKSPACE_GAP = 24;

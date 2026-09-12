@@ -77,6 +77,7 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
 
     // In-flight drag payload; null whenever no palette drag is active.
     const dragRef = useRef<{ config: PaletteBrickConfig; grabOffset: Point } | null>(null);
+    const hasMovedRef = useRef(false);
 
     useEffect(() => {
         const root = rootRef.current;
@@ -87,6 +88,7 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
         const interactable = interact(PALETTE_DRAG_SOURCE_SELECTOR, { context: root }).draggable({
             listeners: {
                 start(event: DragEvent) {
+                    hasMovedRef.current = false;
                     const slot = event.target as HTMLElement;
                     const ghost = ghostRef.current;
 
@@ -120,6 +122,9 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                     startDrag(config);
                 },
                 move(event: DragEvent) {
+                    if (event.dx !== 0 || event.dy !== 0) {
+                        hasMovedRef.current = true;
+                    }
                     const drag = dragRef.current;
                     if (!drag) return;
 
@@ -186,12 +191,14 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                     }
                 },
                 end(event: DragEvent) {
+                    const wasMoved = hasMovedRef.current;
+                    hasMovedRef.current = false;
                     const drag = dragRef.current;
                     dragRef.current = null;
 
                     // Ghost goes away on drop and cancel alike.
                     if (ghostRef.current) ghostRef.current.style.display = 'none';
-                    endDrag();
+                    endDrag(wasMoved);
 
                     const canvas = canvasRef.current;
                     if (!drag || !canvas) return;

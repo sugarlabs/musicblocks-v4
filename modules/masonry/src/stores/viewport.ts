@@ -7,12 +7,16 @@ export interface WorkspaceViewportStore {
     /** How far the canvas has been panned, in pixels; every tower is drawn shifted by this much. */
     offset: Point;
 
-    /** Moves the viewport to `offset`; writing the offset it already has notifies no subscriber. */
+    /** Moves the viewport to `offset`, clamped at the origin; a no-op write notifies nobody. */
     setOffset: (offset: Point) => void;
-    /** Shifts the viewport by `delta`; a zero delta notifies no subscriber. */
+    /** Shifts the viewport by `delta`, clamped at the origin; a no-op delta notifies nobody. */
     panBy: (delta: Point) => void;
     /** Returns the viewport to the unpanned origin. */
     resetOffset: () => void;
+}
+
+function clampOffset(offset: Point): Point {
+    return { x: Math.max(offset.x, 0), y: Math.max(offset.y, 0) };
 }
 
 /**
@@ -24,19 +28,26 @@ export interface WorkspaceViewportStore {
  * into a canvas point (a palette drop, say) subtracts it. `panBy` and `resetOffset` are exposed so
  * that wheel scrolling, auto-scroll, keyboard navigation and a home button can drive the same
  * offset the background drag does.
+ *
+ * The store clamps rather than trusting its callers, the way `scale.ts` does: the offset stops at
+ * the origin, each axis on its own, so no caller can pull the canvas back past where it started
+ * and leave the top-left of the program out of reach.
  */
 export const useWorkspaceViewportStore = create<WorkspaceViewportStore>()(
     subscribeWithSelector((set, get) => ({
         offset: { x: 0, y: 0 },
 
         setOffset: (offset) => {
+            // A fresh point, so a caller holding on to its own cannot move the canvas by
+            // mutating it afterwards.
+            const next = clampOffset(offset);
+
             const current = get().offset;
             // Every notification rewrites the canvas transform, so a write that changes nothing
-            // must not notify.
-            if (current.x === offset.x && current.y === offset.y) return;
+            // must not notify — a pan clamped away at the origin included.
+            if (current.x === next.x && current.y === next.y) return;
 
-            // Copied, so a caller holding on to its point cannot move the canvas by mutating it.
-            set({ offset: { x: offset.x, y: offset.y } });
+            set({ offset: next });
         },
 
         panBy: (delta) => {

@@ -4,6 +4,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import type { Point } from '@/@types/common.types';
 import type {
     ArgumentConnectorMeta,
+    CleanWorkspaceOptions,
     StatementConnectorMeta,
     TowerState,
 } from '@/@types/workspace.types';
@@ -14,7 +15,8 @@ import { extractStatementConnectors } from '@/utils/statement-collision';
 import { exportWorkspace as exportWorkspaceUtil, importProject } from '@/utils/import-export';
 import type { ExportedProject, ImportIdStrategy } from '@/@types/import-export.types';
 import { useBrickLayoutStore } from '@/stores/brick';
-import { listNodes, listVisibleNodes } from '@/utils/tower-traversal';
+import { listNodes, listVisibleNodes, measureTowerExtent } from '@/utils/tower-traversal';
+import { CLEAN_WORKSPACE_GAP, CLEAN_WORKSPACE_PADDING } from '@/utils/constants';
 
 export interface WorkspaceStore {
     /** Record of all towers currently in the workspace, keyed by their unique ID */
@@ -50,6 +52,11 @@ export interface WorkspaceStore {
     absorbTower: (draggedTowerId: string, hostTowerId: string) => void;
     /** Re-runs every tower's layout, leaving the towers where they are */
     refreshTowerLayouts: () => void;
+    /**
+     * Tidies every tower into a column ordered by where each stands, wrapping into further columns
+     * when `maxColumnHeight` would be crossed, and re-runs each tower's layout at its new origin
+     */
+    cleanWorkspace: (options?: CleanWorkspaceOptions) => void;
     /** Folds or unfolds a brick's nesting cavity and re-runs the layout of the tower holding it */
     setNestingFold: (brickId: string, isFolded: boolean) => void;
     /** Serializes the entire workspace into a flat JSON-serializable structure */
@@ -315,6 +322,88 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 }
 
                 return { towers };
+            });
+        },
+
+        cleanWorkspace: (options = {}) => {
+            const {
+                maxColumnHeight,
+                padding = CLEAN_WORKSPACE_PADDING,
+                gap = CLEAN_WORKSPACE_GAP,
+            } = options;
+
+            const current = get().towers;
+            const ids = Object.keys(current);
+            // Nothing to place: returning ahead of `set` keeps the subscribers quiet, the way
+            // `refreshTowerLayouts` is quiet on an empty workspace.
+            if (ids.length === 0) return;
+
+            // Reading order off where each tower stands now — top to bottom, then left to right —
+            // so the result is predictable and two towers side by side keep their order.
+            const ordered = Object.values(current).sort(
+                (a, b) => a.position.y - b.position.y || a.position.x - b.position.x,
+            );
+
+            // Each tower takes the room it is laid out over, so a tall tower pushes the next one
+            // down by what it actually covers rather than by its root brick alone.
+            const { coords } = useBrickLayoutStore.getState();
+
+            const placed: Record<string, Point> = {};
+            let x = padding;
+            let y = padding;
+            let columnWidth = 0;
+
+            for (const tower of ordered) {
+                const extent = measureTowerExtent(tower, coords);
+
+                // A column runs from `padding` down to `maxColumnHeight - padding`. A tower that
+                // would cross the bottom starts the next column, clear of the widest tower in the
+                // one it left — unless it is the first in its column: a tower taller than the
+                // canvas has nowhere better to go, and wrapping it would leave an empty column.
+                const crosses =
+                    maxColumnHeight !== undefined && y + extent.h > maxColumnHeight - padding;
+                if (crosses && y > padding) {
+                    x += columnWidth + gap;
+                    y = padding;
+                    columnWidth = 0;
+                }
+
+                placed[tower.id] = { x, y };
+                y += extent.h + gap;
+                columnWidth = Math.max(columnWidth, extent.w);
+            }
+
+            set((state) => {
+                const towers: Record<string, TowerState> = {};
+                for (const id of ids) {
+                    const tower = state.towers[id];
+                    // Both the position and the root reference change, in this one write: the new
+                    // position moves the tower through the layout's origin fast-path, and the new
+                    // root reference re-runs its full layout the way `refreshTowerLayouts` does,
+                    // so no tower keeps a stale origin.
+                    towers[id] = { ...tower, position: placed[id], root: { ...tower.root } };
+                }
+
+                return { towers };
+            });
+
+            // The move lands through the layout's origin fast-path, which only writes coords and
+            // never fires the `positioned` subscription the Workspace re-syncs the connector
+            // spaces from; the full pass the re-seat triggers does fire it, but only once it has
+            // settled, ticks later. So the connectors are re-synced here, the way `useBrickMove`
+            // does after a drop. In a microtask: the `set` above has React's flush queued ahead
+            // of it, and that flush runs the fast-path, so by the time this runs every brick model
+            // holds its new position.
+            queueMicrotask(() => {
+                const store = get();
+                for (const id of ids) {
+                    const tower = store.towers[id];
+                    // Gone in the meantime: `removeTower` has purged its points already.
+                    if (!tower) continue;
+
+                    store.syncStatementConnectors(id, tower.root);
+                    store.syncArgumentConnectors(id, tower.root);
+                }
             });
         },
 

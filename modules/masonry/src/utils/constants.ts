@@ -56,3 +56,14 @@ export const FOLD_TOGGLE_SELECTOR = '[data-fold-toggle]';
  * press that lands on a brick drags the brick rather than panning the canvas underneath it.
  */
 export const TOWER_BRICK_SELECTOR = '[data-tower-brick]';
+
+// ── Workspace ──
+
+/**
+ * How far `cleanWorkspace` keeps the towers from the canvas edges, in pixels: the first tower of
+ * every column starts here, and a column may run down to this far from the bottom.
+ */
+export const CLEAN_WORKSPACE_PADDING = 24;
+
+/** The room `cleanWorkspace` leaves between one tower and the next, and between columns. */
+export const CLEAN_WORKSPACE_GAP = 24;

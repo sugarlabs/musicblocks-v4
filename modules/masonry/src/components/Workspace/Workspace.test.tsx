@@ -19,7 +19,7 @@ import { useTrashStore } from '@/stores/trash';
 import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { createBrickModel, wrapAsRootNode } from '@/utils/brick-model-factory';
-import { FOLD_TOGGLE_SELECTOR } from '@/utils/constants';
+import { CLEAN_WORKSPACE_PADDING, FOLD_TOGGLE_SELECTOR } from '@/utils/constants';
 
 import { Workspace } from './Workspace';
 
@@ -433,6 +433,47 @@ describe('Workspace', () => {
       });
 
       expect(foldToggleOf(container, 't1-outer')!.disabled).toBe(true);
+    });
+  });
+
+  describe('clean control', () => {
+    /** The clean button on the canvas. */
+    function queryClean(container: HTMLElement) {
+      return container.querySelector<HTMLButtonElement>('button[aria-label="Clean workspace"]');
+    }
+
+    it('keeps the clean control on the canvas, disabled while there is nothing to tidy', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      expect(queryClean(container)).not.toBeNull();
+      expect(queryClean(container)!.disabled).toBe(true);
+    });
+
+    it('enables it once the workspace holds a tower', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      act(() => {
+        useWorkspaceStore.getState().createTower(makeTower('t1'));
+      });
+
+      expect(queryClean(container)!.disabled).toBe(false);
+    });
+
+    it('moves the towers to the canvas padding when pressed', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      act(() => {
+        useWorkspaceStore
+          .getState()
+          .createTower({ ...makeTower('t1'), position: { x: 400, y: 300 } });
+      });
+
+      fireEvent.click(queryClean(container)!);
+
+      expect(useWorkspaceStore.getState().towers['t1'].position).toEqual({
+        x: CLEAN_WORKSPACE_PADDING,
+        y: CLEAN_WORKSPACE_PADDING,
+      });
     });
   });
 });

@@ -11,9 +11,10 @@ import {
     statementTreeWithNesting,
 } from '@/mocks/tower';
 import { exportWorkspace } from '@/utils/import-export';
-import { listNodes, listVisibleNodes } from '@/utils/tower-traversal';
-import type { Bounds, Point } from '@/@types/common.types';
-import type { TowerExpressionNode, TowerStatementNode } from '@/@types/tower.types';
+import { listNodes, listVisibleNodes, measureTowerExtent } from '@/utils/tower-traversal';
+import { CLEAN_WORKSPACE_GAP, CLEAN_WORKSPACE_PADDING } from '@/utils/constants';
+import type { Bounds, Point, Size } from '@/@types/common.types';
+import type { TowerExpressionNode, TowerNode, TowerStatementNode } from '@/@types/tower.types';
 import type { BrickModel } from '@/models/brick';
 import type { QuadtreeCollisionSpace } from '@/utils/collision';
 
@@ -919,6 +920,322 @@ describe('Workspace Store Collision Space', () => {
             expect(Object.keys(useWorkspaceStore.getState().argumentConnectors).length).toBe(
                 atDefault.argument,
             );
+        });
+    });
+
+    describe('cleanWorkspace', () => {
+        const PADDING = CLEAN_WORKSPACE_PADDING;
+        const GAP = CLEAN_WORKSPACE_GAP;
+
+        afterEach(() => {
+            useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
+        });
+
+        /**
+         * Gives a brick real dims the way the layout pass would: a measured widget, then
+         * `computeDims` over it. Returns what the model settled on, since the outline generator
+         * adds its own margins to the widget.
+         */
+        function measure(node: TowerNode, widget: Size): Size {
+            node.model.widgetDims = widget;
+            node.model.computeDims();
+            return node.model.dims;
+        }
+
+        /** Where the store has put the tower with `id`. */
+        function positionOf(id: string): Point {
+            return useWorkspaceStore.getState().towers[id].position;
+        }
+
+        /**
+         * Three one-brick towers with measured roots, laid out where they stand and scrambled on
+         * the canvas: `b` highest up, `c` and `a` on one row below it with `c` to the left. Reading
+         * order — top to bottom, then left to right — is therefore b, c, a.
+         */
+        function setupScrambledTowers() {
+            const roots = {
+                a: makeEmptyStatement('a', 0),
+                b: makeEmptyStatement('b', 0),
+                c: makeEmptyStatement('c', 0),
+            };
+            const dims = {
+                a: measure(roots.a, { w: 40, h: 14 }),
+                b: measure(roots.b, { w: 160, h: 60 }),
+                c: measure(roots.c, { w: 90, h: 30 }),
+            };
+            const positions = {
+                a: { x: 500, y: 300 },
+                b: { x: 700, y: 40 },
+                c: { x: 100, y: 300 },
+            };
+
+            act(() => {
+                const store = useWorkspaceStore.getState();
+                store.createTower({ id: 'tower-a', root: roots.a, position: positions.a });
+                store.createTower({ id: 'tower-b', root: roots.b, position: positions.b });
+                store.createTower({ id: 'tower-c', root: roots.c, position: positions.c });
+            });
+            useBrickLayoutStore
+                .getState()
+                .setCoords({ a: positions.a, b: positions.b, c: positions.c });
+
+            return { roots, dims };
+        }
+
+        it('orders the towers top to bottom, then left to right, off where they stood', () => {
+            setupScrambledTowers();
+
+            act(() => {
+                useWorkspaceStore.getState().cleanWorkspace();
+            });
+
+            const [b, c, a] = ['tower-b', 'tower-c', 'tower-a'].map(positionOf);
+
+            expect(b.y).toBeLessThan(c.y);
+            expect(c.y).toBeLessThan(a.y);
+            // One column: every tower starts at the padding, the first one at the top of it.
+            expect([b.x, c.x, a.x]).toEqual([PADDING, PADDING, PADDING]);
+            expect(b.y).toBe(PADDING);
+        });
+
+        it('leaves the gap between one tower and the next, so no two overlap', () => {
+            const { dims } = setupScrambledTowers();
+
+            // Measured ahead of the tidy, while `coords` still agree with the positions: no layout
+            // runs here to move the bricks along with their towers.
+            const { coords } = useBrickLayoutStore.getState();
+            const extents = Object.fromEntries(
+                Object.values(useWorkspaceStore.getState().towers).map((tower) => [
+                    tower.id,
+                    measureTowerExtent(tower, coords),
+                ]),
+            );
+
+            act(() => {
+                useWorkspaceStore.getState().cleanWorkspace();
+            });
+
+            const [b, c, a] = ['tower-b', 'tower-c', 'tower-a'].map(positionOf);
+
+            expect(c.y).toBe(b.y + dims.b.h + GAP);
+            expect(a.y).toBe(c.y + dims.c.h + GAP);
+
+            // Against the measured extents rather than the arithmetic above: no box meets another.
+            const boxes = Object.values(useWorkspaceStore.getState().towers).map((tower) => ({
+                ...tower.position,
+                ...extents[tower.id],
+            }));
+            for (const box of boxes) {
+                for (const other of boxes) {
+                    if (other === box) continue;
+                    const apart =
+                        box.x + box.w <= other.x ||
+                        other.x + other.w <= box.x ||
+                        box.y + box.h <= other.y ||
+                        other.y + other.h <= box.y;
+                    expect(apart).toBe(true);
+                }
+            }
+        });
+
+        it('wraps into a second column when the next tower would cross maxColumnHeight', () => {
+            const { dims } = setupScrambledTowers();
+            // Room for b and c, one above the other, and not a pixel more.
+            const maxColumnHeight = PADDING + dims.b.h + GAP + dims.c.h + PADDING;
+
+            act(() => {
+                useWorkspaceStore.getState().cleanWorkspace({ maxColumnHeight });
+            });
+
+            expect(positionOf('tower-b')).toEqual({ x: PADDING, y: PADDING });
+            expect(positionOf('tower-c')).toEqual({ x: PADDING, y: PADDING + dims.b.h + GAP });
+            // The new column starts clear of the widest tower in the one before it.
+            expect(positionOf('tower-a')).toEqual({
+                x: PADDING + Math.max(dims.b.w, dims.c.w) + GAP,
+                y: PADDING,
+            });
+        });
+
+        it('keeps a tower taller than the canvas at the head of a column of its own', () => {
+            const { dims } = setupScrambledTowers();
+
+            // Shorter than every tower: each crosses it, so each can only head a column.
+            act(() => {
+                useWorkspaceStore.getState().cleanWorkspace({ maxColumnHeight: 1 });
+            });
+
+            expect(positionOf('tower-b')).toEqual({ x: PADDING, y: PADDING });
+            expect(positionOf('tower-c')).toEqual({ x: PADDING + dims.b.w + GAP, y: PADDING });
+            expect(positionOf('tower-a')).toEqual({
+                x: PADDING + dims.b.w + GAP + dims.c.w + GAP,
+                y: PADDING,
+            });
+        });
+
+        it('lays out with the padding and gap it is given', () => {
+            const { dims } = setupScrambledTowers();
+
+            act(() => {
+                useWorkspaceStore.getState().cleanWorkspace({ padding: 10, gap: 5 });
+            });
+
+            expect(positionOf('tower-b')).toEqual({ x: 10, y: 10 });
+            expect(positionOf('tower-c')).toEqual({ x: 10, y: 10 + dims.b.h + 5 });
+        });
+
+        it('measures a tower the layout has not placed yet by its root brick, not as nothing', () => {
+            const upper = makeEmptyStatement('upper', 0);
+            const lower = makeEmptyStatement('lower', 0);
+            const upperDims = measure(upper, { w: 40, h: 14 });
+            measure(lower, { w: 40, h: 14 });
+
+            // No coords for either: the towers exist, but no layout pass has reached them.
+            act(() => {
+                const store = useWorkspaceStore.getState();
+                store.createTower({ id: 'tower-upper', root: upper, position: { x: 300, y: 100 } });
+                store.createTower({ id: 'tower-lower', root: lower, position: { x: 300, y: 400 } });
+            });
+
+            act(() => {
+                useWorkspaceStore.getState().cleanWorkspace();
+            });
+
+            // Not on top of the first tower: its root brick still takes its room.
+            expect(upperDims.h).toBeGreaterThan(0);
+            expect(positionOf('tower-lower')).toEqual({
+                x: PADDING,
+                y: PADDING + upperDims.h + GAP,
+            });
+        });
+
+        it('pushes the next tower down by the whole tower above it, not its root brick alone', () => {
+            const head = makeEmptyStatement('head', 0);
+            const tail = makeEmptyStatement('tail', 0);
+            head.next = tail;
+            tail.prev = head;
+            const headDims = measure(head, { w: 40, h: 14 });
+            const tailDims = measure(tail, { w: 40, h: 14 });
+            const lone = makeEmptyStatement('lone', 0);
+            measure(lone, { w: 40, h: 14 });
+
+            act(() => {
+                const store = useWorkspaceStore.getState();
+                store.createTower({ id: 'tower-chain', root: head, position: { x: 300, y: 100 } });
+                store.createTower({ id: 'tower-lone', root: lone, position: { x: 300, y: 400 } });
+            });
+            // Laid out: the tail sits flush below the head.
+            useBrickLayoutStore.getState().setCoords({
+                head: { x: 300, y: 100 },
+                tail: { x: 300, y: 100 + headDims.h },
+                lone: { x: 300, y: 400 },
+            });
+
+            act(() => {
+                useWorkspaceStore.getState().cleanWorkspace();
+            });
+
+            expect(positionOf('tower-lone')).toEqual({
+                x: PADDING,
+                y: PADDING + headDims.h + tailDims.h + GAP,
+            });
+        });
+
+        it('replaces every tower root reference so each layout re-runs', () => {
+            const { roots } = setupScrambledTowers();
+
+            act(() => {
+                useWorkspaceStore.getState().cleanWorkspace();
+            });
+
+            const after = useWorkspaceStore.getState().towers;
+
+            for (const key of ['a', 'b', 'c'] as const) {
+                expect(after[`tower-${key}`].root).not.toBe(roots[key]);
+                // Same bricks either side — only the reference is new.
+                expect(after[`tower-${key}`].root.model).toBe(roots[key].model);
+            }
+        });
+
+        it('writes every position in a single update', () => {
+            setupScrambledTowers();
+            const listener = vi.fn();
+            const unsubscribe = useWorkspaceStore.subscribe(listener);
+
+            act(() => {
+                useWorkspaceStore.getState().cleanWorkspace();
+            });
+            unsubscribe();
+
+            expect(listener).toHaveBeenCalledTimes(1);
+        });
+
+        it('re-syncs both connector spaces once the towers have moved, the way a drop does', async () => {
+            const { roots } = setupScrambledTowers();
+            // An expression too, so the argument space has something to hold.
+            const expression = makeEmptyExpression('expr', 1);
+            measure(expression, { w: 40, h: 14 });
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-expr',
+                    root: expression,
+                    position: { x: 900, y: 500 },
+                });
+            });
+
+            act(() => {
+                useWorkspaceStore.getState().cleanWorkspace();
+            });
+
+            // Deferred, like `useBrickMove`'s re-sync: nothing has been extracted yet.
+            expect(Object.keys(useWorkspaceStore.getState().statementConnectors)).toHaveLength(0);
+            expect(Object.keys(useWorkspaceStore.getState().argumentConnectors)).toHaveLength(0);
+
+            // Stands in for the layout's origin fast-path, which is what moves the models in the
+            // browser between the write above and the microtask below.
+            for (const tower of Object.values(useWorkspaceStore.getState().towers)) {
+                tower.root.model.setPosition(tower.position.x, tower.position.y);
+            }
+            await Promise.resolve();
+
+            const state = useWorkspaceStore.getState();
+            const statementMetas = Object.values(state.statementConnectors);
+            const argumentMetas = Object.values(state.argumentConnectors);
+
+            expect(new Set(statementMetas.map((meta) => meta.towerId))).toEqual(
+                new Set(['tower-a', 'tower-b', 'tower-c']),
+            );
+            expect(argumentMetas.map((meta) => meta.towerId)).toContain('tower-expr');
+
+            // Registered where the bricks now are, not where they stood before the tidy.
+            for (const key of ['a', 'b', 'c'] as const) {
+                const model = roots[key].model;
+                const next = model.getConnectorCoords().next!;
+                const meta = statementMetas.find(
+                    (meta) => meta.brickId === model.id && meta.type === 'next',
+                )!;
+                const hits = state.statementCollisionSpace.checkCollision({
+                    id: -1,
+                    x: model.position.x + next.x,
+                    y: model.position.y + next.y,
+                    w: 1,
+                    h: 1,
+                });
+                expect(hits).toContain(meta.id);
+            }
+        });
+
+        it('does nothing on an empty workspace', async () => {
+            const listener = vi.fn();
+            const unsubscribe = useWorkspaceStore.subscribe(listener);
+
+            act(() => {
+                useWorkspaceStore.getState().cleanWorkspace();
+            });
+            await Promise.resolve();
+            unsubscribe();
+
+            expect(listener).not.toHaveBeenCalled();
+            expect(useWorkspaceStore.getState().towers).toEqual({});
         });
     });
 });

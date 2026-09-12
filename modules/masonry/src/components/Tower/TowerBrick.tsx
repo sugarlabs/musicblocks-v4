@@ -6,6 +6,10 @@ import { BrickView } from '@/components/Brick/Brick';
 import { useBrickMove } from '@/hooks/useBrickMove';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
+import { darkenColor } from '@/utils/color';
+
+/** How far a selected brick rises off the canvas, in px. */
+const LIFT_PX = 3;
 
 export interface TowerBrickViewProps {
   /** Unique identifier, kept separate from `node` since `node`'s identity changes every render. */
@@ -25,6 +29,11 @@ export interface TowerBrickViewProps {
 export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
   const { id, node } = props;
   const ref = useRef<HTMLDivElement>(null);
+
+  // Subscribed as the derived boolean rather than the id itself: every brick on the canvas holds
+  // one of these, and an id would hand all of them a changed value on every selection change. The
+  // boolean only flips for the two bricks that actually gained or lost the selection.
+  const isSelected = useWorkspaceStore((state) => state.selectedBrickId === id);
 
   useBrickMove(id, ref);
 
@@ -47,6 +56,21 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
 
     useWorkspaceStore.getState().setNestingFold(id, !found.node.model.isNestingFolded);
   }, [id]);
+  // Read at press time like `toggleFold` above, so the handler stays keyed on `id` alone.
+  const handleClick = useCallback(() => {
+    useWorkspaceStore.getState().selectBrick(id);
+  }, [id]);
+
+  // A selected brick is ringed in a deepened shade of its own fill, dark enough to hold against the
+  // light canvas the bricks sit on. `drop-shadow` follows the rendered alpha, so the ring traces the
+  // outline (notches and cavity included) instead of boxing the bounding rect the way an `outline`
+  // would. Chained rather than one wide blur: each pass re-blurs the last, building a solid rim at
+  // the edge that falls off into a glow. The cast shadow comes last, so it is thrown by the ringed
+  // silhouette and lands under the brick the lift raises.
+  const highlight = darkenColor(node.model.colorsDefault.background, 0.45);
+  const highlightFilter =
+    `drop-shadow(0 0 1px ${highlight}) drop-shadow(0 0 2px ${highlight}) ` +
+    `drop-shadow(0 0 4px ${highlight}) drop-shadow(0 ${LIFT_PX + 1}px 3px rgb(0 0 0 / 0.3))`;
 
   if (!isMounted) return null;
 
@@ -73,12 +97,27 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
       data-id={id}
       data-tower-brick=""
       className="absolute"
+      onClick={handleClick}
       style={{
         transform: `translate(${x}px, ${y}px)`,
         visibility: isPositioned ? 'visible' : 'hidden',
       }}
     >
-      {brick}
+      {/*
+        The lift rides an inner wrapper rather than the transform above it: that one is the brick's
+        seat in the tower, and `useBrickMove` and the collision math both measure this element's
+        rect off it. Raising the brick inside leaves all of that reading exactly what it did before,
+        and leaves this transform free to animate without fighting a drag.
+      */}
+      <div
+        style={{
+          transform: isSelected ? `translateY(-${LIFT_PX}px)` : undefined,
+          filter: isSelected ? highlightFilter : undefined,
+          transition: 'transform 120ms ease-out',
+        }}
+      >
+        {brick}
+      </div>
     </div>
   );
 });

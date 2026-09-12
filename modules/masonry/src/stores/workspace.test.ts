@@ -26,10 +26,84 @@ describe('Workspace Store Collision Space', () => {
         act(() => {
             useWorkspaceStore.setState({
                 towers: {},
+                selectedBrickId: null,
                 statementConnectors: {},
                 argumentConnectors: {},
             });
         });
+    });
+
+    it('selects and clears a brick', () => {
+        const store = useWorkspaceStore.getState();
+
+        act(() => {
+            store.selectBrick('brick-1');
+        });
+        expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+
+        act(() => {
+            useWorkspaceStore.getState().clearSelection();
+        });
+        expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
+    });
+
+    it('clears the selection when the selected tower is removed', () => {
+        const root = makeEmptyStatement('selected-root', 0, false);
+
+        act(() => {
+            useWorkspaceStore.getState().createTower({
+                id: 'selected-tower',
+                root,
+                position: { x: 0, y: 0 },
+            });
+            useWorkspaceStore.getState().selectBrick(root.model.id);
+            useWorkspaceStore.getState().removeTower('selected-tower');
+        });
+
+        expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
+    });
+
+    it('keeps a selection that belongs to a tower other than the one removed', () => {
+        const kept = makeEmptyStatement('kept-root', 0, false);
+        const doomed = makeEmptyStatement('doomed-root', 0, false);
+
+        act(() => {
+            useWorkspaceStore.getState().createTower({
+                id: 'kept-tower',
+                root: kept,
+                position: { x: 0, y: 0 },
+            });
+            useWorkspaceStore.getState().createTower({
+                id: 'doomed-tower',
+                root: doomed,
+                position: { x: 0, y: 0 },
+            });
+            useWorkspaceStore.getState().selectBrick(kept.model.id);
+            useWorkspaceStore.getState().removeTower('doomed-tower');
+        });
+
+        expect(useWorkspaceStore.getState().selectedBrickId).toBe('kept-root');
+    });
+
+    it('keeps the selection when a join moves the brick into the tower that absorbs it', () => {
+        const host = makeEmptyStatement('host-root', 0, false);
+        const dragged = makeEmptyStatement('dragged-root', 0, false);
+
+        act(() => {
+            const store = useWorkspaceStore.getState();
+
+            store.createTower({ id: 'host-tower', root: host, position: { x: 0, y: 0 } });
+            store.createTower({ id: 'dragged-tower', root: dragged, position: { x: 0, y: 0 } });
+            store.selectBrick('dragged-root');
+
+            // What a join does: splice the graphs together, then drop the emptied tower.
+            host.next = dragged;
+            dragged.prev = host;
+            store.absorbTower('dragged-tower', 'host-tower');
+        });
+
+        // The brick is still on the canvas, just under a different tower, so it stays selected.
+        expect(useWorkspaceStore.getState().selectedBrickId).toBe('dragged-root');
     });
 
     it('extracts and syncs statement connectors correctly', () => {

@@ -75,24 +75,26 @@ describe('useCanvasPan', () => {
     expect(interact).toHaveBeenCalledTimes(1);
     expect(interact).toHaveBeenCalledWith(canvas);
     expect(draggableOptions().ignoreFrom).toContain(TOWER_BRICK_SELECTOR);
+    // The zoom controls sit on the canvas too, and pressing one is a click, not a pan.
+    expect(draggableOptions().ignoreFrom).toContain('button');
   });
 
   it('pans the store by each pointer delta and moves the viewport node to match', () => {
     const { viewport } = mountCanvasPan();
     const { move } = draggableOptions().listeners;
 
-    move({ dx: 12, dy: -4 });
+    move({ dx: 12, dy: 4 });
     move({ dx: 3, dy: 5 });
 
-    expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 15, y: 1 });
-    expect(viewport.style.transform).toBe('translate(15px, 1px)');
+    expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 15, y: 9 });
+    expect(viewport.style.transform).toBe('translate(15px, 9px)');
   });
 
   it('moves the viewport node for any write to the store, not just a drag', () => {
     const { viewport } = mountCanvasPan();
 
-    useWorkspaceViewportStore.getState().setOffset({ x: -40, y: 20 });
-    expect(viewport.style.transform).toBe('translate(-40px, 20px)');
+    useWorkspaceViewportStore.getState().setOffset({ x: 40, y: 20 });
+    expect(viewport.style.transform).toBe('translate(40px, 20px)');
 
     useWorkspaceViewportStore.getState().resetOffset();
     expect(viewport.style.transform).toBe('translate(0px, 0px)');
@@ -106,12 +108,13 @@ describe('useCanvasPan', () => {
     expect(viewport.style.transform).toBe('translate(70px, 30px)');
   });
 
-  it('shows the grabbing cursor only while a pan is in progress', () => {
+  it('offers the open hand until a pan starts, then closes it', () => {
     mountCanvasPan();
     const { cursorChecker } = draggableOptions();
 
+    // Interact only asks once a pan is preparable, so `grab` never reaches a brick.
+    expect(cursorChecker(null, null, null, false)).toBe('grab');
     expect(cursorChecker(null, null, null, true)).toBe('grabbing');
-    expect(cursorChecker(null, null, null, false)).toBe('');
   });
 
   it('releases the draggable and stops following the store once unmounted', () => {

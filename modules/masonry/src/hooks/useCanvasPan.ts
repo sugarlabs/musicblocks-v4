@@ -60,10 +60,11 @@ export function useCanvasPan(options: UseCanvasPanOptions) {
             // start panning underneath it. The zoom buttons are the canvas' only other pointer
             // targets, and a press on them is a click, not a pan.
             ignoreFrom: `${TOWER_BRICK_SELECTOR}, button`,
-            // Only signal the pan while it is in progress: the empty background is not a handle
-            // worth advertising on hover.
+            // The open hand is what advertises the background as draggable, so it shows on
+            // hover and closes once the pan is under way. It never reaches a brick: `ignoreFrom`
+            // stops the action there, so interact asks for no cursor at all.
             cursorChecker: (_action, _interactable, _element, interacting) =>
-                interacting ? 'grabbing' : '',
+                interacting ? 'grabbing' : 'grab',
             listeners: {
                 move(event: DragEvent) {
                     useWorkspaceViewportStore.getState().panBy({ x: event.dx, y: event.dy });

@@ -67,6 +67,24 @@ export function tryConnect(towerId: string): boolean {
     }
 
     if (argument !== null) {
+        if (argument.residentNode) {
+            const hostTower = store.towers[argument.hostTowerId];
+            if (hostTower) {
+                // Place the evicted subtree just below and to the right of its old slot so it
+                // lands visibly beside the host without overlapping.
+                const residentPos = argument.residentNode.model.position;
+                const dropPos = {
+                    x: hostTower.position.x + residentPos.x + 24,
+                    y: hostTower.position.y + residentPos.y + 48,
+                };
+                store.detachBrickToNewTower(
+                    argument.hostTowerId,
+                    argument.residentNode.model.id,
+                    dropPos,
+                );
+            }
+        }
+
         joinArg(argument);
         store.absorbTower(argument.absorbedTowerId, argument.hostTowerId);
         triggerBrickAnimation(towerId, 'brick-snap-pulse');

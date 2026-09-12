@@ -20,6 +20,12 @@ export interface WorkspaceStore {
     /** Record of all towers currently in the workspace, keyed by their unique ID */
     towers: Record<string, TowerState>;
 
+    /**
+     * Whether all rendered bricks are hidden from the canvas. A pure view flag — toggling it
+     * leaves the tower graph and the brick layout store untouched.
+     */
+    areBricksHidden: boolean;
+
     /** Collision space tracking statement connection points */
     statementCollisionSpace: QuadtreeCollisionSpace;
     /** Book-keeping mapping collision object ID to statement connector metadata */
@@ -50,6 +56,8 @@ export interface WorkspaceStore {
     absorbTower: (draggedTowerId: string, hostTowerId: string) => void;
     /** Re-runs every tower's layout, leaving the towers where they are */
     refreshTowerLayouts: () => void;
+    /** Sets whether all rendered bricks are hidden from the canvas. */
+    setBricksHidden: (hidden: boolean) => void;
     /** Folds or unfolds a brick's nesting cavity and re-runs the layout of the tower holding it */
     setNestingFold: (brickId: string, isFolded: boolean) => void;
     /** Serializes the entire workspace into a flat JSON-serializable structure */
@@ -67,6 +75,7 @@ export interface WorkspaceStore {
 export const useWorkspaceStore = create<WorkspaceStore>()(
     subscribeWithSelector((set, get) => ({
         towers: {},
+        areBricksHidden: false,
         statementCollisionSpace: new QuadtreeCollisionSpace(4000, 4000),
         statementConnectors: {},
         argumentCollisionSpace: new QuadtreeCollisionSpace(4000, 4000),
@@ -316,6 +325,10 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
                 return { towers };
             });
+        },
+
+        setBricksHidden: (hidden) => {
+            set({ areBricksHidden: hidden });
         },
 
         setNestingFold: (brickId, isFolded) => {

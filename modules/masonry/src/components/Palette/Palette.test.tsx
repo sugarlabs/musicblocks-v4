@@ -3,7 +3,8 @@
 // accessibility, and edge cases.
 //
 // Scope note: jsdom does no layout and does not implement scrollIntoView, so scroll-to is asserted
-// by spying on Element.prototype.scrollIntoView rather than checking real scroll position.
+// by spying on Element.prototype.scrollIntoView rather than checking real scroll position, and
+// cursor and width affordances by the utility classes that set them.
 
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -168,6 +169,30 @@ describe('Palette', () => {
       expect(screen.getByRole('button', { name: 'Meter' }).getAttribute('title')).toBe('Meter');
     });
 
+    it('marks the sidebar category buttons and the classification tabs as pointer targets', () => {
+      render(<Palette config={config} />);
+
+      // A button takes cursor:default from preflight, so the pointer has to be asked for.
+      expect(screen.getByRole('button', { name: 'Rhythm' }).className).toContain('cursor-pointer');
+      expect(screen.getByRole('button', { name: 'Music' }).className).toContain('cursor-pointer');
+    });
+
+    it('leaves the bricks as grab targets rather than pointer targets', () => {
+      const { container } = render(<Palette config={config} />);
+
+      // Bricks are drag sources, not click targets; a pointer would misdescribe them.
+      const slot = container.querySelector('[data-brick-id="r1"]');
+      expect(slot?.className).toContain('cursor-grab');
+      expect(slot?.className).not.toContain('cursor-pointer');
+    });
+
+    it('sizes a brick slot to its brick so the whitespace beside it is outside the slot', () => {
+      const { container } = render(<Palette config={config} />);
+
+      // The slot is a flex row; without w-fit it spans the list and the grab cursor with it.
+      expect(container.querySelector('[data-brick-id="r1"]')?.className).toContain('w-fit');
+    });
+
     it('renders a section heading (h3) for each active-classification category', () => {
       render(<Palette config={config} />);
 
@@ -303,6 +328,36 @@ describe('Palette', () => {
       expect(flashState('Meter')).toBeNull();
     });
 
+    it('flashes the header even though the scroll itself moves nothing', () => {
+      render(<Palette config={config} />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Meter' }));
+
+      // jsdom never scrolls, so this is the already-at-the-end case: the call changes nothing.
+      expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
+      expect(flashState('Meter')).toBe('true');
+    });
+
+    it('drops a pending flash timer when the component unmounts', () => {
+      vi.useFakeTimers();
+      try {
+        const { unmount } = render(<Palette config={config} />);
+        fireEvent.click(screen.getByRole('button', { name: 'Meter' }));
+
+        unmount();
+
+        // A surviving timeout would set state on an unmounted component.
+        expect(vi.getTimerCount()).toBe(0);
+        expect(() =>
+          act(() => {
+            vi.advanceTimersByTime(1000);
+          }),
+        ).not.toThrow();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
     it('filters bricks as the user types in the search input', () => {
       render(<Palette config={config} />);
 
@@ -420,6 +475,16 @@ describe('Palette', () => {
       // The visible span provides the name; distinct from the same-named headings.
       expect(screen.getByRole('button', { name: 'Rhythm' })).toBeTruthy();
       expect(screen.getByRole('button', { name: 'Meter' })).toBeTruthy();
+    });
+
+    it('names a sidebar category button from its visible label, not from its title', () => {
+      render(<Palette config={config} />);
+
+      const button = screen.getByRole('button', { name: 'Rhythm' });
+
+      // title is a tooltip for the truncated label; the span is what names the button.
+      expect(button.getAttribute('title')).toBe('Rhythm');
+      expect(within(button).getByText('Rhythm')).toBeTruthy();
     });
 
     it('exposes each category section header as an h3 heading with the category name', () => {

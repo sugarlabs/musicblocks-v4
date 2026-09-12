@@ -1,6 +1,6 @@
 // Component test for the Workspace's CleanControl button.
-// Verifies button rendering, the disabled state off the workspace store, and that a click tidies
-// the towers with the canvas height it is handed.
+// Verifies button rendering, the disabled state off the workspace store, that a click tidies the
+// towers with the canvas height it is handed, and that it brings a panned canvas back home.
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -10,6 +10,7 @@ import type { Point } from '@/@types/common.types';
 
 import { makeEmptyStatement } from '@/mocks/tower';
 import { useBrickLayoutStore } from '@/stores/brick';
+import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { CLEAN_WORKSPACE_GAP, CLEAN_WORKSPACE_PADDING } from '@/utils/constants';
 
@@ -19,6 +20,7 @@ afterEach(() => {
   cleanup();
   useWorkspaceStore.setState({ towers: {}, statementConnectors: {}, argumentConnectors: {} });
   useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
+  useWorkspaceViewportStore.setState({ offset: { x: 0, y: 0 } });
 });
 
 /** A canvas stand-in reporting `clientHeight`, which jsdom would otherwise leave at zero. */
@@ -91,6 +93,22 @@ describe('CleanControl', () => {
 
     expect(useWorkspaceStore.getState().towers['t2'].position).toEqual({
       x: CLEAN_WORKSPACE_PADDING + w + CLEAN_WORKSPACE_GAP,
+      y: CLEAN_WORKSPACE_PADDING,
+    });
+  });
+
+  // cleanWorkspace works in canvas coordinates, so on a panned canvas the tidied column would land
+  // outside the view. The button brings the canvas home first.
+  it('returns a panned canvas to the origin before tidying', () => {
+    addTower('t1', { x: 500, y: 300 });
+    useWorkspaceViewportStore.getState().setOffset({ x: 260, y: 140 });
+    render(<CleanControl canvasRef={{ current: null }} />);
+
+    fireEvent.click(cleanButton());
+
+    expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+    expect(useWorkspaceStore.getState().towers['t1'].position).toEqual({
+      x: CLEAN_WORKSPACE_PADDING,
       y: CLEAN_WORKSPACE_PADDING,
     });
   });

@@ -1,0 +1,2 @@
+function e(){`serviceWorker`in navigator&&window.addEventListener(`load`,()=>{navigator.serviceWorker.register(`/musicblocks-v4/sw.js`).then(e=>{console.log(`SW registered: `,e)}).catch(e=>{console.log(`SW registration failed: `,e)})})}export{e as loadServiceWorker};
+//# sourceMappingURL=misc-iD4ynruq.js.map

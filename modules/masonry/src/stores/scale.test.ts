@@ -53,6 +53,33 @@ describe('useWorkspaceScaleStore', () => {
         expect(useWorkspaceScaleStore.getState().level).toBe(DEFAULT_SCALE_LEVEL - 1);
     });
 
+    it('reset returns a non-default level to the default from either side', () => {
+        useWorkspaceScaleStore.setState({ level: MAX_SCALE_LEVEL });
+
+        useWorkspaceScaleStore.getState().reset();
+
+        expect(useWorkspaceScaleStore.getState().level).toBe(DEFAULT_SCALE_LEVEL);
+
+        useWorkspaceScaleStore.setState({ level: MIN_SCALE_LEVEL });
+
+        useWorkspaceScaleStore.getState().reset();
+
+        expect(useWorkspaceScaleStore.getState().level).toBe(DEFAULT_SCALE_LEVEL);
+    });
+
+    it('a reset at the default holds the level and notifies no subscriber', () => {
+        const listener = vi.fn();
+        const unsubscribe = useWorkspaceScaleStore.subscribe(listener);
+
+        // The control hides the reset here, so this guards the store rather than the button.
+        useWorkspaceScaleStore.getState().reset();
+
+        expect(useWorkspaceScaleStore.getState().level).toBe(DEFAULT_SCALE_LEVEL);
+        expect(listener).not.toHaveBeenCalled();
+
+        unsubscribe();
+    });
+
     it('a step past a bound holds the level and notifies no subscriber', () => {
         const listener = vi.fn();
         const unsubscribe = useWorkspaceScaleStore.subscribe(listener);

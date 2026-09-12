@@ -18,6 +18,8 @@ export interface WorkspaceScaleStore {
     zoomIn: () => void;
     /** Steps down one level; a no-op at the lowest level. */
     zoomOut: () => void;
+    /** Returns to the default scale level. */
+    reset: () => void;
 }
 
 function clampLevel(level: number): ScaleLevel {
@@ -50,6 +52,10 @@ export const useWorkspaceScaleStore = create<WorkspaceScaleStore>()(
 
         zoomOut: () => {
             get().setLevel(get().level - 1);
+        },
+
+        reset: () => {
+            get().setLevel(DEFAULT_SCALE_LEVEL);
         },
     })),
 );

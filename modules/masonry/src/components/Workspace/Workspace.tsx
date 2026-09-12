@@ -7,6 +7,7 @@ import type { Point } from '@/@types/common.types';
 
 import { Palette } from '@/components/Palette/Palette';
 import { TowerBrickView } from '@/components/Tower/TowerBrick';
+import { useCanvasPan } from '@/hooks/useCanvasPan';
 import { useDragFromPalette } from '@/hooks/useDragFromPalette';
 import { useTowerLayout } from '@/hooks/useTowerLayout';
 import { useWorkspaceScale } from '@/hooks/useWorkspaceScale';
@@ -46,6 +47,10 @@ export function Workspace({ config }: WorkspaceViewProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const ghostRef = useRef<HTMLDivElement>(null);
 
+  // The node the towers and their overlays are drawn in. A pan moves this one element, so brick
+  // coordinates stay canvas-local and nothing has to be laid out again.
+  const viewportRef = useRef<HTMLDivElement>(null);
+
   // Flat id → config lookup across the whole palette hierarchy, used to resolve a dragged slot's
   // `data-brick-id` back to its full palette entry.
   const bricksById = useMemo(() => {
@@ -61,6 +66,9 @@ export function Workspace({ config }: WorkspaceViewProps) {
   }, [palette]);
 
   useDragFromPalette({ rootRef, canvasRef, ghostRef, bricksById });
+
+  // Dragging the empty background pans; the viewport node follows the store's offset
+  useCanvasPan({ canvasRef, viewportRef });
 
   // Resize every brick and re-run the layouts whenever the scale level changes
   useWorkspaceScale();
@@ -98,14 +106,23 @@ export function Workspace({ config }: WorkspaceViewProps) {
         {towers.map((tower) => (
           <TowerLayoutEngine key={`layout-${tower.id}`} root={tower.root} origin={tower.position} />
         ))}
-        {/* TowerBrickView renders the actual DOM nodes for the visible bricks in a flattened list */}
-        {visibleNodes.map((node) => (
-          <TowerBrickView key={node.model.id} id={node.model.id} node={node} />
-        ))}
+        {/* Everything drawn in canvas coordinates lives in the viewport node, which is what a pan
+            moves; the controls after it stay pinned to the canvas. */}
+        <div
+          ref={viewportRef}
+          data-testid="workspace-viewport"
+          className="absolute inset-0 will-change-transform"
+        >
+          {/* TowerBrickView renders the actual DOM nodes for the visible bricks in a flattened list */}
+          {visibleNodes.map((node) => (
+            <TowerBrickView key={node.model.id} id={node.model.id} node={node} />
+          ))}
 
-        <SnapHintOverlay />
-        <SnapPreviewView />
-        <DisconnectShadowView />
+          <SnapHintOverlay />
+          <SnapPreviewView />
+          <DisconnectShadowView />
+        </div>
+
         <CleanControl canvasRef={canvasRef} />
         <ScaleControl />
         {/* The Trash is only useful once there is something to remove */}

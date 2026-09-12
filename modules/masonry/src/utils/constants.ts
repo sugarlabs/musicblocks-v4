@@ -48,6 +48,15 @@ export const MAX_SCALE_LEVEL = SCALE_LEVELS[SCALE_LEVELS.length - 1];
  */
 export const FOLD_TOGGLE_SELECTOR = '[data-fold-toggle]';
 
+/**
+ * Marks the positioning node of a brick on the canvas.
+ *
+ * Shared for the same reason as `FOLD_TOGGLE_SELECTOR`: `TowerBrickView` stamps the attribute on
+ * its root, and `useCanvasPan` passes this selector as the canvas draggable's `ignoreFrom`, so a
+ * press that lands on a brick drags the brick rather than panning the canvas underneath it.
+ */
+export const TOWER_BRICK_SELECTOR = '[data-tower-brick]';
+
 // ── Workspace ──
 
 /**

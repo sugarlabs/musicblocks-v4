@@ -7,6 +7,7 @@ import { BrickView } from '@/components/Brick/Brick';
 import { cn } from '@/lib/utils';
 import { usePaletteDragStore } from '@/stores/palette';
 import { createBrickModel } from '@/utils/brick-model-factory';
+import { placeBrickFromPalette } from '@/utils/palette-placement';
 
 interface BrickSlotProps {
   /**
@@ -19,9 +20,9 @@ interface BrickSlotProps {
 
 /**
  * Render boundary for a single palette brick — a live SVG preview wrapped in a passive drag
- * source: `palette-brick-slot` is the delegated selector `useDragFromPalette` binds against,
- * `data-brick-id` the payload key, and `touch-none` lets touch drags reach interact.js. All drag
- * logic lives in the hook; the slot itself never moves while dragging.
+ * source and click-to-place target: `palette-brick-slot` is the delegated selector `useDragFromPalette`
+ * binds against, `data-brick-id` the payload key, and `touch-none` lets touch drags reach interact.js.
+ * Clicking or pressing Enter/Space places a new standalone tower on the workspace canvas.
  */
 export function BrickSlot({ brick }: BrickSlotProps) {
   const model = useMemo(() => createBrickModel(brick.brick, brick.id), [brick.brick, brick.id]);
@@ -30,6 +31,23 @@ export function BrickSlot({ brick }: BrickSlotProps) {
   // Use a type assertion because the view expects BrickViewPropsWithModel, but BrickModel
   // guarantees the model fields match the expected discriminated kind.
   const viewProps = { kind: model.kind, model } as unknown as BrickViewPropsWithModel;
+
+  const handleClick = () => {
+    const { dragged, lastDragEndTime } = usePaletteDragStore.getState();
+    // Guard against drag-to-click double placement: ignore click if actively dragging
+    // or if a drag gesture ended within the last 250ms.
+    if (dragged || Date.now() - lastDragEndTime < 250) {
+      return;
+    }
+    placeBrickFromPalette(brick);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      placeBrickFromPalette(brick);
+    }
+  };
 
   return (
     <div
@@ -40,11 +58,16 @@ export function BrickSlot({ brick }: BrickSlotProps) {
           : 'grid-rows-[1fr] opacity-100 transition-all duration-500',
       )}
     >
-      <div className="overflow-hidden">
+      <div className="overflow-hidden p-0.5">
         <div
+          role="button"
+          tabIndex={0}
+          aria-label={brick.name || brick.description}
           title={brick.description}
           data-brick-id={brick.id}
-          className="palette-brick-slot flex min-h-11 w-fit cursor-grab touch-none items-center px-1 py-1 transition-colors select-none hover:brightness-110 active:cursor-grabbing"
+          onClick={handleClick}
+          onKeyDown={handleKeyDown}
+          className="palette-brick-slot focus-visible:outline-primary flex min-h-11 w-fit cursor-grab touch-none items-center rounded-md px-1 py-1 transition-colors select-none hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-1 active:cursor-grabbing"
         >
           <div className="pointer-events-none">
             <BrickView {...viewProps} />

@@ -91,6 +91,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
 
       <div
         ref={canvasRef}
+        data-workspace-canvas
         className="bg-background relative h-full w-full shrink overflow-hidden select-none"
       >
         {/* TowerLayoutEngine runs the layout hooks for each tower to compute brick positions */}

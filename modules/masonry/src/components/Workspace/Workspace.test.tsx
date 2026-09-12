@@ -13,8 +13,10 @@ import type { TowerState } from '@/@types/workspace.types';
 
 import { makeEmptyStatement } from '@/mocks/tower';
 import { useBrickLayoutStore } from '@/stores/brick';
+import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { usePaletteDragStore } from '@/stores/palette';
 import { useTrashStore } from '@/stores/trash';
+import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { createBrickModel, wrapAsRootNode } from '@/utils/brick-model-factory';
 import { FOLD_TOGGLE_SELECTOR } from '@/utils/constants';
@@ -27,6 +29,8 @@ afterEach(() => {
   useWorkspaceStore.setState({ towers: {} });
   useTrashStore.setState({ bounds: null, isHovered: false });
   useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
+  useWorkspaceViewportStore.setState({ offset: { x: 0, y: 0 } });
+  useConnectionPreviewStore.setState({ activeTarget: null, isValid: false, snapPosition: null });
 });
 
 // -------------------------------------------------------------------------------------------------
@@ -114,6 +118,11 @@ function foldToggleOf(container: HTMLElement, brickId: string) {
 /** The Trash's positioning node, or null while it is off the canvas. */
 function queryTrash(container: HTMLElement) {
   return container.querySelector<HTMLElement>('[data-testid="workspace-trash"]');
+}
+
+/** The node a pan moves, holding everything drawn in canvas coordinates. */
+function queryViewport(container: HTMLElement) {
+  return container.querySelector<HTMLElement>('[data-testid="workspace-viewport"]');
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -265,6 +274,65 @@ describe('Workspace', () => {
       });
 
       expect(queryTrash(container)?.classList.contains('pointer-events-none')).toBe(true);
+    });
+  });
+
+  describe('viewport', () => {
+    it('draws the bricks inside the viewport node and keeps the controls outside it', () => {
+      const tower = makeNestingTower('t1');
+
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      act(() => {
+        useWorkspaceStore.getState().createTower(tower);
+      });
+
+      const viewport = queryViewport(container);
+      expect(viewport).not.toBeNull();
+      expect(viewport!.querySelector('[data-id="t1-outer"]')).not.toBeNull();
+
+      // Pinned to the canvas, so a pan can never carry them out of reach.
+      const zoomIn = container.querySelector('[aria-label="Zoom in"]');
+      const trash = queryTrash(container);
+      expect(zoomIn).not.toBeNull();
+      expect(trash).not.toBeNull();
+      expect(viewport!.contains(zoomIn)).toBe(false);
+      expect(viewport!.contains(trash)).toBe(false);
+    });
+
+    it('draws the snap hint inside the viewport node, so it pans with the bricks', () => {
+      // The overlays are placed at brick coordinates. Left outside the viewport node they would
+      // stay put while the bricks slid away, and point at nothing.
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      act(() => {
+        useConnectionPreviewStore.setState({
+          activeTarget: {
+            draggedTowerId: 't1',
+            targetTowerId: 't2',
+            targetBrickId: 'b1',
+            type: 'statement',
+            distance: 5,
+            centroid: { x: 100, y: 150 },
+          },
+          isValid: true,
+        });
+      });
+
+      const hint = container.querySelector('[data-testid="snap-hint-overlay"]');
+      expect(hint).not.toBeNull();
+      expect(queryViewport(container)!.contains(hint)).toBe(true);
+    });
+
+    it('moves the viewport node to wherever the store is panned', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const viewport = queryViewport(container)!;
+
+      expect(viewport.style.transform).toBe('translate(0px, 0px)');
+
+      act(() => {
+        useWorkspaceViewportStore.getState().panBy({ x: 40, y: 10 });
+      });
+
+      expect(viewport.style.transform).toBe('translate(40px, 10px)');
     });
   });
 

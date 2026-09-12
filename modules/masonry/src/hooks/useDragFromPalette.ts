@@ -9,6 +9,7 @@ import type { PaletteBrickConfig } from '@/@types/palette.types';
 
 import { usePaletteDragStore } from '@/stores/palette';
 import { useWorkspaceScaleStore } from '@/stores/scale';
+import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { createBrickModel, wrapAsRootNode } from '@/utils/brick-model-factory';
 import { useConnectionPreviewStore } from '@/stores/connection-preview';
@@ -26,12 +27,19 @@ export const PALETTE_DRAG_SOURCE_SELECTOR = '.palette-brick-slot';
 /**
  * Converts a client (viewport) point to coordinates local to an element whose client-space
  * top-left is `origin`, compensating for `grabOffset` so the result is the dragged element's
- * top-left corner rather than the pointer position.
+ * top-left corner rather than the pointer position. `viewportOffset` is how far the element's
+ * content has been panned; taking it back out lands the result in the content's own, unpanned,
+ * coordinates.
  */
-export function clientToLocalPoint(client: Point, origin: Point, grabOffset: Point): Point {
+export function clientToLocalPoint(
+    client: Point,
+    origin: Point,
+    grabOffset: Point,
+    viewportOffset: Point = { x: 0, y: 0 },
+): Point {
     return {
-        x: client.x - origin.x - grabOffset.x,
-        y: client.y - origin.y - grabOffset.y,
+        x: client.x - origin.x - grabOffset.x - viewportOffset.x,
+        y: client.y - origin.y - grabOffset.y - viewportOffset.y,
     };
 }
 
@@ -138,10 +146,14 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                         event.clientY <= canvasRect.bottom;
 
                     if (isInsideCanvas) {
+                        // The towers this is tested against sit in unpanned coordinates, so the
+                        // pan comes back out of the pointer; read at event time, since these
+                        // listeners bind once on mount.
                         const position = clientToLocalPoint(
                             { x: event.clientX, y: event.clientY },
                             { x: canvasRect.left, y: canvasRect.top },
                             drag.grabOffset,
+                            useWorkspaceViewportStore.getState().offset,
                         );
 
                         // Temporarily mock a tower ID for collision detection
@@ -200,14 +212,18 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                         ...drag.config.brick,
                         scaleLevel: useWorkspaceScaleStore.getState().level,
                     });
+                    // A tower's position is in unpanned canvas coordinates, like every other
+                    // tower's, so the pan comes back out of the drop point too.
                     const position = clientToLocalPoint(
                         { x: event.clientX, y: event.clientY },
                         { x: canvasRect.left, y: canvasRect.top },
                         drag.grabOffset,
+                        useWorkspaceViewportStore.getState().offset,
                     );
 
-                    // Prevent placing the brick if it is still partially over the palette
-                    if (position.x < 0) return;
+                    // Prevent placing the brick if it is still partially over the palette. Judged
+                    // against the canvas edge itself, before the pan is taken out.
+                    if (event.clientX - drag.grabOffset.x < canvasRect.left) return;
 
                     const newTowerId = crypto.randomUUID();
                     createTower({

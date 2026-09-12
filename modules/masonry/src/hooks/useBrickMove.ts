@@ -77,11 +77,20 @@ export function tryConnect(towerId: string): boolean {
                     x: hostTower.position.x + residentPos.x + 24,
                     y: hostTower.position.y + residentPos.y + 48,
                 };
-                store.detachBrickToNewTower(
+                const newTowerId = store.detachBrickToNewTower(
                     argument.hostTowerId,
                     argument.residentNode.model.id,
                     dropPos,
                 );
+
+                if (newTowerId) {
+                    const latestStore = useWorkspaceStore.getState();
+                    const newTower = latestStore.towers[newTowerId];
+                    if (newTower) {
+                        latestStore.syncStatementConnectors(newTowerId, newTower.root);
+                        latestStore.syncArgumentConnectors(newTowerId, newTower.root);
+                    }
+                }
             }
         }
 

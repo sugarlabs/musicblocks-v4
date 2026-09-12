@@ -20,7 +20,6 @@ describe('ScaleControl', () => {
 
     expect(screen.getByRole('button', { name: 'Zoom in' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Zoom out' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Reset zoom' })).toBeTruthy();
   });
 
   it('enables both buttons at the default scale level', () => {
@@ -32,18 +31,59 @@ describe('ScaleControl', () => {
     expect((screen.getByRole('button', { name: 'Zoom out' }) as HTMLButtonElement).disabled).toBe(
       false,
     );
-    expect((screen.getByRole('button', { name: 'Reset zoom' }) as HTMLButtonElement).disabled).toBe(
-      true,
-    );
   });
 
-  it('enables Reset zoom away from the default scale level', () => {
+  it('hides Reset zoom at the default scale level', () => {
+    render(<ScaleControl />);
+
+    expect(screen.queryByRole('button', { name: 'Reset zoom' })).toBeNull();
+  });
+
+  it('shows Reset zoom away from the default scale level', () => {
     useWorkspaceScaleStore.setState({ level: MAX_SCALE_LEVEL });
     render(<ScaleControl />);
 
-    expect((screen.getByRole('button', { name: 'Reset zoom' }) as HTMLButtonElement).disabled).toBe(
-      false,
+    expect(screen.getByRole('button', { name: 'Reset zoom' })).toBeTruthy();
+  });
+
+  it('shows Reset zoom at the lowest level, where Zoom out is disabled', () => {
+    useWorkspaceScaleStore.setState({ level: MIN_SCALE_LEVEL });
+    render(<ScaleControl />);
+
+    // The bound that disables a magnifier is not the default, so the reset stays the only way back.
+    expect((screen.getByRole('button', { name: 'Zoom out' }) as HTMLButtonElement).disabled).toBe(
+      true,
     );
+    expect(screen.getByRole('button', { name: 'Reset zoom' })).toBeTruthy();
+  });
+
+  it('resets the scale level from below the default', () => {
+    useWorkspaceScaleStore.setState({ level: MIN_SCALE_LEVEL });
+    render(<ScaleControl />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reset zoom' }));
+
+    expect(useWorkspaceScaleStore.getState().level).toBe(DEFAULT_SCALE_LEVEL);
+  });
+
+  it('hides Reset zoom again once the level returns to the default', () => {
+    useWorkspaceScaleStore.setState({ level: MAX_SCALE_LEVEL });
+    render(<ScaleControl />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Zoom out' }));
+
+    expect(screen.queryByRole('button', { name: 'Reset zoom' })).toBeNull();
+  });
+
+  it('renders Reset zoom ahead of the magnifiers so they hold their position', () => {
+    useWorkspaceScaleStore.setState({ level: MAX_SCALE_LEVEL });
+    render(<ScaleControl />);
+
+    const labels = Array.from(screen.getAllByRole('button')).map((button) =>
+      button.getAttribute('aria-label'),
+    );
+
+    expect(labels).toEqual(['Reset zoom', 'Zoom out', 'Zoom in']);
   });
 
   it('increments scale level when Zoom In button is clicked', () => {

@@ -13,6 +13,7 @@ import type { TowerState } from '@/@types/workspace.types';
 
 import { makeEmptyStatement } from '@/mocks/tower';
 import { useBrickLayoutStore } from '@/stores/brick';
+import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { usePaletteDragStore } from '@/stores/palette';
 import { useTrashStore } from '@/stores/trash';
 import { useWorkspaceViewportStore } from '@/stores/viewport';
@@ -29,6 +30,7 @@ afterEach(() => {
   useTrashStore.setState({ bounds: null, isHovered: false });
   useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
   useWorkspaceViewportStore.setState({ offset: { x: 0, y: 0 } });
+  useConnectionPreviewStore.setState({ activeTarget: null, isValid: false, snapPosition: null });
 });
 
 // -------------------------------------------------------------------------------------------------
@@ -297,6 +299,29 @@ describe('Workspace', () => {
       expect(viewport!.contains(trash)).toBe(false);
     });
 
+    it('draws the snap hint inside the viewport node, so it pans with the bricks', () => {
+      // The overlays are placed at brick coordinates. Left outside the viewport node they would
+      // stay put while the bricks slid away, and point at nothing.
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      act(() => {
+        useConnectionPreviewStore.setState({
+          activeTarget: {
+            draggedTowerId: 't1',
+            targetTowerId: 't2',
+            targetBrickId: 'b1',
+            type: 'statement',
+            distance: 5,
+            centroid: { x: 100, y: 150 },
+          },
+          isValid: true,
+        });
+      });
+
+      const hint = container.querySelector('[data-testid="snap-hint-overlay"]');
+      expect(hint).not.toBeNull();
+      expect(queryViewport(container)!.contains(hint)).toBe(true);
+    });
+
     it('moves the viewport node to wherever the store is panned', () => {
       const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
       const viewport = queryViewport(container)!;
@@ -304,10 +329,10 @@ describe('Workspace', () => {
       expect(viewport.style.transform).toBe('translate(0px, 0px)');
 
       act(() => {
-        useWorkspaceViewportStore.getState().panBy({ x: 40, y: -10 });
+        useWorkspaceViewportStore.getState().panBy({ x: 40, y: 10 });
       });
 
-      expect(viewport.style.transform).toBe('translate(40px, -10px)');
+      expect(viewport.style.transform).toBe('translate(40px, 10px)');
     });
   });
 

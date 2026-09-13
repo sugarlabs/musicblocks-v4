@@ -34,6 +34,22 @@ function KeyboardTestComponent() {
   );
 }
 
+/** Mounts the hook on a canvas wrapping a child that answers the arrows itself, as the menu does. */
+function NestedHandlerComponent() {
+  const { handleKeyDown } = useCanvasKeyboardNav();
+
+  return (
+    <div data-testid="canvas-test" tabIndex={0} onKeyDown={handleKeyDown}>
+      <div
+        data-testid="inner-menu"
+        onKeyDown={(event) => {
+          event.preventDefault();
+        }}
+      />
+    </div>
+  );
+}
+
 // -------------------------------------------------------------------------------------------------
 
 describe('useCanvasKeyboardNav', () => {
@@ -154,6 +170,18 @@ describe('useCanvasKeyboardNav', () => {
       const textarea = getByTestId('test-textarea');
 
       fireEvent.keyDown(textarea, { key: 'ArrowDown' });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+    });
+
+    it('does not pan when a child inside the canvas has already answered the press', () => {
+      // The action menu renders inside the canvas and takes the arrows while it is open, calling
+      // `preventDefault` to hold them back. `preventDefault` does not stop propagation, so the
+      // press still reaches the canvas handler: only the `defaultPrevented` guard keeps a wedge
+      // step from panning the canvas underneath the menu at the same time.
+      const { getByTestId } = render(<NestedHandlerComponent />);
+
+      fireEvent.keyDown(getByTestId('inner-menu'), { key: 'ArrowDown' });
+
       expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
     });
 

@@ -18,6 +18,7 @@ import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 import { discardTower } from '@/utils/towerDiscard';
 import { listVisibleNodes } from '@/utils/tower-traversal';
 
+import { ActionMenu } from './ActionMenu';
 import { DragGhost } from './DragGhost';
 import { ScaleControl } from './ScaleControl';
 import { SnapHintOverlay } from './SnapHintOverlay';
@@ -205,6 +206,8 @@ export function Workspace({ config }: WorkspaceViewProps) {
           <SnapHintOverlay />
           <SnapPreviewView />
           <DisconnectShadowView />
+          {/* Last in the overlay, so the menu draws over the bricks it is opened on */}
+          <ActionMenu />
         </div>
 
         <ScaleControl />

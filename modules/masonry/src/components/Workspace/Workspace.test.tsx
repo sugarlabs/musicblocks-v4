@@ -5,7 +5,7 @@
 // this file verifies the pieces mount and react to the drag store correctly.
 
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { PaletteConfig } from '@/@types/palette.types';
 import type { TowerStatementNode } from '@/@types/tower.types';
@@ -25,6 +25,8 @@ import { Workspace } from './Workspace';
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
   usePaletteDragStore.setState({ dragged: null });
   useWorkspaceStore.setState({ towers: {}, selectedBrickId: null });
   useTrashStore.setState({ bounds: null, isHovered: false });
@@ -426,6 +428,51 @@ describe('Workspace', () => {
       });
 
       expect(queryTrash(container)?.classList.contains('pointer-events-none')).toBe(true);
+    });
+
+    it('re-measures and updates bounds in the store when the canvas is resized', () => {
+      let resizeCallback: () => void = () => {};
+      class MockResizeObserver {
+        constructor(cb: () => void) {
+          resizeCallback = cb;
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      }
+      vi.stubGlobal('ResizeObserver', MockResizeObserver);
+
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      act(() => {
+        useWorkspaceStore.getState().createTower(makeTower('t1'));
+      });
+
+      const trashEl = queryTrash(container) as HTMLElement;
+      expect(trashEl).not.toBeNull();
+
+      vi.spyOn(trashEl, 'getBoundingClientRect').mockReturnValue({
+        left: 500,
+        top: 600,
+        width: 56,
+        height: 56,
+        right: 556,
+        bottom: 656,
+        x: 500,
+        y: 600,
+        toJSON: () => {},
+      });
+
+      act(() => {
+        resizeCallback();
+      });
+
+      expect(useTrashStore.getState().bounds).toEqual({
+        x: 500,
+        y: 600,
+        w: 56,
+        h: 56,
+      });
     });
   });
 

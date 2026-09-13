@@ -17,6 +17,7 @@ import { discardTower } from '@/utils/towerDiscard';
 import { listVisibleNodes } from '@/utils/tower-traversal';
 
 import { DragGhost } from './DragGhost';
+import { FullscreenControl } from './FullscreenControl';
 import { ScaleControl } from './ScaleControl';
 import { SnapHintOverlay } from './SnapHintOverlay';
 import { SnapPreviewView } from './SnapPreviewView';
@@ -201,6 +202,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
         </div>
 
         <ScaleControl />
+        <FullscreenControl rootRef={rootRef} />
         {/* The Trash is only useful once there is something to remove */}
         {towers.length > 0 && <Trash canvasRef={canvasRef} />}
       </div>

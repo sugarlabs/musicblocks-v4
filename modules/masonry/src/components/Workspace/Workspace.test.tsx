@@ -587,4 +587,57 @@ describe('Workspace', () => {
       expect(foldToggleOf(container, 't1-outer')!.disabled).toBe(true);
     });
   });
+
+  describe('canvas accessibility and keyboard navigation', () => {
+    it('gives the canvas container tabIndex={0} and a visible focus ring', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const canvas = container.querySelector('[role="region"][aria-label="Workspace Canvas"]');
+
+      expect(canvas).not.toBeNull();
+      expect(canvas?.getAttribute('tabindex')).toBe('0');
+      expect(canvas?.classList.contains('focus-visible:ring-2')).toBe(true);
+      expect(canvas?.classList.contains('focus-visible:ring-ring')).toBe(true);
+    });
+
+    it('translates the viewport layer when viewport offset updates', () => {
+      const { getByTestId } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const viewport = getByTestId('workspace-viewport');
+
+      expect(viewport.style.transform).toBe('translate(0px, 0px)');
+
+      act(() => {
+        useWorkspaceViewportStore.getState().setOffset({ x: 120, y: 80 });
+      });
+
+      expect(viewport.style.transform).toBe('translate(120px, 80px)');
+    });
+
+    it('pans the canvas using arrow keys, PageUp/PageDown, and Home/End', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const canvas = container.querySelector('[role="region"][aria-label="Workspace Canvas"]') as HTMLElement;
+
+      fireEvent.keyDown(canvas, { key: 'ArrowDown' });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 50 });
+
+      fireEvent.keyDown(canvas, { key: 'ArrowRight' });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 50, y: 50 });
+
+      fireEvent.keyDown(canvas, { key: 'PageDown' });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 50, y: 350 });
+
+      fireEvent.keyDown(canvas, { key: 'Home' });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+    });
+
+    it('does not pan the canvas when typing inside the palette search box', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const searchInput = container.querySelector('input[placeholder="Search bricks"]') as HTMLElement;
+
+      fireEvent.keyDown(searchInput, { key: 'ArrowDown' });
+      fireEvent.keyDown(searchInput, { key: 'PageDown' });
+      fireEvent.keyDown(searchInput, { key: 'ArrowRight' });
+
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+    });
+  });
 });

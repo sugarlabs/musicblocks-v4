@@ -7,6 +7,7 @@ import type { Point } from '@/@types/common.types';
 
 import { Palette } from '@/components/Palette/Palette';
 import { TowerBrickView } from '@/components/Tower/TowerBrick';
+import { useCanvasKeyboardNav } from '@/hooks/useCanvasKeyboardNav';
 import { useCanvasPan } from '@/hooks/useCanvasPan';
 import { useDragFromPalette } from '@/hooks/useDragFromPalette';
 import { useTowerLayout } from '@/hooks/useTowerLayout';
@@ -112,6 +113,8 @@ export function Workspace({ config }: WorkspaceViewProps) {
     return towers.flatMap((tower) => listVisibleNodes(tower.root));
   }, [towers]);
 
+  const { handleKeyDown } = useCanvasKeyboardNav();
+
   // palette drag-and-drop wiring: the root element scopes the delegated drag
   // selector and positions the ghost overlay; the canvas element anchors drop coordinates.
   const rootRef = useRef<HTMLDivElement>(null);
@@ -172,7 +175,11 @@ export function Workspace({ config }: WorkspaceViewProps) {
       <div
         ref={canvasRef}
         data-testid="workspace-canvas"
-        className="bg-background relative h-full w-full shrink overflow-hidden select-none"
+        role="region"
+        aria-label="Workspace Canvas"
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+        className="bg-background relative h-full w-full shrink overflow-hidden select-none outline-none focus:ring-2 focus:ring-ring focus:ring-inset focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
         // Only a press on the canvas itself clears: the bricks are its children, so without the
         // target check every click that selected one would arrive here and drop it again.
         onClick={(event) => {

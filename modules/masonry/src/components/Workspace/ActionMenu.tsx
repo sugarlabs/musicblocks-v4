@@ -109,6 +109,14 @@ function stepFor(key: string): number | null {
   return null;
 }
 
+export interface ActionMenuProps {
+  /**
+   * The wedges to ring the brick with; the three the workspace ships with by default. Only a story
+   * passes its own, to show a ring the workspace cannot put on screen yet.
+   */
+  wedges?: ActionMenuWedge[];
+}
+
 /**
  * The pie menu: a ring of wedges over the brick it was opened on, the brick showing through the
  * hole in the middle.
@@ -121,7 +129,7 @@ function stepFor(key: string): number | null {
  * Placed off the brick's `coords` entry and sized off `SCALE_LEVEL_CONFIG`, so it follows a move, a
  * fold above it or a change of scale level without holding a position of its own.
  */
-export function ActionMenu() {
+export function ActionMenu({ wedges = ACTION_MENU_WEDGES }: ActionMenuProps = {}) {
   const brickId = useActionMenuStore((state) => state.brickId);
   const coords = useBrickLayoutStore((state) =>
     brickId === null ? undefined : state.coords[brickId],
@@ -164,7 +172,7 @@ export function ActionMenu() {
 
   const ring = ringAtScale(level);
   const box = ring.outerRadius * 2;
-  const count = ACTION_MENU_WEDGES.length;
+  const count = wedges.length;
 
   const moveTo = (index: number) => {
     // Wrapped, because the wedges are a ring: there is no end of the row to stop at.
@@ -210,7 +218,7 @@ export function ActionMenu() {
         // left to bubble rather than answered twice.
       }}
     >
-      {ACTION_MENU_WEDGES.map((wedge, index) => (
+      {wedges.map((wedge, index) => (
         <WedgeButton
           key={wedge.id}
           wedge={wedge}

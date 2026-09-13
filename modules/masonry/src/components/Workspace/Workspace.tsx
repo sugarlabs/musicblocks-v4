@@ -7,6 +7,8 @@ import type { Point } from '@/@types/common.types';
 
 import { Palette } from '@/components/Palette/Palette';
 import { TowerBrickView } from '@/components/Tower/TowerBrick';
+import { useActionMenuDismiss } from '@/hooks/useActionMenuDismiss';
+import { useActionMenuTarget } from '@/hooks/useActionMenuTarget';
 import { useCanvasPan } from '@/hooks/useCanvasPan';
 import { useDragFromPalette } from '@/hooks/useDragFromPalette';
 import { useTowerLayout } from '@/hooks/useTowerLayout';
@@ -143,6 +145,11 @@ export function Workspace({ config }: WorkspaceViewProps) {
 
   // Resize every brick and re-run the layouts whenever the scale level changes
   useWorkspaceScale();
+
+  // Escape and a press outside close the action menu; its listeners are on the document
+  useActionMenuDismiss();
+  // ...and so does the brick it is open on leaving the screen
+  useActionMenuTarget(visibleNodes);
 
   // Sync collision space whenever the layout finishes positioning bricks
   useEffect(() => {

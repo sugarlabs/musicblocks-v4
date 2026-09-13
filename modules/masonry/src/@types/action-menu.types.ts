@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react';
+import type { ComponentType, CSSProperties } from 'react';
 
 /**
  * One wedge of the pie menu: what it is called, what it draws, and what it does to the brick the
@@ -15,8 +15,8 @@ export interface ActionMenuWedge {
     label: string;
     /** What the wedge does, spelled out for the tooltip that sits under the pointer. */
     tooltip: string;
-    /** The icon drawn at the wedge's centre. */
-    Icon: ComponentType<{ size?: number; className?: string }>;
+    /** The icon drawn at the wedge's centre; the menu sizes it and places it over its wedge. */
+    Icon: ComponentType<{ size?: number; className?: string; style?: CSSProperties }>;
     /** Whether the action has anything to do on this brick; a `false` draws the wedge disabled. */
     isEnabled: (brickId: string) => boolean;
     /** Carries the action out on the brick the menu is open on. */

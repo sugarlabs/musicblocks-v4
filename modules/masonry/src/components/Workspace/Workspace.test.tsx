@@ -11,11 +11,12 @@ import type { PaletteConfig } from '@/@types/palette.types';
 import type { TowerStatementNode } from '@/@types/tower.types';
 import type { TowerState } from '@/@types/workspace.types';
 
-import { makeEmptyStatement } from '@/mocks/tower';
+import { makeEmptyStatement, makeEmptyValue } from '@/mocks/tower';
 import { useBrickLayoutStore } from '@/stores/brick';
+import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { usePaletteDragStore } from '@/stores/palette';
 import { useTrashStore } from '@/stores/trash';
-import { useViewportStore } from '@/stores/viewport';
+import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { createBrickModel, wrapAsRootNode } from '@/utils/brick-model-factory';
 import { FOLD_TOGGLE_SELECTOR } from '@/utils/constants';
@@ -25,10 +26,11 @@ import { Workspace } from './Workspace';
 afterEach(() => {
   cleanup();
   usePaletteDragStore.setState({ dragged: null });
-  useWorkspaceStore.setState({ towers: {} });
+  useWorkspaceStore.setState({ towers: {}, selectedBrickId: null });
   useTrashStore.setState({ bounds: null, isHovered: false });
   useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
-  useViewportStore.setState({ offset: { x: 0, y: 0 } });
+  useWorkspaceViewportStore.setState({ offset: { x: 0, y: 0 } });
+  useConnectionPreviewStore.setState({ activeTarget: null, isValid: false, snapPosition: null });
 });
 
 // -------------------------------------------------------------------------------------------------
@@ -99,6 +101,28 @@ function makeNestingTower(id: string, folded = false): TowerState {
   return { id, root: outer, position: { x: 0, y: 0 } };
 }
 
+/**
+ * A one-brick tower whose single argument slot holds a numberbox value brick, so the canvas has a
+ * real `<input>` for the typing guard to be tested against.
+ */
+function makeTowerWithInput(id: string): TowerState {
+  const root = makeEmptyStatement(`${id}-root`, 1);
+  const value = makeEmptyValue(`${id}-value`);
+
+  root.args[0] = value;
+  value.parent = root;
+
+  useBrickLayoutStore.getState().setMounted({ [root.model.id]: true, [value.model.id]: true });
+
+  return { id, root, position: { x: 0, y: 0 } };
+}
+
+/** The wrapper a brick's highlight rides on, inside the element that seats it in the tower. */
+function highlightLayerOf(container: HTMLElement, brickId: string) {
+  return container.querySelector<HTMLElement>(`[data-id="${brickId}"]`)
+    ?.firstElementChild as HTMLElement;
+}
+
 /** The ids of the bricks the canvas has actually put in the DOM. */
 function renderedBrickIds(container: HTMLElement) {
   return Array.from(container.querySelectorAll<HTMLElement>('[data-id]')).map(
@@ -116,6 +140,11 @@ function foldToggleOf(container: HTMLElement, brickId: string) {
 /** The Trash's positioning node, or null while it is off the canvas. */
 function queryTrash(container: HTMLElement) {
   return container.querySelector<HTMLElement>('[data-testid="workspace-trash"]');
+}
+
+/** The node a pan moves, holding everything drawn in canvas coordinates. */
+function queryViewport(container: HTMLElement) {
+  return container.querySelector<HTMLElement>('[data-testid="workspace-viewport"]');
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -171,6 +200,136 @@ describe('Workspace', () => {
     unmount();
 
     expect(usePaletteDragStore.getState().dragged).toBeNull();
+  });
+
+  it('selects a brick, clears it from the background, and clears it with Escape', () => {
+    const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+    const tower = makeNestingTower('selection');
+
+    act(() => {
+      useWorkspaceStore.getState().createTower(tower);
+    });
+
+    const canvas = container.querySelector('[data-testid="workspace-canvas"]') as HTMLElement;
+    const brick = container.querySelector('[data-id="selection-outer"]') as HTMLElement;
+
+    fireEvent.click(brick);
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('selection-outer');
+
+    fireEvent.click(canvas);
+    expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
+
+    fireEvent.click(brick);
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
+  });
+
+  it('deletes a selected root and extracts then discards a selected nested brick', () => {
+    const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+    const tower = makeNestingTower('keyboard');
+
+    act(() => {
+      useWorkspaceStore.getState().createTower(tower);
+    });
+
+    const root = container.querySelector('[data-id="keyboard-outer"]') as HTMLElement;
+    fireEvent.click(root);
+    fireEvent.keyDown(window, { key: 'Delete' });
+    expect(useWorkspaceStore.getState().towers).toEqual({});
+
+    const secondTower = makeNestingTower('keyboard-nested');
+    act(() => {
+      useWorkspaceStore.getState().createTower(secondTower);
+    });
+
+    const nested = container.querySelector('[data-id="keyboard-nested-inner"]') as HTMLElement;
+    fireEvent.click(nested);
+    fireEvent.keyDown(window, { key: 'Backspace' });
+
+    const remaining = useWorkspaceStore.getState().towers['keyboard-nested'];
+    expect(remaining).toBeDefined();
+    expect((remaining?.root as TowerStatementNode).nestedNext).toBeNull();
+    expect(Object.keys(useWorkspaceStore.getState().towers)).toEqual(['keyboard-nested']);
+  });
+
+  it('leaves the selection alone while the user types in a brick input', () => {
+    const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+    act(() => {
+      useWorkspaceStore.getState().createTower(makeTowerWithInput('typing'));
+    });
+
+    fireEvent.click(container.querySelector('[data-id="typing-root"]') as HTMLElement);
+
+    const input = container.querySelector('input[type="number"]') as HTMLElement;
+    expect(input).not.toBeNull();
+
+    // Backspace is how a number gets corrected, so it must not reach the brick behind the input.
+    fireEvent.keyDown(input, { key: 'Backspace' });
+
+    expect(useWorkspaceStore.getState().towers['typing']).toBeDefined();
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('typing-root');
+  });
+
+  it('leaves the canvas untouched when a delete key arrives with nothing selected', () => {
+    render(<Workspace config={{ palette: paletteConfig }} />);
+
+    act(() => {
+      useWorkspaceStore.getState().createTower(makeTower('lonely'));
+    });
+
+    fireEvent.keyDown(window, { key: 'Delete' });
+
+    expect(Object.keys(useWorkspaceStore.getState().towers)).toEqual(['lonely']);
+  });
+
+  it('drops a selection whose brick is already gone rather than throwing', () => {
+    render(<Workspace config={{ palette: paletteConfig }} />);
+
+    act(() => {
+      useWorkspaceStore.getState().createTower(makeTower('present'));
+      useWorkspaceStore.getState().selectBrick('a-brick-that-no-longer-exists');
+    });
+
+    fireEvent.keyDown(window, { key: 'Delete' });
+
+    expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
+    expect(Object.keys(useWorkspaceStore.getState().towers)).toEqual(['present']);
+  });
+
+  it('keeps the selected brick for every key that is not Delete or Backspace', () => {
+    const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+    act(() => {
+      useWorkspaceStore.getState().createTower(makeNestingTower('other-keys'));
+    });
+
+    fireEvent.click(container.querySelector('[data-id="other-keys-outer"]') as HTMLElement);
+    fireEvent.keyDown(window, { key: 'a' });
+    fireEvent.keyDown(window, { key: 'Enter' });
+
+    expect(useWorkspaceStore.getState().towers['other-keys']).toBeDefined();
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('other-keys-outer');
+  });
+
+  it('rings the selected brick in its own color and lifts it, leaving the others flat', () => {
+    const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+    act(() => {
+      useWorkspaceStore.getState().createTower(makeNestingTower('highlight'));
+    });
+
+    fireEvent.click(container.querySelector('[data-id="highlight-outer"]') as HTMLElement);
+
+    const selected = highlightLayerOf(container, 'highlight-outer');
+    const unselected = highlightLayerOf(container, 'highlight-inner');
+
+    // The mock bricks are #3498db, so the ring is that fill taken down to #16557f.
+    expect(selected.style.filter).toContain('#16557f');
+    expect(selected.style.transform).toBe('translateY(-3px)');
+
+    expect(unselected.style.filter).toBe('');
+    expect(unselected.style.transform).toBe('');
   });
 
   describe('trash', () => {
@@ -267,6 +426,65 @@ describe('Workspace', () => {
       });
 
       expect(queryTrash(container)?.classList.contains('pointer-events-none')).toBe(true);
+    });
+  });
+
+  describe('viewport', () => {
+    it('draws the bricks inside the viewport node and keeps the controls outside it', () => {
+      const tower = makeNestingTower('t1');
+
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      act(() => {
+        useWorkspaceStore.getState().createTower(tower);
+      });
+
+      const viewport = queryViewport(container);
+      expect(viewport).not.toBeNull();
+      expect(viewport!.querySelector('[data-id="t1-outer"]')).not.toBeNull();
+
+      // Pinned to the canvas, so a pan can never carry them out of reach.
+      const zoomIn = container.querySelector('[aria-label="Zoom in"]');
+      const trash = queryTrash(container);
+      expect(zoomIn).not.toBeNull();
+      expect(trash).not.toBeNull();
+      expect(viewport!.contains(zoomIn)).toBe(false);
+      expect(viewport!.contains(trash)).toBe(false);
+    });
+
+    it('draws the snap hint inside the viewport node, so it pans with the bricks', () => {
+      // The overlays are placed at brick coordinates. Left outside the viewport node they would
+      // stay put while the bricks slid away, and point at nothing.
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      act(() => {
+        useConnectionPreviewStore.setState({
+          activeTarget: {
+            draggedTowerId: 't1',
+            targetTowerId: 't2',
+            targetBrickId: 'b1',
+            type: 'statement',
+            distance: 5,
+            centroid: { x: 100, y: 150 },
+          },
+          isValid: true,
+        });
+      });
+
+      const hint = container.querySelector('[data-testid="snap-hint-overlay"]');
+      expect(hint).not.toBeNull();
+      expect(queryViewport(container)!.contains(hint)).toBe(true);
+    });
+
+    it('moves the viewport node to wherever the store is panned', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const viewport = queryViewport(container)!;
+
+      expect(viewport.style.transform).toBe('translate(0px, 0px)');
+
+      act(() => {
+        useWorkspaceViewportStore.getState().panBy({ x: 40, y: 10 });
+      });
+
+      expect(viewport.style.transform).toBe('translate(40px, 10px)');
     });
   });
 

@@ -2,82 +2,62 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 import type { Point } from '@/@types/common.types';
-import type { TowerState } from '@/@types/workspace.types';
 
-export const PAN_STEP = 50;
-export const FAST_PAN_STEP = 100;
-export const PAGE_PAN_STEP = 300;
+export interface WorkspaceViewportStore {
+    /** How far the canvas has been panned, in pixels; every tower is drawn shifted by this much. */
+    offset: Point;
 
-export interface ViewportStore {
-  /** The current canvas viewport pan offset in pixels. */
-  offset: Point;
+    /** Moves the viewport to `offset`, clamped at the origin; a no-op write notifies nobody. */
+    setOffset: (offset: Point) => void;
+    /** Shifts the viewport by `delta`, clamped at the origin; a no-op delta notifies nobody. */
+    panBy: (delta: Point) => void;
+    /** Returns the viewport to the unpanned origin. */
+    resetOffset: () => void;
+}
 
-  /** Pans the viewport by the given relative (dx, dy) delta. */
-  panBy: (delta: Point) => void;
-
-  /** Directly sets the viewport offset to a specified coordinate. */
-  setOffset: (offset: Point) => void;
-
-  /** Resets the viewport offset to the origin (0, 0). */
-  resetOffset: () => void;
-
-  /** Pans the viewport so the bounding extent of all towers is in view. */
-  panToExtent: (towers: Record<string, TowerState>) => void;
+function clampOffset(offset: Point): Point {
+    return { x: Math.max(offset.x, 0), y: Math.max(offset.y, 0) };
 }
 
 /**
- * Tracks the canvas viewport pan offset.
+ * Tracks how far the workspace canvas is panned — one offset for the whole workspace, never per
+ * tower, since it is the canvas that moves under the towers rather than the towers themselves.
  *
- * Panning translates the world layer containing towers and snapping overlays while
- * keeping HUD elements (such as scale controls and the trash bucket) anchored in viewport space.
+ * Brick coordinates stay canvas-local: the offset is applied once, as a transform on the element
+ * that holds the towers, so a pan never re-lays anything out. Anything that turns a client point
+ * into a canvas point (a palette drop, say) subtracts it. `panBy` and `resetOffset` are exposed so
+ * that wheel scrolling, auto-scroll, keyboard navigation and a home button can drive the same
+ * offset the background drag does.
+ *
+ * The store clamps rather than trusting its callers, the way `scale.ts` does: the offset stops at
+ * the origin, each axis on its own, so no caller can pull the canvas back past where it started
+ * and leave the top-left of the program out of reach.
  */
-export const useViewportStore = create<ViewportStore>()(
-  subscribeWithSelector((set) => ({
-    offset: { x: 0, y: 0 },
+export const useWorkspaceViewportStore = create<WorkspaceViewportStore>()(
+    subscribeWithSelector((set, get) => ({
+        offset: { x: 0, y: 0 },
 
-    panBy: (delta) => {
-      set((state) => ({
-        offset: {
-          x: state.offset.x + delta.x,
-          y: state.offset.y + delta.y,
+        setOffset: (offset) => {
+            // A fresh point, so a caller holding on to its own cannot move the canvas by
+            // mutating it afterwards.
+            const next = clampOffset(offset);
+
+            const current = get().offset;
+            // Every notification rewrites the canvas transform, so a write that changes nothing
+            // must not notify — a pan clamped away at the origin included.
+            if (current.x === next.x && current.y === next.y) return;
+
+            set({ offset: next });
         },
-      }));
-    },
 
-    setOffset: (offset) => {
-      set({ offset });
-    },
+        panBy: (delta) => {
+            const { offset, setOffset } = get();
 
-    resetOffset: () => {
-      set({ offset: { x: 0, y: 0 } });
-    },
-
-    panToExtent: (towers) => {
-      const towerList = Object.values(towers);
-      if (towerList.length === 0) {
-        set({ offset: { x: 0, y: 0 } });
-        return;
-      }
-
-      let minX = Infinity;
-      let minY = Infinity;
-      let maxX = -Infinity;
-      let maxY = -Infinity;
-
-      for (const tower of towerList) {
-        minX = Math.min(minX, tower.position.x);
-        minY = Math.min(minY, tower.position.y);
-        maxX = Math.max(maxX, tower.position.x);
-        maxY = Math.max(maxY, tower.position.y);
-      }
-
-      // Center/pan to bring the farthest extent into the top-left quadrant of the screen
-      set({
-        offset: {
-          x: Math.round(-maxX + 100),
-          y: Math.round(-maxY + 100),
+            setOffset({ x: offset.x + delta.x, y: offset.y + delta.y });
         },
-      });
-    },
-  })),
+
+        resetOffset: () => {
+            get().setOffset({ x: 0, y: 0 });
+        },
+    })),
 );

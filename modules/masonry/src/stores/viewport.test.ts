@@ -1,86 +1,112 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+// Unit tests for the workspace viewport store slice. Store-only logic — no DOM — so this runs in
+// the node environment; the transform the offset ends up in is covered by useCanvasPan's tests.
 
-import type { TowerState } from '@/@types/workspace.types';
-import { makeEmptyStatement } from '@/mocks/tower';
-import {
-  FAST_PAN_STEP,
-  PAGE_PAN_STEP,
-  PAN_STEP,
-  useViewportStore,
-} from '@/stores/viewport';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-describe('useViewportStore', () => {
-  beforeEach(() => {
-    useViewportStore.setState({ offset: { x: 0, y: 0 } });
-  });
+import { useWorkspaceViewportStore } from './viewport';
 
-  it('initializes with offset at (0, 0)', () => {
-    expect(useViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
-  });
+// -------------------------------------------------------------------------------------------------
 
-  it('pans by relative deltas with panBy', () => {
-    const { panBy } = useViewportStore.getState();
+afterEach(() => {
+    useWorkspaceViewportStore.setState({ offset: { x: 0, y: 0 } });
+});
 
-    panBy({ x: PAN_STEP, y: 0 });
-    expect(useViewportStore.getState().offset).toEqual({ x: PAN_STEP, y: 0 });
+// -------------------------------------------------------------------------------------------------
 
-    panBy({ x: 0, y: -PAGE_PAN_STEP });
-    expect(useViewportStore.getState().offset).toEqual({ x: PAN_STEP, y: -PAGE_PAN_STEP });
-
-    panBy({ x: -FAST_PAN_STEP, y: FAST_PAN_STEP });
-    expect(useViewportStore.getState().offset).toEqual({
-      x: PAN_STEP - FAST_PAN_STEP,
-      y: -PAGE_PAN_STEP + FAST_PAN_STEP,
-    });
-  });
-
-  it('sets the offset directly with setOffset', () => {
-    const { setOffset } = useViewportStore.getState();
-
-    setOffset({ x: 250, y: -400 });
-    expect(useViewportStore.getState().offset).toEqual({ x: 250, y: -400 });
-  });
-
-  it('resets the offset to (0, 0) with resetOffset', () => {
-    const { panBy, resetOffset } = useViewportStore.getState();
-
-    panBy({ x: 500, y: 300 });
-    expect(useViewportStore.getState().offset).toEqual({ x: 500, y: 300 });
-
-    resetOffset();
-    expect(useViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
-  });
-
-  describe('panToExtent', () => {
-    it('resets to (0, 0) when no towers exist', () => {
-      const { setOffset, panToExtent } = useViewportStore.getState();
-
-      setOffset({ x: 300, y: 300 });
-      panToExtent({});
-      expect(useViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+describe('useWorkspaceViewportStore', () => {
+    it('starts unpanned', () => {
+        expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
     });
 
-    it('pans to encompass active towers', () => {
-      const { panToExtent } = useViewportStore.getState();
+    it('panBy accumulates one delta after another', () => {
+        const { panBy } = useWorkspaceViewportStore.getState();
 
-      const towers: Record<string, TowerState> = {
-        t1: {
-          id: 't1',
-          position: { x: 100, y: 50 },
-          root: makeEmptyStatement('b1', 0, false),
-        },
-        t2: {
-          id: 't2',
-          position: { x: 600, y: 450 },
-          root: makeEmptyStatement('b2', 0, false),
-        },
-      };
+        panBy({ x: 10, y: 5 });
+        panBy({ x: 2.5, y: 7 });
 
-      panToExtent(towers);
-      expect(useViewportStore.getState().offset).toEqual({
-        x: -600 + 100,
-        y: -450 + 100,
-      });
+        expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 12.5, y: 12 });
     });
-  });
+
+    it('setOffset moves the viewport to an absolute offset', () => {
+        useWorkspaceViewportStore.getState().panBy({ x: 40, y: 40 });
+
+        useWorkspaceViewportStore.getState().setOffset({ x: 120, y: 60 });
+
+        expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 120, y: 60 });
+    });
+
+    it('setOffset keeps its own copy of the point', () => {
+        const point = { x: 30, y: 30 };
+        useWorkspaceViewportStore.getState().setOffset(point);
+
+        point.x = 999;
+
+        expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 30, y: 30 });
+    });
+
+    it('resetOffset returns the viewport to the origin', () => {
+        useWorkspaceViewportStore.getState().panBy({ x: 300, y: 200 });
+
+        useWorkspaceViewportStore.getState().resetOffset();
+
+        expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+    });
+
+    it('stops at the origin instead of panning back past it', () => {
+        // Pulling the canvas back beyond where it started would put the top-left of the program
+        // out of reach.
+        useWorkspaceViewportStore.getState().setOffset({ x: -200, y: -120 });
+
+        expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+    });
+
+    it('bounds each axis on its own, leaving the other free', () => {
+        useWorkspaceViewportStore.getState().setOffset({ x: 80, y: -60 });
+
+        expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 80, y: 0 });
+    });
+
+    it('panBy cannot walk past the origin one delta at a time', () => {
+        const { panBy } = useWorkspaceViewportStore.getState();
+
+        panBy({ x: 100, y: 100 });
+        panBy({ x: -300, y: -300 });
+
+        // Panning back stops at the origin rather than banking the overshoot for later.
+        expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+
+        panBy({ x: 25, y: 25 });
+        expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 25, y: 25 });
+    });
+
+    it('a pan clamped away at the origin notifies no subscriber', () => {
+        const listener = vi.fn();
+        const unsubscribe = useWorkspaceViewportStore.subscribe(listener);
+
+        // Already at the origin, so there is nothing for the canvas transform to follow.
+        useWorkspaceViewportStore.getState().panBy({ x: -40, y: -40 });
+
+        expect(listener).not.toHaveBeenCalled();
+        unsubscribe();
+    });
+
+    it('a write that changes nothing notifies no subscriber', () => {
+        const listener = vi.fn();
+        const unsubscribe = useWorkspaceViewportStore.subscribe(listener);
+
+        useWorkspaceViewportStore.getState().setOffset({ x: 50, y: 20 });
+        expect(listener).toHaveBeenCalledTimes(1);
+
+        useWorkspaceViewportStore.getState().panBy({ x: 0, y: 0 });
+        useWorkspaceViewportStore.getState().setOffset({ x: 50, y: 20 });
+        expect(listener).toHaveBeenCalledTimes(1);
+
+        useWorkspaceViewportStore.getState().resetOffset();
+        expect(listener).toHaveBeenCalledTimes(2);
+
+        useWorkspaceViewportStore.getState().resetOffset();
+        expect(listener).toHaveBeenCalledTimes(2);
+
+        unsubscribe();
+    });
 });

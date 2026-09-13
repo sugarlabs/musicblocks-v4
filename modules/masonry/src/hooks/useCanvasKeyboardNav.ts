@@ -47,6 +47,13 @@ export function isInputFocused(event: React.KeyboardEvent | KeyboardEvent): bool
  */
 export function useCanvasKeyboardNav() {
   const handleKeyDown = useCallback((event: React.KeyboardEvent | KeyboardEvent) => {
+    // Something nearer the press has already answered it. The action menu sits inside the canvas
+    // and takes the arrows while it is open, so without this its wedge step would pan the canvas
+    // underneath it too.
+    if (event.defaultPrevented) {
+      return;
+    }
+
     if (isInputFocused(event)) {
       return;
     }

@@ -12,6 +12,7 @@ import type { TowerStatementNode } from '@/@types/tower.types';
 import type { TowerState } from '@/@types/workspace.types';
 
 import { makeEmptyStatement, makeEmptyValue } from '@/mocks/tower';
+import { useActionMenuStore } from '@/stores/actionMenu';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { usePaletteDragStore } from '@/stores/palette';
@@ -26,6 +27,7 @@ import { Workspace } from './Workspace';
 afterEach(() => {
   cleanup();
   usePaletteDragStore.setState({ dragged: null });
+  useActionMenuStore.setState({ brickId: null });
   useWorkspaceStore.setState({ towers: {}, selectedBrickId: null });
   useTrashStore.setState({ bounds: null, isHovered: false });
   useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
@@ -472,6 +474,30 @@ describe('Workspace', () => {
       const hint = container.querySelector('[data-testid="snap-hint-overlay"]');
       expect(hint).not.toBeNull();
       expect(queryViewport(container)!.contains(hint)).toBe(true);
+    });
+
+    it('draws the action menu in the overlay, outside the brick it is open on', () => {
+      // The menu sits beside the other overlays rather than inside the brick, so a press on a
+      // wedge lands here and never on the brick's own draggable underneath it.
+      const tower = makeTower('t1');
+      const brickId = tower.root.model.id;
+
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      act(() => {
+        useWorkspaceStore.getState().createTower(tower);
+        useBrickLayoutStore.getState().setMounted({ [brickId]: true });
+        useBrickLayoutStore.getState().setCoords(brickId, { x: 40, y: 60 });
+        useActionMenuStore.getState().open(brickId);
+      });
+
+      const menu = container.querySelector('[data-testid="action-menu"]');
+      const brick = container.querySelector(`[data-id="${brickId}"]`);
+      expect(menu).not.toBeNull();
+      expect(brick).not.toBeNull();
+      // In the viewport, so it pans with the brick it is placed against; out of the brick, so the
+      // brick needs no `ignoreFrom` for it.
+      expect(queryViewport(container)!.contains(menu)).toBe(true);
+      expect(brick!.contains(menu)).toBe(false);
     });
 
     it('moves the viewport node to wherever the store is panned', () => {

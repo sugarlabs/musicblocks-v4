@@ -155,11 +155,6 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                             drag.grabOffset,
                             useWorkspaceViewportStore.getState().offset,
                         );
-                        const offset = useViewportStore.getState().offset;
-                        const position = {
-                            x: localPos.x - offset.x,
-                            y: localPos.y - offset.y,
-                        };
 
                         // Temporarily mock a tower ID for collision detection
                         const mockTowerId = 'temp-palette-drag';
@@ -209,15 +204,6 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                         event.clientY >= canvasRect.top &&
                         event.clientY <= canvasRect.bottom;
                     if (!isInsideCanvas) return;
-
-                    const localPos = clientToLocalPoint(
-                        { x: event.clientX, y: event.clientY },
-                        { x: canvasRect.left, y: canvasRect.top },
-                        drag.grabOffset,
-                    );
-
-                    // Prevent placing the brick if it is still partially over the palette
-                    if (localPos.x < 0) return;
 
                     // A brand-new model instance per drop — never reuse the palette entry's id.
                     // The level is read here rather than closed over, since these listeners bind

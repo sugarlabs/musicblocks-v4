@@ -56,3 +56,10 @@ export const FOLD_TOGGLE_SELECTOR = '[data-fold-toggle]';
  * press that lands on a brick drags the brick rather than panning the canvas underneath it.
  */
 export const TOWER_BRICK_SELECTOR = '[data-tower-brick]';
+
+/** How far (in pixels) the canvas pans per arrow-key press. */
+export const PAN_STEP = 50;
+/** How far (in pixels) the canvas pans per accelerated arrow-key press (Shift held). */
+export const FAST_PAN_STEP = 100;
+/** How far (in pixels) the canvas pans per PageUp / PageDown press. */
+export const PAGE_PAN_STEP = 300;

@@ -1,12 +1,8 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 
-import {
-  FAST_PAN_STEP,
-  PAGE_PAN_STEP,
-  PAN_STEP,
-  useViewportStore,
-} from '@/stores/viewport';
+import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
+import { FAST_PAN_STEP, PAGE_PAN_STEP, PAN_STEP } from '@/utils/constants';
 
 /**
  * Determines if a keyboard event originated from inside an interactive text or input widget.
@@ -50,12 +46,12 @@ export function isInputFocused(event: React.KeyboardEvent | KeyboardEvent): bool
  * and the four arrow keys, while ignoring events originating from interactive inputs.
  */
 export function useCanvasKeyboardNav() {
-  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((event: React.KeyboardEvent | KeyboardEvent) => {
     if (isInputFocused(event)) {
       return;
     }
 
-    const { panBy, resetOffset, panToExtent } = useViewportStore.getState();
+    const { panBy, resetOffset, setOffset } = useWorkspaceViewportStore.getState();
     const towers = useWorkspaceStore.getState().towers;
 
     const step = event.shiftKey ? FAST_PAN_STEP : PAN_STEP;
@@ -89,14 +85,41 @@ export function useCanvasKeyboardNav() {
         event.preventDefault();
         resetOffset();
         break;
-      case 'End':
+      case 'End': {
         event.preventDefault();
-        panToExtent(towers);
+        const towerList = Object.values(towers);
+        if (towerList.length === 0) {
+          resetOffset();
+        } else {
+          let maxX = 0;
+          let maxY = 0;
+          for (const tower of towerList) {
+            maxX = Math.max(maxX, tower.position.x);
+            maxY = Math.max(maxY, tower.position.y);
+          }
+          setOffset({
+            x: Math.max(0, maxX - 100),
+            y: Math.max(0, maxY - 100),
+          });
+        }
         break;
+      }
       default:
         break;
     }
   }, []);
+
+  useEffect(() => {
+    const onWindowKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return;
+      handleKeyDown(event);
+    };
+
+    window.addEventListener('keydown', onWindowKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onWindowKeyDown);
+    };
+  }, [handleKeyDown]);
 
   return { handleKeyDown };
 }

@@ -1,15 +1,11 @@
-import { render, fireEvent } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { TowerState } from '@/@types/workspace.types';
-import {
-  FAST_PAN_STEP,
-  PAGE_PAN_STEP,
-  PAN_STEP,
-  useViewportStore,
-} from '@/stores/viewport';
-import { useWorkspaceStore } from '@/stores/workspace';
 import { makeEmptyStatement } from '@/mocks/tower';
+import { useWorkspaceViewportStore } from '@/stores/viewport';
+import { useWorkspaceStore } from '@/stores/workspace';
+import { FAST_PAN_STEP, PAGE_PAN_STEP, PAN_STEP } from '@/utils/constants';
 
 import { isInputFocused, useCanvasKeyboardNav } from './useCanvasKeyboardNav';
 
@@ -36,7 +32,7 @@ function KeyboardTestComponent() {
 
 describe('useCanvasKeyboardNav', () => {
   beforeEach(() => {
-    useViewportStore.setState({ offset: { x: 0, y: 0 } });
+    useWorkspaceViewportStore.setState({ offset: { x: 0, y: 0 } });
     useWorkspaceStore.setState({ towers: {} });
   });
 
@@ -44,30 +40,30 @@ describe('useCanvasKeyboardNav', () => {
     const { getByTestId } = render(<KeyboardTestComponent />);
     const canvas = getByTestId('canvas-test');
 
-    fireEvent.keyDown(canvas, { key: 'ArrowUp' });
-    expect(useViewportStore.getState().offset).toEqual({ x: 0, y: -PAN_STEP });
-
     fireEvent.keyDown(canvas, { key: 'ArrowDown' });
-    expect(useViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+    expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: PAN_STEP });
 
-    fireEvent.keyDown(canvas, { key: 'ArrowLeft' });
-    expect(useViewportStore.getState().offset).toEqual({ x: -PAN_STEP, y: 0 });
+    fireEvent.keyDown(canvas, { key: 'ArrowUp' });
+    expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
 
     fireEvent.keyDown(canvas, { key: 'ArrowRight' });
-    expect(useViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+    expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: PAN_STEP, y: 0 });
+
+    fireEvent.keyDown(canvas, { key: 'ArrowLeft' });
+    expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
   });
 
   it('pans at accelerated speed when Shift is held with arrow keys', () => {
     const { getByTestId } = render(<KeyboardTestComponent />);
     const canvas = getByTestId('canvas-test');
 
-    fireEvent.keyDown(canvas, { key: 'ArrowUp', shiftKey: true });
-    expect(useViewportStore.getState().offset).toEqual({ x: 0, y: -FAST_PAN_STEP });
+    fireEvent.keyDown(canvas, { key: 'ArrowDown', shiftKey: true });
+    expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: FAST_PAN_STEP });
 
     fireEvent.keyDown(canvas, { key: 'ArrowRight', shiftKey: true });
-    expect(useViewportStore.getState().offset).toEqual({
+    expect(useWorkspaceViewportStore.getState().offset).toEqual({
       x: FAST_PAN_STEP,
-      y: -FAST_PAN_STEP,
+      y: FAST_PAN_STEP,
     });
   });
 
@@ -75,21 +71,21 @@ describe('useCanvasKeyboardNav', () => {
     const { getByTestId } = render(<KeyboardTestComponent />);
     const canvas = getByTestId('canvas-test');
 
-    fireEvent.keyDown(canvas, { key: 'PageUp' });
-    expect(useViewportStore.getState().offset).toEqual({ x: 0, y: -PAGE_PAN_STEP });
-
     fireEvent.keyDown(canvas, { key: 'PageDown' });
-    expect(useViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+    expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: PAGE_PAN_STEP });
+
+    fireEvent.keyDown(canvas, { key: 'PageUp' });
+    expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
   });
 
   it('resets the viewport offset to origin on Home', () => {
-    useViewportStore.setState({ offset: { x: 500, y: -300 } });
+    useWorkspaceViewportStore.setState({ offset: { x: 500, y: 300 } });
 
     const { getByTestId } = render(<KeyboardTestComponent />);
     const canvas = getByTestId('canvas-test');
 
     fireEvent.keyDown(canvas, { key: 'Home' });
-    expect(useViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+    expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
   });
 
   it('pans to active tower extents on End', () => {
@@ -106,9 +102,9 @@ describe('useCanvasKeyboardNav', () => {
     const canvas = getByTestId('canvas-test');
 
     fireEvent.keyDown(canvas, { key: 'End' });
-    expect(useViewportStore.getState().offset).toEqual({
-      x: -500 + 100,
-      y: -400 + 100,
+    expect(useWorkspaceViewportStore.getState().offset).toEqual({
+      x: 500 - 100,
+      y: 400 - 100,
     });
   });
 
@@ -132,19 +128,19 @@ describe('useCanvasKeyboardNav', () => {
       const { getByTestId } = render(<KeyboardTestComponent />);
       const input = getByTestId('test-input');
 
-      fireEvent.keyDown(input, { key: 'ArrowLeft' });
-      expect(useViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
 
       fireEvent.keyDown(input, { key: 'Home' });
-      expect(useViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
     });
 
     it('does not pan when focused inside a textarea element', () => {
       const { getByTestId } = render(<KeyboardTestComponent />);
       const textarea = getByTestId('test-textarea');
 
-      fireEvent.keyDown(textarea, { key: 'ArrowUp' });
-      expect(useViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+      fireEvent.keyDown(textarea, { key: 'ArrowDown' });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
     });
 
     it('does not pan when focused inside role=textbox or custom input slots', () => {
@@ -153,10 +149,10 @@ describe('useCanvasKeyboardNav', () => {
       const selectTrigger = getByTestId('test-select-trigger');
 
       fireEvent.keyDown(spanInsideTextbox, { key: 'ArrowDown' });
-      expect(useViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
 
       fireEvent.keyDown(selectTrigger, { key: 'ArrowDown' });
-      expect(useViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
     });
   });
 

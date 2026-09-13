@@ -599,45 +599,45 @@ describe('Workspace', () => {
       expect(canvas?.classList.contains('focus-visible:ring-ring')).toBe(true);
     });
 
-    it('translates the world layer when viewport offset updates', () => {
+    it('translates the viewport layer when viewport offset updates', () => {
       const { getByTestId } = render(<Workspace config={{ palette: paletteConfig }} />);
-      const world = getByTestId('workspace-world');
+      const viewport = getByTestId('workspace-viewport');
 
-      expect(world.style.transform).toBe('translate(0px, 0px)');
+      expect(viewport.style.transform).toBe('translate(0px, 0px)');
 
       act(() => {
-        useViewportStore.getState().setOffset({ x: 120, y: -80 });
+        useWorkspaceViewportStore.getState().setOffset({ x: 120, y: 80 });
       });
 
-      expect(world.style.transform).toBe('translate(120px, -80px)');
+      expect(viewport.style.transform).toBe('translate(120px, 80px)');
     });
 
     it('pans the canvas using arrow keys, PageUp/PageDown, and Home/End', () => {
       const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
       const canvas = container.querySelector('[role="region"][aria-label="Workspace Canvas"]') as HTMLElement;
 
-      fireEvent.keyDown(canvas, { key: 'ArrowUp' });
-      expect(useViewportStore.getState().offset).toEqual({ x: 0, y: -50 });
+      fireEvent.keyDown(canvas, { key: 'ArrowDown' });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 50 });
 
-      fireEvent.keyDown(canvas, { key: 'ArrowLeft' });
-      expect(useViewportStore.getState().offset).toEqual({ x: -50, y: -50 });
+      fireEvent.keyDown(canvas, { key: 'ArrowRight' });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 50, y: 50 });
 
       fireEvent.keyDown(canvas, { key: 'PageDown' });
-      expect(useViewportStore.getState().offset).toEqual({ x: -50, y: 250 });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 50, y: 350 });
 
       fireEvent.keyDown(canvas, { key: 'Home' });
-      expect(useViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
     });
 
     it('does not pan the canvas when typing inside the palette search box', () => {
       const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
       const searchInput = container.querySelector('input[placeholder="Search bricks"]') as HTMLElement;
 
-      fireEvent.keyDown(searchInput, { key: 'ArrowLeft' });
-      fireEvent.keyDown(searchInput, { key: 'Home' });
-      fireEvent.keyDown(searchInput, { key: 'ArrowUp' });
+      fireEvent.keyDown(searchInput, { key: 'ArrowDown' });
+      fireEvent.keyDown(searchInput, { key: 'PageDown' });
+      fireEvent.keyDown(searchInput, { key: 'ArrowRight' });
 
-      expect(useViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
     });
   });
 });

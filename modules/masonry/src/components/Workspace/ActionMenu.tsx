@@ -69,10 +69,13 @@ function WedgeButton(props: WedgeButtonProps) {
         wedge.run(brickId);
         useActionMenuStore.getState().close();
       }}
+      // Dark enough that a white icon reads off it at a glance, since the wedge is over a brick
+      // whose own colour is anything at all; the disabled one is dimmer but still legible, since a
+      // wedge that says nothing is no better than one that was dropped.
       className={`pointer-events-auto absolute top-0 left-0 border-0 p-0 transition-colors ${
         isEnabled
-          ? 'cursor-pointer bg-neutral-700/90 hover:bg-neutral-600 focus-visible:bg-neutral-600'
-          : 'cursor-default bg-neutral-700/40'
+          ? 'cursor-pointer bg-neutral-900/95 hover:bg-neutral-700 focus-visible:bg-neutral-700'
+          : 'cursor-default bg-neutral-900/80'
       }`}
       style={{
         width: box,
@@ -85,7 +88,7 @@ function WedgeButton(props: WedgeButtonProps) {
     >
       <wedge.Icon
         size={iconSize}
-        className={`absolute ${isEnabled ? 'text-white' : 'text-white/40'}`}
+        className={`absolute ${isEnabled ? 'text-white' : 'text-neutral-400'}`}
         // Placed off the wedge's own centre rather than laid out, since the button behind it is
         // the whole ring and every wedge's button sits in exactly the same place.
         style={{

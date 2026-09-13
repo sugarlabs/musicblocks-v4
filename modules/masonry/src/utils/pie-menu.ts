@@ -65,22 +65,24 @@ export function wedgeAngles(index: number, count: number, gapDegrees: number): W
 }
 
 /**
- * An SVG path for one wedge, in a space whose origin is the ring's centre.
+ * A path for one wedge, drawn as an annular sector: out along the leading edge, round the outer
+ * arc, back in, and round the inner arc the other way. The hole is left by the inner arc rather
+ * than by a second element over the top, so nothing the menu draws covers the brick in the middle.
  *
- * Drawn as an annular sector: out along the leading edge, round the outer arc, back in, and round
- * the inner arc the other way. The hole is left by the inner arc rather than by a second element
- * over the top, so nothing the menu draws covers the brick in the middle.
+ * `centre` moves the ring's middle off the origin, which is what a CSS `clip-path` wants: its
+ * coordinates are measured from the box's top-left corner, and the ring sits in the middle of it.
  */
-export function wedgePath(angles: WedgeAngles, ring: PieRing): string {
+export function wedgePath(angles: WedgeAngles, ring: PieRing, centre?: Point): string {
     const { innerRadius, outerRadius } = ring;
     const largeArc = angles.end - angles.start > 180 ? 1 : 0;
+    const origin = centre ?? { x: 0, y: 0 };
 
     const innerStart = polar(innerRadius, angles.start);
     const outerStart = polar(outerRadius, angles.start);
     const outerEnd = polar(outerRadius, angles.end);
     const innerEnd = polar(innerRadius, angles.end);
 
-    const at = (point: Point) => `${round(point.x)} ${round(point.y)}`;
+    const at = (point: Point) => `${round(origin.x + point.x)} ${round(origin.y + point.y)}`;
 
     return [
         `M ${at(innerStart)}`,

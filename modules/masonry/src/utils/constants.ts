@@ -63,3 +63,18 @@ export const TOWER_BRICK_SELECTOR = '[data-tower-brick]';
  * carries it until the menu lands, which is the point, until then every press is outside.
  */
 export const ACTION_MENU_SELECTOR = '[data-action-menu]';
+
+/**
+ * The pie menu's ring, in pixels at `brickScale` 1; `ringAtScale` scales it to a scale level.
+ *
+ * The hole is wide enough to leave the brick's widget readable under the menu, since the wedge a
+ * press is meant for is chosen by what it would act on.
+ */
+export const ACTION_MENU_RING = {
+    /** Radius of the hole the brick shows through. */
+    innerRadius: 28,
+    /** Radius of the ring's outer edge. */
+    outerRadius: 68,
+    /** Angular space left between two wedges, in degrees, so each reads as its own target. */
+    gapDegrees: 4,
+} as const;

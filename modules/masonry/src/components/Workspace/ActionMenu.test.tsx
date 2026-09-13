@@ -10,6 +10,7 @@ import type { ActionMenuWedge } from '@/@types/action-menu.types';
 import type { TowerStatementNode } from '@/@types/tower.types';
 
 import { makeEmptyStatement } from '@/mocks/tower';
+import { useActionMenuDismiss } from '@/hooks/useActionMenuDismiss';
 import { useActionMenuStore } from '@/stores/actionMenu';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { useWorkspaceScaleStore } from '@/stores/scale';
@@ -262,6 +263,140 @@ describe('ActionMenu', () => {
       // menu has to refuse the press itself, and refusing it is not a reason to close.
       expect(runs.inert).not.toHaveBeenCalled();
       expect(queryByTestId('action-menu')).not.toBeNull();
+    });
+  });
+
+  describe('driving it from the keyboard', () => {
+    /** The `data-wedge` of whichever wedge currently holds the focus. */
+    function focusedWedge(): string | undefined {
+      return (document.activeElement as HTMLElement | null)?.dataset.wedge;
+    }
+
+    /** The `data-wedge` of every wedge the tab order can land on. */
+    function tabStops(wedges: HTMLElement[]): (string | undefined)[] {
+      return wedges.filter((wedge) => wedge.tabIndex === 0).map((wedge) => wedge.dataset.wedge);
+    }
+
+    it('takes the focus when it opens, on the same wedge every time', () => {
+      placeBrick('b1', 100, 100);
+      openOn('b1');
+
+      // A right click leaves the focus where it was, so the menu has to come and get it.
+      expect(focusedWedge()).toBe('act');
+    });
+
+    it('holds one tab stop for the whole ring', () => {
+      placeBrick('b1', 100, 100);
+      const { getAllByRole } = openOn('b1');
+
+      // A menu is one control: tabbing past it should leave it, not walk it wedge by wedge.
+      expect(tabStops(getAllByRole('menuitem'))).toEqual(['act']);
+    });
+
+    it('moves the focus clockwise round the ring', () => {
+      placeBrick('b1', 100, 100);
+      const { getByTestId, getAllByRole } = openOn('b1');
+      const menu = getByTestId('action-menu');
+
+      fireEvent.keyDown(menu, { key: 'ArrowRight' });
+      expect(focusedWedge()).toBe('inert');
+      expect(tabStops(getAllByRole('menuitem'))).toEqual(['inert']);
+
+      fireEvent.keyDown(menu, { key: 'ArrowDown' });
+      expect(focusedWedge()).toBe('third');
+    });
+
+    it('moves it back the other way on the other two arrows', () => {
+      placeBrick('b1', 100, 100);
+      const { getByTestId } = openOn('b1');
+      const menu = getByTestId('action-menu');
+
+      fireEvent.keyDown(menu, { key: 'ArrowDown' });
+      fireEvent.keyDown(menu, { key: 'ArrowLeft' });
+      expect(focusedWedge()).toBe('act');
+
+      fireEvent.keyDown(menu, { key: 'ArrowDown' });
+      fireEvent.keyDown(menu, { key: 'ArrowUp' });
+      expect(focusedWedge()).toBe('act');
+    });
+
+    it('wraps at both ends, because the wedges are a ring and not a row', () => {
+      placeBrick('b1', 100, 100);
+      const { getByTestId } = openOn('b1');
+      const menu = getByTestId('action-menu');
+
+      fireEvent.keyDown(menu, { key: 'ArrowLeft' });
+      expect(focusedWedge()).toBe('third');
+
+      fireEvent.keyDown(menu, { key: 'ArrowRight' });
+      expect(focusedWedge()).toBe('act');
+    });
+
+    it('jumps to the first and last wedge on Home and End', () => {
+      placeBrick('b1', 100, 100);
+      const { getByTestId } = openOn('b1');
+      const menu = getByTestId('action-menu');
+
+      fireEvent.keyDown(menu, { key: 'End' });
+      expect(focusedWedge()).toBe('third');
+
+      fireEvent.keyDown(menu, { key: 'Home' });
+      expect(focusedWedge()).toBe('act');
+    });
+
+    it('keeps a disabled wedge in the ring, so the wedges stay where they were', () => {
+      placeBrick('b1', 100, 100);
+      const { getByTestId } = openOn('b1');
+
+      // Reachable, and its tooltip says what it would have done. Dropping it would move every
+      // wedge after it, and the one the keys reach next would depend on the brick underneath.
+      fireEvent.keyDown(getByTestId('action-menu'), { key: 'ArrowRight' });
+      expect(focusedWedge()).toBe('inert');
+    });
+
+    it('holds the arrows back from the canvas underneath', () => {
+      placeBrick('b1', 100, 100);
+      const { getByTestId } = openOn('b1');
+
+      const arrow = fireEvent.keyDown(getByTestId('action-menu'), { key: 'ArrowRight' });
+
+      // While the menu is open the arrows are the ring's, not the canvas's or the browser's.
+      expect(arrow).toBe(false);
+    });
+
+    it('leaves Enter to the wedge itself, which is a button and acts on it', () => {
+      placeBrick('b1', 100, 100);
+      const { getByTestId, getByRole } = openOn('b1');
+
+      // jsdom does not raise the click a real browser raises from Enter on a focused button, so
+      // what is held to account here is the two things that make it happen: the wedge being a
+      // button, and the menu's own key handling leaving Enter alone.
+      expect((getByRole('menuitem', { name: 'Act' }) as HTMLButtonElement).type).toBe('button');
+      expect(fireEvent.keyDown(getByTestId('action-menu'), { key: 'Enter' })).toBe(true);
+    });
+
+    it('closes on Escape pressed with the focus inside it', () => {
+      placeBrick('b1', 100, 100);
+
+      // The canvas, as far as this matters: the menu and the dismissal that answers Escape. The
+      // menu leaves the key to bubble to that document listener rather than answering it twice,
+      // and the focus sitting on a wedge must not get in the way of it arriving.
+      function Canvas() {
+        useActionMenuDismiss();
+        return <ActionMenu />;
+      }
+
+      const { queryByTestId } = render(<Canvas />);
+      act(() => {
+        useActionMenuStore.getState().open('b1');
+      });
+
+      act(() => {
+        fireEvent.keyDown(document.activeElement as HTMLElement, { key: 'Escape' });
+      });
+
+      expect(useActionMenuStore.getState().brickId).toBeNull();
+      expect(queryByTestId('action-menu')).toBeNull();
     });
   });
 

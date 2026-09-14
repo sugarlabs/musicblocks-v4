@@ -7,7 +7,7 @@ const debouncedCommit = () => {
   if (commitTimeout) clearTimeout(commitTimeout);
   commitTimeout = setTimeout(() => {
     useWorkspaceHistoryStore.getState().commit();
-  }, 500); 
+  }, 500);
 };
 
 import type { WidgetInput } from '@/@types/brick.types';

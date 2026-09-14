@@ -1,5 +1,15 @@
 import { useState } from 'react';
 
+import { useWorkspaceHistoryStore } from '@/stores/history';
+
+let commitTimeout: ReturnType<typeof setTimeout> | null = null;
+const debouncedCommit = () => {
+  if (commitTimeout) clearTimeout(commitTimeout);
+  commitTimeout = setTimeout(() => {
+    useWorkspaceHistoryStore.getState().commit();
+  }, 500); 
+};
+
 import type { WidgetInput } from '@/@types/brick.types';
 
 import { Input } from '@/ui/input';
@@ -99,7 +109,15 @@ function SelectWidget({
   borderColor: string;
 }) {
   return (
-    <Select defaultValue={String(widget.value)}>
+    <Select
+      defaultValue={String(widget.value)}
+      onValueChange={(val) => {
+        if (val != null) {
+          widget.value = val;
+          debouncedCommit();
+        }
+      }}
+    >
       <SelectTrigger
         className="h-7 min-w-16 gap-1 border-black/20 bg-transparent px-2 py-1 transition-colors hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/5"
         style={commonStyle}
@@ -150,7 +168,11 @@ function TextboxWidget({
     <Input
       type="text"
       defaultValue={widget.value as string}
-      onChange={(e) => setVal(e.target.value)}
+      onChange={(e) => {
+        setVal(e.target.value);
+        widget.value = e.target.value;
+        debouncedCommit();
+      }}
       maxLength={widget.maxLength}
       className="h-7 border-black/20 bg-transparent px-2 py-1 transition-colors hover:bg-black/5 focus-visible:ring-1 focus-visible:ring-black/20 dark:border-white/20 dark:hover:bg-white/5 dark:focus-visible:ring-white/20"
       style={{ ...commonStyle, width: `${Math.max(4, val.length + 2)}ch` }}
@@ -171,6 +193,10 @@ function NumberboxWidget({
     <Input
       type="number"
       defaultValue={widget.value as number}
+      onChange={(e) => {
+        widget.value = parseFloat(e.target.value);
+        debouncedCommit();
+      }}
       min={widget.min}
       max={widget.max}
       step={widget.step}
@@ -202,7 +228,15 @@ function ToggleWidget({
       className="relative flex h-7 min-w-12 cursor-pointer items-center rounded-full p-0.5"
       style={{ ...commonStyle, backgroundColor: borderColor }}
     >
-      <input type="checkbox" className="peer sr-only" defaultChecked={widget.value as boolean} />
+      <input
+        type="checkbox"
+        className="peer sr-only"
+        defaultChecked={widget.value as boolean}
+        onChange={(e) => {
+          widget.value = e.target.checked;
+          debouncedCommit();
+        }}
+      />
       {/* Thumb background */}
       <div
         className="absolute top-0.5 left-0.5 h-6 w-[calc(50%-2px)] rounded-full shadow-sm transition-transform duration-200 ease-in-out peer-checked:translate-x-full"
@@ -240,6 +274,10 @@ function SliderWidget({
       <div className="flex flex-1 items-center">
         <Slider
           defaultValue={[Number(widget.value) || 0]}
+          onValueChange={(val) => {
+            widget.value = Array.isArray(val) ? val[0] : (val as unknown as number);
+            debouncedCommit();
+          }}
           min={widget.min}
           max={widget.max}
           step={widget.step}

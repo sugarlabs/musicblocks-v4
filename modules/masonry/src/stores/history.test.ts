@@ -57,14 +57,14 @@ describe('Workspace History Store', () => {
             useWorkspaceHistoryStore.getState().init(); // index 0
             useWorkspaceHistoryStore.getState().commit(); // index 1
             useWorkspaceHistoryStore.getState().commit(); // index 2
-            
+
             // Undo back to index 1
-            useWorkspaceHistoryStore.getState().undo(); 
-            
+            useWorkspaceHistoryStore.getState().undo();
+
             // Commit a new state, this should overwrite index 2 and drop anything beyond
-            useWorkspaceHistoryStore.getState().commit(); 
+            useWorkspaceHistoryStore.getState().commit();
         });
-        
+
         const state = useWorkspaceHistoryStore.getState();
         expect(state.history.length).toBe(3);
         expect(state.currentIndex).toBe(2);
@@ -83,7 +83,7 @@ describe('Workspace History Store', () => {
 
     it('enforces the maxHistory limit', () => {
         const MAX_HISTORY = useWorkspaceHistoryStore.getState().maxHistory;
-        
+
         act(() => {
             useWorkspaceHistoryStore.getState().init();
             // Commit maxHistory + 5 times

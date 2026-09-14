@@ -10,7 +10,9 @@ import { DEFAULT_SCALE_LEVEL, MAX_SCALE_LEVEL, MIN_SCALE_LEVEL } from '@/utils/c
  *
  * The reset only renders away from the default level, where it has nothing to undo. It sits
  * leftmost because the row is anchored on its right edge, so dropping it leaves the magnifiers
- * where they are rather than sliding them under the pointer.
+ * where they are rather than sliding them under the pointer. Anchoring is the caller's: the row
+ * changes width as the reset comes and goes, so whatever sits beside it has to be laid out against
+ * it rather than pinned to a coordinate measured off one of its two states.
  *
  * Unlike Trash this needs real pointer events, so it renders as ordinary buttons rather than
  * `pointer-events-none` — safe since `useDragFromPalette`'s delegated selector only ever matches
@@ -21,7 +23,7 @@ export function ScaleControl() {
   const { reset, zoomIn, zoomOut } = useWorkspaceScaleStore.getState();
 
   return (
-    <div className="absolute right-26 bottom-6 z-40 flex h-14 items-center gap-6">
+    <div className="flex h-14 items-center gap-6">
       {level !== DEFAULT_SCALE_LEVEL && (
         <Button
           variant="outline"

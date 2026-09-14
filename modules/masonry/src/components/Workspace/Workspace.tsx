@@ -201,8 +201,16 @@ export function Workspace({ config }: WorkspaceViewProps) {
           <DisconnectShadowView />
         </div>
 
-        <ScaleControl />
-        <FullscreenControl rootRef={rootRef} />
+        {/* One right-anchored row: the zoom controls change width as the reset button comes and
+            goes, so the fullscreen button is laid out against them rather than pinned to an offset
+            that only holds at the default level. */}
+        <div
+          data-testid="workspace-controls"
+          className="absolute right-26 bottom-6 z-40 flex h-14 items-center gap-6"
+        >
+          <FullscreenControl />
+          <ScaleControl />
+        </div>
         {/* The Trash is only useful once there is something to remove */}
         {towers.length > 0 && <Trash canvasRef={canvasRef} />}
       </div>

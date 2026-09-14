@@ -381,6 +381,11 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                     },
                 };
             });
+
+            // Commit history after the layout update is queued
+            import('@/stores/history').then(({ useWorkspaceHistoryStore }) => {
+                useWorkspaceHistoryStore.getState().commit();
+            });
         },
 
         exportWorkspace: () => exportWorkspaceUtil(get().towers),

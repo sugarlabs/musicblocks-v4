@@ -5,7 +5,7 @@
 // this file verifies the pieces mount and react to the drag store correctly.
 
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { PaletteConfig } from '@/@types/palette.types';
 import type { TowerStatementNode } from '@/@types/tower.types';
@@ -13,24 +13,28 @@ import type { TowerState } from '@/@types/workspace.types';
 
 import { makeEmptyStatement, makeEmptyValue } from '@/mocks/tower';
 import { useBrickLayoutStore } from '@/stores/brick';
+import { useWorkspaceScaleStore } from '@/stores/scale';
 import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { usePaletteDragStore } from '@/stores/palette';
 import { useTrashStore } from '@/stores/trash';
 import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { createBrickModel, wrapAsRootNode } from '@/utils/brick-model-factory';
-import { FOLD_TOGGLE_SELECTOR } from '@/utils/constants';
+import { DEFAULT_SCALE_LEVEL, FOLD_TOGGLE_SELECTOR, MAX_SCALE_LEVEL } from '@/utils/constants';
 
 import { Workspace } from './Workspace';
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
   usePaletteDragStore.setState({ dragged: null });
   useWorkspaceStore.setState({ towers: {}, selectedBrickId: null });
   useTrashStore.setState({ bounds: null, isHovered: false });
   useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
   useWorkspaceViewportStore.setState({ offset: { x: 0, y: 0 } });
   useConnectionPreviewStore.setState({ activeTarget: null, isValid: false, snapPosition: null });
+  useWorkspaceScaleStore.setState({ level: DEFAULT_SCALE_LEVEL });
 });
 
 // -------------------------------------------------------------------------------------------------
@@ -145,6 +149,11 @@ function queryTrash(container: HTMLElement) {
 /** The node a pan moves, holding everything drawn in canvas coordinates. */
 function queryViewport(container: HTMLElement) {
   return container.querySelector<HTMLElement>('[data-testid="workspace-viewport"]');
+}
+
+/** The row the canvas controls are anchored in, bottom right of the canvas. */
+function queryControls(container: HTMLElement) {
+  return container.querySelector<HTMLElement>('[data-testid="workspace-controls"]');
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -427,6 +436,51 @@ describe('Workspace', () => {
 
       expect(queryTrash(container)?.classList.contains('pointer-events-none')).toBe(true);
     });
+
+    it('re-measures and updates bounds in the store when the canvas is resized', () => {
+      let resizeCallback: () => void = () => {};
+      class MockResizeObserver {
+        constructor(cb: () => void) {
+          resizeCallback = cb;
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      }
+      vi.stubGlobal('ResizeObserver', MockResizeObserver);
+
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      act(() => {
+        useWorkspaceStore.getState().createTower(makeTower('t1'));
+      });
+
+      const trashEl = queryTrash(container) as HTMLElement;
+      expect(trashEl).not.toBeNull();
+
+      vi.spyOn(trashEl, 'getBoundingClientRect').mockReturnValue({
+        left: 500,
+        top: 600,
+        width: 56,
+        height: 56,
+        right: 556,
+        bottom: 656,
+        x: 500,
+        y: 600,
+        toJSON: () => {},
+      });
+
+      act(() => {
+        resizeCallback();
+      });
+
+      expect(useTrashStore.getState().bounds).toEqual({
+        x: 500,
+        y: 600,
+        w: 56,
+        h: 56,
+      });
+    });
   });
 
   describe('viewport', () => {
@@ -485,6 +539,68 @@ describe('Workspace', () => {
       });
 
       expect(viewport.style.transform).toBe('translate(40px, 10px)');
+    });
+  });
+
+  describe('controls', () => {
+    // jsdom has no fullscreen API, and the control renders away without one, so the suite has to
+    // put a stub in place before the Workspace can be asked about the button at all.
+    beforeEach(() => {
+      document.documentElement.requestFullscreen = vi
+        .fn()
+        .mockResolvedValue(
+          undefined,
+        ) as unknown as typeof document.documentElement.requestFullscreen;
+    });
+
+    afterEach(() => {
+      Reflect.deleteProperty(document.documentElement, 'requestFullscreen');
+    });
+
+    it('mounts the fullscreen toggle pinned to the canvas rather than inside the viewport', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      const fullscreen = container.querySelector('[aria-label="Enter fullscreen"]');
+      const viewport = queryViewport(container);
+
+      expect(fullscreen).not.toBeNull();
+      // Same reason the zoom controls and the Trash sit outside it: a pan would otherwise carry
+      // the button off screen with the bricks.
+      expect(viewport!.contains(fullscreen)).toBe(false);
+    });
+
+    it('lays the fullscreen toggle out beside the zoom controls, so the reset has room of its own', () => {
+      // The regression this guards: pinned to a coordinate of its own, the fullscreen button sat
+      // exactly where the reset mounts once the level leaves the default, and covered it.
+      useWorkspaceScaleStore.setState({ level: MAX_SCALE_LEVEL });
+
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      const controls = queryControls(container);
+      expect(controls).not.toBeNull();
+
+      const labels = [...controls!.querySelectorAll('button')].map((button) =>
+        button.getAttribute('aria-label'),
+      );
+
+      // Every control the row holds is laid out by the row, in the order it reads left to right.
+      // The row is anchored on its right edge, so the reset arriving shifts the fullscreen button
+      // and leaves the magnifiers where the pointer left them.
+      expect(labels).toEqual(['Enter fullscreen', 'Reset zoom', 'Zoom out', 'Zoom in']);
+
+      for (const button of controls!.querySelectorAll('button')) {
+        expect(button.className).not.toContain('absolute');
+      }
+    });
+
+    it('leaves the control row to the zoom buttons where the browser has no fullscreen', () => {
+      Reflect.deleteProperty(document.documentElement, 'requestFullscreen');
+
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      const controls = queryControls(container);
+      expect(controls!.querySelector('[aria-label="Enter fullscreen"]')).toBeNull();
+      expect(controls!.querySelector('[aria-label="Zoom in"]')).not.toBeNull();
     });
   });
 
@@ -585,6 +701,107 @@ describe('Workspace', () => {
       });
 
       expect(foldToggleOf(container, 't1-outer')!.disabled).toBe(true);
+    });
+  });
+
+  describe('canvas accessibility and keyboard navigation', () => {
+    it('gives the canvas container tabIndex={0} and a visible focus ring', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const canvas = container.querySelector('[role="region"][aria-label="Workspace Canvas"]');
+
+      expect(canvas).not.toBeNull();
+      expect(canvas?.getAttribute('tabindex')).toBe('0');
+      expect(canvas?.classList.contains('focus-visible:ring-2')).toBe(true);
+      expect(canvas?.classList.contains('focus-visible:ring-ring')).toBe(true);
+    });
+
+    it('translates the viewport layer when viewport offset updates', () => {
+      const { getByTestId } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const viewport = getByTestId('workspace-viewport');
+
+      expect(viewport.style.transform).toBe('translate(0px, 0px)');
+
+      act(() => {
+        useWorkspaceViewportStore.getState().setOffset({ x: 120, y: 80 });
+      });
+
+      expect(viewport.style.transform).toBe('translate(120px, 80px)');
+    });
+
+    it('pans the canvas using arrow keys, PageUp/PageDown, and Home/End', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const canvas = container.querySelector(
+        '[role="region"][aria-label="Workspace Canvas"]',
+      ) as HTMLElement;
+
+      fireEvent.keyDown(canvas, { key: 'ArrowDown' });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 50 });
+
+      fireEvent.keyDown(canvas, { key: 'ArrowRight' });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 50, y: 50 });
+
+      fireEvent.keyDown(canvas, { key: 'PageDown' });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 50, y: 350 });
+
+      fireEvent.keyDown(canvas, { key: 'Home' });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+    });
+
+    it('does not pan the canvas when typing inside the palette search box', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const searchInput = container.querySelector(
+        'input[placeholder="Search bricks"]',
+      ) as HTMLElement;
+
+      fireEvent.keyDown(searchInput, { key: 'ArrowDown' });
+      fireEvent.keyDown(searchInput, { key: 'PageDown' });
+      fireEvent.keyDown(searchInput, { key: 'ArrowRight' });
+
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+    });
+
+    it('takes focus when focused, rather than only carrying the attribute', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const canvas = container.querySelector(
+        '[role="region"][aria-label="Workspace Canvas"]',
+      ) as HTMLElement;
+
+      canvas.focus();
+
+      expect(document.activeElement).toBe(canvas);
+    });
+
+    it('moves the viewport node off a key press, not just off a store write', () => {
+      const { container, getByTestId } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const canvas = container.querySelector(
+        '[role="region"][aria-label="Workspace Canvas"]',
+      ) as HTMLElement;
+
+      fireEvent.keyDown(canvas, { key: 'PageDown' });
+      fireEvent.keyDown(canvas, { key: 'ArrowRight' });
+
+      expect(getByTestId('workspace-viewport').style.transform).toBe('translate(50px, 300px)');
+    });
+
+    it('leaves the selected brick alone while panning, since both handlers sit on the window', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      act(() => {
+        useWorkspaceStore.getState().createTower(makeNestingTower('pan-selection'));
+      });
+
+      fireEvent.click(container.querySelector('[data-id="pan-selection-outer"]') as HTMLElement);
+
+      // The delete handler listens on the window too, so a pan and a selection share every press.
+
+      const canvas = container.querySelector(
+        '[role="region"][aria-label="Workspace Canvas"]',
+      ) as HTMLElement;
+      fireEvent.keyDown(canvas, { key: 'ArrowDown' });
+      fireEvent.keyDown(canvas, { key: 'End' });
+
+      expect(useWorkspaceStore.getState().towers['pan-selection']).toBeDefined();
+      expect(useWorkspaceStore.getState().selectedBrickId).toBe('pan-selection-outer');
     });
   });
 });

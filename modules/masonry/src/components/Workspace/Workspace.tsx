@@ -7,6 +7,8 @@ import type { Point } from '@/@types/common.types';
 
 import { Palette } from '@/components/Palette/Palette';
 import { TowerBrickView } from '@/components/Tower/TowerBrick';
+import { useActionMenuDismiss } from '@/hooks/useActionMenuDismiss';
+import { useActionMenuTarget } from '@/hooks/useActionMenuTarget';
 import { useCanvasKeyboardNav } from '@/hooks/useCanvasKeyboardNav';
 import { useCanvasPan } from '@/hooks/useCanvasPan';
 import { useDragFromPalette } from '@/hooks/useDragFromPalette';
@@ -17,6 +19,7 @@ import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 import { discardTower } from '@/utils/towerDiscard';
 import { listVisibleNodes } from '@/utils/tower-traversal';
 
+import { ActionMenu } from './ActionMenu';
 import { DragGhost } from './DragGhost';
 import { FullscreenControl } from './FullscreenControl';
 import { ScaleControl } from './ScaleControl';
@@ -184,6 +187,11 @@ export function Workspace({ config }: WorkspaceViewProps) {
   // Resize every brick and re-run the layouts whenever the scale level changes
   useWorkspaceScale();
 
+  // Escape and a press outside close the action menu; its listeners are on the document
+  useActionMenuDismiss();
+  // ...and so does the brick it is open on leaving the screen
+  useActionMenuTarget(visibleNodes);
+
   // Sync collision space whenever the layout finishes positioning bricks
   useEffect(() => {
     return useBrickLayoutStore.subscribe(
@@ -250,6 +258,8 @@ export function Workspace({ config }: WorkspaceViewProps) {
             <SnapHintOverlay />
             <SnapPreviewView />
             <DisconnectShadowView />
+            {/* Last in the overlay, so the menu draws over the bricks it is opened on */}
+            <ActionMenu />
           </div>
 
           {/* One right-anchored row: the zoom controls change width as the reset button comes and

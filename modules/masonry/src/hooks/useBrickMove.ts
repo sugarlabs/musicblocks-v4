@@ -283,6 +283,11 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                             });
                         }
                     }
+
+                    // Commit history after the drag/drop is complete (and connections have been made)
+                    import('@/stores/history').then(({ useWorkspaceHistoryStore }) => {
+                        useWorkspaceHistoryStore.getState().commit();
+                    });
                 },
             },
         });

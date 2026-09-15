@@ -11,6 +11,7 @@ import { usePaletteDragStore } from '@/stores/palette';
 import { useWorkspaceScaleStore } from '@/stores/scale';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { createBrickModel, wrapAsRootNode } from '@/utils/brick-model-factory';
+import { createPaletteTower } from '@/utils/palette-placement';
 import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { resolveCandidateConnection } from '@/utils/snap-preview-calculator';
 import { tryConnect } from '@/hooks/useBrickMove';
@@ -196,10 +197,6 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                     // A brand-new model instance per drop — never reuse the palette entry's id.
                     // The level is read here rather than closed over, since these listeners bind
                     // once on mount; the Palette keeps its own size and does not follow it.
-                    const model = createBrickModel({
-                        ...drag.config.brick,
-                        scaleLevel: useWorkspaceScaleStore.getState().level,
-                    });
                     const position = clientToLocalPoint(
                         { x: event.clientX, y: event.clientY },
                         { x: canvasRect.left, y: canvasRect.top },
@@ -209,12 +206,13 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                     // Prevent placing the brick if it is still partially over the palette
                     if (position.x < 0) return;
 
-                    const newTowerId = crypto.randomUUID();
-                    createTower({
-                        id: newTowerId,
-                        root: wrapAsRootNode(model),
+                    const tower = createPaletteTower(
+                        drag.config,
                         position,
-                    });
+                        useWorkspaceScaleStore.getState().level,
+                    );
+                    const newTowerId = tower.id;
+                    createTower(tower);
 
                     useConnectionPreviewStore.getState().clearPreviewTarget();
 

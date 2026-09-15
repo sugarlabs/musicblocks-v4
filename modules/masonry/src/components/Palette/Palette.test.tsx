@@ -162,7 +162,7 @@ describe('Palette', () => {
       expect(meter.nodeName).toBe('H3');
     });
 
-    it('renders a BrickSlot per brick with its name, description title, and data-brick-id', () => {
+    it('renders each BrickSlot as a button with its name, description, and data-brick-id', () => {
       const { container } = render(<Palette config={config} />);
 
       const note = container.querySelector('[data-brick-id="r1"]');
@@ -170,7 +170,9 @@ describe('Palette', () => {
       const beat = container.querySelector('[data-brick-id="m1"]');
 
       expect(note).not.toBeNull();
+      expect(note?.nodeName).toBe('BUTTON');
       expect(note?.getAttribute('title')).toBe('play a note');
+      expect(note?.getAttribute('aria-label')).toBe('Note: play a note');
       expect(note?.textContent).toContain('Note');
 
       expect(rest).not.toBeNull();
@@ -368,6 +370,15 @@ describe('Palette', () => {
 
       const byPlaceholder = screen.getByPlaceholderText('Search bricks');
       expect(screen.getByRole('textbox')).toBe(byPlaceholder);
+    });
+
+    it('exposes each brick name and description as a focusable button name', () => {
+      render(<Palette config={config} />);
+
+      const note = screen.getByRole('button', { name: 'Note: play a note' });
+      note.focus();
+
+      expect(document.activeElement).toBe(note);
     });
 
     it("exposes each brick's description via a title tooltip on its slot", () => {

@@ -14,6 +14,7 @@ import { useBrickLayoutStore } from '@/stores/brick';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 import { discardTower } from '@/utils/towerDiscard';
 import { listVisibleNodes } from '@/utils/tower-traversal';
+import { createPaletteTower, findKeyboardPlacement } from '@/utils/palette-placement';
 
 import { DragGhost } from './DragGhost';
 import { ScaleControl } from './ScaleControl';
@@ -33,6 +34,11 @@ export function Workspace({ config }: WorkspaceViewProps) {
   const towersRecord = useWorkspaceStore((state) => state.towers);
   const clearSelection = useWorkspaceStore((state) => state.clearSelection);
   const towers = useMemo(() => Object.values(towersRecord), [towersRecord]);
+  const placePaletteBrick = (brick: PaletteBrickConfig) => {
+    const tower = createPaletteTower(brick, { x: 0, y: 0 });
+    const position = findKeyboardPlacement(towersRecord, tower.root.model.dims);
+    useWorkspaceStore.getState().createTower({ ...tower, position });
+  };
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
@@ -156,7 +162,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
   return (
     <div ref={rootRef} className="relative flex h-full w-full">
       <div className="h-full max-w-80">
-        <Palette config={palette} />
+        <Palette config={palette} onBrickActivate={placePaletteBrick} />
       </div>
 
       <div

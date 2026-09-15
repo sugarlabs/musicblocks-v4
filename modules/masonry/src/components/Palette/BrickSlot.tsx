@@ -15,6 +15,7 @@ interface BrickSlotProps {
    * to this config when a drag starts on the slot.
    */
   brick: PaletteBrickConfig;
+  onActivate?: (brick: PaletteBrickConfig) => void;
 }
 
 /**
@@ -23,7 +24,7 @@ interface BrickSlotProps {
  * `data-brick-id` the payload key, and `touch-none` lets touch drags reach interact.js. All drag
  * logic lives in the hook; the slot itself never moves while dragging.
  */
-export function BrickSlot({ brick }: BrickSlotProps) {
+export function BrickSlot({ brick, onActivate }: BrickSlotProps) {
   const model = useMemo(() => createBrickModel(brick.brick, brick.id), [brick.brick, brick.id]);
   const isDragging = usePaletteDragStore((state) => state.dragged?.id === brick.id);
 
@@ -41,15 +42,18 @@ export function BrickSlot({ brick }: BrickSlotProps) {
       )}
     >
       <div className="overflow-hidden">
-        <div
+        <button
+          type="button"
           title={brick.description}
+          aria-label={`${brick.name}: ${brick.description}`}
           data-brick-id={brick.id}
           className="palette-brick-slot flex min-h-11 cursor-grab touch-none items-center px-1 py-1 transition-colors select-none hover:brightness-110 active:cursor-grabbing"
+          onClick={() => onActivate?.(brick)}
         >
           <div className="pointer-events-none">
             <BrickView {...viewProps} />
           </div>
-        </div>
+        </button>
       </div>
     </div>
   );

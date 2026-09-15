@@ -14,6 +14,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { Size } from '@/@types/common.types';
 
+import { BRICK_TOOLTIP_DELAY_MS } from '@/hooks/useBrickTooltip';
 import { ExpressionBrickModel, StatementBrickModel } from '@/models/brick';
 import { FOLD_TOGGLE_SELECTOR, SCALE_LEVEL_CONFIG } from '@/utils/constants';
 
@@ -313,5 +314,123 @@ describe('BrickViewFixed fold toggle', () => {
     // `useBrickMove` passes this selector as the draggable's `ignoreFrom`; the attribute is what
     // makes the toggle match it.
     expect(container.querySelectorAll(FOLD_TOGGLE_SELECTOR)).toHaveLength(1);
+  });
+});
+
+describe('BrickViewFixed tooltip', () => {
+  const TOOLTIP = 'Add two numbers';
+
+  /** Renders an expression brick carrying `tooltipText`, and returns its outline. */
+  function renderTooltipBrick() {
+    const model = new ExpressionBrickModel({
+      colorsDefault,
+      tooltipText: TOOLTIP,
+      widget: { type: 'label', text: 'Add' },
+      params: ['A'],
+      argDims: [{ w: 40, h: 20 }],
+    });
+
+    const { container } = render(<BrickViewFixed kind="expression" model={model} />);
+    return { container, outline: container.querySelector('path')! };
+  }
+
+  it('shows the tooltip only after the hover delay', () => {
+    vi.useFakeTimers();
+    try {
+      const { outline } = renderTooltipBrick();
+
+      fireEvent.pointerEnter(outline);
+      act(() => {
+        vi.advanceTimersByTime(BRICK_TOOLTIP_DELAY_MS - 1);
+      });
+      expect(screen.queryByRole('tooltip')).toBeNull();
+
+      act(() => {
+        vi.advanceTimersByTime(1);
+      });
+      expect(screen.getByRole('tooltip').textContent).toBe(TOOLTIP);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('cancels a pending tooltip when the pointer leaves first', () => {
+    vi.useFakeTimers();
+    try {
+      const { outline } = renderTooltipBrick();
+
+      fireEvent.pointerEnter(outline);
+      fireEvent.pointerLeave(outline);
+      act(() => {
+        vi.advanceTimersByTime(BRICK_TOOLTIP_DELAY_MS);
+      });
+
+      expect(screen.queryByRole('tooltip')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('does not open a tooltip on a brick the pointer crosses mid drag', () => {
+    vi.useFakeTimers();
+    try {
+      const { outline } = renderTooltipBrick();
+
+      // A drag that began elsewhere: the button is already down when the pointer arrives.
+      fireEvent.pointerDown(document.body);
+      fireEvent.pointerEnter(outline);
+      act(() => {
+        vi.advanceTimersByTime(BRICK_TOOLTIP_DELAY_MS);
+      });
+
+      expect(screen.queryByRole('tooltip')).toBeNull();
+    } finally {
+      fireEvent.pointerUp(document.body);
+      vi.useRealTimers();
+    }
+  });
+
+  it('takes down a visible tooltip when a drag starts', () => {
+    vi.useFakeTimers();
+    try {
+      const { outline } = renderTooltipBrick();
+
+      fireEvent.pointerEnter(outline);
+      act(() => {
+        vi.advanceTimersByTime(BRICK_TOOLTIP_DELAY_MS);
+      });
+      expect(screen.getByRole('tooltip')).toBeTruthy();
+
+      act(() => {
+        fireEvent.pointerDown(outline);
+      });
+      expect(screen.queryByRole('tooltip')).toBeNull();
+    } finally {
+      fireEvent.pointerUp(document.body);
+      vi.useRealTimers();
+    }
+  });
+
+  it("exposes the tooltip text as the brick's accessible name", () => {
+    renderTooltipBrick();
+
+    expect(screen.getByRole('img', { name: TOOLTIP })).toBeTruthy();
+  });
+
+  it('renders no tooltip affordance when the brick has no tooltip text', () => {
+    vi.useFakeTimers();
+    try {
+      const { container } = renderExpressionBrick();
+
+      fireEvent.pointerEnter(container.querySelector('path')!);
+      act(() => {
+        vi.advanceTimersByTime(BRICK_TOOLTIP_DELAY_MS);
+      });
+
+      expect(screen.queryByRole('tooltip')).toBeNull();
+      expect(screen.queryByRole('img')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

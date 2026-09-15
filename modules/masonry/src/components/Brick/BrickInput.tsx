@@ -5,6 +5,8 @@ import type { Bounds, Size } from '@/@types/common.types';
 
 import type { ValueBrickModel } from '@/models/brick';
 
+import { useBrickTooltip } from '@/hooks/useBrickTooltip';
+import { BrickTooltip } from './BrickTooltip';
 import { BrickOutlineGenerator } from '@/utils/brick-shape';
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
 
@@ -34,6 +36,9 @@ const DEFAULT_SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
  */
 export function BrickViewInput(props: BrickViewInputPropsWithModel) {
   const { model } = props;
+
+  // The tooltip is pointer only, so the same text also becomes the brick's accessible name.
+  const tooltip = useBrickTooltip(model.tooltipText);
 
   // ── Model reactivity ─────────────────────────────────────────────────────────
   const [, setTick] = useState(0);
@@ -134,6 +139,8 @@ export function BrickViewInput(props: BrickViewInputPropsWithModel) {
       width={svgToPx(dims.w)}
       height={svgToPx(dims.h)}
       className="overflow-visible"
+      role={model.tooltipText ? 'img' : undefined}
+      aria-label={model.tooltipText || undefined}
     >
       <path
         d={path}
@@ -141,7 +148,12 @@ export function BrickViewInput(props: BrickViewInputPropsWithModel) {
         fill={colorsDefault.background}
         stroke={colorsDefault.border}
         strokeWidth={pxToSvg(STROKE_WIDTH)}
+        onPointerEnter={tooltip.show}
+        onPointerLeave={tooltip.hide}
+        onPointerDown={tooltip.hide}
       />
+
+      {tooltip.visible && <BrickTooltip text={model.tooltipText} />}
 
       {/* foreignObject acts as a viewport embedding standard HTML inside the SVG */}
       <foreignObject

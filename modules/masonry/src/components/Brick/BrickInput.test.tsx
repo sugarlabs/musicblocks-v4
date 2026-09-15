@@ -7,11 +7,12 @@
 // sets *declaratively* — the widget's color, font size, and value rendering. The outline
 // path generation is geometry and is covered by path2 specs, which need no DOM.
 
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import type { WidgetInput } from '@/@types/brick.types';
 
+import { BRICK_TOOLTIP_DELAY_MS } from '@/hooks/useBrickTooltip';
 import { ValueBrickModel } from '@/models/brick';
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
 
@@ -138,5 +139,67 @@ describe('BrickViewInput widget types', () => {
     const trigger = await screen.findByRole('combobox');
     expect(trigger).toBeDefined();
     expect(screen.getByText('Option B')).toBeDefined();
+  });
+});
+
+describe('BrickViewInput tooltip', () => {
+  const TOOLTIP = 'A number value';
+
+  /** Renders a value brick carrying `tooltipText`, and returns its outline. */
+  function renderTooltipBrick() {
+    const model = new ValueBrickModel({
+      colorsDefault,
+      tooltipText: TOOLTIP,
+      widget: { type: 'numberbox', value: 7 },
+    });
+
+    const { container } = render(
+      <BrickViewInput kind="value" model={model as ValueBrickModel & { widget: WidgetInput }} />,
+    );
+    return { container, outline: container.querySelector('path')! };
+  }
+
+  it('shows the tooltip only after the hover delay', () => {
+    vi.useFakeTimers();
+    try {
+      const { outline } = renderTooltipBrick();
+
+      fireEvent.pointerEnter(outline);
+      act(() => {
+        vi.advanceTimersByTime(BRICK_TOOLTIP_DELAY_MS - 1);
+      });
+      expect(screen.queryByRole('tooltip')).toBeNull();
+
+      act(() => {
+        vi.advanceTimersByTime(1);
+      });
+      expect(screen.getByRole('tooltip').textContent).toBe(TOOLTIP);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('does not open a tooltip on a brick the pointer crosses mid drag', () => {
+    vi.useFakeTimers();
+    try {
+      const { outline } = renderTooltipBrick();
+
+      fireEvent.pointerDown(document.body);
+      fireEvent.pointerEnter(outline);
+      act(() => {
+        vi.advanceTimersByTime(BRICK_TOOLTIP_DELAY_MS);
+      });
+
+      expect(screen.queryByRole('tooltip')).toBeNull();
+    } finally {
+      fireEvent.pointerUp(document.body);
+      vi.useRealTimers();
+    }
+  });
+
+  it("exposes the tooltip text as the brick's accessible name", () => {
+    renderTooltipBrick();
+
+    expect(screen.getByRole('img', { name: TOOLTIP })).toBeTruthy();
   });
 });

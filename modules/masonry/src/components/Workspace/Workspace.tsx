@@ -36,6 +36,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
 
   const towersRecord = useWorkspaceStore((state) => state.towers);
   const clearSelection = useWorkspaceStore((state) => state.clearSelection);
+  const areBricksHidden = useWorkspaceStore((state) => state.areBricksHidden);
   const towers = useMemo(() => Object.values(towersRecord), [towersRecord]);
 
   // Keyboard deletion of the selected brick. The listener sits on the window rather than the canvas
@@ -170,9 +171,11 @@ export function Workspace({ config }: WorkspaceViewProps) {
 
   return (
     <div ref={rootRef} className="relative flex h-full w-full">
+      {!areBricksHidden && (
       <div className="h-full max-w-80">
         <Palette config={palette} />
       </div>
+      )}
 
       <div
         ref={canvasRef}

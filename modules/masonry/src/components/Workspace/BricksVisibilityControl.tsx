@@ -11,7 +11,7 @@ export function BricksVisibilityControl() {
   const { setBricksHidden } = useWorkspaceStore.getState();
 
   return (
-    <div className="absolute right-26 bottom-24 z-40 flex h-14 items-center gap-6">
+    <div className="absolute right-6 bottom-24 z-40 flex h-14 items-center gap-6">
       <Button
         variant="outline"
         size="icon"

@@ -220,7 +220,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
           aria-label="Workspace Canvas"
           tabIndex={0}
           onKeyDown={handleKeyDown}
-          className="bg-background relative h-full w-full shrink overflow-hidden select-none outline-none focus:ring-2 focus:ring-ring focus:ring-inset focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+          className="bg-background focus:ring-ring focus-visible:ring-ring relative h-full w-full shrink overflow-hidden outline-none select-none focus:ring-2 focus:ring-inset focus-visible:ring-2 focus-visible:ring-inset"
           // Only a press on the canvas itself clears: the bricks are its children, so without the
           // target check every click that selected one would arrive here and drop it again.
           onClick={(event) => {
@@ -229,7 +229,11 @@ export function Workspace({ config }: WorkspaceViewProps) {
         >
           {/* TowerLayoutEngine runs the layout hooks for each tower to compute brick positions */}
           {towers.map((tower) => (
-            <TowerLayoutEngine key={`layout-${tower.id}`} root={tower.root} origin={tower.position} />
+            <TowerLayoutEngine
+              key={`layout-${tower.id}`}
+              root={tower.root}
+              origin={tower.position}
+            />
           ))}
           {/* Everything drawn in canvas coordinates lives in the viewport node, which is what a pan
             moves; the controls after it stay pinned to the canvas. */}

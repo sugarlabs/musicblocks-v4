@@ -1,11 +1,15 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { PaletteBrickConfig } from '@/@types/palette.types';
+import type { TowerStatementNode } from '@/@types/tower.types';
+import type { TowerState } from '@/@types/workspace.types';
 import { useWorkspaceScaleStore } from '@/stores/scale';
 import { useWorkspaceStore } from '@/stores/workspace';
+import { createBrickModel, wrapAsRootNode } from './brick-model-factory';
 import {
     DEFAULT_MAX_CANVAS_HEIGHT,
     DEFAULT_PLACEMENT_ANCHOR,
+    findKeyboardPlacement,
     getCanvasMaxHeight,
     getCurrentPlacementPosition,
     getNextPlacementPosition,
@@ -26,6 +30,22 @@ const mockPaletteBrick: PaletteBrickConfig = {
         hasConnectionNext: true,
     },
 };
+
+const brick = {
+    kind: 'statement' as const,
+    widget: { type: 'label' as const, text: 'Note' },
+    colorsDefault: { background: '#e07a5f', foreground: '#ffffff', border: '#00000033' },
+    tooltipText: 'play a note',
+    paramArgs: [],
+};
+
+function tower(position: { x: number; y: number }): TowerState {
+    return {
+        id: 'existing',
+        root: wrapAsRootNode(createBrickModel(brick)),
+        position,
+    };
+}
 
 describe('palette-placement utils', () => {
     beforeEach(() => {
@@ -126,6 +146,66 @@ describe('palette-placement utils', () => {
             expect(wrapped.position).not.toEqual(first.position);
             expect(wrapped.position.x).toBeGreaterThan(first.position.x);
             expect(wrapped.position).toEqual({ x: 200, y: 20 });
+        });
+    });
+
+    describe('findKeyboardPlacement', () => {
+        it('uses the fixed top-left insertion position when it is free', () => {
+            expect(findKeyboardPlacement({}, { w: 120, h: 48 })).toEqual({ x: 16, y: 16 });
+        });
+
+        it('moves to the next free grid position when the insertion position is occupied', () => {
+            expect(
+                findKeyboardPlacement({ existing: tower({ x: 16, y: 16 }) }, { w: 120, h: 48 }),
+            ).toEqual({ x: 144, y: 16 });
+        });
+
+        it('wraps to the next row when candidate columns exceed maxCanvasWidth', () => {
+            expect(
+                findKeyboardPlacement(
+                    { existing: tower({ x: 16, y: 16 }) },
+                    { w: 120, h: 48 },
+                    200,
+                ),
+            ).toEqual({ x: 16, y: 80 });
+        });
+
+        it('offsets placement coordinates by current viewport pan offset to keep brick in visible viewport', () => {
+            expect(
+                findKeyboardPlacement(
+                    {},
+                    { w: 120, h: 48 },
+                    { viewportOffset: { x: -100, y: -50 } },
+                ),
+            ).toEqual({ x: 116, y: 66 });
+        });
+
+        it('checks collision against all visible connected nodes in an existing tower', () => {
+            const rootNode = wrapAsRootNode(createBrickModel(brick)) as TowerStatementNode;
+            const childNode = wrapAsRootNode(createBrickModel(brick)) as TowerStatementNode;
+            rootNode.next = childNode;
+            const multiBrickTower: TowerState = {
+                id: 'multi',
+                root: rootNode,
+                position: { x: 16, y: 16 },
+            };
+
+            const placement = findKeyboardPlacement(
+                { multi: multiBrickTower },
+                { w: 120, h: 48 },
+                { maxCanvasWidth: 200 },
+            );
+            // Root is at (16, 16) and child sits below it; the placement avoids both
+            expect(placement).toEqual({ x: 16, y: 112 });
+        });
+
+        it('bounds the search within maxCanvasHeight and falls back gracefully when visible canvas is full', () => {
+            const placement = findKeyboardPlacement(
+                { existing: tower({ x: 16, y: 16 }) },
+                { w: 120, h: 48 },
+                { maxCanvasWidth: 150, maxCanvasHeight: 60 },
+            );
+            expect(placement).toEqual({ x: 16, y: 16 });
         });
     });
 });

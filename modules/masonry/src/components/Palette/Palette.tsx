@@ -33,11 +33,10 @@ const CATEGORY_FLASH_MS = 600;
  * bricks match the query (case-insensitively over each brick's name and description), and empty
  * categories are hidden from both the sidebar and the main list while filtering.
  *
- * This is the shell only — bricks render as placeholder boxes (no SVG, no brick renderer). Each
- * placeholder receives the whole `PaletteBrickConfig` so a later PR can turn it into a drag source
- * that carries the config as its payload without changing the prop contract.
+ * Each brick slot renders the live brick preview and remains both a delegated pointer-drag source
+ * and a keyboard-activatable button.
  */
-export function Palette({ config }: PaletteViewProps) {
+export function Palette({ config, onBrickActivate }: PaletteViewProps) {
   const [activeClassification, setActiveClassification] = useState(0);
   const [query, setQuery] = useState('');
   const categoryRefs = useRef<Array<HTMLElement | null>>([]);
@@ -204,7 +203,7 @@ export function Palette({ config }: PaletteViewProps) {
                   </div>
                   <div className="flex flex-col gap-2">
                     {category.bricks.map((brick) => (
-                      <BrickSlot key={brick.id} brick={brick} />
+                      <BrickSlot key={brick.id} brick={brick} onActivate={onBrickActivate} />
                     ))}
                   </div>
                 </section>

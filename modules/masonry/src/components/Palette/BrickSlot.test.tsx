@@ -40,7 +40,7 @@ const NOTE: PaletteBrickConfig = {
 };
 
 /** The slot itself — the element carrying the handlers, not its wrapper. */
-const slot = () => screen.getByRole('button', { name: 'Note' });
+const slot = () => screen.getByRole('button', { name: 'Note: play a note' });
 
 afterEach(() => {
   cleanup();

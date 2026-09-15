@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { makeEmptyExpression, makeEmptyStatement, makeEmptyValue } from '@/mocks/tower';
 import { useWorkspaceScaleStore } from '@/stores/scale';
 import { useWorkspaceStore } from '@/stores/workspace';
-import { DEFAULT_SCALE_LEVEL } from '@/utils/constants';
+import { DEFAULT_SCALE_LEVEL, MAX_SCALE_LEVEL } from '@/utils/constants';
 import { listNodes } from '@/utils/tower-traversal';
 
 import { useWorkspaceScale } from './useWorkspaceScale';
@@ -114,6 +114,67 @@ describe('useWorkspaceScale', () => {
     for (const node of listNodes(root)) {
       expect(node.model.scaleLevel).toBe(1);
     }
+  });
+
+  it('returns every brick in every tower to the default level on a reset', () => {
+    const towerA = makeNestedTower('a');
+    const towerB = makeEmptyExpression('b', 2);
+
+    act(() => {
+      const store = useWorkspaceStore.getState();
+      store.createTower({ id: 'tower-a', root: towerA, position: { x: 0, y: 0 } });
+      store.createTower({ id: 'tower-b', root: towerB, position: { x: 400, y: 0 } });
+    });
+
+    renderHook(() => useWorkspaceScale());
+
+    act(() => {
+      useWorkspaceScaleStore.getState().setLevel(MAX_SCALE_LEVEL);
+    });
+
+    const zoomed = {
+      a: useWorkspaceStore.getState().towers['tower-a'].root,
+      b: useWorkspaceStore.getState().towers['tower-b'].root,
+    };
+
+    act(() => {
+      useWorkspaceScaleStore.getState().reset();
+    });
+
+    // Driven through `reset` rather than `setLevel(DEFAULT_SCALE_LEVEL)`, so the control's own path
+    // is covered and not just the one it delegates to today.
+    for (const model of [towerA, towerB].flatMap((root) => listNodes(root)).map((n) => n.model)) {
+      expect(model.scaleLevel).toBe(DEFAULT_SCALE_LEVEL);
+    }
+
+    // A re-layout per tower, so the bricks are redrawn at the default size rather than left at the
+    // zoomed geometry.
+    expect(useWorkspaceStore.getState().towers['tower-a'].root).not.toBe(zoomed.a);
+    expect(useWorkspaceStore.getState().towers['tower-b'].root).not.toBe(zoomed.b);
+  });
+
+  it('leaves the bricks alone when a reset lands at the default level', () => {
+    const root = makeNestedTower('a');
+
+    act(() => {
+      useWorkspaceStore.getState().createTower({
+        id: 'tower-a',
+        root,
+        position: { x: 0, y: 0 },
+      });
+    });
+
+    renderHook(() => useWorkspaceScale());
+
+    const before = useWorkspaceStore.getState().towers['tower-a'].root;
+
+    act(() => {
+      useWorkspaceScaleStore.getState().reset();
+    });
+
+    // Unreachable from the UI now the reset hides at the default, so this pins the outcome the
+    // store and the selector both guard: a redundant reset costs no tower a re-layout.
+    expect(useWorkspaceStore.getState().towers['tower-a'].root).toBe(before);
   });
 
   it('stops applying the level once unmounted', () => {

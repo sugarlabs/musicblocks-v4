@@ -1,32 +1,35 @@
-/** Gap in px between the brick's top edge and the tooltip resting above it. */
-const OFFSET = 8;
-/** `foreignObject` needs a box to lay out in; the tooltip inside it sizes to its own content. */
-const BOX_HEIGHT = 32;
-const BOX_WIDTH = 9999;
+import { createPortal } from 'react-dom';
+
+/** Gap in px between the brick's edge and the tooltip resting against it. */
+const GAP = 8;
+/** Below this much room above the anchor, the tooltip flips under the brick instead. */
+const FLIP_THRESHOLD = 40;
 
 /**
- * Tooltip shown above a hovered brick. It renders inside the brick's own `<svg>`, so it travels
- * with the brick, and it is inert to the pointer so it can neither break the hover it belongs to
- * nor swallow the start of a drag.
+ * Tooltip for a hovered brick.
+ *
+ * It renders into `document.body` rather than the brick's `<svg>`, for two reasons: anything
+ * inside the svg widens the brick's `getBBox()`, which the workspace measures for canvas bounds,
+ * and a tooltip drawn in the svg is clipped by any ancestor that hides its overflow, so bricks
+ * near the top of the canvas would show a cut off tooltip. It is inert to the pointer, so it can
+ * neither break the hover it belongs to nor swallow the start of a drag.
  */
-export function BrickTooltip(props: { text: string }) {
-  return (
-    <foreignObject
-      x={0}
-      y={-(BOX_HEIGHT + OFFSET)}
-      width={BOX_WIDTH}
-      height={BOX_HEIGHT}
-      style={{ overflow: 'visible' }}
-      pointerEvents="none"
+export function BrickTooltip(props: { text: string; anchor: DOMRect }) {
+  const { left, top, bottom } = props.anchor;
+  const flip = top < FLIP_THRESHOLD;
+
+  return createPortal(
+    <div
+      role="tooltip"
+      className="bg-popover text-popover-foreground pointer-events-none fixed z-50 w-max rounded-md px-2 py-1 text-xs shadow-md"
+      style={{
+        left,
+        top: flip ? bottom + GAP : top - GAP,
+        transform: flip ? undefined : 'translateY(-100%)',
+      }}
     >
-      <div className="flex h-full items-end">
-        <p
-          role="tooltip"
-          className="bg-popover text-popover-foreground m-0 w-max rounded-md px-2 py-1 text-xs shadow-md"
-        >
-          {props.text}
-        </p>
-      </div>
-    </foreignObject>
+      {props.text}
+    </div>,
+    document.body,
   );
 }

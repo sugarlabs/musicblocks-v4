@@ -411,6 +411,26 @@ describe('BrickViewFixed tooltip', () => {
     }
   });
 
+  it('renders the tooltip outside the brick svg, so it cannot widen getBBox or be clipped', () => {
+    vi.useFakeTimers();
+    try {
+      const { container, outline } = renderTooltipBrick();
+
+      fireEvent.pointerEnter(outline);
+      act(() => {
+        vi.advanceTimersByTime(BRICK_TOOLTIP_DELAY_MS);
+      });
+
+      const tooltip = screen.getByRole('tooltip');
+      // Anything inside the svg joins the brick's bounding box, which the workspace measures for
+      // canvas bounds, and is clipped by any ancestor hiding its overflow.
+      expect(container.querySelector('[role="tooltip"]')).toBeNull();
+      expect(document.body.contains(tooltip)).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("exposes the tooltip text as the brick's accessible name", () => {
     renderTooltipBrick();
 

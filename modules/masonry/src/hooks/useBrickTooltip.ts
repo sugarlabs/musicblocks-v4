@@ -60,14 +60,15 @@ function subscribeToPointerDown(onPointerDown: () => void): () => void {
  * flight stops a hover from scheduling one, and one starting while a tooltip is up takes it down.
  *
  * @param tooltipText - the brick's tooltip text; an empty string disables the tooltip
- * @returns `visible` for rendering, with `show` and `hide` for the outline's pointer handlers
+ * @returns the anchor rect to position against, or `null` when closed, plus `show` and `hide` for
+ * the outline's pointer handlers
  */
 export function useBrickTooltip(tooltipText: string): {
-    visible: boolean;
-    show: () => void;
+    anchor: DOMRect | null;
+    show: (element: Element) => void;
     hide: () => void;
 } {
-    const [visible, setVisible] = useState(false);
+    const [anchor, setAnchor] = useState<DOMRect | null>(null);
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const clearTimer = useCallback(() => {
@@ -79,23 +80,30 @@ export function useBrickTooltip(tooltipText: string): {
 
     const hide = useCallback(() => {
         clearTimer();
-        setVisible(false);
+        setAnchor(null);
     }, [clearTimer]);
 
-    const show = useCallback(() => {
-        if (tooltipText.length === 0 || pointerIsDown) return;
+    /**
+     * The anchor is measured when the tooltip opens rather than on hover, so a brick that moved
+     * during the delay still positions its tooltip correctly.
+     */
+    const show = useCallback(
+        (element: Element) => {
+            if (tooltipText.length === 0 || pointerIsDown) return;
 
-        clearTimer();
-        timerRef.current = setTimeout(() => {
-            timerRef.current = null;
-            setVisible(true);
-        }, BRICK_TOOLTIP_DELAY_MS);
-    }, [clearTimer, tooltipText]);
+            clearTimer();
+            timerRef.current = setTimeout(() => {
+                timerRef.current = null;
+                setAnchor(element.getBoundingClientRect());
+            }, BRICK_TOOLTIP_DELAY_MS);
+        },
+        [clearTimer, tooltipText],
+    );
 
     useEffect(() => subscribeToPointerDown(hide), [hide]);
 
     /** A brick unmounted mid hover must not leave a timer to fire into a dead component. */
     useEffect(() => clearTimer, [clearTimer]);
 
-    return { visible, show, hide };
+    return { anchor, show, hide };
 }

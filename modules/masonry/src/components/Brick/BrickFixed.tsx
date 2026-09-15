@@ -318,12 +318,12 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
         fill={colorsDefault.background}
         stroke={colorsDefault.border}
         strokeWidth={pxToSvg(STROKE_WIDTH)}
-        onPointerEnter={tooltip.show}
+        onPointerEnter={(event) => tooltip.show(event.currentTarget)}
         onPointerLeave={tooltip.hide}
         onPointerDown={tooltip.hide}
       />
 
-      {tooltip.visible && <BrickTooltip text={model.tooltipText} />}
+      {tooltip.anchor !== null && <BrickTooltip text={model.tooltipText} anchor={tooltip.anchor} />}
 
       {/* Main Widget */}
       {(isLabelWidget || isVariantWidget || isGraphicWidget) && (

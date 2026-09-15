@@ -1,5 +1,5 @@
 import { Search } from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import type { PaletteViewProps } from '@/@types/palette.types';
 
@@ -11,6 +11,11 @@ import { Input } from '@/ui/input';
 import { BrickSlot } from './BrickSlot';
 
 // -------------------------------------------------------------------------------------------------
+
+/**
+ * How long a category header stays highlighted after its sidebar button is clicked.
+ */
+const CATEGORY_FLASH_MS = 600;
 
 /**
  * Root Brick Palette shell.
@@ -35,6 +40,8 @@ export function Palette({ config, onBrickActivate }: PaletteViewProps) {
   const [activeClassification, setActiveClassification] = useState(0);
   const [query, setQuery] = useState('');
   const categoryRefs = useRef<Array<HTMLElement | null>>([]);
+  const [flashedCategory, setFlashedCategory] = useState<number | null>(null);
+  const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isDragging = usePaletteDragStore((state) => state.dragged !== null);
 
   const classifications = config.classifications;
@@ -71,14 +78,36 @@ export function Palette({ config, onBrickActivate }: PaletteViewProps) {
       .filter(({ category }) => category.bricks.length > 0);
   }, [activeCategories, query]);
 
+  const clearFlashTimer = () => {
+    if (flashTimer.current !== null) {
+      clearTimeout(flashTimer.current);
+      flashTimer.current = null;
+    }
+  };
+
+  // Cleanup only; inlined rather than reusing clearFlashTimer so the effect has no dependencies.
+  useEffect(
+    () => () => {
+      if (flashTimer.current !== null) clearTimeout(flashTimer.current);
+    },
+    [],
+  );
+
   const scrollToCategory = (index: number) => {
     categoryRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // The list can already be scrolled as far as it goes, in which case scrollIntoView moves
+    // nothing and the click reads as ignored. Flashing the header answers the click either way.
+    clearFlashTimer();
+    setFlashedCategory(index);
+    flashTimer.current = setTimeout(() => setFlashedCategory(null), CATEGORY_FLASH_MS);
   };
 
   const selectClassification = (index: number) => {
     setActiveClassification(index);
     setQuery('');
     categoryRefs.current = [];
+    clearFlashTimer();
+    setFlashedCategory(null);
   };
 
   return (
@@ -92,8 +121,9 @@ export function Palette({ config, onBrickActivate }: PaletteViewProps) {
               key={index}
               variant="ghost"
               size="default"
+              title={category.name}
               onClick={() => scrollToCategory(index)}
-              className="h-auto flex-col gap-1 px-1 py-2 text-[0.7rem]"
+              className="h-auto cursor-pointer flex-col gap-1 px-1 py-2 text-[0.7rem]"
             >
               <Icon className="size-5" style={{ color: category.color }} />
               <span className="w-full truncate text-center">{category.name}</span>
@@ -116,7 +146,7 @@ export function Palette({ config, onBrickActivate }: PaletteViewProps) {
                 aria-pressed={isActive}
                 title={classification.name}
                 onClick={() => selectClassification(index)}
-                className="h-9 flex-1"
+                className="h-9 flex-1 cursor-pointer"
               >
                 <Icon className="size-5" />
                 <span className="sr-only">{classification.name}</span>
@@ -159,7 +189,13 @@ export function Palette({ config, onBrickActivate }: PaletteViewProps) {
                   }}
                   className="mb-6 scroll-mt-4"
                 >
-                  <div className="mb-2 flex items-center gap-2">
+                  <div
+                    data-flashing={flashedCategory === index ? 'true' : undefined}
+                    className={cn(
+                      '-mx-1 mb-2 flex items-center gap-2 rounded-md px-1 transition-colors duration-300',
+                      flashedCategory === index && 'bg-muted',
+                    )}
+                  >
                     <Icon className="size-4" style={{ color: category.color }} />
                     <h3 className="text-sm font-semibold" style={{ color: category.color }}>
                       {category.name}

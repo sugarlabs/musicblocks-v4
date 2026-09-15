@@ -47,7 +47,7 @@ export function BrickSlot({ brick, onActivate }: BrickSlotProps) {
           title={brick.description}
           aria-label={`${brick.name}: ${brick.description}`}
           data-brick-id={brick.id}
-          className="palette-brick-slot flex min-h-11 cursor-grab touch-none items-center px-1 py-1 transition-colors select-none hover:brightness-110 active:cursor-grabbing"
+          className="palette-brick-slot flex min-h-11 w-fit cursor-grab touch-none items-center px-1 py-1 transition-colors select-none hover:brightness-110 active:cursor-grabbing"
           onClick={() => onActivate?.(brick)}
         >
           <div className="pointer-events-none">

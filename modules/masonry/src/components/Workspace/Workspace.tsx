@@ -7,6 +7,10 @@ import type { Point } from '@/@types/common.types';
 
 import { Palette } from '@/components/Palette/Palette';
 import { TowerBrickView } from '@/components/Tower/TowerBrick';
+import { useActionMenuDismiss } from '@/hooks/useActionMenuDismiss';
+import { useActionMenuTarget } from '@/hooks/useActionMenuTarget';
+import { useCanvasKeyboardNav } from '@/hooks/useCanvasKeyboardNav';
+import { useCanvasPan } from '@/hooks/useCanvasPan';
 import { useDragFromPalette } from '@/hooks/useDragFromPalette';
 import { useTowerLayout } from '@/hooks/useTowerLayout';
 import { useWorkspaceScale } from '@/hooks/useWorkspaceScale';
@@ -16,12 +20,15 @@ import { discardTower } from '@/utils/towerDiscard';
 import { listVisibleNodes } from '@/utils/tower-traversal';
 import { createPaletteTower, findKeyboardPlacement } from '@/utils/palette-placement';
 
+import { ActionMenu } from './ActionMenu';
 import { DragGhost } from './DragGhost';
+import { FullscreenControl } from './FullscreenControl';
 import { ScaleControl } from './ScaleControl';
 import { SnapHintOverlay } from './SnapHintOverlay';
 import { SnapPreviewView } from './SnapPreviewView';
 import { DisconnectShadowView } from './DisconnectShadowView';
 import { Trash } from './Trash';
+import { Navbar } from './Navbar';
 
 function TowerLayoutEngine({ root, origin }: { root: TowerNode; origin: Point }) {
   useTowerLayout(root, origin);
@@ -39,11 +46,24 @@ export function Workspace({ config }: WorkspaceViewProps) {
     const position = findKeyboardPlacement(towersRecord, tower.root.model.dims);
     useWorkspaceStore.getState().createTower({ ...tower, position });
   };
+
+  // Initialize history on mount
+  useEffect(() => {
+    import('@/stores/history').then(({ useWorkspaceHistoryStore }) => {
+      useWorkspaceHistoryStore.getState().init();
+    });
+  }, []);
+
+  // Keyboard deletion of the selected brick. The listener sits on the window rather than the canvas
+  // because the canvas never holds focus: nothing in it is focusable, so a press after a click on a
+  // brick has nowhere else to land. The store is read at press time, which is what keeps the effect
+  // on empty deps and off the re-subscribe treadmill a selection dependency would put it on.
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
 
-      // Do not delete bricks while the user is typing in an input.
+      // Backspace is how a value gets corrected in a brick's own widget, so a press that landed in
+      // an editable belongs to that editable and never to the brick behind it.
       if (
         target?.tagName === 'INPUT' ||
         target?.tagName === 'TEXTAREA' ||
@@ -55,27 +75,49 @@ export function Workspace({ config }: WorkspaceViewProps) {
 
       const store = useWorkspaceStore.getState();
 
-      // Escape clears the current selection.
       if (event.key === 'Escape') {
         store.clearSelection();
         return;
       }
 
-      // Only Delete and Backspace remove bricks.
+      // Undo / Redo keyboard shortcuts
+      const isMac = navigator.userAgent.toLowerCase().includes('mac');
+      const ctrlKey = isMac ? event.metaKey : event.ctrlKey;
+
+      if (ctrlKey && event.key.toLowerCase() === 'z') {
+        event.preventDefault(); // prevent browser default undo
+        import('@/stores/history').then(({ useWorkspaceHistoryStore }) => {
+          if (event.shiftKey) {
+            useWorkspaceHistoryStore.getState().redo();
+          } else {
+            useWorkspaceHistoryStore.getState().undo();
+          }
+        });
+        return;
+      }
+
+      if (ctrlKey && event.key.toLowerCase() === 'y') {
+        event.preventDefault();
+        import('@/stores/history').then(({ useWorkspaceHistoryStore }) => {
+          useWorkspaceHistoryStore.getState().redo();
+        });
+        return;
+      }
+
       if (event.key !== 'Delete' && event.key !== 'Backspace') {
         return;
       }
 
       const selectedBrickId = store.selectedBrickId;
-
-      // Nothing is selected, so there is nothing to delete.
       if (!selectedBrickId) return;
 
+      // Held back until there is something to delete, so an unselected canvas leaves Backspace to
+      // the browser's own back navigation rather than swallowing it.
       event.preventDefault();
 
+      // A selection outlives the brick it points at: the trash and a drop that joins two towers
+      // both take bricks off the canvas without going through here.
       const found = findNodeAndTower(selectedBrickId);
-
-      // The selected brick may have already been removed.
       if (!found) {
         store.clearSelection();
         return;
@@ -84,15 +126,13 @@ export function Workspace({ config }: WorkspaceViewProps) {
       const { node, tower } = found;
 
       if (node.model.id === tower.root.model.id) {
-        // The selected brick is the root of the tower.
+        // The root is the tower, so there is nothing to sever it from.
         discardTower(tower.id);
       } else {
-        // Detach the selected brick into its own tower, then discard that tower.
-        const newTowerId = store.detachBrickToNewTower(
-          tower.id,
-          selectedBrickId,
-          tower.position,
-        );
+        // Severed into a tower of its own first, the same path a drag takes a brick out on, and
+        // that tower is what gets discarded. Note this carries off everything below the brick too,
+        // since the detach takes its whole `next` chain with it.
+        const newTowerId = store.detachBrickToNewTower(tower.id, selectedBrickId, tower.position);
 
         if (newTowerId) {
           discardTower(newTowerId);
@@ -100,6 +140,10 @@ export function Workspace({ config }: WorkspaceViewProps) {
       }
 
       store.clearSelection();
+
+      import('@/stores/history').then(({ useWorkspaceHistoryStore }) => {
+        useWorkspaceHistoryStore.getState().commit();
+      });
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -115,11 +159,17 @@ export function Workspace({ config }: WorkspaceViewProps) {
     return towers.flatMap((tower) => listVisibleNodes(tower.root));
   }, [towers]);
 
+  const { handleKeyDown } = useCanvasKeyboardNav();
+
   // palette drag-and-drop wiring: the root element scopes the delegated drag
   // selector and positions the ghost overlay; the canvas element anchors drop coordinates.
   const rootRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const ghostRef = useRef<HTMLDivElement>(null);
+
+  // The node the towers and their overlays are drawn in. A pan moves this one element, so brick
+  // coordinates stay canvas-local and nothing has to be laid out again.
+  const viewportRef = useRef<HTMLDivElement>(null);
 
   // Flat id → config lookup across the whole palette hierarchy, used to resolve a dragged slot's
   // `data-brick-id` back to its full palette entry.
@@ -137,8 +187,16 @@ export function Workspace({ config }: WorkspaceViewProps) {
 
   useDragFromPalette({ rootRef, canvasRef, ghostRef, bricksById });
 
+  // Dragging the empty background pans; the viewport node follows the store's offset
+  useCanvasPan({ canvasRef, viewportRef });
+
   // Resize every brick and re-run the layouts whenever the scale level changes
   useWorkspaceScale();
+
+  // Escape and a press outside close the action menu; its listeners are on the document
+  useActionMenuDismiss();
+  // ...and so does the brick it is open on leaving the screen
+  useActionMenuTarget(visibleNodes);
 
   // Sync collision space whenever the layout finishes positioning bricks
   useEffect(() => {
@@ -160,37 +218,72 @@ export function Workspace({ config }: WorkspaceViewProps) {
   }, []);
 
   return (
-    <div ref={rootRef} className="relative flex h-full w-full">
-      <div className="h-full max-w-80">
-        <Palette config={palette} onBrickActivate={placePaletteBrick} />
+    <div className="flex h-full w-full flex-col">
+      <Navbar />
+
+      {/* Main Workspace Area: Contains the draggable block palette on the left and the interactive canvas on the right */}
+      <div ref={rootRef} className="relative flex min-h-0 w-full flex-1">
+        <div className="h-full max-w-80 shrink-0">
+          <Palette config={palette} onBrickActivate={placePaletteBrick} />
+        </div>
+
+        <div
+          ref={canvasRef}
+          data-testid="workspace-canvas"
+          role="region"
+          aria-label="Workspace Canvas"
+          tabIndex={0}
+          onKeyDown={handleKeyDown}
+          className="bg-background focus:ring-ring focus-visible:ring-ring relative h-full w-full shrink overflow-hidden outline-none select-none focus:ring-2 focus:ring-inset focus-visible:ring-2 focus-visible:ring-inset"
+          // Only a press on the canvas itself clears: the bricks are its children, so without the
+          // target check every click that selected one would arrive here and drop it again.
+          onClick={(event) => {
+            if (event.target === event.currentTarget) clearSelection();
+          }}
+        >
+          {/* TowerLayoutEngine runs the layout hooks for each tower to compute brick positions */}
+          {towers.map((tower) => (
+            <TowerLayoutEngine
+              key={`layout-${tower.id}`}
+              root={tower.root}
+              origin={tower.position}
+            />
+          ))}
+          {/* Everything drawn in canvas coordinates lives in the viewport node, which is what a pan
+            moves; the controls after it stay pinned to the canvas. */}
+          <div
+            ref={viewportRef}
+            data-testid="workspace-viewport"
+            className="absolute inset-0 will-change-transform"
+          >
+            {/* TowerBrickView renders the actual DOM nodes for the visible bricks in a flattened list */}
+            {visibleNodes.map((node) => (
+              <TowerBrickView key={node.model.id} id={node.model.id} node={node} />
+            ))}
+
+            <SnapHintOverlay />
+            <SnapPreviewView />
+            <DisconnectShadowView />
+            {/* Last in the overlay, so the menu draws over the bricks it is opened on */}
+            <ActionMenu />
+          </div>
+
+          {/* One right-anchored row: the zoom controls change width as the reset button comes and
+              goes, so the fullscreen button is laid out against them rather than pinned to an offset
+              that only holds at the default level. */}
+          <div
+            data-testid="workspace-controls"
+            className="absolute right-26 bottom-6 z-40 flex h-14 items-center gap-6"
+          >
+            <FullscreenControl />
+            <ScaleControl />
+          </div>
+          {/* The Trash is only useful once there is something to remove */}
+          {towers.length > 0 && <Trash canvasRef={canvasRef} />}
+        </div>
+
+        <DragGhost ref={ghostRef} />
       </div>
-
-      <div
-        ref={canvasRef}
-        data-testid="workspace-canvas"
-        className="bg-background relative h-full w-full shrink overflow-hidden select-none"
-        onClick={(event) => {
-          if (event.target === event.currentTarget) clearSelection();
-        }}
-      >
-        {/* TowerLayoutEngine runs the layout hooks for each tower to compute brick positions */}
-        {towers.map((tower) => (
-          <TowerLayoutEngine key={`layout-${tower.id}`} root={tower.root} origin={tower.position} />
-        ))}
-        {/* TowerBrickView renders the actual DOM nodes for the visible bricks in a flattened list */}
-        {visibleNodes.map((node) => (
-          <TowerBrickView key={node.model.id} id={node.model.id} node={node} />
-        ))}
-
-        <SnapHintOverlay />
-        <SnapPreviewView />
-        <DisconnectShadowView />
-        <ScaleControl />
-        {/* The Trash is only useful once there is something to remove */}
-        {towers.length > 0 && <Trash canvasRef={canvasRef} />}
-      </div>
-
-      <DragGhost ref={ghostRef} />
     </div>
   );
 }

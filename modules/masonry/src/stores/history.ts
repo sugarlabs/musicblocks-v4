@@ -29,6 +29,7 @@ export interface WorkspaceHistoryStore {
  * Tracks the history of the workspace for Undo/Redo functionality.
  * Snapshots are taken explicitly by calling `commit()` after meaningful actions.
  */
+
 export const useWorkspaceHistoryStore = create<WorkspaceHistoryStore>()(
     subscribeWithSelector((set, get) => ({
         history: [],
@@ -37,6 +38,10 @@ export const useWorkspaceHistoryStore = create<WorkspaceHistoryStore>()(
 
         init: () => {
             try {
+                if (get().history.length > 0) {
+                    // History already initialized, don't overwrite it on navigation remounts
+                    return;
+                }
                 const towers = useWorkspaceStore.getState().towers;
                 const current = exportWorkspace(towers);
                 set({ history: [current], currentIndex: 0 });

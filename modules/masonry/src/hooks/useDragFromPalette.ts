@@ -251,6 +251,10 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                             });
                         }
                     }
+
+                    import('@/stores/history').then(({ useWorkspaceHistoryStore }) => {
+                        useWorkspaceHistoryStore.getState().commit();
+                    });
                 },
             },
         });

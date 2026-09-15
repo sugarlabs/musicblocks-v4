@@ -31,5 +31,9 @@ export function discardTower(towerId: string): boolean {
     workspace.removeTower(towerId);
     useBrickLayoutStore.getState().clearBricks(brickIds);
 
+    import('@/stores/history').then(({ useWorkspaceHistoryStore }) => {
+        useWorkspaceHistoryStore.getState().commit();
+    });
+
     return true;
 }

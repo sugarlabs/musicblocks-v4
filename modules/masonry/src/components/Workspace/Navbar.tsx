@@ -18,7 +18,7 @@ export function Navbar() {
     <div className="border-border bg-background flex h-12 shrink-0 items-center gap-2 border-b px-4">
       <button
         className={`text-foreground flex items-center justify-center rounded-md p-2 transition-colors ${
-          canUndo ? 'hover:bg-muted cursor-pointer' : 'opacity-50 cursor-not-allowed'
+          canUndo ? 'hover:bg-muted cursor-pointer' : 'cursor-not-allowed opacity-50'
         }`}
         disabled={!canUndo}
         onClick={() => useWorkspaceHistoryStore.getState().undo()}
@@ -28,7 +28,7 @@ export function Navbar() {
       </button>
       <button
         className={`text-foreground flex items-center justify-center rounded-md p-2 transition-colors ${
-          canRedo ? 'hover:bg-muted cursor-pointer' : 'opacity-50 cursor-not-allowed'
+          canRedo ? 'hover:bg-muted cursor-pointer' : 'cursor-not-allowed opacity-50'
         }`}
         disabled={!canRedo}
         onClick={() => useWorkspaceHistoryStore.getState().redo()}

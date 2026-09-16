@@ -16,6 +16,11 @@ import type { ExportedProject, ImportIdStrategy } from '@/@types/import-export.t
 import { useBrickLayoutStore } from '@/stores/brick';
 import { listNodes, listVisibleNodes } from '@/utils/tower-traversal';
 
+/**
+ * Horizontal offset (in px) from the source tower's origin when placing an extracted brick as a new tower.
+ */
+export const EXTRACTED_TOWER_OFFSET_X = 200;
+
 export interface WorkspaceStore {
     /** Record of all towers currently in the workspace, keyed by their unique ID */
     towers: Record<string, TowerState>;
@@ -600,11 +605,6 @@ export function findNodeAndTower(id: string): { node: TowerNode; tower: TowerSta
     }
     return null;
 }
-
-/**
- * Horizontal offset (in px) from the source tower's origin when placing an extracted brick as a new tower.
- */
-export const EXTRACTED_TOWER_OFFSET_X = 200;
 
 /**
  * Checks whether a brick can be extracted out of its tower.

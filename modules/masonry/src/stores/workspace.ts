@@ -53,6 +53,8 @@ export interface WorkspaceStore {
         nodeId: string,
         position: Point,
     ) => string | null;
+    /** Extracts a brick out of its tower, closing the gap it leaves, and forms a new tower */
+    extractBrickToNewTower: (brickId: string, position?: Point) => string | null;
     /** Merges a joined tower into the host tower that now owns its bricks */
     absorbTower: (draggedTowerId: string, hostTowerId: string) => void;
     /** Re-runs every tower's layout, leaving the towers where they are */
@@ -306,6 +308,166 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             return newTowerId;
         },
 
+        extractBrickToNewTower: (brickId, position) => {
+            if (!canExtractBrick(brickId)) return null;
+
+            const found = findNodeAndTower(brickId);
+            if (!found) return null;
+
+            const { node: target, tower: sourceTower } = found;
+
+            // Route Argument Bricks (value / expression) to detachBrickToNewTower
+            if (target.kind === 'value' || target.kind === 'expression') {
+                const coords = useBrickLayoutStore.getState().coords[brickId];
+                const newPos = position ?? {
+                    x: (coords?.x ?? sourceTower.position.x) + EXTRACTED_TOWER_OFFSET_X,
+                    y: coords?.y ?? sourceTower.position.y,
+                };
+                const id = get().detachBrickToNewTower(sourceTower.id, brickId, newPos);
+                if (id) {
+                    import('@/stores/history').then(({ useWorkspaceHistoryStore }) => {
+                        useWorkspaceHistoryStore.getState().commit();
+                    });
+                }
+                return id;
+            }
+
+            if (target.kind !== 'statement') return null;
+
+            let newTowerId: string | null = null;
+            set((state) => {
+                const tower = state.towers[sourceTower.id];
+                if (!tower) return state;
+
+                const isRoot = tower.root.model.id === target.model.id;
+                let liveTarget: Extract<TowerNode, { kind: 'statement' }> | null = null;
+                let foundPrev: Extract<TowerNode, { kind: 'statement' }> | null = null;
+                let foundCavityParent: Extract<TowerNode, { kind: 'statement' }> | null = null;
+
+                if (isRoot) {
+                    if (tower.root.kind !== 'statement') return state;
+                    liveTarget = tower.root as Extract<TowerNode, { kind: 'statement' }>;
+                } else {
+                    const stack: TowerNode[] = [tower.root];
+                    while (stack.length > 0) {
+                        const current = stack.pop()!;
+                        if (current.kind === 'statement') {
+                            if (current.next) {
+                                if (current.next.model.id === target.model.id) {
+                                    liveTarget = current.next as Extract<TowerNode, { kind: 'statement' }>;
+                                    foundPrev = current;
+                                    break;
+                                }
+                                stack.push(current.next);
+                            }
+                            if (current.nestedNext) {
+                                if (current.nestedNext.model.id === target.model.id) {
+                                    liveTarget = current.nestedNext as Extract<TowerNode, { kind: 'statement' }>;
+                                    foundCavityParent = current;
+                                    break;
+                                }
+                                stack.push(current.nestedNext);
+                            }
+                        }
+                        if (current.kind === 'statement' || current.kind === 'expression') {
+                            for (const arg of current.args) {
+                                if (arg) stack.push(arg);
+                            }
+                        }
+                    }
+                }
+
+                if (!liveTarget) return state;
+
+                const isFolded = Boolean(liveTarget.model.isNestingFolded);
+                const unfoldedCavityHead =
+                    !isFolded && liveTarget.nestedNext && liveTarget.nestedNext.kind === 'statement'
+                        ? (liveTarget.nestedNext as Extract<TowerNode, { kind: 'statement' }>)
+                        : null;
+                const nextChain =
+                    liveTarget.next && liveTarget.next.kind === 'statement'
+                        ? (liveTarget.next as Extract<TowerNode, { kind: 'statement' }>)
+                        : null;
+
+                let cavityTail: Extract<TowerNode, { kind: 'statement' }> | null = null;
+                if (unfoldedCavityHead) {
+                    cavityTail = unfoldedCavityHead;
+                    while (cavityTail.next && cavityTail.next.kind === 'statement') {
+                        cavityTail = cavityTail.next as Extract<TowerNode, { kind: 'statement' }>;
+                    }
+                }
+
+                const spliceHead = unfoldedCavityHead ?? nextChain;
+
+                // 1. Splice cavity tail to nextChain
+                if (cavityTail && nextChain) {
+                    cavityTail.next = nextChain;
+                    nextChain.prev = cavityTail;
+                }
+
+                // 2. Stitch into the source tower
+                if (foundPrev) {
+                    foundPrev.next = spliceHead;
+                    if (spliceHead) {
+                        spliceHead.prev = foundPrev;
+                    }
+                } else if (foundCavityParent) {
+                    foundCavityParent.nestedNext = spliceHead;
+                    if (spliceHead) {
+                        spliceHead.prev = foundCavityParent;
+                    }
+                }
+
+                // 3. Update source tower root if target was root
+                let newSourceRoot = tower.root;
+                if (isRoot) {
+                    if (!spliceHead) return state;
+                    spliceHead.prev = null;
+                    newSourceRoot = spliceHead;
+                }
+
+                // 4. Clean extracted brick's outer pointers
+                liveTarget.prev = null;
+                liveTarget.next = null;
+                if (!isFolded) {
+                    liveTarget.nestedNext = liveTarget.model.hasNesting ? null : undefined;
+                }
+
+                // 5. Build new tower beside the original tower
+                newTowerId = `tower-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+                const coords = useBrickLayoutStore.getState().coords[brickId];
+                const newTowerPosition = position ?? {
+                    x: (coords?.x ?? tower.position.x) + EXTRACTED_TOWER_OFFSET_X,
+                    y: coords?.y ?? tower.position.y,
+                };
+
+                const newTower: TowerState = {
+                    id: newTowerId,
+                    position: newTowerPosition,
+                    root: liveTarget,
+                };
+
+                return {
+                    towers: {
+                        ...state.towers,
+                        [sourceTower.id]: {
+                            ...tower,
+                            root: isRoot ? { ...newSourceRoot } : { ...tower.root },
+                        },
+                        [newTowerId]: newTower,
+                    },
+                };
+            });
+
+            if (newTowerId) {
+                import('@/stores/history').then(({ useWorkspaceHistoryStore }) => {
+                    useWorkspaceHistoryStore.getState().commit();
+                });
+            }
+
+            return newTowerId;
+        },
+
         absorbTower: (draggedTowerId, hostTowerId) => {
             // The join already spliced the two node graphs together, so the absorbed tower is
             // redundant; dropping it also purges its stale collision points.
@@ -437,4 +599,48 @@ export function findNodeAndTower(id: string): { node: TowerNode; tower: TowerSta
         }
     }
     return null;
+}
+
+/**
+ * Horizontal offset (in px) from the source tower's origin when placing an extracted brick as a new tower.
+ */
+export const EXTRACTED_TOWER_OFFSET_X = 200;
+
+/**
+ * Checks whether a brick can be extracted out of its tower.
+ *
+ * Extraction removes only the target brick, closing the gap it leaves in its tower.
+ * It is disabled where extraction would do nothing (lone root with nothing left to form a tower,
+ * folded root with no next chain, or an unattached/free-floating argument brick).
+ */
+export function canExtractBrick(id: string): boolean {
+    const found = findNodeAndTower(id);
+    if (!found) return false;
+
+    const { node, tower } = found;
+
+    // Value and Expression (Argument) bricks:
+    if (node.kind === 'value' || node.kind === 'expression') {
+        // Only extractable if plugged into an argument slot of a parent
+        return node.parent !== null;
+    }
+
+    // Statement brick:
+    if (node.kind === 'statement') {
+        const isFolded = Boolean(node.model.isNestingFolded);
+        const hasUnfoldedCavity = !isFolded && Boolean(node.nestedNext);
+        const hasNext = Boolean(node.next);
+        const hasSplice = hasUnfoldedCavity || hasNext;
+
+        const isRoot = tower.root.model.id === node.model.id;
+        if (isRoot) {
+            // A root statement with nothing to leave behind in the source tower cannot be extracted
+            return hasSplice;
+        }
+
+        // Inside a chain or at cavity head, extracting a brick is always valid
+        return true;
+    }
+
+    return false;
 }

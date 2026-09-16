@@ -1,6 +1,7 @@
 import { Copy, Scissors, Trash2 } from 'lucide-react';
 
 import type { ActionMenuWedge } from '@/@types/action-menu.types';
+import { canExtractBrick, useWorkspaceStore } from '@/stores/workspace';
 
 /**
  * The wedges the pie menu carries, in the order they ring the brick, starting at twelve o'clock.
@@ -24,8 +25,10 @@ export const ACTION_MENU_WEDGES: ActionMenuWedge[] = [
         label: 'Extract',
         tooltip: 'Take this brick out on its own, closing the gap it leaves',
         Icon: Scissors,
-        isEnabled: () => false,
-        run: () => {},
+        isEnabled: (brickId: string) => canExtractBrick(brickId),
+        run: (brickId: string) => {
+            useWorkspaceStore.getState().extractBrickToNewTower(brickId);
+        },
     },
     {
         id: 'trash',

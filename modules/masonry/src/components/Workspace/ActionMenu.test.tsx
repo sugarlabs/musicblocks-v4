@@ -1,7 +1,7 @@
 // Tests for the pie menu itself: what it draws over the brick, where it puts it, and what a press
 // on a wedge does. The wedges are mocked so a press has something to act on and something to be
-// refused by; the real three carry no behaviour of their own until #796, #797 and #798 land, and
-// are checked for shape alone at the bottom of the file.
+// refused by; the real three are checked at the bottom of the file (duplicate carries its #796
+// behaviour; extract and trash remain disabled until #797 and #798 land).
 
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -13,6 +13,7 @@ import { makeEmptyStatement } from '@/mocks/tower';
 import { useActionMenuDismiss } from '@/hooks/useActionMenuDismiss';
 import { useActionMenuStore } from '@/stores/actionMenu';
 import { useBrickLayoutStore } from '@/stores/brick';
+import { useWorkspaceHistoryStore } from '@/stores/history';
 import { useWorkspaceScaleStore } from '@/stores/scale';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { ringAtScale } from '@/utils/pie-menu';
@@ -425,6 +426,51 @@ describe('ActionMenu', () => {
         </>,
       );
       expect(container.querySelectorAll('svg')).toHaveLength(3);
+    });
+
+    it('enables duplicate and invokes duplicateBrickToNewTower with history commit on run', async () => {
+      const actual =
+        await vi.importActual<typeof import('./actionMenuWedges')>('./actionMenuWedges');
+      const duplicateWedge = actual.ACTION_MENU_WEDGES.find((w) => w.id === 'duplicate');
+      expect(duplicateWedge).toBeDefined();
+      expect(duplicateWedge!.isEnabled('b1')).toBe(true);
+
+      const duplicateSpy = vi
+        .spyOn(useWorkspaceStore.getState(), 'duplicateBrickToNewTower')
+        .mockReturnValue('new-tower-id');
+      const commitSpy = vi
+        .spyOn(useWorkspaceHistoryStore.getState(), 'commit')
+        .mockImplementation(() => {});
+
+      duplicateWedge!.run('b1');
+
+      expect(duplicateSpy).toHaveBeenCalledWith('b1');
+      expect(commitSpy).toHaveBeenCalledTimes(1);
+
+      duplicateSpy.mockRestore();
+      commitSpy.mockRestore();
+    });
+
+    it('does not commit history when duplication returns null', async () => {
+      const actual =
+        await vi.importActual<typeof import('./actionMenuWedges')>('./actionMenuWedges');
+      const duplicateWedge = actual.ACTION_MENU_WEDGES.find((w) => w.id === 'duplicate');
+      expect(duplicateWedge).toBeDefined();
+
+      const duplicateSpy = vi
+        .spyOn(useWorkspaceStore.getState(), 'duplicateBrickToNewTower')
+        .mockReturnValue(null);
+      const commitSpy = vi
+        .spyOn(useWorkspaceHistoryStore.getState(), 'commit')
+        .mockImplementation(() => {});
+
+      duplicateWedge!.run('missing-brick');
+
+      expect(duplicateSpy).toHaveBeenCalledWith('missing-brick');
+      expect(commitSpy).not.toHaveBeenCalled();
+
+      duplicateSpy.mockRestore();
+      commitSpy.mockRestore();
     });
   });
 });

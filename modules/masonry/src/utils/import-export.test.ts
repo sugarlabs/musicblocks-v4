@@ -10,7 +10,12 @@ import type { TowerState } from '@/@types/workspace.types';
 import { makeEmptyStatement, makeEmptyValue, statementTreeWithNesting } from '@/mocks/tower';
 import { listNodes } from '@/utils/tower-traversal';
 
-import { EXPORT_SCHEMA_VERSION, exportWorkspace, importProject } from './import-export';
+import {
+    EXPORT_SCHEMA_VERSION,
+    exportSubtree,
+    exportWorkspace,
+    importProject,
+} from './import-export';
 
 /** Wraps roots as a towers record, positioned along a diagonal so each placement is distinct. */
 function workspaceOf(...roots: TowerNode[]): Record<string, TowerState> {
@@ -290,6 +295,83 @@ describe('exportWorkspace', () => {
                 '#000000',
             );
         });
+    });
+});
+
+describe('exportSubtree', () => {
+    /** Locates a brick in the shared mock by its ancestry-path id. */
+    function findInMock(root: TowerNode, id: string): TowerNode {
+        const node = listNodes(root).find((n) => n.model.id === id);
+        if (!node) throw new Error(`mock tree is missing "${id}"`);
+        return node;
+    }
+
+    it('exports exactly the sub-tree a drag would carry', () => {
+        // `Nesting Statement 1` sits mid-chain: its reach is its own args, its cavity chain and
+        // everything from `Statement 4` down — `Statement 1`..`Statement 3` above it are not part
+        // of a drag's payload.
+        const nesting1 = findInMock(statementTreeWithNesting, 'Nesting Statement 1');
+
+        const exported = exportSubtree(nesting1);
+
+        expect(Object.keys(exported.nodes).sort()).toEqual(
+            listNodes(nesting1)
+                .map((node) => node.model.id)
+                .sort(),
+        );
+
+        // Nothing above the node leaks into the copy.
+        for (const id of ['Statement 1', 'Statement 2', 'Statement 3']) {
+            expect(exported.nodes[id]).toBeUndefined();
+        }
+    });
+
+    it('wraps the sub-tree as a single tower rooted at the node', () => {
+        const nesting1 = findInMock(statementTreeWithNesting, 'Nesting Statement 1');
+
+        const exported = exportSubtree(nesting1);
+
+        expect(exported.towers).toEqual([
+            { id: 'duplicate', position: { x: 0, y: 0 }, rootNodeId: 'Nesting Statement 1' },
+        ]);
+    });
+
+    it("keeps the node's arguments, cavity and next chain", () => {
+        const nesting1 = findInMock(statementTreeWithNesting, 'Nesting Statement 1');
+
+        const exported = exportSubtree(nesting1);
+
+        const root = statementAt(exported, 'Nesting Statement 1');
+        expect(root.args).toEqual(['Nesting Statement 1.118']);
+        expect(root.nestedNext).toBe('Nesting Statement 1.Statement 6');
+        expect(root.next).toBe('Statement 4');
+
+        // The last brick of the copied chain still terminates.
+        expect(statementAt(exported, 'Statement 5').next).toBeNull();
+    });
+
+    it('preserves the fold state of the node and everything nested inside it', () => {
+        const outer = makeEmptyStatement('outer', 0, true);
+        const inner = makeEmptyStatement('inner', 0, true);
+        outer.nestedNext = inner;
+        outer.model.isNestingFolded = true;
+        inner.model.isNestingFolded = true;
+
+        const exported = exportSubtree(outer);
+
+        expect(statementAt(exported, 'outer').modelConfig).toMatchObject({
+            isNestingFolded: true,
+        });
+        expect(statementAt(exported, 'inner').modelConfig).toMatchObject({
+            isNestingFolded: true,
+        });
+    });
+
+    it('throws when the sub-tree holds two bricks with the same id', () => {
+        const root = makeEmptyStatement('same', 1);
+        root.args[0] = makeEmptyValue('same');
+
+        expect(() => exportSubtree(root)).toThrow(/duplicate brick id "same"/);
     });
 });
 

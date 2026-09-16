@@ -1,6 +1,7 @@
 import { Copy, Scissors, Trash2 } from 'lucide-react';
 
 import type { ActionMenuWedge } from '@/@types/action-menu.types';
+import { useWorkspaceHistoryStore } from '@/stores/history';
 import { acknowledgeTrash } from '@/stores/trash';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 import { discardTower } from '@/utils/towerDiscard';
@@ -8,8 +9,8 @@ import { discardTower } from '@/utils/towerDiscard';
 /**
  * The wedges the pie menu carries, in the order they ring the brick, starting at twelve o'clock.
  *
- * Each one's behaviour lands with its own issue — duplicate in #796, extract in #797 and the move
- * to the trash in #798.
+ * Each one's behaviour lands with its own issue — duplicate in #796 and the move to the trash in
+ * #798. Extract answers `isEnabled` with `false` until its issue lands and is drawn disabled.
  */
 export const ACTION_MENU_WEDGES: ActionMenuWedge[] = [
     {
@@ -17,8 +18,13 @@ export const ACTION_MENU_WEDGES: ActionMenuWedge[] = [
         label: 'Duplicate',
         tooltip: 'Copy this brick and everything under it',
         Icon: Copy,
-        isEnabled: () => false,
-        run: () => {},
+        isEnabled: () => true,
+        run: (brickId: string) => {
+            const copyId = useWorkspaceStore.getState().duplicateBrickToNewTower(brickId);
+            if (copyId) {
+                useWorkspaceHistoryStore.getState().commit();
+            }
+        },
     },
     {
         id: 'extract',

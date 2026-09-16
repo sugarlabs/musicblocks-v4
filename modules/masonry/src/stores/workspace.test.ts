@@ -11,9 +11,9 @@ import {
     statementTreeWithNesting,
 } from '@/mocks/tower';
 import { exportWorkspace } from '@/utils/import-export';
-import { listNodes, listVisibleNodes } from '@/utils/tower-traversal';
+import { listNodes, listVisibleNodes, traverseTopDown } from '@/utils/tower-traversal';
 import type { Bounds, Point } from '@/@types/common.types';
-import type { TowerExpressionNode, TowerStatementNode } from '@/@types/tower.types';
+import type { TowerExpressionNode, TowerNode, TowerStatementNode } from '@/@types/tower.types';
 import type { BrickModel } from '@/models/brick';
 import type { QuadtreeCollisionSpace } from '@/utils/collision';
 
@@ -371,6 +371,197 @@ describe('Workspace Store Collision Space', () => {
             expect((source.root as TowerStatementNode).next).toBeNull();
             expect(listNodes(source.root)).toHaveLength(1);
             expect(newTowerId).toBeTruthy();
+        });
+    });
+
+    describe('duplicateBrickToNewTower', () => {
+        /**
+         * A fresh 3-statement chain, each carrying one value arg. The shared mock trees are
+         * severed by the detach tests above, so a duplication test must build its own.
+         */
+        function buildFreshChain(): TowerStatementNode {
+            const statements = [
+                makeEmptyStatement('st1', 1),
+                makeEmptyStatement('st2', 1),
+                makeEmptyStatement('st3', 1),
+            ];
+            statements.forEach((statement, index) => {
+                statement.prev = statements[index - 1] ?? null;
+                statement.next = statements[index + 1] ?? null;
+                const arg = makeEmptyValue(`v${index + 1}`);
+                statement.args[0] = arg;
+                arg.parent = statement;
+            });
+            return statements[0];
+        }
+
+        /** Positions every node of a tower and creates it, with both connector spaces synced. */
+        function placeTower(id: string, root: TowerNode, position: Point) {
+            traverseTopDown(root, position);
+            act(() => {
+                const store = useWorkspaceStore.getState();
+                store.createTower({ id, root, position });
+                store.syncStatementConnectors(id, root);
+                store.syncArgumentConnectors(id, root);
+            });
+        }
+
+        /** A brick's kind and config in one line, so two trees compare by shape, not ids. */
+        function fingerprint(node: TowerNode): string {
+            const model = node.model;
+            const widget = (model.widget as { type: string }).type;
+            const params = 'params' in model ? [...model.params].join('|') : '';
+            return `${node.kind}:${model.colorsDefault.background}:${widget}:${model.scaleLevel}:${params}`;
+        }
+
+        it('builds a fresh tower offset from the selected brick with the same shape', () => {
+            const root = buildFreshChain();
+            placeTower('source', root, { x: 100, y: 200 });
+            const target = root.next as TowerStatementNode; // Mid-chain: the copy must carry st3.
+            target.model.setPosition(100, 260);
+
+            let copyId: string | null = null;
+            act(() => {
+                copyId = useWorkspaceStore.getState().duplicateBrickToNewTower(target.model.id);
+            });
+
+            const state = useWorkspaceStore.getState();
+            expect(copyId).not.toBeNull();
+            expect(Object.keys(state.towers)).toEqual(['source', copyId]);
+
+            const copy = state.towers[copyId!];
+            expect(copy.position).toEqual({ x: 160, y: 300 });
+            expect(listNodes(copy.root).map(fingerprint)).toEqual(
+                listNodes(target).map(fingerprint),
+            );
+        });
+
+        it('mints every id afresh, the tower id included', () => {
+            const root = buildFreshChain();
+            placeTower('source', root, { x: 100, y: 200 });
+            const target = root.next as TowerStatementNode;
+
+            let copyId: string | null = null;
+            act(() => {
+                copyId = useWorkspaceStore.getState().duplicateBrickToNewTower(target.model.id);
+            });
+
+            const state = useWorkspaceStore.getState();
+            expect(copyId).not.toBe('source');
+
+            const copyIds = listNodes(state.towers[copyId!].root).map((node) => node.model.id);
+            const sourceIds = listNodes(target).map((node) => node.model.id);
+            expect(copyIds.some((id) => sourceIds.includes(id))).toBe(false);
+            expect(new Set(copyIds).size).toBe(copyIds.length);
+        });
+
+        it('preserves the fold state of the copied bricks', () => {
+            const outer = makeEmptyStatement('outer', 0, true);
+            const inner = makeEmptyStatement('inner', 0, true);
+            outer.nestedNext = inner;
+            outer.model.isNestingFolded = true;
+            inner.model.isNestingFolded = true;
+            placeTower('source', outer, { x: 100, y: 100 });
+
+            let copyId: string | null = null;
+            act(() => {
+                copyId = useWorkspaceStore.getState().duplicateBrickToNewTower('outer');
+            });
+
+            const copyRoot = useWorkspaceStore.getState().towers[copyId!]
+                .root as TowerStatementNode;
+            expect(copyRoot.model.isNestingFolded).toBe(true);
+            expect((copyRoot.nestedNext as TowerStatementNode).model.isNestingFolded).toBe(true);
+        });
+
+        it('leaves the source tower and its connector points untouched', () => {
+            const root = buildFreshChain();
+            placeTower('source', root, { x: 100, y: 200 });
+            const target = root.next as TowerStatementNode;
+            const sourceConnectorIds = () => {
+                const state = useWorkspaceStore.getState();
+                return {
+                    statement: Object.values(state.statementConnectors)
+                        .filter((meta) => meta.towerId === 'source')
+                        .map((meta) => meta.id),
+                    argument: Object.values(state.argumentConnectors)
+                        .filter((meta) => meta.towerId === 'source')
+                        .map((meta) => meta.id),
+                };
+            };
+            const before = sourceConnectorIds();
+            expect(before.statement.length).toBeGreaterThan(0);
+            expect(before.argument.length).toBeGreaterThan(0);
+
+            act(() => {
+                useWorkspaceStore.getState().duplicateBrickToNewTower(target.model.id);
+            });
+
+            const state = useWorkspaceStore.getState();
+            // Same tower, same root reference, same position, same bricks.
+            expect(state.towers['source'].root).toBe(root);
+            expect(state.towers['source'].position).toEqual({ x: 100, y: 200 });
+            expect(listNodes(state.towers['source'].root).map((node) => node.model.id)).toEqual(
+                listNodes(root).map((node) => node.model.id),
+            );
+            // Same connector points.
+            expect(sourceConnectorIds()).toEqual(before);
+        });
+
+        it('registers the copy in both collision spaces once it is laid out', () => {
+            const root = buildFreshChain();
+            placeTower('source', root, { x: 100, y: 200 });
+            const target = root.next as TowerStatementNode;
+
+            let copyId: string | null = null;
+            act(() => {
+                copyId = useWorkspaceStore.getState().duplicateBrickToNewTower(target.model.id);
+            });
+
+            // Connector sync is layout-driven: unpositioned copies carry no collision points yet.
+            const stateBeforeLayout = useWorkspaceStore.getState();
+            expect(
+                Object.values(stateBeforeLayout.statementConnectors).some(
+                    (meta) => meta.towerId === copyId,
+                ),
+            ).toBe(false);
+            expect(
+                Object.values(stateBeforeLayout.argumentConnectors).some(
+                    (meta) => meta.towerId === copyId,
+                ),
+            ).toBe(false);
+
+            // The copy's bricks start unpositioned — the layout does that on mount. Position them
+            // the way `useTowerLayout` would, then re-sync as the layout-driven pass would.
+            const copy = stateBeforeLayout.towers[copyId!];
+            traverseTopDown(copy.root, copy.position);
+            act(() => {
+                const store = useWorkspaceStore.getState();
+                store.syncStatementConnectors(copyId!, copy.root);
+                store.syncArgumentConnectors(copyId!, copy.root);
+            });
+
+            const state = useWorkspaceStore.getState();
+            expect(
+                Object.values(state.statementConnectors).some((meta) => meta.towerId === copyId),
+            ).toBe(true);
+            expect(
+                Object.values(state.argumentConnectors).some((meta) => meta.towerId === copyId),
+            ).toBe(true);
+        });
+
+        it('returns null and changes nothing for an unknown brick id', () => {
+            const root = buildFreshChain();
+            placeTower('source', root, { x: 100, y: 200 });
+            const towersBefore = useWorkspaceStore.getState().towers;
+
+            let copyId: string | null = 'not-null';
+            act(() => {
+                copyId = useWorkspaceStore.getState().duplicateBrickToNewTower('no-such-brick');
+            });
+
+            expect(copyId).toBeNull();
+            expect(useWorkspaceStore.getState().towers).toBe(towersBefore);
         });
     });
 

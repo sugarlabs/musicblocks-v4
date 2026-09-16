@@ -2,8 +2,8 @@ import type { TowerStatementNode } from '@/@types/tower.types';
 import type { StatementConnectorMeta, TowerState } from '@/@types/workspace.types';
 
 import type { CollisionSpace } from './collision';
-import { connectorCenter, querySnap } from './snap-config';
-import { findNode, hidesCavity, listVisibleNodes } from './tower-traversal';
+import { querySnap } from './snap-config';
+import { findNode, hidesCavity } from './tower-traversal';
 
 /** The two tabs a statement can carry the sequence onward through; both mate with a `prev` groove. */
 export type StatementSocket = 'next' | 'nestedNext';
@@ -34,8 +34,6 @@ export interface ResolveStatementConnectionParams {
     /** All towers currently in the workspace, used to resolve a hit back to its live node. */
     towers: Record<string, TowerState>;
 }
-
-const SOCKETS: StatementSocket[] = ['next', 'nestedNext'];
 
 /**
  * Whether `parent`'s `socket` tab is free to take a brick. A `nestedNext` of `undefined` means the
@@ -111,75 +109,6 @@ function resolvePrevOntoTab(
 }
 
 /**
- * Direction 2 — the dragged tower picks something up: one of its own free `next` or `nestedNext`
- * tabs seeks the `prev` groove of a settled tower, which is absorbed into it. Every free tab in the
- * dragged tower is a candidate, not just its outer tail's, since an empty cavity is equally free.
- *
- * Only what the drag carries in plain sight, though: a brick hidden inside a folded cavity offers
- * no tab, since it is drawn nowhere and its recorded position is wherever the layout left it before
- * the fold shut over it. It offers its tabs again when the fold is lifted.
- */
-function resolveTabOntoPrev(
-    dragged: TowerState,
-    { space, connectors, towers }: ResolveStatementConnectionParams,
-): StatementConnection | null {
-    let best: StatementConnection | null = null;
-
-    for (const parent of listVisibleNodes(dragged.root)) {
-        if (parent.kind !== 'statement') continue;
-
-        const coords = parent.model.getConnectorCoords();
-
-        for (const socket of SOCKETS) {
-            if (!isSocketFree(parent, socket)) continue;
-
-            const tab = coords[socket];
-            if (!tab) continue;
-
-            const probe = connectorCenter(dragged.root, parent, dragged.position, tab);
-
-            for (const hitId of querySnap(space, probe)) {
-                const meta = connectors[hitId];
-                if (!meta || meta.type !== 'prev') continue;
-
-                // A tower never picks up a brick it already contains.
-                if (meta.towerId === dragged.id) continue;
-
-                const absorbed = towers[meta.towerId];
-                if (!absorbed) continue;
-
-                // Only a whole tower can be picked up, so the groove must be its root's: any other
-                // brick's `prev` is taken by the brick above it, a cavity head's by its clamp.
-                const child = absorbed.root;
-                if (child.model.id !== meta.brickId) continue;
-                if (child.kind !== 'statement') continue;
-
-                const { prev } = child.model.getConnectorCoords();
-                if (!prev) continue;
-
-                const distance = Math.hypot(
-                    child.model.position.x + prev.x - probe.x,
-                    child.model.position.y + prev.y - probe.y,
-                );
-
-                if (best === null || distance < best.distance) {
-                    best = {
-                        parent,
-                        child,
-                        socket,
-                        hostTowerId: dragged.id,
-                        absorbedTowerId: absorbed.id,
-                        distance,
-                    };
-                }
-            }
-        }
-    }
-
-    return best;
-}
-
-/**
  * Resolves a dropped tower into a statement connection with a settled tower, or null when nothing
  * valid is within snap distance. Both directions are tried, so which end of a sequence the user
  * happened to drag does not decide whether the two can join; a statement has a groove above and a
@@ -197,12 +126,8 @@ export function resolveStatementConnection(
     if (!dragged) return null;
 
     const hangBelow = resolvePrevOntoTab(dragged, params);
-    const pickUp = resolveTabOntoPrev(dragged, params);
 
-    if (hangBelow === null) return pickUp;
-    if (pickUp === null) return hangBelow;
-
-    return pickUp.distance < hangBelow.distance ? pickUp : hangBelow;
+    return hangBelow;
 }
 
 /**

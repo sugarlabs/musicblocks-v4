@@ -180,7 +180,8 @@ describe('Palette', () => {
     it('leaves the bricks as grab targets rather than pointer targets', () => {
       const { container } = render(<Palette config={config} />);
 
-      // Bricks are drag sources, not click targets; a pointer would misdescribe them.
+      // Bricks take a click as well as a drag, but drag stays the advertised affordance: a
+      // pointer cursor would read as click-only and hide that they can be dragged at all.
       const slot = container.querySelector('[data-brick-id="r1"]');
       expect(slot?.className).toContain('cursor-grab');
       expect(slot?.className).not.toContain('cursor-pointer');

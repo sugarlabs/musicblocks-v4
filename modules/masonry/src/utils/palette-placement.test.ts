@@ -17,9 +17,9 @@ const mockPaletteBrick: PaletteBrickConfig = {
     id: 'test-palette-brick-1',
     name: 'Play Note',
     description: 'Plays a note',
-    category: 'music',
     brick: {
         kind: 'statement',
+        widget: { type: 'label', text: 'Play Note' },
         colorsDefault: { background: '#ff0000', foreground: '#ffffff', border: '#cc0000' },
         tooltipText: 'Play a note',
         hasConnectionPrev: true,

@@ -97,18 +97,22 @@ describe('BrickSlot', () => {
     expect(svgHeight).toBeGreaterThan(44);
   });
 
-  it('collapses the row once the entry is being dragged, independent of zoom level', () => {
-    const brick = entry('b1', 'Note');
-    render(<BrickSlot brick={brick} />);
+  it.each([MIN_SCALE_LEVEL, DEFAULT_SCALE_LEVEL, MAX_SCALE_LEVEL])(
+    'collapses the row once the entry is being dragged, at zoom level %i',
+    (level) => {
+      useWorkspaceScaleStore.setState({ level });
+      const brick = entry('b1', 'Note');
+      render(<BrickSlot brick={brick} />);
 
-    const row = () =>
-      screen.getByText('Note').closest('[data-brick-id]')?.parentElement?.parentElement;
-    expect(row()?.className.includes('grid-rows-[1fr]')).toBe(true);
+      const row = () =>
+        screen.getByText('Note').closest('[data-brick-id]')?.parentElement?.parentElement;
+      expect(row()?.className.includes('grid-rows-[1fr]')).toBe(true);
 
-    act(() => {
-      usePaletteDragStore.getState().startDrag(brick);
-    });
+      act(() => {
+        usePaletteDragStore.getState().startDrag(brick);
+      });
 
-    expect(row()?.className.includes('grid-rows-[0fr]')).toBe(true);
-  });
+      expect(row()?.className.includes('grid-rows-[0fr]')).toBe(true);
+    },
+  );
 });

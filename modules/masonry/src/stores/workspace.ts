@@ -414,6 +414,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             if (target.kind !== 'statement') return null;
 
             let newTowerId: string | null = null;
+            let extractedIds: string[] = [];
             set((state) => {
                 const tower = state.towers[sourceTower.id];
                 if (!tower) return state;
@@ -534,13 +535,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                     }
                 }
 
-                // Reset positioned flags for the extracted bricks in layout store to prevent stale flashes
-                const extractedIds = listNodes(liveTarget).map((n) => n.model.id);
-                useBrickLayoutStore
-                    .getState()
-                    .setPositioned(Object.fromEntries(extractedIds.map((id) => [id, false])));
-
                 // 5. Build new tower beside the original tower using safe placement
+                extractedIds = listNodes(liveTarget).map((n) => n.model.id);
                 newTowerId = `tower-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
                 const remainingRoot = isRoot ? newSourceRoot : tower.root;
                 const newTowerPosition = calculateExtractedTowerPosition(
@@ -567,6 +563,13 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                     },
                 };
             });
+
+            // Reset positioned flags outside the store update so React subscribers notify after workspace state commits
+            if (extractedIds.length > 0) {
+                useBrickLayoutStore
+                    .getState()
+                    .setPositioned(Object.fromEntries(extractedIds.map((id) => [id, false])));
+            }
 
             if (newTowerId) {
                 import('@/stores/history').then(({ useWorkspaceHistoryStore }) => {

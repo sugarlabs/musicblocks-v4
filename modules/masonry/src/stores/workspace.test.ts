@@ -1,4 +1,5 @@
 import { act } from '@testing-library/react';
+import { vi } from 'vitest';
 
 import { canExtractBrick, EXTRACTED_TOWER_OFFSET_X, useWorkspaceStore } from './workspace';
 import { useBrickLayoutStore } from './brick';
@@ -1497,7 +1498,7 @@ describe('Workspace Store Collision Space', () => {
             });
 
             // Wait for dynamic import and history commit
-            await new Promise((resolve) => setTimeout(resolve, 50));
+            await vi.dynamicImportSettled();
 
             expect(Object.keys(useWorkspaceStore.getState().towers)).toHaveLength(2);
 

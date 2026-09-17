@@ -1,8 +1,10 @@
 import type { Point } from '@/@types/common.types';
 import type { PaletteBrickConfig } from '@/@types/palette.types';
+import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { useWorkspaceScaleStore } from '@/stores/scale';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { createBrickModel, wrapAsRootNode } from '@/utils/brick-model-factory';
+import { tryConnect } from '@/hooks/useBrickMove';
 
 /**
  * Default anchor coordinate (in canvas-local pixels) for click-to-place palette bricks.
@@ -14,6 +16,12 @@ export const DEFAULT_PLACEMENT_ANCHOR: Point = { x: 20, y: 20 };
  * Fixed coordinate offset step applied downwards on successive palette brick click-placements.
  */
 export const DEFAULT_CASCADE_STEP: Point = { x: 0, y: 60 };
+
+/**
+ * Fixed coordinate offset step applied horizontally when cascade wraps to avoid overlapping
+ * existing towers at the anchor position.
+ */
+export const DEFAULT_COLUMN_STEP: Point = { x: 180, y: 0 };
 
 /**
  * Fallback maximum vertical canvas height (in pixels) for cascade wrap-around calculation
@@ -29,7 +37,9 @@ export interface CascadePlacementOptions {
     anchor?: Point;
     /** The step offset applied per cascade placement (default: { x: 0, y: 60 }) */
     step?: Point;
-    /** The height limit of the canvas. When y + step.y exceeds this limit, cascade wraps to anchor */
+    /** The horizontal column offset applied when the cascade wraps (default: { x: 180, y: 0 }) */
+    columnStep?: Point;
+    /** The height limit of the canvas. When y + step.y exceeds this limit, cascade wraps */
     maxHeight?: number;
 }
 
@@ -56,10 +66,10 @@ export function getCanvasMaxHeight(): number {
 
 /**
  * Computes the next placement position given the current position, applying the step offset
- * and wrapping back to the anchor point when the cascade exceeds the vertical boundary.
+ * and wrapping to the next column when the cascade exceeds the vertical boundary.
  *
  * @param current - The current placement coordinate.
- * @param options - Optional cascade anchor, step, and maxHeight bounds.
+ * @param options - Optional cascade anchor, step, columnStep, and maxHeight bounds.
  * @returns The next placement coordinates.
  */
 export function getNextPlacementPosition(
@@ -68,12 +78,16 @@ export function getNextPlacementPosition(
 ): Point {
     const anchor = options.anchor ?? DEFAULT_PLACEMENT_ANCHOR;
     const step = options.step ?? DEFAULT_CASCADE_STEP;
+    const columnStep = options.columnStep ?? DEFAULT_COLUMN_STEP;
     const maxHeight = options.maxHeight ?? getCanvasMaxHeight();
 
     const nextY = current.y + step.y;
-    // When the next position exceeds the available canvas vertical space, wrap back to the anchor
+    // When the next position exceeds the available canvas vertical space, wrap to the next column
     if (nextY > maxHeight) {
-        return { ...anchor };
+        return {
+            x: current.x + columnStep.x,
+            y: anchor.y,
+        };
     }
 
     return {
@@ -104,8 +118,8 @@ export function setPlacementPosition(position: Point = DEFAULT_PLACEMENT_ANCHOR)
 }
 
 /**
- * Places a palette brick onto the workspace canvas as a standalone tower at the current
- * cascade position, advances the cascade position, and queues connector synchronization.
+ * Places a palette brick onto the workspace canvas at the current cascade position,
+ * advances the cascade position, attempts connection, and records history.
  *
  * @param config - The palette brick configuration to instantiate.
  * @param options - Optional canvas height or cascade settings.
@@ -115,7 +129,25 @@ export function placeBrickFromPalette(
     config: PaletteBrickConfig,
     options: CascadePlacementOptions = {},
 ): { towerId: string; position: Point } {
-    const position = getCurrentPlacementPosition();
+    let position = getCurrentPlacementPosition();
+    const columnStep = options.columnStep ?? DEFAULT_COLUMN_STEP;
+    const anchor = options.anchor ?? DEFAULT_PLACEMENT_ANCHOR;
+    const towers = useWorkspaceStore.getState().towers;
+
+    // Ensure placement does not overlap directly on an existing tower
+    while (
+        Object.values(towers).some(
+            (t) =>
+                Math.abs(t.position.x - position.x) < 40 &&
+                Math.abs(t.position.y - position.y) < 40,
+        )
+    ) {
+        position = {
+            x: position.x + columnStep.x,
+            y: anchor.y,
+        };
+    }
+
     const scaleLevel = useWorkspaceScaleStore.getState().level;
 
     const model = createBrickModel({
@@ -136,14 +168,21 @@ export function placeBrickFromPalette(
     const nextPosition = getNextPlacementPosition(position, options);
     setPlacementPosition(nextPosition);
 
-    // Queue connector synchronization without connecting to neighbors (standalone tower)
-    queueMicrotask(() => {
-        const store = useWorkspaceStore.getState();
-        const rootNode = store.towers[towerId]?.root;
+    useConnectionPreviewStore.getState().clearPreviewTarget();
+
+    if (!tryConnect(towerId)) {
+        const rootNode = useWorkspaceStore.getState().towers[towerId]?.root;
         if (rootNode) {
-            store.syncStatementConnectors(towerId, rootNode);
-            store.syncArgumentConnectors(towerId, rootNode);
+            queueMicrotask(() => {
+                const store = useWorkspaceStore.getState();
+                store.syncStatementConnectors(towerId, rootNode);
+                store.syncArgumentConnectors(towerId, rootNode);
+            });
         }
+    }
+
+    import('@/stores/history').then(({ useWorkspaceHistoryStore }) => {
+        useWorkspaceHistoryStore.getState().commit();
     });
 
     return { towerId, position };

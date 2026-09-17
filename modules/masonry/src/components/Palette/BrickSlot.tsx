@@ -45,7 +45,7 @@ export function BrickSlot({ brick }: BrickSlotProps) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      placeBrickFromPalette(brick);
+      handleClick();
     }
   };
 

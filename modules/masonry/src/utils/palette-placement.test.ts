@@ -54,18 +54,21 @@ describe('palette-placement utils', () => {
             expect(pos).toEqual({ x: 20, y: 140 });
         });
 
-        it('wraps back to anchor when next position exceeds maxHeight', () => {
+        it('wraps to next column when next position exceeds maxHeight', () => {
             const pos = { x: 20, y: 560 };
             const next = getNextPlacementPosition(pos, { maxHeight: 600 });
-            expect(next).toEqual(DEFAULT_PLACEMENT_ANCHOR);
+            expect(next).toEqual({ x: 200, y: 20 });
+            expect(next).not.toEqual(DEFAULT_PLACEMENT_ANCHOR);
         });
 
-        it('custom anchor and step can be configured', () => {
+        it('custom anchor, step, and columnStep can be configured', () => {
             const customAnchor = { x: 50, y: 50 };
             const customStep = { x: 10, y: 40 };
+            const customColumnStep = { x: 100, y: 0 };
             const next = getNextPlacementPosition(customAnchor, {
                 anchor: customAnchor,
                 step: customStep,
+                columnStep: customColumnStep,
                 maxHeight: 100,
             });
             expect(next).toEqual({ x: 60, y: 90 });
@@ -73,9 +76,10 @@ describe('palette-placement utils', () => {
             const wrapped = getNextPlacementPosition(next, {
                 anchor: customAnchor,
                 step: customStep,
+                columnStep: customColumnStep,
                 maxHeight: 100,
             });
-            expect(wrapped).toEqual(customAnchor);
+            expect(wrapped).toEqual({ x: 160, y: 50 });
         });
     });
 
@@ -106,6 +110,22 @@ describe('palette-placement utils', () => {
             expect(Object.keys(towers).length).toBe(2);
             expect(towers[res1.towerId]).toBeDefined();
             expect(towers[res2.towerId]).toBeDefined();
+        });
+
+        it('ensures wrapped placement does not overlap the existing anchor tower', () => {
+            const first = placeBrickFromPalette(mockPaletteBrick);
+            expect(first.position).toEqual(DEFAULT_PLACEMENT_ANCHOR);
+
+            // Advance cascade to position at wrap threshold
+            setPlacementPosition({ x: 20, y: 560 });
+            // This placement places at (20, 560) and wraps the next placement to the next column
+            placeBrickFromPalette(mockPaletteBrick, { maxHeight: 600 });
+
+            // The wrapped placement lands in the next column, non-overlapping the anchor tower
+            const wrapped = placeBrickFromPalette(mockPaletteBrick, { maxHeight: 600 });
+            expect(wrapped.position).not.toEqual(first.position);
+            expect(wrapped.position.x).toBeGreaterThan(first.position.x);
+            expect(wrapped.position).toEqual({ x: 200, y: 20 });
         });
     });
 });

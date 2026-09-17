@@ -14,12 +14,69 @@ import { extractStatementConnectors } from '@/utils/statement-collision';
 import { exportWorkspace as exportWorkspaceUtil, importProject } from '@/utils/import-export';
 import type { ExportedProject, ImportIdStrategy } from '@/@types/import-export.types';
 import { useBrickLayoutStore } from '@/stores/brick';
-import { listNodes, listVisibleNodes } from '@/utils/tower-traversal';
+import { listNodes, listVisibleNodes, traverseTopDown } from '@/utils/tower-traversal';
 
 /**
  * Horizontal offset (in px) from the source tower's origin when placing an extracted brick as a new tower.
  */
 export const EXTRACTED_TOWER_OFFSET_X = 200;
+
+/**
+ * Minimum margin (in px) separating an extracted tower from the source tower's rightmost bounding box.
+ */
+export const EXTRACTED_TOWER_MARGIN_X = 40;
+
+/**
+ * Calculates a safe position for an extracted brick to form a new tower without
+ * overlapping or colliding with the source tower or its horizontal argument tree.
+ */
+export function calculateExtractedTowerPosition(
+    sourceTower: TowerState,
+    targetBrickId: string,
+    requestedPosition?: Point,
+    remainingRoot?: TowerNode,
+): Point {
+    if (requestedPosition) return requestedPosition;
+
+    const rootToMeasure = remainingRoot ?? sourceTower.root;
+    const coords = useBrickLayoutStore.getState().coords;
+    const targetCoord = coords[targetBrickId];
+
+    // Position the remaining tree top-down so model coordinates reflect the remaining tower's origin
+    try {
+        traverseTopDown(rootToMeasure, sourceTower.position);
+    } catch {
+        // Fallback gracefully if traversal fails
+    }
+
+    // Find the rightmost extent (maxX) among all visible nodes in the remaining source tower
+    let maxTowerX = sourceTower.position.x;
+    const targetFound = findNodeAndTower(targetBrickId);
+    const targetNodeIds = new Set(
+        targetFound ? listNodes(targetFound.node).map((n) => n.model.id) : [targetBrickId],
+    );
+    const visibleNodes = listVisibleNodes(rootToMeasure).filter(
+        (node) => !targetNodeIds.has(node.model.id),
+    );
+    for (const node of visibleNodes) {
+        const pt = coords[node.model.id];
+        const width = node.model.dims?.w ?? 0;
+        const rightFromCoords = pt ? pt.x + width : 0;
+        const rightFromModel = (node.model.position?.x ?? sourceTower.position.x) + width;
+        const right = Math.max(rightFromCoords, rightFromModel);
+        if (right > maxTowerX) {
+            maxTowerX = right;
+        }
+    }
+
+    const fallbackX = (targetCoord?.x ?? sourceTower.position.x) + EXTRACTED_TOWER_OFFSET_X;
+    const safeX = Math.max(maxTowerX + EXTRACTED_TOWER_MARGIN_X, fallbackX);
+
+    return {
+        x: safeX,
+        y: targetCoord?.y ?? sourceTower.position.y,
+    };
+}
 
 export interface WorkspaceStore {
     /** Record of all towers currently in the workspace, keyed by their unique ID */
@@ -284,8 +341,18 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                     foundPrev.next = null;
                 } else if (foundCavityParent) {
                     foundCavityParent.nestedNext = null;
+                    if (foundCavityParent.model.hasNesting) {
+                        foundCavityParent.model.nestingDims = null;
+                        foundCavityParent.model.computeDims();
+                        foundCavityParent.model.computeOutline();
+                    }
                 } else if (foundArgParent && foundArgIndex !== null) {
                     foundArgParent.args[foundArgIndex] = null;
+                    if (foundArgParent.model.argDims) {
+                        foundArgParent.model.argDims[foundArgIndex] = null;
+                        foundArgParent.model.computeDims();
+                        foundArgParent.model.computeOutline();
+                    }
                 }
 
                 if ('prev' in target) {
@@ -323,11 +390,18 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
             // Route Argument Bricks (value / expression) to detachBrickToNewTower
             if (target.kind === 'value' || target.kind === 'expression') {
-                const coords = useBrickLayoutStore.getState().coords[brickId];
-                const newPos = position ?? {
-                    x: (coords?.x ?? sourceTower.position.x) + EXTRACTED_TOWER_OFFSET_X,
-                    y: coords?.y ?? sourceTower.position.y,
-                };
+                const newPos = calculateExtractedTowerPosition(
+                    sourceTower,
+                    brickId,
+                    position,
+                    sourceTower.root,
+                );
+                // Reset positioned flags for the extracted bricks in layout store to prevent stale flashes
+                const extractedIds = listNodes(target).map((n) => n.model.id);
+                useBrickLayoutStore
+                    .getState()
+                    .setPositioned(Object.fromEntries(extractedIds.map((id) => [id, false])));
+
                 const id = get().detachBrickToNewTower(sourceTower.id, brickId, newPos);
                 if (id) {
                     import('@/stores/history').then(({ useWorkspaceHistoryStore }) => {
@@ -420,6 +494,23 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                     foundCavityParent.nestedNext = spliceHead;
                     if (spliceHead) {
                         spliceHead.prev = foundCavityParent;
+                        if (foundCavityParent.model.hasNesting) {
+                            let current: TowerNode | null = spliceHead;
+                            let totalH = 0;
+                            let maxW = 0;
+                            while (current !== null) {
+                                totalH += current.model.dims.h;
+                                if (current.model.dims.w > maxW) maxW = current.model.dims.w;
+                                current = current.kind === 'statement' ? current.next : null;
+                            }
+                            foundCavityParent.model.nestingDims = { w: maxW, h: totalH };
+                            foundCavityParent.model.computeDims();
+                            foundCavityParent.model.computeOutline();
+                        }
+                    } else if (foundCavityParent.model.hasNesting) {
+                        foundCavityParent.model.nestingDims = null;
+                        foundCavityParent.model.computeDims();
+                        foundCavityParent.model.computeOutline();
                     }
                 }
 
@@ -431,20 +522,33 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                     newSourceRoot = spliceHead;
                 }
 
-                // 4. Clean extracted brick's outer pointers
+                // 4. Clean extracted brick's outer pointers and reset nesting dims if cavity was emptied
                 liveTarget.prev = null;
                 liveTarget.next = null;
                 if (!isFolded) {
                     liveTarget.nestedNext = liveTarget.model.hasNesting ? null : undefined;
+                    if (liveTarget.model.hasNesting) {
+                        liveTarget.model.nestingDims = null;
+                        liveTarget.model.computeDims();
+                        liveTarget.model.computeOutline();
+                    }
                 }
 
-                // 5. Build new tower beside the original tower
+                // Reset positioned flags for the extracted bricks in layout store to prevent stale flashes
+                const extractedIds = listNodes(liveTarget).map((n) => n.model.id);
+                useBrickLayoutStore
+                    .getState()
+                    .setPositioned(Object.fromEntries(extractedIds.map((id) => [id, false])));
+
+                // 5. Build new tower beside the original tower using safe placement
                 newTowerId = `tower-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-                const coords = useBrickLayoutStore.getState().coords[brickId];
-                const newTowerPosition = position ?? {
-                    x: (coords?.x ?? tower.position.x) + EXTRACTED_TOWER_OFFSET_X,
-                    y: coords?.y ?? tower.position.y,
-                };
+                const remainingRoot = isRoot ? newSourceRoot : tower.root;
+                const newTowerPosition = calculateExtractedTowerPosition(
+                    tower,
+                    brickId,
+                    position,
+                    remainingRoot,
+                );
 
                 const newTower: TowerState = {
                     id: newTowerId,
@@ -622,7 +726,7 @@ export function canExtractBrick(id: string): boolean {
     // Value and Expression (Argument) bricks:
     if (node.kind === 'value' || node.kind === 'expression') {
         // Only extractable if plugged into an argument slot of a parent
-        return node.parent !== null;
+        return Boolean(node.parent);
     }
 
     // Statement brick:

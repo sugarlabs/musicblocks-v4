@@ -612,7 +612,13 @@ describe('Workspace', () => {
       // Every control the row holds is laid out by the row, in the order it reads left to right.
       // The row is anchored on its right edge, so the reset arriving shifts the fullscreen button
       // and leaves the magnifiers where the pointer left them.
-      expect(labels).toEqual(['Enter fullscreen', 'Reset zoom', 'Zoom out', 'Zoom in']);
+      expect(labels).toEqual([
+        'Reset view',
+        'Enter fullscreen',
+        'Reset zoom',
+        'Zoom out',
+        'Zoom in',
+      ]);
 
       for (const button of controls!.querySelectorAll('button')) {
         expect(button.className).not.toContain('absolute');
@@ -627,6 +633,36 @@ describe('Workspace', () => {
       const controls = queryControls(container);
       expect(controls!.querySelector('[aria-label="Enter fullscreen"]')).toBeNull();
       expect(controls!.querySelector('[aria-label="Zoom in"]')).not.toBeNull();
+    });
+
+    it('renders the home button disabled in the control row while the canvas sits at the origin', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      const home = queryControls(container)!.querySelector<HTMLButtonElement>(
+        '[aria-label="Reset view"]',
+      );
+      expect(home).not.toBeNull();
+      expect(home!.disabled).toBe(true);
+    });
+
+    it('sends the canvas back to the origin from the control row', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      act(() => {
+        useWorkspaceViewportStore.getState().panBy({ x: 120, y: 80 });
+      });
+
+      const viewport = queryViewport(container)!;
+      const home = queryControls(container)!.querySelector<HTMLButtonElement>(
+        '[aria-label="Reset view"]',
+      )!;
+      expect(viewport.style.transform).toBe('translate(120px, 80px)');
+      expect(home.disabled).toBe(false);
+
+      fireEvent.click(home);
+
+      expect(viewport.style.transform).toBe('translate(0px, 0px)');
+      expect(home.disabled).toBe(true);
     });
   });
 

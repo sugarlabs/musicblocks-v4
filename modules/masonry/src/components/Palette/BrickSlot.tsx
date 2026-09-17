@@ -6,6 +6,7 @@ import type { PaletteBrickConfig } from '@/@types/palette.types';
 import { BrickView } from '@/components/Brick/Brick';
 import { cn } from '@/lib/utils';
 import { usePaletteDragStore } from '@/stores/palette';
+import { useWorkspaceScaleStore } from '@/stores/scale';
 import { createBrickModel } from '@/utils/brick-model-factory';
 
 interface BrickSlotProps {
@@ -24,7 +25,11 @@ interface BrickSlotProps {
  * logic lives in the hook; the slot itself never moves while dragging.
  */
 export function BrickSlot({ brick }: BrickSlotProps) {
-  const model = useMemo(() => createBrickModel(brick.brick, brick.id), [brick.brick, brick.id]);
+  const scaleLevel = useWorkspaceScaleStore((state) => state.level);
+  const model = useMemo(
+    () => createBrickModel({ ...brick.brick, scaleLevel }, brick.id),
+    [brick.brick, brick.id, scaleLevel],
+  );
   const isDragging = usePaletteDragStore((state) => state.dragged?.id === brick.id);
 
   // Use a type assertion because the view expects BrickViewPropsWithModel, but BrickModel

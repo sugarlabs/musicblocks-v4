@@ -4,29 +4,21 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import type { Bounds } from '@/@types/common.types';
 
 export interface TrashStore {
-    /** The Trash's client-space rectangle, or null while it is not on the canvas. */
     bounds: Bounds | null;
-    /** Whether a brick drag is currently over the Trash. */
     isHovered: boolean;
-
-    /** Publishes the Trash's measured rectangle; null when it unmounts. */
+    isAcknowledging: boolean;
     setBounds: (bounds: Bounds | null) => void;
-    /** Flags the Trash as hovered by the in-flight drag. */
     setHovered: (isHovered: boolean) => void;
+    acknowledgeTrash: () => void;
 }
 
-/**
- * Tracks the Trash drop target: where it sits on screen and whether a drag is over it.
- *
- * `interact.js` owns the pointer for the duration of a brick drag, so the Trash cannot learn it is
- * hovered from CSS or its own pointer events — the drag hook hit-tests the pointer against
- * `bounds` and writes `isHovered` here instead. Both writes are idempotent because `setHovered`
- * runs on every drag frame.
- */
+let ackTimeout: ReturnType<typeof setTimeout> | null = null;
+export const ACKNOWLEDGE_TRASH_DURATION_MS = 410;
 export const useTrashStore = create<TrashStore>()(
     subscribeWithSelector((set, get) => ({
         bounds: null,
         isHovered: false,
+        isAcknowledging: false,
 
         setBounds: (bounds) => {
             set({ bounds });
@@ -37,5 +29,26 @@ export const useTrashStore = create<TrashStore>()(
 
             set({ isHovered });
         },
+
+        acknowledgeTrash: () => {
+            acknowledgeTrash();
+        },
     })),
 );
+
+/**
+ * Pulses the Trash icon with its active highlight for a short duration to acknowledge a deletion
+ * triggered away from the Trash drop zone (e.g. via the action menu or keyboard shortcut).
+ */
+export function acknowledgeTrash(): void {
+    if (ackTimeout !== null) {
+        clearTimeout(ackTimeout);
+    }
+
+    useTrashStore.setState({ isAcknowledging: true });
+
+    ackTimeout = setTimeout(() => {
+        useTrashStore.setState({ isAcknowledging: false });
+        ackTimeout = null;
+    }, ACKNOWLEDGE_TRASH_DURATION_MS);
+}

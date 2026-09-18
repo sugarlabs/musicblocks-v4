@@ -223,6 +223,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
 
         <div
           ref={canvasRef}
+          data-workspace-canvas
           data-testid="workspace-canvas"
           role="region"
           aria-label="Workspace Canvas"

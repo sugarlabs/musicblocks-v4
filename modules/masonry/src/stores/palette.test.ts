@@ -39,11 +39,20 @@ describe('usePaletteDragStore', () => {
         expect(usePaletteDragStore.getState().dragged).toBe(entry);
     });
 
-    it('endDrag clears the active payload', () => {
+    it('endDrag clears the active payload and sets lastDragEndTime if wasMoved is true', () => {
         usePaletteDragStore.getState().startDrag(entry);
-        usePaletteDragStore.getState().endDrag();
+        usePaletteDragStore.getState().endDrag(true);
 
         expect(usePaletteDragStore.getState().dragged).toBeNull();
+        expect(usePaletteDragStore.getState().lastDragEndTime).toBeGreaterThan(0);
+    });
+
+    it('endDrag sets lastDragEndTime to 0 if wasMoved is false', () => {
+        usePaletteDragStore.getState().startDrag(entry);
+        usePaletteDragStore.getState().endDrag(false);
+
+        expect(usePaletteDragStore.getState().dragged).toBeNull();
+        expect(usePaletteDragStore.getState().lastDragEndTime).toBe(0);
     });
 
     it('a new startDrag replaces a payload left over from a previous drag', () => {

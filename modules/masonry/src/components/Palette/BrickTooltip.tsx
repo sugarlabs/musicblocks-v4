@@ -4,6 +4,8 @@ import { createPortal } from 'react-dom';
 const GAP = 8;
 /** Below this much room above the anchor, the tooltip flips under the brick instead. */
 const FLIP_THRESHOLD = 40;
+/** Long tooltips wrap at this width rather than running off the side of the window. */
+const MAX_WIDTH = 256;
 
 /**
  * Tooltip for a hovered brick.
@@ -17,14 +19,17 @@ const FLIP_THRESHOLD = 40;
 export function BrickTooltip(props: { text: string; anchor: DOMRect }) {
   const { left, top, bottom } = props.anchor;
   const flip = top < FLIP_THRESHOLD;
+  // A brick near the right edge would otherwise push its tooltip off the window.
+  const clampedLeft = Math.max(GAP, Math.min(left, window.innerWidth - MAX_WIDTH - GAP));
 
   return createPortal(
     <div
       role="tooltip"
       className="bg-popover text-popover-foreground pointer-events-none fixed z-50 w-max rounded-md px-2 py-1 text-xs shadow-md"
       style={{
-        left,
+        left: clampedLeft,
         top: flip ? bottom + GAP : top - GAP,
+        maxWidth: MAX_WIDTH,
         transform: flip ? undefined : 'translateY(-100%)',
       }}
     >

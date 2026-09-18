@@ -8,8 +8,6 @@ import type { ExpressionBrickModel, StatementBrickModel } from '@/models/brick';
 
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/select';
-import { useBrickTooltip } from '@/hooks/useBrickTooltip';
-import { BrickTooltip } from './BrickTooltip';
 import { BrickOutlineGenerator } from '@/utils/brick-shape';
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
 
@@ -31,9 +29,6 @@ const PARAM_FONT_SCALE = 0.8;
  */
 export function BrickViewFixed(props: BrickViewPropsWithModel) {
   const { model } = props;
-
-  // The tooltip is pointer only, so the same text also becomes the brick's accessible name.
-  const tooltip = useBrickTooltip(model.tooltipText);
 
   // ── Model reactivity ─────────────────────────────────────────────────────────
   const [, setTick] = useState(0);
@@ -309,8 +304,6 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
       width={svgToPx(dims.w)}
       height={svgToPx(dims.h)}
       className="overflow-visible"
-      role={model.tooltipText ? 'img' : undefined}
-      aria-label={model.tooltipText || undefined}
     >
       <path
         d={path}
@@ -318,12 +311,7 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
         fill={colorsDefault.background}
         stroke={colorsDefault.border}
         strokeWidth={pxToSvg(STROKE_WIDTH)}
-        onPointerEnter={(event) => tooltip.show(event.currentTarget)}
-        onPointerLeave={tooltip.hide}
-        onPointerDown={tooltip.hide}
       />
-
-      {tooltip.anchor !== null && <BrickTooltip text={model.tooltipText} anchor={tooltip.anchor} />}
 
       {/* Main Widget */}
       {(isLabelWidget || isVariantWidget || isGraphicWidget) && (

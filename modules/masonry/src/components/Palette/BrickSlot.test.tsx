@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { BrickViewProps } from '@/@types/brick.types';
 import type { PaletteBrickConfig } from '@/@types/palette.types';
 
+import { BRICK_TOOLTIP_DELAY_MS } from '@/hooks/useBrickTooltip';
 import { usePaletteDragStore } from '@/stores/palette';
 import { placeBrickFromPalette } from '@/utils/palette-placement';
 
@@ -55,6 +56,95 @@ beforeEach(() => {
 // -------------------------------------------------------------------------------------------------
 
 describe('BrickSlot', () => {
+  describe('tooltip', () => {
+    /** Runs the hover delay down inside `act`, so the tooltip's state change is flushed. */
+    function passTheDelay() {
+      act(() => {
+        vi.advanceTimersByTime(BRICK_TOOLTIP_DELAY_MS);
+      });
+    }
+
+    it('shows the brick tooltip only after the hover delay', () => {
+      vi.useFakeTimers();
+      render(<BrickSlot brick={NOTE} />);
+
+      fireEvent.pointerEnter(slot());
+      act(() => {
+        vi.advanceTimersByTime(BRICK_TOOLTIP_DELAY_MS - 1);
+      });
+      expect(screen.queryByRole('tooltip')).toBeNull();
+
+      passTheDelay();
+      expect(screen.getByRole('tooltip').textContent).toBe('Note');
+    });
+
+    it('cancels a pending tooltip when the pointer leaves first', () => {
+      vi.useFakeTimers();
+      render(<BrickSlot brick={NOTE} />);
+
+      fireEvent.pointerEnter(slot());
+      fireEvent.pointerLeave(slot());
+      passTheDelay();
+
+      expect(screen.queryByRole('tooltip')).toBeNull();
+    });
+
+    it('keeps the tooltip out of a drag, and takes down one already showing', () => {
+      vi.useFakeTimers();
+      render(<BrickSlot brick={NOTE} />);
+
+      fireEvent.pointerEnter(slot());
+      passTheDelay();
+      expect(screen.getByRole('tooltip')).toBeTruthy();
+
+      // Pressing to start a drag takes it down, and the held pointer keeps it down.
+      act(() => {
+        fireEvent.pointerDown(slot());
+      });
+      expect(screen.queryByRole('tooltip')).toBeNull();
+
+      fireEvent.pointerEnter(slot());
+      passTheDelay();
+      expect(screen.queryByRole('tooltip')).toBeNull();
+
+      fireEvent.pointerUp(document.body);
+    });
+
+    it('shows the tooltip on keyboard focus, so it is not pointer only', () => {
+      vi.useFakeTimers();
+      render(<BrickSlot brick={NOTE} />);
+
+      fireEvent.focus(slot());
+      passTheDelay();
+      expect(screen.getByRole('tooltip').textContent).toBe('Note');
+
+      fireEvent.blur(slot());
+      expect(screen.queryByRole('tooltip')).toBeNull();
+    });
+
+    it("falls back to the entry's description when the brick carries no tooltip text", () => {
+      vi.useFakeTimers();
+      render(<BrickSlot brick={{ ...NOTE, brick: { ...NOTE.brick, tooltipText: '' } }} />);
+
+      fireEvent.pointerEnter(slot());
+      passTheDelay();
+
+      expect(screen.getByRole('tooltip').textContent).toBe('play a note');
+    });
+
+    it('renders the tooltip outside the slot, so no ancestor can clip it', () => {
+      vi.useFakeTimers();
+      const { container } = render(<BrickSlot brick={NOTE} />);
+
+      fireEvent.pointerEnter(slot());
+      passTheDelay();
+
+      const tooltip = screen.getByRole('tooltip');
+      expect(container.querySelector('[role="tooltip"]')).toBeNull();
+      expect(document.body.contains(tooltip)).toBe(true);
+    });
+  });
+
   describe('accessibility', () => {
     it('exposes the slot as a focusable button named after the entry', () => {
       render(<BrickSlot brick={NOTE} />);

@@ -1027,14 +1027,14 @@ describe('Workspace Store Collision Space', () => {
                 const node = stack.pop()!;
                 if (node.kind === 'statement') {
                     if (node.next) {
-                        if ('prev' in node.next && node.next.prev) {
-                            expect(node.next.prev.model.id).toBe(node.model.id);
+                        if ('prev' in node.next) {
+                            expect(node.next.prev?.model.id).toBe(node.model.id);
                         }
                         stack.push(node.next);
                     }
                     if (node.nestedNext) {
-                        if ('prev' in node.nestedNext && node.nestedNext.prev) {
-                            expect(node.nestedNext.prev.model.id).toBe(node.model.id);
+                        if ('prev' in node.nestedNext) {
+                            expect(node.nestedNext.prev?.model.id).toBe(node.model.id);
                         }
                         stack.push(node.nestedNext);
                     }
@@ -1042,8 +1042,8 @@ describe('Workspace Store Collision Space', () => {
                 if (node.kind === 'statement' || node.kind === 'expression') {
                     for (const arg of node.args) {
                         if (arg) {
-                            if ('parent' in arg && arg.parent) {
-                                expect(arg.parent.model.id).toBe(node.model.id);
+                            if ('parent' in arg) {
+                                expect(arg.parent?.model.id).toBe(node.model.id);
                             }
                             stack.push(arg);
                         }

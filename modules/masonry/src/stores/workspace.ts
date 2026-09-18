@@ -35,6 +35,7 @@ export function calculateExtractedTowerPosition(
     targetBrickId: string,
     requestedPosition?: Point,
     remainingRoot?: TowerNode,
+    excludedNodeIds?: string[],
 ): Point {
     if (requestedPosition) return requestedPosition;
 
@@ -51,10 +52,15 @@ export function calculateExtractedTowerPosition(
 
     // Find the rightmost extent (maxX) among all visible nodes in the remaining source tower
     let maxTowerX = sourceTower.position.x;
-    const targetFound = findNodeAndTower(targetBrickId);
-    const targetNodeIds = new Set(
-        targetFound ? listNodes(targetFound.node).map((n) => n.model.id) : [targetBrickId],
-    );
+    let targetNodeIds: Set<string>;
+    if (excludedNodeIds) {
+        targetNodeIds = new Set(excludedNodeIds);
+    } else {
+        const targetFound = findNodeAndTower(targetBrickId);
+        targetNodeIds = new Set(
+            targetFound ? listNodes(targetFound.node).map((n) => n.model.id) : [targetBrickId],
+        );
+    }
     const visibleNodes = listVisibleNodes(rootToMeasure).filter(
         (node) => !targetNodeIds.has(node.model.id),
     );
@@ -390,14 +396,15 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
             // Route Argument Bricks (value / expression) to detachBrickToNewTower
             if (target.kind === 'value' || target.kind === 'expression') {
+                const extractedIds = listNodes(target).map((n) => n.model.id);
                 const newPos = calculateExtractedTowerPosition(
                     sourceTower,
                     brickId,
                     position,
                     sourceTower.root,
+                    extractedIds,
                 );
                 // Reset positioned flags for the extracted bricks in layout store to prevent stale flashes
-                const extractedIds = listNodes(target).map((n) => n.model.id);
                 useBrickLayoutStore
                     .getState()
                     .setPositioned(Object.fromEntries(extractedIds.map((id) => [id, false])));
@@ -520,6 +527,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                     brickId,
                     position,
                     remainingRoot,
+                    extractedIds,
                 );
 
                 const newTower: TowerState = {

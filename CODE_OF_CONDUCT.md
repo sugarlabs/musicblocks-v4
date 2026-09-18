@@ -45,9 +45,12 @@ as an appointed representative at an event.
 
 ## Reporting
 
-If you experience or witness behavior that breaks this Code of Conduct, report it to the
-maintainers at `TODO: reporting email`. Reports can also be raised privately with any
-maintainer directly.
+If you experience or witness behavior that breaks this Code of Conduct, report it privately to
+a maintainer on our
+[Element channel](https://matrix.to/#/!DEkxujYDjfCQImeMBM:matrix.org?via=matrix.org). Send a
+direct message rather than posting in the room, so the report stays between you and the
+maintainers. The maintainers are named in the [credits](README.md#credits), and a report can
+go to any of them.
 
 All reports will be reviewed and investigated promptly and fairly. Maintainers are obliged to
 respect the privacy and security of the reporter of any incident. You do not need to be

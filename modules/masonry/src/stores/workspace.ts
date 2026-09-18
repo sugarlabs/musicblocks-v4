@@ -434,7 +434,10 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                         if (current.kind === 'statement') {
                             if (current.next) {
                                 if (current.next.model.id === target.model.id) {
-                                    liveTarget = current.next as Extract<TowerNode, { kind: 'statement' }>;
+                                    liveTarget = current.next as Extract<
+                                        TowerNode,
+                                        { kind: 'statement' }
+                                    >;
                                     foundPrev = current;
                                     break;
                                 }
@@ -442,7 +445,10 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                             }
                             if (current.nestedNext) {
                                 if (current.nestedNext.model.id === target.model.id) {
-                                    liveTarget = current.nestedNext as Extract<TowerNode, { kind: 'statement' }>;
+                                    liveTarget = current.nestedNext as Extract<
+                                        TowerNode,
+                                        { kind: 'statement' }
+                                    >;
                                     foundCavityParent = current;
                                     break;
                                 }
@@ -459,44 +465,20 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
                 if (!liveTarget) return state;
 
-                const isFolded = Boolean(liveTarget.model.isNestingFolded);
-                const unfoldedCavityHead =
-                    !isFolded && liveTarget.nestedNext && liveTarget.nestedNext.kind === 'statement'
-                        ? (liveTarget.nestedNext as Extract<TowerNode, { kind: 'statement' }>)
-                        : null;
-                const nextChain =
-                    liveTarget.next && liveTarget.next.kind === 'statement'
-                        ? (liveTarget.next as Extract<TowerNode, { kind: 'statement' }>)
-                        : null;
-
-                let cavityTail: Extract<TowerNode, { kind: 'statement' }> | null = null;
-                if (unfoldedCavityHead) {
-                    cavityTail = unfoldedCavityHead;
-                    while (cavityTail.next && cavityTail.next.kind === 'statement') {
-                        cavityTail = cavityTail.next as Extract<TowerNode, { kind: 'statement' }>;
-                    }
-                }
-
-                const spliceHead = unfoldedCavityHead ?? nextChain;
-
-                // 1. Splice cavity tail to nextChain
-                if (cavityTail && nextChain) {
-                    cavityTail.next = nextChain;
-                    nextChain.prev = cavityTail;
-                }
-
-                // 2. Stitch into the source tower
+                // 1. Close outer sequence gap in source tower
                 if (foundPrev) {
-                    foundPrev.next = spliceHead;
-                    if (spliceHead) {
-                        spliceHead.prev = foundPrev;
+                    foundPrev.next = liveTarget.next;
+                    if (liveTarget.next && 'prev' in liveTarget.next) {
+                        liveTarget.next.prev = foundPrev;
                     }
                 } else if (foundCavityParent) {
-                    foundCavityParent.nestedNext = spliceHead;
-                    if (spliceHead) {
-                        spliceHead.prev = foundCavityParent;
+                    foundCavityParent.nestedNext = liveTarget.next;
+                    if (liveTarget.next) {
+                        if ('prev' in liveTarget.next) {
+                            liveTarget.next.prev = foundCavityParent;
+                        }
                         if (foundCavityParent.model.hasNesting) {
-                            let current: TowerNode | null = spliceHead;
+                            let current: TowerNode | null = liveTarget.next;
                             let totalH = 0;
                             let maxW = 0;
                             while (current !== null) {
@@ -515,27 +497,21 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                     }
                 }
 
-                // 3. Update source tower root if target was root
+                // 2. Update source tower root if target was root
                 let newSourceRoot = tower.root;
                 if (isRoot) {
-                    if (!spliceHead) return state;
-                    spliceHead.prev = null;
-                    newSourceRoot = spliceHead;
+                    if (!liveTarget.next) return state;
+                    if ('prev' in liveTarget.next) {
+                        liveTarget.next.prev = null;
+                    }
+                    newSourceRoot = liveTarget.next;
                 }
 
-                // 4. Clean extracted brick's outer pointers and reset nesting dims if cavity was emptied
+                // 3. Clean extracted brick's outer sequence pointers ONLY
                 liveTarget.prev = null;
                 liveTarget.next = null;
-                if (!isFolded) {
-                    liveTarget.nestedNext = liveTarget.model.hasNesting ? null : undefined;
-                    if (liveTarget.model.hasNesting) {
-                        liveTarget.model.nestingDims = null;
-                        liveTarget.model.computeDims();
-                        liveTarget.model.computeOutline();
-                    }
-                }
 
-                // 5. Build new tower beside the original tower using safe placement
+                // 4. Build new tower beside the original tower using safe placement
                 extractedIds = listNodes(liveTarget).map((n) => n.model.id);
                 newTowerId = `tower-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
                 const remainingRoot = isRoot ? newSourceRoot : tower.root;
@@ -716,9 +692,11 @@ export function findNodeAndTower(id: string): { node: TowerNode; tower: TowerSta
 /**
  * Checks whether a brick can be extracted out of its tower.
  *
- * Extraction removes only the target brick, closing the gap it leaves in its tower.
- * It is disabled where extraction would do nothing (lone root with nothing left to form a tower,
- * folded root with no next chain, or an unattached/free-floating argument brick).
+ * Extraction removes only the target brick from its parent's sequence, preserving
+ * its entire internal structure (arguments and cavity subtree), while closing the gap
+ * in the source tower.
+ * It is disabled where extraction would leave an invalid/empty source tower (lone root),
+ * or for an unattached/free-floating argument brick.
  */
 export function canExtractBrick(id: string): boolean {
     const found = findNodeAndTower(id);
@@ -734,18 +712,15 @@ export function canExtractBrick(id: string): boolean {
 
     // Statement brick:
     if (node.kind === 'statement') {
-        const isFolded = Boolean(node.model.isNestingFolded);
-        const hasUnfoldedCavity = !isFolded && Boolean(node.nestedNext);
-        const hasNext = Boolean(node.next);
-        const hasSplice = hasUnfoldedCavity || hasNext;
-
         const isRoot = tower.root.model.id === node.model.id;
         if (isRoot) {
-            // A root statement with nothing to leave behind in the source tower cannot be extracted
-            return hasSplice;
+            // A root statement can be extracted if and only if it has a next sibling,
+            // so the next sibling can become the new root of the remaining source tower.
+            return Boolean(node.next);
         }
 
-        // Inside a chain or at cavity head, extracting a brick is always valid
+        // Inside a chain (has prev) or inside a cavity (has cavity parent),
+        // extracting the brick leaves the remaining tower intact.
         return true;
     }
 

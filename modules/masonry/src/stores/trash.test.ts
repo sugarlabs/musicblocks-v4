@@ -2,18 +2,18 @@
 // environment. The rect itself is measured by the Trash component; only the lifecycle of the two
 // values, and the no-op guard that keeps per-frame drag writes cheap, are covered here.
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Bounds } from '@/@types/common.types';
 
-import { useTrashStore } from './trash';
+import { ACKNOWLEDGE_TRASH_DURATION_MS, useTrashStore } from './trash';
 
 // -------------------------------------------------------------------------------------------------
 
 const bounds: Bounds = { x: 100, y: 200, w: 56, h: 56 };
 
 afterEach(() => {
-    useTrashStore.setState({ bounds: null, isHovered: false });
+    useTrashStore.setState({ bounds: null, isHovered: false, isAcknowledging: false });
 });
 
 // -------------------------------------------------------------------------------------------------
@@ -94,5 +94,47 @@ describe('useTrashStore', () => {
         useTrashStore.getState().setBounds(null);
 
         expect(useTrashStore.getState().isHovered).toBe(true);
+    });
+
+    describe('acknowledgeTrash', () => {
+        beforeEach(() => {
+            vi.useFakeTimers();
+        });
+
+        afterEach(() => {
+            vi.restoreAllMocks();
+        });
+
+        it('starts unacknowledged', () => {
+            expect(useTrashStore.getState().isAcknowledging).toBe(false);
+        });
+
+        it('sets isAcknowledging to true and resets to false after duration', () => {
+            useTrashStore.getState().acknowledgeTrash();
+            expect(useTrashStore.getState().isAcknowledging).toBe(true);
+
+            vi.advanceTimersByTime(ACKNOWLEDGE_TRASH_DURATION_MS - 1);
+            expect(useTrashStore.getState().isAcknowledging).toBe(true);
+
+            vi.advanceTimersByTime(1);
+            expect(useTrashStore.getState().isAcknowledging).toBe(false);
+        });
+
+        it('resets the timeout on successive calls', () => {
+            useTrashStore.getState().acknowledgeTrash();
+            expect(useTrashStore.getState().isAcknowledging).toBe(true);
+
+            vi.advanceTimersByTime(200);
+            expect(useTrashStore.getState().isAcknowledging).toBe(true);
+
+            // Trigger again — extends the pulse for full duration
+            useTrashStore.getState().acknowledgeTrash();
+
+            vi.advanceTimersByTime(200);
+            expect(useTrashStore.getState().isAcknowledging).toBe(true);
+
+            vi.advanceTimersByTime(ACKNOWLEDGE_TRASH_DURATION_MS - 200);
+            expect(useTrashStore.getState().isAcknowledging).toBe(false);
+        });
     });
 });

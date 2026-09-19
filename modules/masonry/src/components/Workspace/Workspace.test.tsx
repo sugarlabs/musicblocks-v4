@@ -525,6 +525,32 @@ describe('Workspace', () => {
       expect(trash.classList.contains('border-destructive')).toBe(false);
     });
 
+    it('swaps to its destructive styling while acknowledging a deletion', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      act(() => {
+        useWorkspaceStore.getState().createTower(makeTower('t1'));
+      });
+
+      const trash = queryTrash(container)!;
+      expect(trash.classList.contains('border-border')).toBe(true);
+
+      act(() => {
+        useTrashStore.setState({ isAcknowledging: true });
+      });
+
+      expect(trash.classList.contains('border-destructive')).toBe(true);
+      expect(trash.classList.contains('text-destructive')).toBe(true);
+      expect(trash.classList.contains('border-border')).toBe(false);
+
+      act(() => {
+        useTrashStore.setState({ isAcknowledging: false });
+      });
+
+      expect(trash.classList.contains('border-border')).toBe(true);
+      expect(trash.classList.contains('border-destructive')).toBe(false);
+    });
+
     it('stays transparent to pointer events so it never swallows the drag of a brick beneath it', () => {
       const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
 

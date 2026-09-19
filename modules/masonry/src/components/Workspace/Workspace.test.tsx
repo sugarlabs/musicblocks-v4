@@ -235,7 +235,7 @@ describe('Workspace', () => {
     expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
   });
 
-  it('deletes a selected root and extracts then discards a selected nested brick', () => {
+  it('deletes a selected root brick that has no successor, removing the whole tower', () => {
     const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
     const tower = makeNestingTower('keyboard');
 
@@ -246,21 +246,117 @@ describe('Workspace', () => {
     const root = container.querySelector('[data-id="keyboard-outer"]') as HTMLElement;
     fireEvent.click(root);
     fireEvent.keyDown(window, { key: 'Delete' });
+    // keyboard-outer has no `next`, so the tower must be gone entirely.
     expect(useWorkspaceStore.getState().towers).toEqual({});
+  });
 
-    const secondTower = makeNestingTower('keyboard-nested');
-    act(() => {
-      useWorkspaceStore.getState().createTower(secondTower);
+  it('splices a middle brick out of a linear stack, reconnecting the chain above to the one below', () => {
+    // Build A -> B -> C manually so we can assert the A -> C splice.
+    const a = makeEmptyStatement('splice-a', 0);
+    const b = makeEmptyStatement('splice-b', 0);
+    const c = makeEmptyStatement('splice-c', 0);
+    a.next = b;
+    b.prev = a;
+    b.next = c;
+    c.prev = b;
+
+    useBrickLayoutStore.getState().setMounted({
+      [a.model.id]: true,
+      [b.model.id]: true,
+      [c.model.id]: true,
     });
 
-    const nested = container.querySelector('[data-id="keyboard-nested-inner"]') as HTMLElement;
-    fireEvent.click(nested);
+    const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+    act(() => {
+      useWorkspaceStore
+        .getState()
+        .createTower({ id: 'splice-tower', root: a, position: { x: 0, y: 0 } });
+    });
+
+    // Select the middle brick B and press Delete.
+    fireEvent.click(container.querySelector('[data-id="splice-b"]') as HTMLElement);
+    fireEvent.keyDown(window, { key: 'Delete' });
+
+    const tower = useWorkspaceStore.getState().towers['splice-tower'];
+    expect(tower).toBeDefined();
+    // Root is still A.
+    expect(tower!.root.model.id).toBe('splice-a');
+    // A is now directly connected to C, skipping over B.
+    const rootNode = tower!.root as TowerStatementNode;
+    expect(rootNode.next?.model.id).toBe('splice-c');
+    // C's back-pointer now points to A.
+    expect((rootNode.next as TowerStatementNode).prev?.model.id).toBe('splice-a');
+    // B is gone from the layout store.
+    expect(useBrickLayoutStore.getState().coords['splice-b']).toBeUndefined();
+  });
+
+  it('promotes the successor to tower root when the root brick is deleted from a two-brick stack', () => {
+    // Build A -> B where A is the root.
+    const a = makeEmptyStatement('root-del-a', 0);
+    const b = makeEmptyStatement('root-del-b', 0);
+    a.next = b;
+    b.prev = a;
+
+    useBrickLayoutStore.getState().setMounted({
+      [a.model.id]: true,
+      [b.model.id]: true,
+    });
+
+    const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+    act(() => {
+      useWorkspaceStore
+        .getState()
+        .createTower({ id: 'root-del-tower', root: a, position: { x: 0, y: 0 } });
+    });
+
+    // Select root A and delete it.
+    fireEvent.click(container.querySelector('[data-id="root-del-a"]') as HTMLElement);
+    fireEvent.keyDown(window, { key: 'Delete' });
+
+    const tower = useWorkspaceStore.getState().towers['root-del-tower'];
+    // Tower must still exist — B takes over.
+    expect(tower).toBeDefined();
+    expect(tower!.root.model.id).toBe('root-del-b');
+    // B's prev pointer is cleared.
+    expect((tower!.root as TowerStatementNode).prev).toBeNull();
+    // A is gone from the layout store.
+    expect(useBrickLayoutStore.getState().coords['root-del-a']).toBeUndefined();
+  });
+
+  it('splices a nested cavity brick and reconnects the remaining cavity chain', () => {
+    // Build a cavity owner whose nestedNext chain is A -> B.
+    const owner = makeEmptyStatement('cav-owner', 0, true);
+    const a = makeEmptyStatement('cav-a', 0);
+    const b = makeEmptyStatement('cav-b', 0);
+    owner.nestedNext = a;
+    a.prev = owner;
+    a.next = b;
+    b.prev = a;
+
+    useBrickLayoutStore.getState().setMounted({
+      [owner.model.id]: true,
+      [a.model.id]: true,
+      [b.model.id]: true,
+    });
+
+    const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+    act(() => {
+      useWorkspaceStore
+        .getState()
+        .createTower({ id: 'cav-tower', root: owner, position: { x: 0, y: 0 } });
+    });
+
+    // Select the first cavity brick A and press Backspace.
+    fireEvent.click(container.querySelector('[data-id="cav-a"]') as HTMLElement);
     fireEvent.keyDown(window, { key: 'Backspace' });
 
-    const remaining = useWorkspaceStore.getState().towers['keyboard-nested'];
-    expect(remaining).toBeDefined();
-    expect((remaining?.root as TowerStatementNode).nestedNext).toBeNull();
-    expect(Object.keys(useWorkspaceStore.getState().towers)).toEqual(['keyboard-nested']);
+    const tower = useWorkspaceStore.getState().towers['cav-tower'];
+    expect(tower).toBeDefined();
+    // The cavity owner must now point directly to B.
+    const ownerNode = tower!.root as TowerStatementNode;
+    expect(ownerNode.nestedNext?.model.id).toBe('cav-b');
+    // A is gone from the layout store.
+    expect(useBrickLayoutStore.getState().coords['cav-a']).toBeUndefined();
   });
 
   it('leaves the selection alone while the user types in a brick input', () => {

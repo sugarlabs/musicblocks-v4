@@ -16,7 +16,6 @@ import { useTowerLayout } from '@/hooks/useTowerLayout';
 import { useWorkspaceScale } from '@/hooks/useWorkspaceScale';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
-import { discardTower } from '@/utils/towerDiscard';
 import { listVisibleNodes } from '@/utils/tower-traversal';
 
 import { ActionMenu } from './ActionMenu';
@@ -117,20 +116,15 @@ export function Workspace({ config }: WorkspaceViewProps) {
         return;
       }
 
-      const { node, tower } = found;
+      const { tower } = found;
 
-      if (node.model.id === tower.root.model.id) {
-        // The root is the tower, so there is nothing to sever it from.
-        discardTower(tower.id);
-      } else {
-        // Severed into a tower of its own first, the same path a drag takes a brick out on, and
-        // that tower is what gets discarded. Note this carries off everything below the brick too,
-        // since the detach takes its whole `next` chain with it.
-        const newTowerId = store.detachBrickToNewTower(tower.id, selectedBrickId, tower.position);
+      // `spliceBrick` removes only the selected brick (and its own args/cavity); the statement
+      // chain below it is reconnected to the brick above rather than discarded. It returns the IDs
+      // of every node that actually left the graph so the layout store can be cleaned up.
+      const removedIds = store.spliceBrick(tower.id, selectedBrickId);
 
-        if (newTowerId) {
-          discardTower(newTowerId);
-        }
+      if (removedIds) {
+        useBrickLayoutStore.getState().clearBricks(removedIds);
       }
 
       store.clearSelection();

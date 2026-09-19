@@ -132,6 +132,42 @@ describe('BrickSlot', () => {
       expect(screen.getByRole('tooltip').textContent).toBe('play a note');
     });
 
+    it('describes the slot with the tooltip while it is open (#845 review)', () => {
+      vi.useFakeTimers();
+      render(<BrickSlot brick={NOTE} />);
+
+      // Closed: nothing to point at, so no dangling association.
+      expect(slot().getAttribute('aria-describedby')).toBeNull();
+
+      fireEvent.pointerEnter(slot());
+      passTheDelay();
+
+      // The button keeps the brick's short name; the tooltip arrives as its description.
+      expect(slot().getAttribute('aria-label')).toBe('Note');
+      expect(slot().getAttribute('aria-describedby')).toBe(screen.getByRole('tooltip').id);
+    });
+
+    it('keeps the tooltip down while a second pointer is still held (#845 review)', () => {
+      vi.useFakeTimers();
+      render(<BrickSlot brick={NOTE} />);
+
+      // A touch starts a drag, then a mouse clicks and releases elsewhere: the touch is still
+      // down, so its drag is still running and no tooltip may open.
+      fireEvent.pointerDown(document.body, { pointerId: 1 });
+      fireEvent.pointerDown(document.body, { pointerId: 2 });
+      fireEvent.pointerUp(document.body, { pointerId: 2 });
+
+      fireEvent.pointerEnter(slot());
+      passTheDelay();
+      expect(screen.queryByRole('tooltip')).toBeNull();
+
+      // Once the touch lifts too, hovering works again.
+      fireEvent.pointerUp(document.body, { pointerId: 1 });
+      fireEvent.pointerEnter(slot());
+      passTheDelay();
+      expect(screen.getByRole('tooltip')).toBeTruthy();
+    });
+
     it('renders the tooltip outside the slot, so no ancestor can clip it', () => {
       vi.useFakeTimers();
       const { container } = render(<BrickSlot brick={NOTE} />);

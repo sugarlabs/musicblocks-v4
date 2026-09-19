@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useId, useMemo } from 'react';
 
 import type { BrickViewPropsWithModel } from '@/@types/brick.types';
 import type { PaletteBrickConfig } from '@/@types/palette.types';
@@ -36,6 +36,7 @@ export function BrickSlot({ brick }: BrickSlotProps) {
   // bricks that carry no tooltip text, since it is what the slot used to show through `title`.
   const tooltipText = model.tooltipText || brick.description;
   const tooltip = useBrickTooltip(tooltipText);
+  const tooltipId = useId();
 
   // Use a type assertion because the view expects BrickViewPropsWithModel, but BrickModel
   // guarantees the model fields match the expected discriminated kind.
@@ -72,6 +73,7 @@ export function BrickSlot({ brick }: BrickSlotProps) {
           role="button"
           tabIndex={0}
           aria-label={brick.name || brick.description}
+          aria-describedby={tooltip.anchor !== null ? tooltipId : undefined}
           data-brick-id={brick.id}
           onClick={handleClick}
           onKeyDown={handleKeyDown}
@@ -86,7 +88,9 @@ export function BrickSlot({ brick }: BrickSlotProps) {
             <BrickView {...viewProps} />
           </div>
         </div>
-        {tooltip.anchor !== null && <BrickTooltip text={tooltipText} anchor={tooltip.anchor} />}
+        {tooltip.anchor !== null && (
+          <BrickTooltip id={tooltipId} text={tooltipText} anchor={tooltip.anchor} />
+        )}
       </div>
     </div>
   );

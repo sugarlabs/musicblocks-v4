@@ -13,16 +13,27 @@ export const BRICK_TOOLTIP_DELAY_MS = 500;
  * tooltips out of every drag, wherever it started, without a per brick subscription to drag state.
  */
 const subscribers = new Set<() => void>();
-let pointerIsDown = false;
+/**
+ * Every pointer currently held down, by id, rather than a single flag: a touch can start a drag
+ * and keep it running while a mouse clicks elsewhere, and that mouse's `pointerup` must not
+ * declare the drag over. Tooltips stay suppressed until the last pointer lifts.
+ */
+const activePointerIds = new Set<number>();
 let isTracking = false;
 
-function handlePointerDown(): void {
-    pointerIsDown = true;
+/** jsdom and older synthetic events leave `pointerId` out; one id for all of them is enough. */
+function idOf(event: Event): number {
+    const { pointerId } = event as PointerEvent;
+    return typeof pointerId === 'number' ? pointerId : 0;
+}
+
+function handlePointerDown(event: Event): void {
+    activePointerIds.add(idOf(event));
     subscribers.forEach((onPointerDown) => onPointerDown());
 }
 
-function handlePointerUp(): void {
-    pointerIsDown = false;
+function handlePointerUp(event: Event): void {
+    activePointerIds.delete(idOf(event));
 }
 
 /**
@@ -47,7 +58,7 @@ function subscribeToPointerDown(onPointerDown: () => void): () => void {
 
         if (subscribers.size === 0) {
             isTracking = false;
-            pointerIsDown = false;
+            activePointerIds.clear();
             document.removeEventListener('pointerdown', handlePointerDown, true);
             document.removeEventListener('pointerup', handlePointerUp, true);
             document.removeEventListener('pointercancel', handlePointerUp, true);
@@ -89,7 +100,7 @@ export function useBrickTooltip(tooltipText: string): {
      */
     const show = useCallback(
         (element: Element) => {
-            if (tooltipText.length === 0 || pointerIsDown) return;
+            if (tooltipText.length === 0 || activePointerIds.size > 0) return;
 
             clearTimer();
             timerRef.current = setTimeout(() => {

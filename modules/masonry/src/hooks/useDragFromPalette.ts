@@ -12,7 +12,6 @@ import { useWorkspaceScaleStore } from '@/stores/scale';
 import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { createBrickModel, wrapAsRootNode } from '@/utils/brick-model-factory';
-import { createPaletteTower } from '@/utils/palette-placement';
 import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { resolveCandidateConnection } from '@/utils/snap-preview-calculator';
 import { tryConnect } from '@/hooks/useBrickMove';
@@ -78,6 +77,7 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
 
     // In-flight drag payload; null whenever no palette drag is active.
     const dragRef = useRef<{ config: PaletteBrickConfig; grabOffset: Point } | null>(null);
+    const hasMovedRef = useRef(false);
 
     useEffect(() => {
         const root = rootRef.current;
@@ -88,6 +88,7 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
         const interactable = interact(PALETTE_DRAG_SOURCE_SELECTOR, { context: root }).draggable({
             listeners: {
                 start(event: DragEvent) {
+                    hasMovedRef.current = false;
                     const slot = event.target as HTMLElement;
                     const ghost = ghostRef.current;
 
@@ -121,6 +122,9 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                     startDrag(config);
                 },
                 move(event: DragEvent) {
+                    if (event.dx !== 0 || event.dy !== 0) {
+                        hasMovedRef.current = true;
+                    }
                     const drag = dragRef.current;
                     if (!drag) return;
 
@@ -187,12 +191,14 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                     }
                 },
                 end(event: DragEvent) {
+                    const wasMoved = hasMovedRef.current;
+                    hasMovedRef.current = false;
                     const drag = dragRef.current;
                     dragRef.current = null;
 
                     // Ghost goes away on drop and cancel alike.
                     if (ghostRef.current) ghostRef.current.style.display = 'none';
-                    endDrag();
+                    endDrag(wasMoved);
 
                     const canvas = canvasRef.current;
                     if (!drag || !canvas) return;
@@ -209,6 +215,10 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                     // A brand-new model instance per drop — never reuse the palette entry's id.
                     // The level is read here rather than closed over, since these listeners bind
                     // once on mount; the Palette keeps its own size and does not follow it.
+                    const model = createBrickModel({
+                        ...drag.config.brick,
+                        scaleLevel: useWorkspaceScaleStore.getState().level,
+                    });
                     // A tower's position is in unpanned canvas coordinates, like every other
                     // tower's, so the pan comes back out of the drop point too.
                     const position = clientToLocalPoint(
@@ -222,13 +232,12 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                     // against the canvas edge itself, before the pan is taken out.
                     if (event.clientX - drag.grabOffset.x < canvasRect.left) return;
 
-                    const tower = createPaletteTower(
-                        drag.config,
+                    const newTowerId = crypto.randomUUID();
+                    createTower({
+                        id: newTowerId,
+                        root: wrapAsRootNode(model),
                         position,
-                        useWorkspaceScaleStore.getState().level,
-                    );
-                    const newTowerId = tower.id;
-                    createTower(tower);
+                    });
 
                     useConnectionPreviewStore.getState().clearPreviewTarget();
 

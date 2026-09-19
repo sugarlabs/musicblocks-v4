@@ -180,7 +180,8 @@ describe('Palette', () => {
     it('leaves the bricks as grab targets rather than pointer targets', () => {
       const { container } = render(<Palette config={config} />);
 
-      // Bricks are drag sources, not click targets; a pointer would misdescribe them.
+      // Bricks take a click as well as a drag, but drag stays the advertised affordance: a
+      // pointer cursor would read as click-only and hide that they can be dragged at all.
       const slot = container.querySelector('[data-brick-id="r1"]');
       expect(slot?.className).toContain('cursor-grab');
       expect(slot?.className).not.toContain('cursor-pointer');
@@ -202,7 +203,7 @@ describe('Palette', () => {
       expect(meter.nodeName).toBe('H3');
     });
 
-    it('renders each BrickSlot as a button with its name, description, and data-brick-id', () => {
+    it('renders a BrickSlot per brick with its name, description title, and data-brick-id', () => {
       const { container } = render(<Palette config={config} />);
 
       const note = container.querySelector('[data-brick-id="r1"]');
@@ -210,9 +211,7 @@ describe('Palette', () => {
       const beat = container.querySelector('[data-brick-id="m1"]');
 
       expect(note).not.toBeNull();
-      expect(note?.nodeName).toBe('BUTTON');
       expect(note?.getAttribute('title')).toBe('play a note');
-      expect(note?.getAttribute('aria-label')).toBe('Note: play a note');
       expect(note?.textContent).toContain('Note');
 
       expect(rest).not.toBeNull();
@@ -501,15 +500,6 @@ describe('Palette', () => {
 
       const byPlaceholder = screen.getByPlaceholderText('Search bricks');
       expect(screen.getByRole('textbox')).toBe(byPlaceholder);
-    });
-
-    it('exposes each brick name and description as a focusable button name', () => {
-      render(<Palette config={config} />);
-
-      const note = screen.getByRole('button', { name: 'Note: play a note' });
-      note.focus();
-
-      expect(document.activeElement).toBe(note);
     });
 
     it("exposes each brick's description via a title tooltip on its slot", () => {

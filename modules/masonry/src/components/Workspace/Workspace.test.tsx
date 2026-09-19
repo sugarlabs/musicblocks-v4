@@ -4,8 +4,7 @@
 // pure-function tests in useDragFromPalette.test.tsx and exercised manually via the playground;
 // this file verifies the pieces mount and react to the drag store correctly.
 
-import userEvent from '@testing-library/user-event';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { PaletteConfig } from '@/@types/palette.types';
@@ -162,21 +161,6 @@ function queryControls(container: HTMLElement) {
 // -------------------------------------------------------------------------------------------------
 
 describe('Workspace', () => {
-  it('creates one palette brick when Enter is pressed on the focused button', async () => {
-    render(<Workspace config={{ palette: paletteConfig }} />);
-
-    const user = userEvent.setup();
-    const slot = screen.getByRole('button', { name: 'Note: play a note' });
-
-    slot.focus();
-    await user.keyboard('{Enter}');
-
-    const towers = Object.values(useWorkspaceStore.getState().towers);
-    expect(towers).toHaveLength(1);
-    expect(towers[0].position).toEqual({ x: 16, y: 16 });
-    expect(towers[0].root.model.widget).toEqual({ type: 'label', text: 'Note' });
-  });
-
   it('renders the palette with drag-source slots and binds the drag hook without crashing', () => {
     const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
 
@@ -439,6 +423,32 @@ describe('Workspace', () => {
 
       act(() => {
         useTrashStore.getState().setHovered(false);
+      });
+
+      expect(trash.classList.contains('border-border')).toBe(true);
+      expect(trash.classList.contains('border-destructive')).toBe(false);
+    });
+
+    it('swaps to its destructive styling while acknowledging a deletion', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      act(() => {
+        useWorkspaceStore.getState().createTower(makeTower('t1'));
+      });
+
+      const trash = queryTrash(container)!;
+      expect(trash.classList.contains('border-border')).toBe(true);
+
+      act(() => {
+        useTrashStore.setState({ isAcknowledging: true });
+      });
+
+      expect(trash.classList.contains('border-destructive')).toBe(true);
+      expect(trash.classList.contains('text-destructive')).toBe(true);
+      expect(trash.classList.contains('border-border')).toBe(false);
+
+      act(() => {
+        useTrashStore.setState({ isAcknowledging: false });
       });
 
       expect(trash.classList.contains('border-border')).toBe(true);

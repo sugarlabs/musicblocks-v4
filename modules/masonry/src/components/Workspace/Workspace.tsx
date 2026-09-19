@@ -18,7 +18,6 @@ import { useBrickLayoutStore } from '@/stores/brick';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 import { discardTower } from '@/utils/towerDiscard';
 import { listVisibleNodes } from '@/utils/tower-traversal';
-import { createPaletteTower, findKeyboardPlacement } from '@/utils/palette-placement';
 
 import { ActionMenu } from './ActionMenu';
 import { DragGhost } from './DragGhost';
@@ -41,11 +40,6 @@ export function Workspace({ config }: WorkspaceViewProps) {
   const towersRecord = useWorkspaceStore((state) => state.towers);
   const clearSelection = useWorkspaceStore((state) => state.clearSelection);
   const towers = useMemo(() => Object.values(towersRecord), [towersRecord]);
-  const placePaletteBrick = (brick: PaletteBrickConfig) => {
-    const tower = createPaletteTower(brick, { x: 0, y: 0 });
-    const position = findKeyboardPlacement(towersRecord, tower.root.model.dims);
-    useWorkspaceStore.getState().createTower({ ...tower, position });
-  };
 
   // Initialize history on mount
   useEffect(() => {
@@ -224,11 +218,12 @@ export function Workspace({ config }: WorkspaceViewProps) {
       {/* Main Workspace Area: Contains the draggable block palette on the left and the interactive canvas on the right */}
       <div ref={rootRef} className="relative flex min-h-0 w-full flex-1">
         <div className="h-full max-w-80 shrink-0">
-          <Palette config={palette} onBrickActivate={placePaletteBrick} />
+          <Palette config={palette} />
         </div>
 
         <div
           ref={canvasRef}
+          data-workspace-canvas
           data-testid="workspace-canvas"
           role="region"
           aria-label="Workspace Canvas"

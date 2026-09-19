@@ -6,11 +6,13 @@ import type { PaletteBrickConfig } from '@/@types/palette.types';
 export interface PaletteDragStore {
     /** The palette entry currently being dragged, or null when no palette drag is active. */
     dragged: PaletteBrickConfig | null;
+    /** Timestamp (ms) when the last active drag gesture ended; used to suppress trailing click events. */
+    lastDragEndTime: number;
 
     /** Marks a palette drag as active, carrying the dragged entry's config as its payload. */
     startDrag: (config: PaletteBrickConfig) => void;
-    /** Clears the active palette drag, whether the drop was committed or cancelled. */
-    endDrag: () => void;
+    /** Clears the active palette drag, recording whether pointer movement occurred. */
+    endDrag: (wasMoved?: boolean) => void;
 }
 
 /**
@@ -21,6 +23,7 @@ export interface PaletteDragStore {
 export const usePaletteDragStore = create<PaletteDragStore>()(
     subscribeWithSelector((set) => ({
         dragged: null,
+        lastDragEndTime: 0,
 
         startDrag: (config) => {
             set({
@@ -28,9 +31,10 @@ export const usePaletteDragStore = create<PaletteDragStore>()(
             });
         },
 
-        endDrag: () => {
+        endDrag: (wasMoved = false) => {
             set({
                 dragged: null,
+                lastDragEndTime: wasMoved ? Date.now() : 0,
             });
         },
     })),

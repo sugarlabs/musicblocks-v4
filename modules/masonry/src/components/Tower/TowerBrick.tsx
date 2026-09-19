@@ -46,6 +46,7 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
   const y = coords?.y ?? 0;
   const isMounted = useBrickLayoutStore((state) => state.mounted[id]);
   const isPositioned = useBrickLayoutStore((state) => state.positioned[id]);
+  const areBricksHidden = useWorkspaceStore((state) => state.areBricksHidden);
 
   // The fold goes through the store rather than straight onto the model: it decides what the tower
   // lays out and what the canvas draws, and `setNestingFold` is what re-seats the tower for both.
@@ -114,7 +115,7 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
       onContextMenu={openActionMenu}
       style={{
         transform: `translate(${x}px, ${y}px)`,
-        visibility: isPositioned ? 'visible' : 'hidden',
+        visibility: isPositioned && !areBricksHidden ? 'visible' : 'hidden',
       }}
     >
       {/*

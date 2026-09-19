@@ -112,7 +112,7 @@ const meta: Meta<typeof Stage> = {
 export default meta;
 type Story = StoryObj<typeof Stage>;
 
-/** The ring the workspace draws today: three wedges whose actions land in #796, #797 and #798. */
+/** The ring the workspace draws today: duplicate active from #796, extract and trash land in #797 and #798. */
 export const Default: Story = {};
 
 export const AllEnabled: Story = {

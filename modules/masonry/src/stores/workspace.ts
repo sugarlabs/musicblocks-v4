@@ -11,7 +11,13 @@ import type { TowerNode } from '@/@types/tower.types';
 import { QuadtreeCollisionSpace } from '@/utils/collision';
 import { extractArgumentConnectors } from '@/utils/argument-collision';
 import { extractStatementConnectors } from '@/utils/statement-collision';
-import { exportWorkspace as exportWorkspaceUtil, importProject } from '@/utils/import-export';
+import {
+    exportSubtree,
+    exportWorkspace as exportWorkspaceUtil,
+    importProject,
+    reconstructTowers,
+    resolveIds,
+} from '@/utils/import-export';
 import type { ExportedProject, ImportIdStrategy } from '@/@types/import-export.types';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { listNodes, listVisibleNodes, traverseTopDown } from '@/utils/tower-traversal';
@@ -84,6 +90,11 @@ export function calculateExtractedTowerPosition(
     };
 }
 
+/** How far a duplicated tower sits from the tower it was copied from. */
+const DUPLICATE_TOWER_OFFSET: Point = { x: 60, y: 40 };
+
+let nextTowerSeq = 0;
+
 export interface WorkspaceStore {
     /** Record of all towers currently in the workspace, keyed by their unique ID */
     towers: Record<string, TowerState>;
@@ -123,6 +134,11 @@ export interface WorkspaceStore {
     ) => string | null;
     /** Extracts a brick out of its tower, closing the gap it leaves, and forms a new tower */
     extractBrickToNewTower: (brickId: string, position?: Point) => string | null;
+    /**
+     * Copies a brick and the sub-tree a drag would lift with it into a fresh, independent tower,
+     * placed offset from the source tower and connected to nothing.
+     */
+    duplicateBrickToNewTower: (nodeId: string) => string | null;
     /** Merges a joined tower into the host tower that now owns its bricks */
     absorbTower: (draggedTowerId: string, hostTowerId: string) => void;
     /** Re-runs every tower's layout, leaving the towers where they are */
@@ -368,7 +384,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                     target.parent = null;
                 }
 
-                newTowerId = `tower-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+                newTowerId = `tower-${Date.now()}-${++nextTowerSeq}-${Math.floor(Math.random() * 1000)}`;
                 const newTower: TowerState = {
                     id: newTowerId,
                     position,
@@ -520,7 +536,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
                 // 4. Build new tower beside the original tower using safe placement
                 extractedIds = listNodes(liveTarget).map((n) => n.model.id);
-                newTowerId = `tower-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+                newTowerId = `tower-${Date.now()}-${++nextTowerSeq}-${Math.floor(Math.random() * 1000)}`;
                 const remainingRoot = isRoot ? newSourceRoot : tower.root;
                 const newTowerPosition = calculateExtractedTowerPosition(
                     tower,
@@ -562,6 +578,32 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             }
 
             return newTowerId;
+        },
+
+        duplicateBrickToNewTower: (nodeId) => {
+            const found = findNodeAndTower(nodeId);
+            if (!found) return null;
+
+            // Reconstruct the drag-reachable sub-tree as an independent tower with fresh IDs.
+            const project = exportSubtree(found.node);
+            const [duplicated] = Object.values(
+                reconstructTowers(project, resolveIds(project, 'remint')),
+            );
+
+            // Position the copy offset from the selected brick, falling back to tower position if unlaid.
+            const origin =
+                found.node.model.position.x !== 0 || found.node.model.position.y !== 0
+                    ? found.node.model.position
+                    : found.tower.position;
+
+            duplicated.position = {
+                x: origin.x + DUPLICATE_TOWER_OFFSET.x,
+                y: origin.y + DUPLICATE_TOWER_OFFSET.y,
+            };
+
+            get().createTower(duplicated);
+
+            return duplicated.id;
         },
 
         absorbTower: (draggedTowerId, hostTowerId) => {

@@ -19,6 +19,9 @@ interface TrashProps {
 export function Trash({ canvasRef }: TrashProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isHovered = useTrashStore((state) => state.isHovered);
+  const isAcknowledging = useTrashStore((state) => state.isAcknowledging);
+
+  const isHighlighted = isHovered || isAcknowledging;
 
   useLayoutEffect(() => {
     const el = ref.current;
@@ -50,7 +53,7 @@ export function Trash({ canvasRef }: TrashProps) {
       aria-hidden="true"
       data-testid="workspace-trash"
       className={`pointer-events-none absolute right-6 bottom-6 z-40 flex size-14 items-center justify-center rounded-full border-2 transition-colors duration-150 ${
-        isHovered
+        isHighlighted
           ? 'border-destructive bg-destructive/15 text-destructive'
           : 'border-border bg-card text-muted-foreground'
       }`}

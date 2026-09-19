@@ -117,6 +117,38 @@ export function exportWorkspace(towers: Record<string, TowerState>): ExportedPro
     };
 }
 
+/**
+ * Serialises the sub-tree a drag would lift off `node` into a one-tower project: the node itself,
+ * its arguments, its cavity contents and its full `next` chain. Whatever sits above the node in
+ * its tower (`prev`, `parent`) is left out — the copy stands alone.
+ *
+ * Reuses the workspace exporter's node writer, so the payload carries the same guarantees an
+ * `exportWorkspace` payload does. The tower entry is a placeholder: the caller re-mints the ids
+ * (`remint`) and supplies the placement, so neither the exported tower id nor its position here
+ * survives to the workspace.
+ *
+ * @param node The live node to copy, from within a tower.
+ * @returns An `ExportedProject` describing exactly that sub-tree as one tower.
+ */
+export function exportSubtree(node: TowerNode): ExportedProject {
+    const nodes: Record<string, ExportedNode> = {};
+
+    for (const child of listNodes(node)) {
+        // Brick ids are unique across the whole workspace, so a clash means the graph is corrupt;
+        // fail here rather than write a project that is quietly missing bricks.
+        if (child.model.id in nodes) {
+            throw new Error(`exportSubtree: duplicate brick id "${child.model.id}"`);
+        }
+        nodes[child.model.id] = exportNode(child);
+    }
+
+    return {
+        version: EXPORT_SCHEMA_VERSION,
+        towers: [{ id: 'duplicate', position: { x: 0, y: 0 }, rootNodeId: node.model.id }],
+        nodes,
+    };
+}
+
 // ── Import: validation ───────────────────────────────────────────────────────
 //
 // A payload arrives as parsed JSON from outside the app, so nothing about its shape can be assumed.

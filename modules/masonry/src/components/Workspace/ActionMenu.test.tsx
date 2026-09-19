@@ -472,5 +472,39 @@ describe('ActionMenu', () => {
       duplicateSpy.mockRestore();
       commitSpy.mockRestore();
     });
+
+    it('enables the extract wedge on extractable bricks and disables it on no-op bricks', async () => {
+      const actual =
+        await vi.importActual<typeof import('./actionMenuWedges')>('./actionMenuWedges');
+      const extractWedge = actual.ACTION_MENU_WEDGES.find((w) => w.id === 'extract');
+      expect(extractWedge).toBeDefined();
+
+      // Lone root: should be disabled
+      placeBrick('lone-brick', 100, 100);
+      expect(extractWedge!.isEnabled('lone-brick')).toBe(false);
+
+      // Brick in a chain: should be enabled
+      const a = makeEmptyStatement('chain-a', 0);
+      const b = makeEmptyStatement('chain-b', 0);
+      a.next = b;
+      b.prev = a;
+      useWorkspaceStore.getState().createTower({
+        id: 'tower-chain-test',
+        root: a,
+        position: { x: 200, y: 200 },
+      });
+      expect(extractWedge!.isEnabled('chain-a')).toBe(true);
+      expect(extractWedge!.isEnabled('chain-b')).toBe(true);
+
+      const extractSpy = vi
+        .spyOn(useWorkspaceStore.getState(), 'extractBrickToNewTower')
+        .mockReturnValue('new-tower-id');
+
+      extractWedge!.run('chain-a');
+
+      expect(extractSpy).toHaveBeenCalledWith('chain-a');
+
+      extractSpy.mockRestore();
+    });
   });
 });

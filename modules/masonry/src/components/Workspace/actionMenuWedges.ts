@@ -3,7 +3,7 @@ import { Copy, Scissors, Trash2 } from 'lucide-react';
 import type { ActionMenuWedge } from '@/@types/action-menu.types';
 import { useWorkspaceHistoryStore } from '@/stores/history';
 import { acknowledgeTrash } from '@/stores/trash';
-import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
+import { findNodeAndTower, canExtractBrick, useWorkspaceStore } from '@/stores/workspace';
 import { discardTower } from '@/utils/towerDiscard';
 
 /**
@@ -31,8 +31,10 @@ export const ACTION_MENU_WEDGES: ActionMenuWedge[] = [
         label: 'Extract',
         tooltip: 'Take this brick out on its own, closing the gap it leaves',
         Icon: Scissors,
-        isEnabled: () => false,
-        run: () => {},
+        isEnabled: (brickId: string) => canExtractBrick(brickId),
+        run: (brickId: string) => {
+            useWorkspaceStore.getState().extractBrickToNewTower(brickId);
+        },
     },
     {
         id: 'trash',

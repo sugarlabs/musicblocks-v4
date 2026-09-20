@@ -180,6 +180,8 @@ export interface WorkspaceStore {
      * placed offset from the source tower and connected to nothing.
      */
     duplicateBrickToNewTower: (nodeId: string) => string | null;
+    /** Extracts a brick alone out of its tower into a new tower beside it */
+    extractBrickToNewTower: (brickId: string, position?: Point) => string | null;
     /** Merges a joined tower into the host tower that now owns its bricks */
     absorbTower: (draggedTowerId: string, hostTowerId: string) => void;
     /** Re-runs every tower's layout, leaving the towers where they are */
@@ -460,6 +462,100 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             get().createTower(duplicated);
 
             return duplicated.id;
+        },
+
+        extractBrickToNewTower: (brickId, position) => {
+            if (!canExtractBrick(brickId)) return null;
+
+            const found = findNodeAndTower(brickId);
+            if (!found) return null;
+
+            const { node: target, tower: sourceTower } = found;
+
+            if (target.kind !== 'statement') return null;
+
+            let newTowerId: string | null = null;
+            let extractedIds: string[] = [];
+            set((state) => {
+                const tower = state.towers[sourceTower.id];
+                if (!tower) return state;
+
+                let liveTarget: Extract<TowerNode, { kind: 'statement' }> | null = null;
+                let foundPrev: Extract<TowerNode, { kind: 'statement' }> | null = null;
+
+                const stack: TowerNode[] = [tower.root];
+                while (stack.length > 0) {
+                    const current = stack.pop()!;
+                    if (current.kind === 'statement') {
+                        if (current.next) {
+                            if (current.next.model.id === target.model.id) {
+                                liveTarget = current.next as Extract<
+                                    TowerNode,
+                                    { kind: 'statement' }
+                                >;
+                                foundPrev = current;
+                                break;
+                            }
+                            stack.push(current.next);
+                        }
+                    }
+                }
+
+                if (!liveTarget || !foundPrev) return state;
+
+                // Close outer sequence gap in source tower
+                foundPrev.next = liveTarget.next;
+                if (liveTarget.next && 'prev' in liveTarget.next) {
+                    liveTarget.next.prev = foundPrev;
+                }
+
+                // Clean extracted brick's outer sequence pointers ONLY
+                liveTarget.prev = null;
+                liveTarget.next = null;
+
+                // Build new tower beside the original tower using safe placement
+                extractedIds = listNodes(liveTarget).map((n) => n.model.id);
+                newTowerId = `tower-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+                const newTowerPosition = calculateExtractedTowerPosition(
+                    tower,
+                    brickId,
+                    position,
+                    tower.root,
+                    extractedIds,
+                );
+
+                const newTower: TowerState = {
+                    id: newTowerId,
+                    position: newTowerPosition,
+                    root: liveTarget,
+                };
+
+                return {
+                    towers: {
+                        ...state.towers,
+                        [sourceTower.id]: {
+                            ...tower,
+                            root: { ...tower.root },
+                        },
+                        [newTowerId]: newTower,
+                    },
+                };
+            });
+
+            // Reset positioned flags outside the store update so React subscribers notify after workspace state commits
+            if (extractedIds.length > 0) {
+                useBrickLayoutStore
+                    .getState()
+                    .setPositioned(Object.fromEntries(extractedIds.map((id) => [id, false])));
+            }
+
+            if (newTowerId) {
+                import('@/stores/history').then(({ useWorkspaceHistoryStore }) => {
+                    useWorkspaceHistoryStore.getState().commit();
+                });
+            }
+
+            return newTowerId;
         },
 
         absorbTower: (draggedTowerId, hostTowerId) => {

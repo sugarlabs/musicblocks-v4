@@ -90,11 +90,15 @@ export function setToolbarExtended(
   const float = document.getElementById('toolbar-float')!;
   const pinned = document.getElementById('toolbar-pinned')!;
 
-  const _btnFloatPin = float.children[0].children[1] as HTMLButtonElement;
+  // Selected by id, not by sibling position — a browser extension (Grammarly, Dark
+  // Reader, …) injecting an element into `float`/`pinned` shifts `children[N]` and
+  // throws `TypeError: Cannot read properties of undefined (reading 'cloneNode')`.
+  // See https://github.com/sugarlabs/musicblocks-v4/issues/487
+  const _btnFloatPin = document.getElementById('toolbar-float-btn-pin') as HTMLButtonElement;
   const btnFloatPin = _btnFloatPin.cloneNode(true);
   _btnFloatPin.parentNode!.replaceChild(btnFloatPin, _btnFloatPin);
 
-  const _btnPinnedUnpin = pinned.children[0].children[1] as HTMLButtonElement;
+  const _btnPinnedUnpin = document.getElementById('toolbar-pinned-btn-unpin') as HTMLButtonElement;
   const btnPinnedUnpin = _btnPinnedUnpin.cloneNode(true);
   _btnPinnedUnpin.parentNode!.replaceChild(btnPinnedUnpin, _btnPinnedUnpin);
 
@@ -122,23 +126,25 @@ export function setToolbarExtended(
     hooks.unpin();
   });
 
-  const toolbar = type === 'float' ? float : pinned;
-
-  const headTitle = toolbar.children[0].children[0] as HTMLHeadingElement;
+  const headTitle = document.getElementById(
+    type === 'float' ? 'toolbar-float-title' : 'toolbar-pinned-title',
+  ) as HTMLHeadingElement;
   headTitle.innerHTML = title;
 
-  return toolbar.children[1] as HTMLDivElement;
+  return document.getElementById(
+    type === 'float' ? 'toolbar-float-content' : 'toolbar-pinned-content',
+  ) as HTMLDivElement;
 }
 
 export function unsetToolbarExtended(): void {
   const float = document.getElementById('toolbar-float')!;
   const pinned = document.getElementById('toolbar-pinned')!;
 
-  const _btnFloatPin = float.children[0].children[1] as HTMLButtonElement;
+  const _btnFloatPin = document.getElementById('toolbar-float-btn-pin') as HTMLButtonElement;
   const btnFloatPin = _btnFloatPin.cloneNode(true);
   _btnFloatPin.parentNode!.replaceChild(btnFloatPin, _btnFloatPin);
 
-  const _btnPinnedUnpin = pinned.children[0].children[1] as HTMLButtonElement;
+  const _btnPinnedUnpin = document.getElementById('toolbar-pinned-btn-unpin') as HTMLButtonElement;
   const btnPinnedUnpin = _btnPinnedUnpin.cloneNode(true);
   _btnPinnedUnpin.parentNode!.replaceChild(btnPinnedUnpin, _btnPinnedUnpin);
 

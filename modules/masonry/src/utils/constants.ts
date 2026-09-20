@@ -57,6 +57,35 @@ export const FOLD_TOGGLE_SELECTOR = '[data-fold-toggle]';
  */
 export const TOWER_BRICK_SELECTOR = '[data-tower-brick]';
 
+/**
+ * Marks the action menu's own DOM, so a press inside it is not an outside press: the menu stamps
+ * the attribute on its root, and `useActionMenuDismiss` tests against it before closing. Nothing
+ * carries it until the menu lands, which is the point, until then every press is outside.
+ */
+export const ACTION_MENU_SELECTOR = '[data-action-menu]';
+
+/**
+ * The pie menu's ring, in pixels at `brickScale` 1; `ringAtScale` scales it to a scale level.
+ *
+ * The hole is wide enough to leave the brick's widget readable under the menu, since the wedge a
+ * press is meant for is chosen by what it would act on.
+ */
+export const ACTION_MENU_RING = {
+    /** Radius of the hole the brick shows through. */
+    innerRadius: 28,
+    /** Radius of the ring's outer edge. */
+    outerRadius: 68,
+    /** Angular space left between two wedges, in degrees, so each reads as its own target. */
+    gapDegrees: 4,
+} as const;
+
+/** How far (in pixels) the canvas pans per arrow-key press. */
+export const PAN_STEP = 50;
+/** How far (in pixels) the canvas pans per accelerated arrow-key press (Shift held). */
+export const FAST_PAN_STEP = 100;
+/** How far (in pixels) the canvas pans per PageUp / PageDown press. */
+export const PAGE_PAN_STEP = 300;
+
 // ── Workspace ──
 
 /**

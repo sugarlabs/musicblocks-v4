@@ -14,9 +14,11 @@ interface CleanControlProps {
  * Workspace-wide tidy control: one button that lays every tower out in a column, ordered by where
  * each stands, wrapping into further columns at the canvas height.
  *
- * Sits beside `ScaleControl` in the canvas' bottom-right corner and, like it, renders as an
- * ordinary button rather than `pointer-events-none`: `useDragFromPalette`'s delegated selector only
- * ever matches `.palette-brick-slot`, never a button. Disabled while there is nothing to tidy.
+ * Sits in the canvas' bottom-right control row, laid out by the row rather than pinned to a
+ * coordinate of its own - a fixed offset would be covered as the reset zoom button mounts and
+ * unmounts and the right-anchored row grows leftward. Renders as an ordinary button rather than
+ * `pointer-events-none`: `useDragFromPalette`'s delegated selector only ever matches
+ * `.palette-brick-slot`, never a button. Disabled while there is nothing to tidy.
  *
  * The tidy also brings the canvas home. `cleanWorkspace` lays the towers out in canvas coordinates,
  * starting at the padding, so on a panned canvas the tidied column would sit outside what the user
@@ -28,7 +30,7 @@ export function CleanControl({ canvasRef }: CleanControlProps) {
   const { resetOffset } = useWorkspaceViewportStore.getState();
 
   return (
-    <div className="absolute right-66 bottom-6 z-40 flex h-14 items-center">
+    <div className="flex h-14 items-center">
       <Button
         variant="outline"
         size="icon"

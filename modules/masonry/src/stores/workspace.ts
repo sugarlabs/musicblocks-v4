@@ -12,15 +12,26 @@ import type { TowerNode } from '@/@types/tower.types';
 import { QuadtreeCollisionSpace } from '@/utils/collision';
 import { extractArgumentConnectors } from '@/utils/argument-collision';
 import { extractStatementConnectors } from '@/utils/statement-collision';
-import { exportWorkspace as exportWorkspaceUtil, importProject } from '@/utils/import-export';
+import {
+    exportSubtree,
+    exportWorkspace as exportWorkspaceUtil,
+    importProject,
+    reconstructTowers,
+    resolveIds,
+} from '@/utils/import-export';
 import type { ExportedProject, ImportIdStrategy } from '@/@types/import-export.types';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { listNodes, listVisibleNodes, measureTowerExtent } from '@/utils/tower-traversal';
 import { CLEAN_WORKSPACE_GAP, CLEAN_WORKSPACE_PADDING } from '@/utils/constants';
 
+/** How far a duplicated tower sits from the tower it was copied from. */
+const DUPLICATE_TOWER_OFFSET: Point = { x: 60, y: 40 };
+
 export interface WorkspaceStore {
     /** Record of all towers currently in the workspace, keyed by their unique ID */
     towers: Record<string, TowerState>;
+    /** ID of the currently selected brick, or null when nothing is selected */
+    selectedBrickId: string | null;
 
     /** Collision space tracking statement connection points */
     statementCollisionSpace: QuadtreeCollisionSpace;
@@ -36,6 +47,11 @@ export interface WorkspaceStore {
     createTower: (tower: TowerState) => void;
     /** Removes a tower from the workspace by its ID. */
     removeTower: (id: string) => void;
+    /** Selects a brick by its ID */
+    selectBrick: (id: string) => void;
+
+    /** Clears the current brick selection */
+    clearSelection: () => void;
     /** Updates the position of an existing tower. */
     updateTowerPosition: (id: string, position: Point) => void;
     /** Synchronises the statement collision points for a tower after layout */
@@ -48,6 +64,11 @@ export interface WorkspaceStore {
         nodeId: string,
         position: Point,
     ) => string | null;
+    /**
+     * Copies a brick and the sub-tree a drag would lift with it into a fresh, independent tower,
+     * placed offset from the source tower and connected to nothing.
+     */
+    duplicateBrickToNewTower: (nodeId: string) => string | null;
     /** Merges a joined tower into the host tower that now owns its bricks */
     absorbTower: (draggedTowerId: string, hostTowerId: string) => void;
     /** Re-runs every tower's layout, leaving the towers where they are */
@@ -74,6 +95,7 @@ export interface WorkspaceStore {
 export const useWorkspaceStore = create<WorkspaceStore>()(
     subscribeWithSelector((set, get) => ({
         towers: {},
+        selectedBrickId: null,
         statementCollisionSpace: new QuadtreeCollisionSpace(4000, 4000),
         statementConnectors: {},
         argumentCollisionSpace: new QuadtreeCollisionSpace(4000, 4000),
@@ -84,11 +106,27 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 towers: { ...state.towers, [tower.id]: tower },
             }));
         },
+        selectBrick: (id) => {
+            set({ selectedBrickId: id });
+        },
+        clearSelection: () => {
+            set({ selectedBrickId: null });
+        },
 
         removeTower: (id) => {
             set((state) => {
                 const newTowers = { ...state.towers };
                 delete newTowers[id];
+                // The selection follows the brick rather than the tower holding it. A join splices
+                // the dragged brick into its host before the emptied tower is dropped through
+                // here, so leaving this tower is not the same as leaving the canvas: what decides
+                // it is whether any tower that remains still holds the brick.
+                const selectedBrickId = state.selectedBrickId;
+                const selectionSurvives =
+                    selectedBrickId === null ||
+                    Object.values(newTowers).some((tower) =>
+                        listNodes(tower.root).some((node) => node.model.id === selectedBrickId),
+                    );
 
                 // Cleanup statement collision points
                 const stmtIds = Object.values(state.statementConnectors)
@@ -112,6 +150,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
                 return {
                     towers: newTowers,
+                    selectedBrickId: selectionSurvives ? state.selectedBrickId : null,
                     statementConnectors: newStatementConnectors,
                     argumentConnectors: newArgumentConnectors,
                 };
@@ -288,6 +327,32 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             return newTowerId;
         },
 
+        duplicateBrickToNewTower: (nodeId) => {
+            const found = findNodeAndTower(nodeId);
+            if (!found) return null;
+
+            // Reconstruct the drag-reachable sub-tree as an independent tower with fresh IDs.
+            const project = exportSubtree(found.node);
+            const [duplicated] = Object.values(
+                reconstructTowers(project, resolveIds(project, 'remint')),
+            );
+
+            // Position the copy offset from the selected brick, falling back to tower position if unlaid.
+            const origin =
+                found.node.model.position.x !== 0 || found.node.model.position.y !== 0
+                    ? found.node.model.position
+                    : found.tower.position;
+
+            duplicated.position = {
+                x: origin.x + DUPLICATE_TOWER_OFFSET.x,
+                y: origin.y + DUPLICATE_TOWER_OFFSET.y,
+            };
+
+            get().createTower(duplicated);
+
+            return duplicated.id;
+        },
+
         absorbTower: (draggedTowerId, hostTowerId) => {
             // The join already spliced the two node graphs together, so the absorbed tower is
             // redundant; dropping it also purges its stale collision points.
@@ -444,6 +509,11 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                         [tower.id]: { ...current, root: { ...current.root } },
                     },
                 };
+            });
+
+            // Commit history after the layout update is queued
+            import('@/stores/history').then(({ useWorkspaceHistoryStore }) => {
+                useWorkspaceHistoryStore.getState().commit();
             });
         },
 

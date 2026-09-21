@@ -23,6 +23,9 @@ interface CleanControlProps {
  * The tidy also brings the canvas home. `cleanWorkspace` lays the towers out in canvas coordinates,
  * starting at the padding, so on a panned canvas the tidied column would sit outside what the user
  * is looking at. Resetting the viewport offset first makes the button mean "tidy, and show me".
+ *
+ * Moving every tower at once is exactly the kind of change someone takes back, so the tidy commits
+ * a history checkpoint after it, the way every other action that rearranges the workspace does.
  */
 export function CleanControl({ canvasRef }: CleanControlProps) {
   const isEmpty = useWorkspaceStore((state) => Object.keys(state.towers).length === 0);
@@ -40,6 +43,9 @@ export function CleanControl({ canvasRef }: CleanControlProps) {
         onClick={() => {
           resetOffset();
           cleanWorkspace({ maxColumnHeight: canvasRef.current?.clientHeight });
+          import('@/stores/history').then(({ useWorkspaceHistoryStore }) => {
+            useWorkspaceHistoryStore.getState().commit();
+          });
         }}
       >
         <BrushCleaning className="size-6" />

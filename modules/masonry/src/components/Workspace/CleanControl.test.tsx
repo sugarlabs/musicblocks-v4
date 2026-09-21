@@ -1,6 +1,7 @@
 // Component test for the Workspace's CleanControl button.
 // Verifies button rendering, the disabled state off the workspace store, that a click tidies the
-// towers with the canvas height it is handed, and that it brings a panned canvas back home.
+// towers with the canvas height it is handed, that it brings a panned canvas back home, and that
+// the tidy is undoable.
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -10,17 +11,23 @@ import type { Point } from '@/@types/common.types';
 
 import { makeEmptyStatement } from '@/mocks/tower';
 import { useBrickLayoutStore } from '@/stores/brick';
+import { useWorkspaceHistoryStore } from '@/stores/history';
 import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { CLEAN_WORKSPACE_GAP, CLEAN_WORKSPACE_PADDING } from '@/utils/constants';
 
 import { CleanControl } from './CleanControl';
 
-afterEach(() => {
+afterEach(async () => {
   cleanup();
+  // A click on Clean reaches the history store through a dynamic import, so its commit lands a
+  // tick after the test that fired it. Let it settle here, or it arrives inside the next test -
+  // against a workspace this hook has already emptied - and leaves a blank snapshot behind.
+  await new Promise((resolve) => setTimeout(resolve, 0));
   useWorkspaceStore.setState({ towers: {}, statementConnectors: {}, argumentConnectors: {} });
   useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
   useWorkspaceViewportStore.setState({ offset: { x: 0, y: 0 } });
+  useWorkspaceHistoryStore.getState().clear();
 });
 
 /** A canvas stand-in reporting `clientHeight`, which jsdom would otherwise leave at zero. */
@@ -111,5 +118,32 @@ describe('CleanControl', () => {
       x: CLEAN_WORKSPACE_PADDING,
       y: CLEAN_WORKSPACE_PADDING,
     });
+  });
+
+  // Clean moves every tower at once, so it has to leave a checkpoint behind: without one, undo
+  // would skip straight past the tidy to whatever happened before it.
+  it('commits a history checkpoint, so the tidy can be undone', async () => {
+    addTower('t1', { x: 400, y: 300 });
+    useWorkspaceHistoryStore.getState().init();
+
+    render(<CleanControl canvasRef={canvasOfHeight(600)} />);
+
+    await act(async () => {
+      fireEvent.click(cleanButton());
+      // Same dynamic import as above: wait for the commit before reading the history.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(useWorkspaceStore.getState().towers['t1'].position).toEqual({
+      x: CLEAN_WORKSPACE_PADDING,
+      y: CLEAN_WORKSPACE_PADDING,
+    });
+    expect(useWorkspaceHistoryStore.getState().history.length).toBe(2);
+
+    act(() => {
+      useWorkspaceHistoryStore.getState().undo();
+    });
+
+    expect(useWorkspaceStore.getState().towers['t1'].position).toEqual({ x: 400, y: 300 });
   });
 });

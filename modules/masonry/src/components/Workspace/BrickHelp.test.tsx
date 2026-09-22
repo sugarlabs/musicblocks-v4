@@ -127,6 +127,57 @@ describe('BrickHelp', () => {
     expect(screen.queryByRole('tooltip')).toBeNull();
   });
 
+  it('finds a brick whose ID carries CSS metacharacters (#845 review)', () => {
+    // An imported project keeps the IDs in its payload, so one can arrive with a quote in it.
+    const id = 'b"1 .odd#id';
+    seatBrick(id, TOOLTIP);
+    render(<BrickHelp />);
+
+    act(() => {
+      useBrickHelpStore.getState().show(id);
+    });
+
+    expect(screen.getByRole('tooltip').textContent).toBe(TOOLTIP);
+  });
+
+  it('measures the brick again when the window resizes (#845 review)', () => {
+    seatBrick('b1', TOOLTIP);
+
+    // jsdom lays nothing out, so the rect is stubbed and moved between measurements.
+    let top = 100;
+    const original = Element.prototype.getBoundingClientRect;
+    Element.prototype.getBoundingClientRect = function (this: Element) {
+      return {
+        top,
+        bottom: top + 44,
+        left: 40,
+        right: 160,
+        width: 120,
+        height: 44,
+        x: 40,
+        y: top,
+        toJSON: () => ({}),
+      } as DOMRect;
+    };
+
+    try {
+      render(<BrickHelp />);
+      act(() => {
+        useBrickHelpStore.getState().show('b1');
+      });
+      expect(screen.getByRole('tooltip').style.top).toBe('92px');
+
+      top = 300;
+      act(() => {
+        window.dispatchEvent(new Event('resize'));
+      });
+
+      expect(screen.getByRole('tooltip').style.top).toBe('292px');
+    } finally {
+      Element.prototype.getBoundingClientRect = original;
+    }
+  });
+
   it('closes itself when the brick it names has left the canvas', () => {
     render(<BrickHelp />);
 

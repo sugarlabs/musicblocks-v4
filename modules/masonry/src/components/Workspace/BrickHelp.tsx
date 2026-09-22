@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 
 import { BrickTooltip } from '@/components/Brick/BrickTooltip';
 import { useBrickLayoutStore } from '@/stores/brick';
@@ -25,13 +25,19 @@ export function BrickHelp() {
   const [anchor, setAnchor] = useState<DOMRect | null>(null);
   const tooltipId = useId();
 
-  useEffect(() => {
+  const measure = useCallback(() => {
     if (brickId === null) {
       setAnchor(null);
       return;
     }
 
-    const element = document.querySelector(`${TOWER_BRICK_SELECTOR}[data-id="${brickId}"]`);
+    // Matched on the dataset value rather than built into the selector: an imported project keeps
+    // the IDs in its payload, and a quote or another CSS metacharacter in one would throw from a
+    // selector however it was escaped in.
+    const element =
+      Array.from(document.querySelectorAll(TOWER_BRICK_SELECTOR)).find(
+        (candidate) => candidate instanceof HTMLElement && candidate.dataset.id === brickId,
+      ) ?? null;
     // The brick has gone — discarded, folded away, or replaced by an import.
     if (element === null) {
       useBrickHelpStore.getState().hide();
@@ -39,7 +45,20 @@ export function BrickHelp() {
     }
 
     setAnchor(element.getBoundingClientRect());
-  }, [brickId, coords]);
+  }, [brickId]);
+
+  // Re-measures as the brick moves, since its coords change on a move, a scale change or a fold.
+  useEffect(measure, [measure, coords]);
+
+  // A resize moves the brick without touching its coords, and leaves the tooltip clamped to a
+  // window that is no longer there, so the rect has to be taken again.
+  useEffect(() => {
+    if (brickId === null) return;
+
+    window.addEventListener('resize', measure);
+
+    return () => window.removeEventListener('resize', measure);
+  }, [brickId, measure]);
 
   useEffect(() => {
     if (brickId === null) return;

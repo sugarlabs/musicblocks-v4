@@ -20,6 +20,7 @@ import { discardTower } from '@/utils/towerDiscard';
 import { listVisibleNodes } from '@/utils/tower-traversal';
 
 import { ActionMenu } from './ActionMenu';
+import { BrickHelp } from './BrickHelp';
 import { DragGhost } from './DragGhost';
 import { FullscreenControl } from './FullscreenControl';
 import { ScaleControl } from './ScaleControl';
@@ -261,6 +262,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
             <DisconnectShadowView />
             {/* Last in the overlay, so the menu draws over the bricks it is opened on */}
             <ActionMenu />
+            <BrickHelp />
           </div>
 
           {/* One right-anchored row: the zoom controls change width as the reset button comes and

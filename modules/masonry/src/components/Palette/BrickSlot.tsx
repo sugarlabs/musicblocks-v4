@@ -10,7 +10,7 @@ import { usePaletteDragStore } from '@/stores/palette';
 import { createBrickModel } from '@/utils/brick-model-factory';
 import { placeBrickFromPalette } from '@/utils/palette-placement';
 
-import { BrickTooltip } from './BrickTooltip';
+import { BrickTooltip } from '@/components/Brick/BrickTooltip';
 
 interface BrickSlotProps {
   /**

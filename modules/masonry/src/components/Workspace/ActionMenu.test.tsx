@@ -401,13 +401,60 @@ describe('ActionMenu', () => {
   });
 
   describe('the wedges it ships with', () => {
-    it('carries the three the pie menu is specified with, each named and explained', async () => {
+    it('enables help only for a brick with tooltip text, and running it opens that text', async () => {
+      const actual =
+        await vi.importActual<typeof import('./actionMenuWedges')>('./actionMenuWedges');
+      const { useBrickHelpStore } = await import('@/stores/brickHelp');
+      const { useWorkspaceStore } = await import('@/stores/workspace');
+      const { StatementBrickModel } = await import('@/models/brick');
+
+      const seat = (id: string, tooltipText: string) => {
+        useWorkspaceStore.getState().createTower({
+          id: `tower-${id}`,
+          root: {
+            kind: 'statement',
+            model: new StatementBrickModel({
+              id,
+              colorsDefault: { background: '#000', foreground: '#fff', border: '#000' },
+              tooltipText,
+              widget: { type: 'label', text: id },
+              params: [],
+              hasConnectionPrev: true,
+              hasConnectionNext: true,
+            }),
+            prev: null,
+            next: null,
+            args: [],
+          },
+          position: { x: 0, y: 0 },
+        });
+      };
+
+      const help = actual.ACTION_MENU_WEDGES.find((wedge) => wedge.id === 'help')!;
+
+      seat('with-text', 'Plays a note');
+      seat('without-text', '');
+
+      expect(help.isEnabled('with-text')).toBe(true);
+      expect(help.isEnabled('without-text')).toBe(false);
+      // A brick that is no longer on the canvas has nothing to explain either.
+      expect(help.isEnabled('gone')).toBe(false);
+
+      help.run('with-text');
+      expect(useBrickHelpStore.getState().brickId).toBe('with-text');
+
+      useBrickHelpStore.setState({ brickId: null });
+      useWorkspaceStore.setState({ towers: {}, selectedBrickId: null });
+    });
+
+    it('carries the four the pie menu is specified with, each named and explained', async () => {
       const actual =
         await vi.importActual<typeof import('./actionMenuWedges')>('./actionMenuWedges');
 
       expect(actual.ACTION_MENU_WEDGES.map((wedge) => wedge.id)).toEqual([
         'duplicate',
         'extract',
+        'help',
         'trash',
       ]);
 
@@ -424,7 +471,7 @@ describe('ActionMenu', () => {
           ))}
         </>,
       );
-      expect(container.querySelectorAll('svg')).toHaveLength(3);
+      expect(container.querySelectorAll('svg')).toHaveLength(4);
     });
   });
 });

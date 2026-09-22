@@ -77,11 +77,11 @@ export function BrickSlot({ brick }: BrickSlotProps) {
           data-brick-id={brick.id}
           onClick={handleClick}
           onKeyDown={handleKeyDown}
-          onPointerEnter={(event) => tooltip.show(event.currentTarget)}
-          onPointerLeave={tooltip.hide}
-          onPointerDown={tooltip.hide}
-          onFocus={(event) => tooltip.show(event.currentTarget)}
-          onBlur={tooltip.hide}
+          onPointerEnter={(event) => tooltip.show(event.currentTarget, 'pointer')}
+          onPointerLeave={() => tooltip.hide('pointer')}
+          onPointerDown={() => tooltip.hide()}
+          onFocus={(event) => tooltip.show(event.currentTarget, 'focus')}
+          onBlur={() => tooltip.hide('focus')}
           className="palette-brick-slot focus-visible:outline-primary flex min-h-11 w-fit cursor-grab touch-none items-center rounded-md px-1 py-1 transition-colors select-none hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-1 active:cursor-grabbing"
         >
           <div className="pointer-events-none">

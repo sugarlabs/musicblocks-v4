@@ -168,6 +168,40 @@ describe('BrickSlot', () => {
       expect(screen.getByRole('tooltip')).toBeTruthy();
     });
 
+    it('keeps the tooltip open when the pointer leaves a slot that still has focus (#845 review)', () => {
+      vi.useFakeTimers();
+      render(<BrickSlot brick={NOTE} />);
+
+      fireEvent.focus(slot());
+      fireEvent.pointerEnter(slot());
+      passTheDelay();
+      expect(screen.getByRole('tooltip')).toBeTruthy();
+
+      // Focus still holds it open.
+      fireEvent.pointerLeave(slot());
+      expect(screen.getByRole('tooltip')).toBeTruthy();
+
+      fireEvent.blur(slot());
+      expect(screen.queryByRole('tooltip')).toBeNull();
+    });
+
+    it('keeps the tooltip open when focus leaves a slot the pointer still rests on (#845 review)', () => {
+      vi.useFakeTimers();
+      render(<BrickSlot brick={NOTE} />);
+
+      fireEvent.pointerEnter(slot());
+      fireEvent.focus(slot());
+      passTheDelay();
+      expect(screen.getByRole('tooltip')).toBeTruthy();
+
+      // The pointer still holds it open.
+      fireEvent.blur(slot());
+      expect(screen.getByRole('tooltip')).toBeTruthy();
+
+      fireEvent.pointerLeave(slot());
+      expect(screen.queryByRole('tooltip')).toBeNull();
+    });
+
     it('renders the tooltip outside the slot, so no ancestor can clip it', () => {
       vi.useFakeTimers();
       const { container } = render(<BrickSlot brick={NOTE} />);

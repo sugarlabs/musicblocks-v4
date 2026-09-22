@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+/** What is keeping a tooltip open: the pointer resting on the trigger, or the keyboard focus. */
+export type BrickTooltipTrigger = 'pointer' | 'focus';
+
 /**
  * Hover time, in milliseconds, before a brick's tooltip appears. Long enough that a pointer
  * crossing a tower on its way elsewhere does not leave a trail of tooltips behind it.
@@ -76,11 +79,16 @@ function subscribeToPointerDown(onPointerDown: () => void): () => void {
  */
 export function useBrickTooltip(tooltipText: string): {
     anchor: DOMRect | null;
-    show: (element: Element) => void;
-    hide: () => void;
+    show: (element: Element, trigger?: BrickTooltipTrigger) => void;
+    hide: (trigger?: BrickTooltipTrigger) => void;
 } {
     const [anchor, setAnchor] = useState<DOMRect | null>(null);
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    /**
+     * Pointer and focus each hold the tooltip open on their own, so a pointer leaving a slot the
+     * keyboard is still focused on -- or a blur while the pointer rests on it -- must not close it.
+     */
+    const activeTriggers = useRef<Set<BrickTooltipTrigger>>(new Set());
 
     const clearTimer = useCallback(() => {
         if (timerRef.current !== null) {
@@ -89,17 +97,33 @@ export function useBrickTooltip(tooltipText: string): {
         }
     }, []);
 
-    const hide = useCallback(() => {
+    const close = useCallback(() => {
         clearTimer();
         setAnchor(null);
     }, [clearTimer]);
+
+    /**
+     * Releases one trigger, or every trigger when called without one, as a drag starting does.
+     * The tooltip closes once nothing holds it open.
+     */
+    const hide = useCallback(
+        (trigger?: BrickTooltipTrigger) => {
+            if (trigger === undefined) activeTriggers.current.clear();
+            else activeTriggers.current.delete(trigger);
+
+            if (activeTriggers.current.size === 0) close();
+        },
+        [close],
+    );
 
     /**
      * The anchor is measured when the tooltip opens rather than on hover, so a brick that moved
      * during the delay still positions its tooltip correctly.
      */
     const show = useCallback(
-        (element: Element) => {
+        (element: Element, trigger: BrickTooltipTrigger = 'pointer') => {
+            activeTriggers.current.add(trigger);
+
             if (tooltipText.length === 0 || activePointerIds.size > 0) return;
 
             clearTimer();
@@ -111,7 +135,7 @@ export function useBrickTooltip(tooltipText: string): {
         [clearTimer, tooltipText],
     );
 
-    useEffect(() => subscribeToPointerDown(hide), [hide]);
+    useEffect(() => subscribeToPointerDown(() => hide()), [hide]);
 
     /** A brick unmounted mid hover must not leave a timer to fire into a dead component. */
     useEffect(() => clearTimer, [clearTimer]);

@@ -85,3 +85,5 @@ export const PAN_STEP = 50;
 export const FAST_PAN_STEP = 100;
 /** How far (in pixels) the canvas pans per PageUp / PageDown press. */
 export const PAGE_PAN_STEP = 300;
+
+export const DEFAULT_GRID_SPACING = 20;

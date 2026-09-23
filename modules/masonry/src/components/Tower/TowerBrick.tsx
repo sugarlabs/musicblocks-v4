@@ -1,4 +1,4 @@
-import { memo, useCallback, useRef, type MouseEvent } from 'react';
+import { memo, useCallback, useRef, type MouseEvent, type RefObject } from 'react';
 
 import type { TowerNode } from '@/@types/tower.types';
 
@@ -17,6 +17,8 @@ export interface TowerBrickViewProps {
   id: string;
   /** The tower node whose brick should be rendered. */
   node: TowerNode;
+  /** The canvas the brick is dragged over, whose edges pan it during a drag. */
+  canvasRef?: RefObject<HTMLElement | null>;
 }
 
 /**
@@ -28,7 +30,7 @@ export interface TowerBrickViewProps {
  * and stays visually hidden until it's also positioned, to avoid a flash at a stale position.
  */
 export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
-  const { id, node } = props;
+  const { id, node, canvasRef } = props;
   const ref = useRef<HTMLDivElement>(null);
 
   // Subscribed as the derived boolean rather than the id itself: every brick on the canvas holds
@@ -36,7 +38,7 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
   // boolean only flips for the two bricks that actually gained or lost the selection.
   const isSelected = useWorkspaceStore((state) => state.selectedBrickId === id);
 
-  useBrickMove(id, ref);
+  useBrickMove(id, ref, canvasRef);
 
   // We explicitly extract coords without returning a fallback object in the selector.
   // Returning a new `{ x: 0, y: 0 }` object inside the selector would cause useSyncExternalStore

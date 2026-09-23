@@ -143,8 +143,12 @@ describe('edgePanStep', () => {
         expect(edgePanStep({ x: 0, y: 0 }, null)).toEqual({ x: 0, y: 0 });
     });
 
-    it('does not pan over a canvas measuring zero', () => {
-        // A hidden canvas measures zero, which would put every pointer past both edges.
-        expect(edgePanStep({ x: 500, y: 500 }, { x: 0, y: 0, w: 0, h: 0 })).toEqual({ x: 0, y: 0 });
+    it('does not pan over a canvas measuring zero on either axis', () => {
+        // A hidden or collapsed canvas has no real edges to pan from.
+        const pointer = { x: 500, y: 500 };
+
+        expect(edgePanStep(pointer, { x: 0, y: 0, w: 0, h: 0 })).toEqual({ x: 0, y: 0 });
+        expect(edgePanStep(pointer, { x: 0, y: 0, w: 0, h: 600 })).toEqual({ x: 0, y: 0 });
+        expect(edgePanStep(pointer, { x: 0, y: 0, w: 800, h: 0 })).toEqual({ x: 0, y: 0 });
     });
 });

@@ -74,11 +74,13 @@ function mountBrickMove({ withCanvas = true } = {}) {
   const canvas = document.createElement('div');
   canvas.getBoundingClientRect = () => CANVAS_RECT as DOMRect;
 
-  renderHook(() =>
+  const hook = renderHook(() =>
     useBrickMove(BRICK_ID, { current: brick }, withCanvas ? { current: canvas } : undefined),
   );
 
   listeners().start({});
+
+  return hook;
 }
 
 function offset() {
@@ -168,6 +170,16 @@ describe('useBrickMove auto-pan', () => {
     listeners().move(pointerAt(LEFT_EDGE));
     runFrames(1);
     listeners().end(pointerAt(LEFT_EDGE));
+
+    expect(frames.size).toBe(0);
+  });
+
+  it('stops panning when it unmounts mid-drag', () => {
+    const { unmount } = mountBrickMove();
+
+    listeners().move(pointerAt(LEFT_EDGE));
+    runFrames(1);
+    unmount();
 
     expect(frames.size).toBe(0);
   });

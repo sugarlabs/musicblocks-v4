@@ -36,10 +36,10 @@ function axisStep(fromStart: number, fromEnd: number): number {
  * How far the viewport should pan this frame for a drag at `pointer` over `canvas`.
  *
  * The step is positive near the left and top edges, negative near the right and bottom, and grows
- * as the pointer gets closer. A canvas that is unmeasured or zero-sized never pans.
+ * as the pointer gets closer. A canvas that is unmeasured or has no width or height never pans.
  */
 export function edgePanStep(pointer: Point, canvas: Bounds | null): Point {
-    if (!canvas || (canvas.w === 0 && canvas.h === 0)) return { x: 0, y: 0 };
+    if (!canvas || canvas.w === 0 || canvas.h === 0) return { x: 0, y: 0 };
 
     return {
         x: axisStep(pointer.x - canvas.x, canvas.x + canvas.w - pointer.x),

@@ -376,12 +376,13 @@ export function useBrickMove(
         });
 
         return () => {
+            // Always stop the pan loop. A drag that is still going restarts it on the next `move`.
+            stopAutoPan();
+
             // Only unset if not currently dragging, to allow the drag to continue
             // even if this specific brick unmounts from its old tower and remounts in the new one.
-            // The pan loop follows the same rule, and stops itself once the drag ends.
             if (!dragStateRef.current) {
                 interactable.unset();
-                stopAutoPan();
                 useConnectionPreviewStore.getState().clearPreviewTarget();
             }
         };

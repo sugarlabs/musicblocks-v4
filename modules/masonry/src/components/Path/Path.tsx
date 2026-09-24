@@ -33,14 +33,11 @@ const CONNECTOR_COLORS = {
   inputs: '#6c5ce7',
 };
 
-
-
 /**
  * Storybook-only debug harness. Renders the raw SVG path from `BrickOutlineGenerator`
  * with coloured overlays for the widget, param, arg, and nesting bounds regions.
  */
 export function PathBrickView({ input }: { input: BrickOutlineInput }) {
-  const maxArgW = Math.max(0, ...input.paramArgDims.map((p) => p.arg?.w ?? 0));
   const svgInput: BrickOutlineInput = {
     strokeWidth: pxToSvg(input.strokeWidth),
     widgetDims: { w: pxToSvg(input.widgetDims.w), h: pxToSvg(input.widgetDims.h) },
@@ -62,15 +59,14 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
     hasNextNotch: input.hasNextNotch,
     hasOutputNotch: input.hasOutputNotch,
   };
-  const { width, height, path, bounds } = brickOutlineGenerator.generate(svgInput);
+  const { width, height, path, margins, bounds } = brickOutlineGenerator.generate(svgInput);
   const connectors = brickOutlineGenerator.getConnectorCoords(svgInput);
 
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={svgToPx(width) + maxArgW}
-      height={svgToPx(height)}
-      className="overflow-visible"
+      width={svgToPx(width + margins.left + margins.right)}
+      height={svgToPx(height + margins.top + margins.bottom)}
     >
       {/* Debug underlay: brick bounding box */}
       <rect x={0} y={0} width={svgToPx(width)} height={svgToPx(height)} fill="#efe4e4" />

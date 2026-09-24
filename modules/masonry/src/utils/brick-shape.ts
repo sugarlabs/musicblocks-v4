@@ -909,6 +909,16 @@ export class BrickOutlineGenerator {
         }
 
         const { width, height } = this.dimensions;
+          const margins = {
+              top: 0,
+              right: 0,
+              bottom: this.input.hasNextNotch
+                  ? BrickOutlineGenerator.vNotchDepth(this.input.strokeWidth)
+                  : 0,
+              left: this.input.hasOutputNotch
+                  ? BrickOutlineGenerator.hNotchDepth(this.input.strokeWidth)
+                  : 0,
+          };
 
         // Clockwise, segment by segment, starting from the top-left corner:
         // Without nesting: top → right → bottom → left → close
@@ -941,6 +951,7 @@ export class BrickOutlineGenerator {
             path,
             width,
             height,
+            margins,
             bounds,
         };
     }

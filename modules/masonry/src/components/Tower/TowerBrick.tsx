@@ -63,7 +63,6 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
   const handleClick = useCallback(() => {
     const { lastDragEnd } = useWorkspaceStore.getState();
     if (lastDragEnd?.brickId === id && Date.now() - lastDragEnd.time < DRAG_CLICK_SUPPRESSION_MS) {
-      useWorkspaceStore.getState().consumeDragEnd(id);
       return;
     }
     useWorkspaceStore.getState().selectBrick(id);

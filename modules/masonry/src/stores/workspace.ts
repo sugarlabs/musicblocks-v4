@@ -63,8 +63,6 @@ export interface WorkspaceStore {
     clearSelection: () => void;
     /** Records the end of a brick drag for trailing-click suppression. */
     markDragEnd: (brickId: string, wasMoved?: boolean) => void;
-    /** Clears a pending trailing-click suppression once its click has been consumed. */
-    consumeDragEnd: (brickId: string) => void;
     /** Updates the position of an existing tower. */
     updateTowerPosition: (id: string, position: Point) => void;
     /** Synchronises the statement collision points for a tower after layout */
@@ -126,10 +124,6 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         },
         markDragEnd: (brickId, wasMoved = false) => {
             set({ lastDragEnd: wasMoved ? { brickId, time: Date.now() } : null });
-        },
-        consumeDragEnd: (brickId) => {
-            if (get().lastDragEnd?.brickId !== brickId) return;
-            set({ lastDragEnd: null });
         },
 
         removeTower: (id) => {

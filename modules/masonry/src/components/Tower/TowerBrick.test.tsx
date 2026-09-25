@@ -301,15 +301,16 @@ describe('TowerBrickView drag-to-click suppression', () => {
     expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-2');
   });
 
-  it('suppresses only once, so a later click on the same brick selects', () => {
+  it('keeps suppressing clicks on the moved brick for the whole window', () => {
     renderBricks('brick-1');
     act(() => useWorkspaceStore.setState({ lastDragEnd: { brickId: 'brick-1', time: T0 } }));
 
     fireEvent.click(brickEl('brick-1'));
     expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
 
+    vi.setSystemTime(T0 + 100);
     fireEvent.click(brickEl('brick-1'));
-    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+    expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
   });
 
   it('does not suppress the click after a drag that never moved', () => {

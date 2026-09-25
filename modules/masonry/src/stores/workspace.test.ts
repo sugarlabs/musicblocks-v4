@@ -63,25 +63,6 @@ describe('Workspace Store Collision Space', () => {
         expect(useWorkspaceStore.getState().lastDragEnd).toBeNull();
     });
 
-    it('clears a drag-end suppression when its brick consumes it', () => {
-        const store = useWorkspaceStore.getState();
-
-        act(() => {
-            store.markDragEnd('brick-1', true);
-        });
-
-        // A different brick must not consume the pending suppression.
-        act(() => {
-            store.consumeDragEnd('brick-2');
-        });
-        expect(useWorkspaceStore.getState().lastDragEnd?.brickId).toBe('brick-1');
-
-        act(() => {
-            store.consumeDragEnd('brick-1');
-        });
-        expect(useWorkspaceStore.getState().lastDragEnd).toBeNull();
-    });
-
     it('clears the selection when the selected tower is removed', () => {
         const root = makeEmptyStatement('selected-root', 0, false);
 

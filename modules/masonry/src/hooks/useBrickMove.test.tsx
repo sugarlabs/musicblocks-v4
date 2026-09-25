@@ -270,6 +270,21 @@ describe('useBrickMove drag', () => {
       expect(frames.size).toBe(0);
     });
 
+    it('restarts panning on the next move after the effect re-runs mid-drag', () => {
+      const { rerender } = mountBrickMove();
+
+      listeners().move(pointerAt(LEFT_EDGE));
+      runFrames(1);
+      // New ref objects re-run the effect, the way a brick that remounts mid-drag does.
+      rerender();
+      expect(frames.size).toBe(0);
+
+      listeners().move(pointerAt(LEFT_EDGE));
+      runFrames(1);
+
+      expect(offset().x).toBe(AUTO_PAN_MAX_STEP * 2);
+    });
+
     it('never pans without a canvas', () => {
       // `Tower` renders bricks without a canvas around them.
       mountBrickMove({ withCanvas: false });

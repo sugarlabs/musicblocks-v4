@@ -285,12 +285,15 @@ export function useBrickMove(
                     );
                     setHovered(overTrash);
 
+                    // The Trash sits inside the bottom-right band, so don't pan while over it.
                     const canvasRect = canvasRef?.current?.getBoundingClientRect() ?? null;
 
-                    autoPanRef.current.step = edgePanStep(
-                        { x: event.clientX, y: event.clientY },
-                        canvasRect && rectBounds(canvasRect),
-                    );
+                    autoPanRef.current.step = overTrash
+                        ? { x: 0, y: 0 }
+                        : edgePanStep(
+                              { x: event.clientX, y: event.clientY },
+                              canvasRect && rectBounds(canvasRect),
+                          );
 
                     const { step } = autoPanRef.current;
                     if (step.x === 0 && step.y === 0) {
@@ -378,6 +381,9 @@ export function useBrickMove(
         });
 
         return () => {
+            // Always stop the pan loop. A drag that is still going restarts it on the next `move`.
+            stopAutoPan();
+
             // Only unset if not currently dragging, to allow the drag to continue
             // even if this specific brick unmounts from its old tower and remounts in the new one.
             if (!dragStateRef.current) {

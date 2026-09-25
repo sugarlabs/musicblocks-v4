@@ -97,6 +97,7 @@ const BRICK_ID = 'brick-1';
 const CANVAS_RECT = { left: 300, top: 100, width: 800, height: 600 };
 const LEFT_EDGE = CANVAS_RECT.left;
 const MIDDLE = CANVAS_RECT.left + CANVAS_RECT.width / 2;
+const RIGHT_EDGE = CANVAS_RECT.left + CANVAS_RECT.width;
 
 /** The listeners from the most recent `interact(el).draggable(...)` call. */
 function listeners() {
@@ -131,12 +132,14 @@ function runFrames(count: number) {
 }
 
 /** Mounts the hook on a brick and starts a drag. */
-function mountBrickMove() {
+function mountBrickMove({ withCanvas = true } = {}) {
   const brick = document.createElement('div');
   const canvas = document.createElement('div');
   canvas.getBoundingClientRect = () => CANVAS_RECT as DOMRect;
 
-  const hook = renderHook(() => useBrickMove(BRICK_ID, { current: brick }, { current: canvas }));
+  const hook = renderHook(() =>
+    useBrickMove(BRICK_ID, { current: brick }, withCanvas ? { current: canvas } : undefined),
+  );
 
   listeners().start({});
 
@@ -248,6 +251,49 @@ describe('useBrickMove drag', () => {
       listeners().move(pointerAt(LEFT_EDGE));
       runFrames(1);
       listeners().end(pointerAt(LEFT_EDGE));
+
+      expect(frames.size).toBe(0);
+    });
+
+    it('stops panning when it unmounts mid-drag', () => {
+      const { unmount } = mountBrickMove();
+
+      listeners().move(pointerAt(LEFT_EDGE));
+      runFrames(1);
+      unmount();
+
+      expect(frames.size).toBe(0);
+    });
+
+    it('never pans without a canvas', () => {
+      // `Tower` renders bricks without a canvas around them.
+      mountBrickMove({ withCanvas: false });
+
+      listeners().move(pointerAt(LEFT_EDGE));
+      runFrames(3);
+
+      expect(offset()).toEqual({ x: 0, y: 0 });
+    });
+
+    it('does not pan past the origin at the right edge', () => {
+      // The viewport store clamps the offset at the origin, so only the left and top edges pan
+      // from the start.
+      mountBrickMove();
+
+      listeners().move(pointerAt(RIGHT_EDGE));
+      runFrames(3);
+
+      expect(offset()).toEqual({ x: 0, y: 0 });
+    });
+
+    it('does not pan while the pointer is over the Trash', () => {
+      // The Trash sits inside the right band, the way it does in the corner of the canvas.
+      useTrashStore
+        .getState()
+        .setBounds({ x: RIGHT_EDGE - 60, y: CANVAS_RECT.top, w: 60, h: CANVAS_RECT.height });
+      mountBrickMove();
+
+      listeners().move(pointerAt(RIGHT_EDGE - 30));
 
       expect(frames.size).toBe(0);
     });

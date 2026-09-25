@@ -128,6 +128,18 @@ export function useBrickMove(
             autoPanRef.current.step = { x: 0, y: 0 };
         };
 
+        /** Points the snap preview at whatever the dragged tower would join if dropped now. */
+        const updatePreview = (towerId: string) => {
+            const candidate = resolveCandidateConnection(towerId, useWorkspaceStore.getState());
+            if (candidate) {
+                useConnectionPreviewStore
+                    .getState()
+                    .setPreviewTarget(candidate.target, candidate.isValid, candidate.snapPosition);
+            } else {
+                useConnectionPreviewStore.getState().clearPreviewTarget();
+            }
+        };
+
         /** Pans one step and moves the dragged tower back by the same amount. */
         const stepAutoPan = () => {
             const state = dragStateRef.current;
@@ -146,15 +158,23 @@ export function useBrickMove(
 
             const applied = { x: after.x - before.x, y: after.y - before.y };
 
-            if (applied.x !== 0 || applied.y !== 0) {
-                state.towerPosition.x -= applied.x;
-                state.towerPosition.y -= applied.y;
+            // Stuck at the clamp, so stop. The next `move` starts the loop again.
+            if (applied.x === 0 && applied.y === 0) {
+                stopAutoPan();
 
-                useWorkspaceStore.getState().updateTowerPosition(state.towerId, {
-                    x: state.towerPosition.x + dragPosRef.current.x,
-                    y: state.towerPosition.y + dragPosRef.current.y,
-                });
+                return;
             }
+
+            state.towerPosition.x -= applied.x;
+            state.towerPosition.y -= applied.y;
+
+            useWorkspaceStore.getState().updateTowerPosition(state.towerId, {
+                x: state.towerPosition.x + dragPosRef.current.x,
+                y: state.towerPosition.y + dragPosRef.current.y,
+            });
+
+            // The pointer hasn't moved, so no `move` will update the preview for the new position.
+            updatePreview(state.towerId);
 
             autoPanRef.current.frame = requestAnimationFrame(stepAutoPan);
         };
@@ -310,21 +330,7 @@ export function useBrickMove(
                         return;
                     }
 
-                    const candidate = resolveCandidateConnection(
-                        state.towerId,
-                        useWorkspaceStore.getState(),
-                    );
-                    if (candidate) {
-                        useConnectionPreviewStore
-                            .getState()
-                            .setPreviewTarget(
-                                candidate.target,
-                                candidate.isValid,
-                                candidate.snapPosition,
-                            );
-                    } else {
-                        useConnectionPreviewStore.getState().clearPreviewTarget();
-                    }
+                    updatePreview(state.towerId);
                 },
                 end(event: DragEvent) {
                     // Before the early return: a drag that ends without a tracked state must still

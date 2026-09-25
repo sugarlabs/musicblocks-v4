@@ -12,6 +12,7 @@ import { act, cleanup, render, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useRef } from 'react';
 import { makeEmptyStatement } from '@/mocks/tower';
+import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { useTrashStore } from '@/stores/trash';
 import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
@@ -182,6 +183,7 @@ describe('useBrickMove drag', () => {
     useWorkspaceViewportStore.setState({ offset: { x: 0, y: 0 } });
     useWorkspaceStore.setState({ towers: {} });
     useTrashStore.setState({ bounds: null, isHovered: false });
+    useConnectionPreviewStore.getState().clearPreviewTarget();
   });
 
   it('moves the dragged tower by the pointer delta', () => {
@@ -284,6 +286,29 @@ describe('useBrickMove drag', () => {
       runFrames(3);
 
       expect(offset()).toEqual({ x: 0, y: 0 });
+      expect(frames.size).toBe(0);
+    });
+
+    it('refreshes the snap preview on each pan step', () => {
+      mountBrickMove();
+
+      listeners().move(pointerAt(LEFT_EDGE));
+      // A preview left over from before the step, which the step has to replace.
+      useConnectionPreviewStore.getState().setPreviewTarget(
+        {
+          draggedTowerId: TOWER_ID,
+          targetTowerId: 'tower-2',
+          targetBrickId: 'brick-2',
+          type: 'statement',
+          distance: 10,
+          centroid: { x: 0, y: 0 },
+        },
+        true,
+        { x: 0, y: 0 },
+      );
+      runFrames(1);
+
+      expect(useConnectionPreviewStore.getState().activeTarget).toBeNull();
     });
 
     it('does not pan while the pointer is over the Trash', () => {

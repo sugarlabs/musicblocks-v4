@@ -93,6 +93,7 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
         towerId: string;
         towerPosition: { x: number; y: number };
     } | null>(null);
+    const hasMovedRef = useRef(false);
     const isMounted = useBrickLayoutStore((state) => state.mounted[id]);
     const areBricksHidden = useWorkspaceStore((state) => state.areBricksHidden);
 
@@ -113,6 +114,9 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
             ignoreFrom: FOLD_TOGGLE_SELECTOR,
             listeners: {
                 start(_event: DragEvent) {
+                    // Reset so movement state does not leak between gestures.
+                    hasMovedRef.current = false;
+
                     // The pointerdown behind this drag has closed the menu already; kept for the
                     // drag that starts on the menu itself, and ahead of the early return below.
                     useActionMenuStore.getState().close();
@@ -196,6 +200,8 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                     };
                 },
                 move(event: DragEvent) {
+                    if (event.dx !== 0 || event.dy !== 0) hasMovedRef.current = true;
+
                     dragPosRef.current.x += event.dx;
                     dragPosRef.current.y += event.dy;
 
@@ -245,6 +251,10 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                     }
                 },
                 end(event: DragEvent) {
+                    // Record before early returns so the trailing click is suppressed.
+                    useWorkspaceStore.getState().markDragEnd(hasMovedRef.current);
+                    hasMovedRef.current = false;
+
                     // Before the early return: a drag that ends without a tracked state must still
                     // leave the Trash unhighlighted.
                     useTrashStore.getState().setHovered(false);

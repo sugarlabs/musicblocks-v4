@@ -58,8 +58,10 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
 
     useWorkspaceStore.getState().setNestingFold(id, !found.node.model.isNestingFolded);
   }, [id]);
-  // Read at press time like `toggleFold` above, so the handler stays keyed on `id` alone.
+  // Suppress interact.js's trailing click after a moved drag.
   const handleClick = useCallback(() => {
+    const { lastDragEndTime } = useWorkspaceStore.getState();
+    if (Date.now() - lastDragEndTime < 250) return;
     useWorkspaceStore.getState().selectBrick(id);
   }, [id]);
 

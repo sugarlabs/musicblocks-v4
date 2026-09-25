@@ -30,6 +30,8 @@ export interface WorkspaceStore {
     towers: Record<string, TowerState>;
     /** ID of the currently selected brick, or null when nothing is selected */
     selectedBrickId: string | null;
+    /** ID of the brick whose moved drag last ended, or null when no suppression is pending. */
+    lastDragEndBrickId: string | null;
     /** Timestamp of the last moved drag release. */
     lastDragEndTime: number;
 
@@ -59,7 +61,9 @@ export interface WorkspaceStore {
     /** Clears the current brick selection */
     clearSelection: () => void;
     /** Records the end of a brick drag for trailing-click suppression. */
-    markDragEnd: (wasMoved?: boolean) => void;
+    markDragEnd: (brickId: string, wasMoved?: boolean) => void;
+    /** Clears a pending trailing-click suppression once its click has been consumed. */
+    consumeDragEnd: (brickId: string) => void;
     /** Updates the position of an existing tower. */
     updateTowerPosition: (id: string, position: Point) => void;
     /** Synchronises the statement collision points for a tower after layout */
@@ -102,6 +106,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         towers: {},
         selectedBrickId: null,
         areBricksHidden: false,
+        lastDragEndBrickId: null,
         lastDragEndTime: 0,
         statementCollisionSpace: new QuadtreeCollisionSpace(4000, 4000),
         statementConnectors: {},
@@ -119,8 +124,15 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         clearSelection: () => {
             set({ selectedBrickId: null });
         },
-        markDragEnd: (wasMoved = false) => {
-            set({ lastDragEndTime: wasMoved ? Date.now() : 0 });
+        markDragEnd: (brickId, wasMoved = false) => {
+            set({
+                lastDragEndBrickId: wasMoved ? brickId : null,
+                lastDragEndTime: wasMoved ? Date.now() : 0,
+            });
+        },
+        consumeDragEnd: (brickId) => {
+            if (get().lastDragEndBrickId !== brickId) return;
+            set({ lastDragEndBrickId: null, lastDragEndTime: 0 });
         },
 
         removeTower: (id) => {

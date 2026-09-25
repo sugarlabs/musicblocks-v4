@@ -71,7 +71,12 @@ afterEach(() => {
   document.body.innerHTML = '';
   vi.clearAllMocks();
   act(() => {
-    useWorkspaceStore.setState({ areBricksHidden: false, towers: {}, lastDragEndTime: 0 });
+    useWorkspaceStore.setState({
+      areBricksHidden: false,
+      towers: {},
+      lastDragEndBrickId: null,
+      lastDragEndTime: 0,
+    });
   });
   useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
   useTrashStore.setState({ bounds: null, isHovered: false });
@@ -122,6 +127,7 @@ describe('useBrickMove drag-to-click suppression', () => {
       end({ clientX: 100, clientY: 100 });
     });
 
+    expect(useWorkspaceStore.getState().lastDragEndBrickId).toBe('b0');
     expect(useWorkspaceStore.getState().lastDragEndTime).toBeGreaterThan(0);
   });
 
@@ -135,6 +141,7 @@ describe('useBrickMove drag-to-click suppression', () => {
       end({ clientX: 0, clientY: 0 });
     });
 
+    expect(useWorkspaceStore.getState().lastDragEndBrickId).toBeNull();
     expect(useWorkspaceStore.getState().lastDragEndTime).toBe(0);
   });
 

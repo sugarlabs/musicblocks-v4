@@ -252,7 +252,7 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                 },
                 end(event: DragEvent) {
                     // Record before early returns so the trailing click is suppressed.
-                    useWorkspaceStore.getState().markDragEnd(hasMovedRef.current);
+                    useWorkspaceStore.getState().markDragEnd(id, hasMovedRef.current);
                     hasMovedRef.current = false;
 
                     // Before the early return: a drag that ends without a tracked state must still

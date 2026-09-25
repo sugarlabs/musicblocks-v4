@@ -58,10 +58,13 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
 
     useWorkspaceStore.getState().setNestingFold(id, !found.node.model.isNestingFolded);
   }, [id]);
-  // Suppress interact.js's trailing click after a moved drag.
+  // Suppress interact.js's trailing click after a moved drag, but only for the brick that moved.
   const handleClick = useCallback(() => {
-    const { lastDragEndTime } = useWorkspaceStore.getState();
-    if (Date.now() - lastDragEndTime < 250) return;
+    const { lastDragEndBrickId, lastDragEndTime } = useWorkspaceStore.getState();
+    if (lastDragEndBrickId === id && Date.now() - lastDragEndTime < 250) {
+      useWorkspaceStore.getState().consumeDragEnd(id);
+      return;
+    }
     useWorkspaceStore.getState().selectBrick(id);
   }, [id]);
 

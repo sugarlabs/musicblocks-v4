@@ -360,6 +360,43 @@ describe('Workspace', () => {
     expect(useBrickLayoutStore.getState().coords['cav-a']).toBeUndefined();
   });
 
+  it('splices a later cavity brick and preserves the successor back-pointer', () => {
+    const owner = makeEmptyStatement('cav-later-owner', 0, true);
+    const a = makeEmptyStatement('cav-later-a', 0);
+    const b = makeEmptyStatement('cav-later-b', 0);
+    const c = makeEmptyStatement('cav-later-c', 0);
+    owner.nestedNext = a;
+    a.prev = owner;
+    a.next = b;
+    b.prev = a;
+    b.next = c;
+    c.prev = b;
+
+    useBrickLayoutStore.getState().setMounted({
+      [owner.model.id]: true,
+      [a.model.id]: true,
+      [b.model.id]: true,
+      [c.model.id]: true,
+    });
+
+    const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+    act(() => {
+      useWorkspaceStore
+        .getState()
+        .createTower({ id: 'cav-later-tower', root: owner, position: { x: 0, y: 0 } });
+    });
+
+    fireEvent.click(container.querySelector('[data-id="cav-later-b"]') as HTMLElement);
+    fireEvent.keyDown(window, { key: 'Delete' });
+
+    const root = useWorkspaceStore.getState().towers['cav-later-tower']!.root as TowerStatementNode;
+    const predecessor = root.nestedNext as TowerStatementNode;
+    expect(predecessor.model.id).toBe('cav-later-a');
+    expect(predecessor.next?.model.id).toBe('cav-later-c');
+    expect((predecessor.next as TowerStatementNode).prev?.model.id).toBe('cav-later-a');
+    expect(useBrickLayoutStore.getState().coords['cav-later-b']).toBeUndefined();
+  });
+
   it('leaves the selection alone while the user types in a brick input', () => {
     const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
 

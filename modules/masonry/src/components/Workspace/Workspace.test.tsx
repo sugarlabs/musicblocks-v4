@@ -352,9 +352,10 @@ describe('Workspace', () => {
 
     const tower = useWorkspaceStore.getState().towers['cav-tower'];
     expect(tower).toBeDefined();
-    // The cavity owner must now point directly to B.
+    // The cavity owner must now point directly to B, and B's back-pointer must point to owner.
     const ownerNode = tower!.root as TowerStatementNode;
     expect(ownerNode.nestedNext?.model.id).toBe('cav-b');
+    expect((ownerNode.nestedNext as TowerStatementNode).prev?.model.id).toBe('cav-owner');
     // A is gone from the layout store.
     expect(useBrickLayoutStore.getState().coords['cav-a']).toBeUndefined();
   });

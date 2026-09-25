@@ -423,6 +423,13 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
             // ── Collect IDs to remove: target + its args + its own cavity (not next) ──
             // `next` is intentionally excluded — it will survive by being re-wired.
+            /**
+             * Recursively gathers a brick node along with its argument subtree and cavity contents,
+             * omitting its linear `next` statement chain so the chain can be spliced and preserved.
+             *
+             * @param node - The root brick node to collect subtree elements for.
+             * @returns An array of all nodes belonging strictly to this brick.
+             */
             function collectOwnNodes(node: TowerNode): TowerNode[] {
                 const collected: TowerNode[] = [node];
                 if (node.kind === 'statement' || node.kind === 'expression') {
@@ -477,7 +484,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             } else if (parentLink.kind === 'nestedNext') {
                 parentLink.node.nestedNext = successor ?? null;
                 if (successor && successor.kind === 'statement') {
-                    successor.prev = null;
+                    successor.prev = target.kind === 'statement' ? target.prev : null;
                 }
                 set((s) => ({
                     towers: {

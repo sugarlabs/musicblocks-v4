@@ -3,6 +3,7 @@ import { memo, useCallback, useRef, type MouseEvent } from 'react';
 import type { TowerNode } from '@/@types/tower.types';
 
 import { BrickView } from '@/components/Brick/Brick';
+import { BrickErrorBoundary } from '@/components/Tower/BrickErrorBoundary';
 import { useBrickMove } from '@/hooks/useBrickMove';
 import { useActionMenuStore } from '@/stores/actionMenu';
 import { useBrickLayoutStore } from '@/stores/brick';
@@ -30,6 +31,8 @@ export interface TowerBrickViewProps {
 export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
   const { id, node } = props;
   const ref = useRef<HTMLDivElement>(null);
+
+  const towerId = findNodeAndTower(id)?.tower.id ?? '';
 
   // Subscribed as the derived boolean rather than the id itself: every brick on the canvas holds
   // one of these, and an id would hand all of them a changed value on every selection change. The
@@ -123,15 +126,17 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
         rect off it. Raising the brick inside leaves all of that reading exactly what it did before,
         and leaves this transform free to animate without fighting a drag.
       */}
-      <div
-        style={{
-          transform: isSelected ? `translateY(-${LIFT_PX}px)` : undefined,
-          filter: isSelected ? highlightFilter : undefined,
-          transition: 'transform 120ms ease-out',
-        }}
-      >
-        {brick}
-      </div>
+      <BrickErrorBoundary brickId={id} towerId={towerId}>
+        <div
+          style={{
+            transform: isSelected ? `translateY(-${LIFT_PX}px)` : undefined,
+            filter: isSelected ? highlightFilter : undefined,
+            transition: 'transform 120ms ease-out',
+          }}
+        >
+          {brick}
+        </div>
+      </BrickErrorBoundary>
     </div>
   );
 });

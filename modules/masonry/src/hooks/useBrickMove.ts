@@ -74,8 +74,8 @@ export function tryConnect(towerId: string): boolean {
                 // lands visibly beside the host without overlapping.
                 const residentPos = argument.residentNode.model.position;
                 const dropPos = {
-                    x: hostTower.position.x + residentPos.x + 24,
-                    y: hostTower.position.y + residentPos.y + 48,
+                    x: residentPos.x + 24,
+                    y: residentPos.y + 48,
                 };
                 const newTowerId = store.detachBrickToNewTower(
                     argument.hostTowerId,

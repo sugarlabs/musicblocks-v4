@@ -119,6 +119,7 @@ export function useBrickMove(
         const el = ref.current;
         if (!el) return;
 
+        /** Cancels the pending pan frame, if there is one, and clears the step. */
         const stopAutoPan = () => {
             if (autoPanRef.current.frame !== null) {
                 cancelAnimationFrame(autoPanRef.current.frame);
@@ -179,6 +180,7 @@ export function useBrickMove(
             autoPanRef.current.frame = requestAnimationFrame(stepAutoPan);
         };
 
+        /** Starts the pan loop, unless it is already running. */
         const startAutoPan = () => {
             if (autoPanRef.current.frame === null) {
                 autoPanRef.current.frame = requestAnimationFrame(stepAutoPan);

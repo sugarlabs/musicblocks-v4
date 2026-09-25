@@ -123,6 +123,7 @@ function pointerAt(clientX: number) {
 const frames = new Map<number, FrameRequestCallback>();
 let nextFrameId = 1;
 
+/** Runs up to `count` queued frames, including any a frame queues for the next one. */
 function runFrames(count: number) {
   for (let i = 0; i < count; i++) {
     const next = [...frames.entries()][0];
@@ -147,10 +148,12 @@ function mountBrickMove({ withCanvas = true } = {}) {
   return hook;
 }
 
+/** The viewport offset from the store. */
 function offset() {
   return useWorkspaceViewportStore.getState().offset;
 }
 
+/** The dragged tower's position from the store. */
 function towerPosition() {
   return useWorkspaceStore.getState().towers[TOWER_ID].position;
 }

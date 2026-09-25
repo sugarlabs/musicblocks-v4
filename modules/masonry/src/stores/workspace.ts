@@ -30,10 +30,11 @@ export interface WorkspaceStore {
     towers: Record<string, TowerState>;
     /** ID of the currently selected brick, or null when nothing is selected */
     selectedBrickId: string | null;
-    /** ID of the brick whose moved drag last ended, or null when no suppression is pending. */
-    lastDragEndBrickId: string | null;
-    /** Timestamp of the last moved drag release. */
-    lastDragEndTime: number;
+    /**
+     * Pending trailing-click suppression: the brick whose moved drag last ended, and when it did.
+     * Null when no suppression is pending.
+     */
+    lastDragEnd: { brickId: string; time: number } | null;
 
     /**
      * Whether all rendered bricks are hidden from the canvas. A pure view flag — toggling it
@@ -106,8 +107,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         towers: {},
         selectedBrickId: null,
         areBricksHidden: false,
-        lastDragEndBrickId: null,
-        lastDragEndTime: 0,
+        lastDragEnd: null,
         statementCollisionSpace: new QuadtreeCollisionSpace(4000, 4000),
         statementConnectors: {},
         argumentCollisionSpace: new QuadtreeCollisionSpace(4000, 4000),
@@ -125,14 +125,11 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             set({ selectedBrickId: null });
         },
         markDragEnd: (brickId, wasMoved = false) => {
-            set({
-                lastDragEndBrickId: wasMoved ? brickId : null,
-                lastDragEndTime: wasMoved ? Date.now() : 0,
-            });
+            set({ lastDragEnd: wasMoved ? { brickId, time: Date.now() } : null });
         },
         consumeDragEnd: (brickId) => {
-            if (get().lastDragEndBrickId !== brickId) return;
-            set({ lastDragEndBrickId: null, lastDragEndTime: 0 });
+            if (get().lastDragEnd?.brickId !== brickId) return;
+            set({ lastDragEnd: null });
         },
 
         removeTower: (id) => {

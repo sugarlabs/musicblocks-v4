@@ -7,6 +7,7 @@ import { BrickView } from '@/components/Brick/Brick';
 import { cn } from '@/lib/utils';
 import { usePaletteDragStore } from '@/stores/palette';
 import { createBrickModel } from '@/utils/brick-model-factory';
+import { DRAG_CLICK_SUPPRESSION_MS } from '@/utils/constants';
 import { placeBrickFromPalette } from '@/utils/palette-placement';
 
 interface BrickSlotProps {
@@ -35,8 +36,8 @@ export function BrickSlot({ brick }: BrickSlotProps) {
   const handleClick = () => {
     const { dragged, lastDragEndTime } = usePaletteDragStore.getState();
     // Guard against drag-to-click double placement: ignore click if actively dragging
-    // or if a drag gesture ended within the last 250ms.
-    if (dragged || Date.now() - lastDragEndTime < 250) {
+    // or if a drag gesture ended within the suppression window.
+    if (dragged || Date.now() - lastDragEndTime < DRAG_CLICK_SUPPRESSION_MS) {
       return;
     }
     placeBrickFromPalette(brick);

@@ -27,8 +27,7 @@ describe('Workspace Store Collision Space', () => {
             useWorkspaceStore.setState({
                 towers: {},
                 selectedBrickId: null,
-                lastDragEndBrickId: null,
-                lastDragEndTime: 0,
+                lastDragEnd: null,
                 statementConnectors: {},
                 argumentConnectors: {},
             });
@@ -55,14 +54,13 @@ describe('Workspace Store Collision Space', () => {
         act(() => {
             store.markDragEnd('brick-1', true);
         });
-        expect(useWorkspaceStore.getState().lastDragEndBrickId).toBe('brick-1');
-        expect(useWorkspaceStore.getState().lastDragEndTime).toBeGreaterThan(0);
+        expect(useWorkspaceStore.getState().lastDragEnd?.brickId).toBe('brick-1');
+        expect(useWorkspaceStore.getState().lastDragEnd?.time).toBeGreaterThan(0);
 
         act(() => {
             store.markDragEnd('brick-1', false);
         });
-        expect(useWorkspaceStore.getState().lastDragEndBrickId).toBeNull();
-        expect(useWorkspaceStore.getState().lastDragEndTime).toBe(0);
+        expect(useWorkspaceStore.getState().lastDragEnd).toBeNull();
     });
 
     it('clears a drag-end suppression when its brick consumes it', () => {
@@ -76,13 +74,12 @@ describe('Workspace Store Collision Space', () => {
         act(() => {
             store.consumeDragEnd('brick-2');
         });
-        expect(useWorkspaceStore.getState().lastDragEndBrickId).toBe('brick-1');
+        expect(useWorkspaceStore.getState().lastDragEnd?.brickId).toBe('brick-1');
 
         act(() => {
             store.consumeDragEnd('brick-1');
         });
-        expect(useWorkspaceStore.getState().lastDragEndBrickId).toBeNull();
-        expect(useWorkspaceStore.getState().lastDragEndTime).toBe(0);
+        expect(useWorkspaceStore.getState().lastDragEnd).toBeNull();
     });
 
     it('clears the selection when the selected tower is removed', () => {

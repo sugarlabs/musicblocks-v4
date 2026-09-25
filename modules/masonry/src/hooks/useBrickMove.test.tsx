@@ -74,8 +74,7 @@ afterEach(() => {
     useWorkspaceStore.setState({
       areBricksHidden: false,
       towers: {},
-      lastDragEndBrickId: null,
-      lastDragEndTime: 0,
+      lastDragEnd: null,
     });
   });
   useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
@@ -116,7 +115,7 @@ describe('useBrickMove visibility', () => {
 });
 
 describe('useBrickMove drag-to-click suppression', () => {
-  it('stamps lastDragEndTime when a drag actually moved', () => {
+  it('stamps lastDragEnd when a drag actually moved', () => {
     seedTower('b0');
     mountBrickMove('b0');
 
@@ -127,11 +126,11 @@ describe('useBrickMove drag-to-click suppression', () => {
       end({ clientX: 100, clientY: 100 });
     });
 
-    expect(useWorkspaceStore.getState().lastDragEndBrickId).toBe('b0');
-    expect(useWorkspaceStore.getState().lastDragEndTime).toBeGreaterThan(0);
+    expect(useWorkspaceStore.getState().lastDragEnd?.brickId).toBe('b0');
+    expect(useWorkspaceStore.getState().lastDragEnd?.time).toBeGreaterThan(0);
   });
 
-  it('leaves lastDragEndTime at 0 for a press that never moved', () => {
+  it('leaves no pending suppression for a press that never moved', () => {
     seedTower('b0');
     mountBrickMove('b0');
 
@@ -141,8 +140,7 @@ describe('useBrickMove drag-to-click suppression', () => {
       end({ clientX: 0, clientY: 0 });
     });
 
-    expect(useWorkspaceStore.getState().lastDragEndBrickId).toBeNull();
-    expect(useWorkspaceStore.getState().lastDragEndTime).toBe(0);
+    expect(useWorkspaceStore.getState().lastDragEnd).toBeNull();
   });
 
   it('does not leak movement state into a subsequent unmoved gesture on the same brick', () => {
@@ -155,13 +153,13 @@ describe('useBrickMove drag-to-click suppression', () => {
       move({ dx: 8, dy: 4, clientX: 100, clientY: 100 });
       end({ clientX: 100, clientY: 100 });
     });
-    expect(useWorkspaceStore.getState().lastDragEndTime).toBeGreaterThan(0);
+    expect(useWorkspaceStore.getState().lastDragEnd?.time).toBeGreaterThan(0);
 
     act(() => {
       start({});
       end({ clientX: 100, clientY: 100 });
     });
-    expect(useWorkspaceStore.getState().lastDragEndTime).toBe(0);
+    expect(useWorkspaceStore.getState().lastDragEnd).toBeNull();
   });
 
   it('records the end before the early return when nothing about the drag was tracked', () => {
@@ -175,6 +173,6 @@ describe('useBrickMove drag-to-click suppression', () => {
       end({ clientX: 50, clientY: 50 });
     });
 
-    expect(useWorkspaceStore.getState().lastDragEndTime).toBeGreaterThan(0);
+    expect(useWorkspaceStore.getState().lastDragEnd?.time).toBeGreaterThan(0);
   });
 });

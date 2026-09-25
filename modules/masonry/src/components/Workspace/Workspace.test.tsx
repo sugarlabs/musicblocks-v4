@@ -34,8 +34,7 @@ afterEach(() => {
   useWorkspaceStore.setState({
     towers: {},
     selectedBrickId: null,
-    lastDragEndBrickId: null,
-    lastDragEndTime: 0,
+    lastDragEnd: null,
   });
   useTrashStore.setState({ bounds: null, isHovered: false });
   useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });

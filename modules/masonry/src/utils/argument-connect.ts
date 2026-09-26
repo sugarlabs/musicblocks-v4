@@ -13,7 +13,7 @@ export type ArgumentChildNode = TowerValueNode | TowerExpressionNode;
 
 /** A validated argument connection between two towers, ready to be spliced and merged. */
 export interface ArgumentConnection {
-    /** The node whose empty argument slot is being filled. */
+    /** The node whose argument slot is being filled (may already be occupied). */
     parent: ArgumentParentNode;
     /** The node being plugged into that slot. */
     child: ArgumentChildNode;
@@ -25,6 +25,8 @@ export interface ArgumentConnection {
     absorbedTowerId: string;
     /** Gap between the two connectors at drop time; used to pick between rival connections. */
     distance: number;
+    /** The node currently occupying the slot, if any; `null` when the slot is empty. */
+    residentNode: ArgumentChildNode | null;
 }
 
 export interface ResolveArgumentConnectionParams {
@@ -39,9 +41,10 @@ export interface ResolveArgumentConnectionParams {
 }
 
 /**
- * Direction 1 — the dragged tower plugs itself in: its root's output tab seeks an empty argument
- * slot on a settled tower, which becomes the host. Only the root is considered, since every other
- * brick in the tower already has its output filled.
+ * Direction 1 — the dragged tower plugs itself in: its root's output tab seeks an argument
+ * slot (empty or occupied) on a settled tower, which becomes the host. When the slot already holds
+ * a brick, that resident is recorded so the caller can evict it before merging. Only the root is
+ * considered, since every other brick in the tower already has its output filled.
  */
 function resolveOutputIntoSlot(
     dragged: TowerState,
@@ -71,8 +74,7 @@ function resolveOutputIntoSlot(
         const parent = findNode(host.root, meta.brickId);
         if (!parent || (parent.kind !== 'expression' && parent.kind !== 'statement')) continue;
 
-        // Empty-only: no displace, no replace.
-        if (parent.args[meta.slotIndex] !== null) continue;
+        const residentNode = parent.args[meta.slotIndex] as ArgumentChildNode | null;
 
         const input = parent.model.getConnectorCoords().inputs[meta.slotIndex];
         if (!input) continue;
@@ -90,6 +92,7 @@ function resolveOutputIntoSlot(
                 hostTowerId: host.id,
                 absorbedTowerId: dragged.id,
                 distance,
+                residentNode,
             };
         }
     }
@@ -98,9 +101,10 @@ function resolveOutputIntoSlot(
 }
 
 /**
- * Direction 2 — the dragged tower picks something up: one of its own empty argument slots seeks the
- * free output tab of a settled tower, which is absorbed into it. Every empty slot in the dragged
- * tower is a candidate, not just the root's, since all of them are equally free to be filled.
+ * Direction 2 — the dragged tower picks something up: one of its own argument slots (empty or
+ * occupied) seeks the free output tab of a settled tower, which is absorbed into it. Every slot in
+ * the dragged tower is a candidate, not just the root's, since all of them are equally free to be
+ * filled. When a slot already holds a brick, that resident is recorded so the caller can evict it.
  *
  * Only the slots the drag carries in plain sight, though: a brick hidden inside a folded cavity
  * offers none, since it is drawn nowhere and its recorded position is wherever the layout left it
@@ -117,9 +121,8 @@ function resolveSlotOntoOutput(
 
         const inputs = parent.model.getConnectorCoords().inputs;
 
-        parent.args.forEach((arg, slotIndex) => {
-            if (arg !== null) return;
-
+        parent.args.forEach((_resident, slotIndex) => {
+            const residentNode = _resident as ArgumentChildNode | null;
             const input = inputs[slotIndex];
             if (!input) return;
 
@@ -157,6 +160,7 @@ function resolveSlotOntoOutput(
                         hostTowerId: dragged.id,
                         absorbedTowerId: absorbed.id,
                         distance,
+                        residentNode,
                     };
                 }
             }
@@ -193,12 +197,12 @@ export function resolveArgumentConnection(
 }
 
 /**
- * Plugs `child` into `parent`'s empty argument slot by editing tower-node pointers in place. Pure
+ * Plugs `child` into `parent`'s argument slot by editing tower-node pointers in place. Pure
  * with respect to stores and layout: the caller merges the two towers, which re-runs the layout and
  * thereby recomputes the parent's `argDims` and outline.
  *
- * The caller guarantees the slot is empty and that the two nodes come from different towers; see
- * {@link resolveArgumentConnection}.
+ * When the slot is occupied, the caller is responsible for evicting the resident first (via
+ * `detachBrickToNewTower` in the hook layer); see {@link resolveArgumentConnection}.
  */
 export function joinArg({
     parent,

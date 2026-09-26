@@ -68,6 +68,43 @@ export function tryConnect(towerId: string): boolean {
     }
 
     if (argument !== null) {
+        if (argument.residentNode) {
+            const hostTower = store.towers[argument.hostTowerId];
+            if (hostTower) {
+                // Place the evicted subtree just below and to the right of its old slot so it
+                // lands visibly beside the host without overlapping.
+                //
+                // The resident's absolute position (residentNode.model.position) can trail the
+                // tower by up to a frame during a drag, because the layout pass that refreshes it
+                // runs asynchronously. A quick drop would therefore place the evicted subtree near
+                // a stale drag position instead of beside the host. Deriving the world position
+                // from hostTower.position + the resident's offset from the root avoids this —
+                // the same relative-position approach connectorCenter() uses for dragged slots.
+                const residentOffset = {
+                    x: argument.residentNode.model.position.x - hostTower.root.model.position.x,
+                    y: argument.residentNode.model.position.y - hostTower.root.model.position.y,
+                };
+                const dropPos = {
+                    x: hostTower.position.x + residentOffset.x + 24,
+                    y: hostTower.position.y + residentOffset.y + 48,
+                };
+                const newTowerId = store.detachBrickToNewTower(
+                    argument.hostTowerId,
+                    argument.residentNode.model.id,
+                    dropPos,
+                );
+
+                if (newTowerId) {
+                    const latestStore = useWorkspaceStore.getState();
+                    const newTower = latestStore.towers[newTowerId];
+                    if (newTower) {
+                        latestStore.syncStatementConnectors(newTowerId, newTower.root);
+                        latestStore.syncArgumentConnectors(newTowerId, newTower.root);
+                    }
+                }
+            }
+        }
+
         joinArg(argument);
         store.absorbTower(argument.absorbedTowerId, argument.hostTowerId);
         triggerBrickAnimation(towerId, 'brick-snap-pulse');

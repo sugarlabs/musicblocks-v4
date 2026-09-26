@@ -27,6 +27,7 @@ describe('Workspace Store Collision Space', () => {
             useWorkspaceStore.setState({
                 towers: {},
                 selectedBrickId: null,
+                lastDragEnd: null,
                 statementConnectors: {},
                 argumentConnectors: {},
             });
@@ -45,6 +46,21 @@ describe('Workspace Store Collision Space', () => {
             useWorkspaceStore.getState().clearSelection();
         });
         expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
+    });
+
+    it('records a drag end timestamp only when the drag moved', () => {
+        const store = useWorkspaceStore.getState();
+
+        act(() => {
+            store.markDragEnd('brick-1', true);
+        });
+        expect(useWorkspaceStore.getState().lastDragEnd?.brickId).toBe('brick-1');
+        expect(useWorkspaceStore.getState().lastDragEnd?.time).toBeGreaterThan(0);
+
+        act(() => {
+            store.markDragEnd('brick-1', false);
+        });
+        expect(useWorkspaceStore.getState().lastDragEnd).toBeNull();
     });
 
     it('clears the selection when the selected tower is removed', () => {

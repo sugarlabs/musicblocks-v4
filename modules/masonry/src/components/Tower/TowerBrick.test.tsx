@@ -12,7 +12,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { TowerStatementNode } from '@/@types/tower.types';
 
-import { makeEmptyStatement, makeEmptyValue} from '@/mocks/tower';
+import { makeEmptyStatement, makeEmptyValue } from '@/mocks/tower';
 import { useActionMenuStore } from '@/stores/actionMenu';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { useWorkspaceStore } from '@/stores/workspace';
@@ -32,7 +32,11 @@ const NODE = makeEmptyValue('visibility-brick');
 
 afterEach(() => {
   cleanup();
-  useWorkspaceStore.setState({ towers: {}, selectedBrickId: null });
+  useWorkspaceStore.setState({
+    towers: {},
+    selectedBrickId: null,
+    lastDragEnd: null,
+  });
   useActionMenuStore.setState({ brickId: null });
   useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
   act(() => {
@@ -233,5 +237,89 @@ describe('TowerBrickView right click', () => {
     renderBricks('brick-1');
 
     expect(useActionMenuStore.getState().brickId).toBeNull();
+  });
+});
+
+describe('TowerBrickView drag-to-click suppression', () => {
+  // Trailing clicks within 250ms of a moved drag release are ignored to avoid selecting on drop.
+  // Only Date is faked here so the brick preview can render.
+  const T0 = new Date('2026-01-01T00:00:00Z').getTime();
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(T0);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('selects the brick on a plain click', () => {
+    renderBricks('brick-1');
+
+    fireEvent.click(brickEl('brick-1'));
+
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+  });
+
+  it('does not select the click that trails a moved drag', () => {
+    renderBricks('brick-1');
+    act(() => useWorkspaceStore.setState({ lastDragEnd: { brickId: 'brick-1', time: T0 } }));
+
+    fireEvent.click(brickEl('brick-1'));
+
+    expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
+  });
+
+  it('still suppresses a click one tick inside the suppression window', () => {
+    renderBricks('brick-1');
+    act(() => useWorkspaceStore.setState({ lastDragEnd: { brickId: 'brick-1', time: T0 } }));
+
+    vi.setSystemTime(T0 + 249);
+    fireEvent.click(brickEl('brick-1'));
+
+    expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
+  });
+
+  it('selects again once the suppression window has elapsed', () => {
+    renderBricks('brick-1');
+    act(() => useWorkspaceStore.setState({ lastDragEnd: { brickId: 'brick-1', time: T0 } }));
+
+    vi.setSystemTime(T0 + 250);
+    fireEvent.click(brickEl('brick-1'));
+
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+  });
+
+  it('does not suppress a click on a different brick within the window', () => {
+    renderBricks('brick-1', 'brick-2');
+    // Only the brick that moved gets its trailing click swallowed.
+    act(() => useWorkspaceStore.setState({ lastDragEnd: { brickId: 'brick-1', time: T0 } }));
+
+    fireEvent.click(brickEl('brick-2'));
+
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-2');
+  });
+
+  it('keeps suppressing clicks on the moved brick for the whole window', () => {
+    renderBricks('brick-1');
+    act(() => useWorkspaceStore.setState({ lastDragEnd: { brickId: 'brick-1', time: T0 } }));
+
+    fireEvent.click(brickEl('brick-1'));
+    expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
+
+    vi.setSystemTime(T0 + 100);
+    fireEvent.click(brickEl('brick-1'));
+    expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
+  });
+
+  it('does not suppress the click after a drag that never moved', () => {
+    renderBricks('brick-1');
+    // A press that never moved leaves no pending suppression, so selection is not suppressed.
+    act(() => useWorkspaceStore.getState().markDragEnd('brick-1', false));
+
+    fireEvent.click(brickEl('brick-1'));
+
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
   });
 });

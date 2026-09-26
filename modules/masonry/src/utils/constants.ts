@@ -40,6 +40,15 @@ export const MAX_SCALE_LEVEL = SCALE_LEVELS[SCALE_LEVELS.length - 1];
 // ── Interaction ──
 
 /**
+ * How long (in ms) after a moved drag ends a trailing `click` is ignored.
+ *
+ * A drag gesture ends with the browser releasing a native click on the element, which both the
+ * palette slot and a workspace brick would otherwise read as an intentional press. Shared so the
+ * two suppression guards cannot drift apart.
+ */
+export const DRAG_CLICK_SUPPRESSION_MS = 250;
+
+/**
  * Marks the fold toggle overlaid on a nesting brick's head.
  *
  * Shared because two places need to agree on it: the toggle stamps the attribute on itself, and

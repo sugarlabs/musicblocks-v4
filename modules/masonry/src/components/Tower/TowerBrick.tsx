@@ -8,6 +8,7 @@ import { useActionMenuStore } from '@/stores/actionMenu';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 import { darkenColor } from '@/utils/color';
+import { DRAG_CLICK_SUPPRESSION_MS } from '@/utils/constants';
 
 /** How far a selected brick rises off the canvas, in px. */
 const LIFT_PX = 3;
@@ -58,8 +59,12 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
 
     useWorkspaceStore.getState().setNestingFold(id, !found.node.model.isNestingFolded);
   }, [id]);
-  // Read at press time like `toggleFold` above, so the handler stays keyed on `id` alone.
+  // Suppress interact.js's trailing click after a moved drag, but only for the brick that moved.
   const handleClick = useCallback(() => {
+    const { lastDragEnd } = useWorkspaceStore.getState();
+    if (lastDragEnd?.brickId === id && Date.now() - lastDragEnd.time < DRAG_CLICK_SUPPRESSION_MS) {
+      return;
+    }
     useWorkspaceStore.getState().selectBrick(id);
   }, [id]);
 

@@ -30,6 +30,11 @@ export interface WorkspaceStore {
     towers: Record<string, TowerState>;
     /** ID of the currently selected brick, or null when nothing is selected */
     selectedBrickId: string | null;
+    /**
+     * Pending trailing-click suppression: the brick whose moved drag last ended, and when it did.
+     * Null when no suppression is pending.
+     */
+    lastDragEnd: { brickId: string; time: number } | null;
 
     /**
      * Whether all rendered bricks are hidden from the canvas. A pure view flag — toggling it
@@ -56,6 +61,8 @@ export interface WorkspaceStore {
 
     /** Clears the current brick selection */
     clearSelection: () => void;
+    /** Records the end of a brick drag for trailing-click suppression. */
+    markDragEnd: (brickId: string, wasMoved?: boolean) => void;
     /** Updates the position of an existing tower. */
     updateTowerPosition: (id: string, position: Point) => void;
     /** Synchronises the statement collision points for a tower after layout */
@@ -98,6 +105,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         towers: {},
         selectedBrickId: null,
         areBricksHidden: false,
+        lastDragEnd: null,
         statementCollisionSpace: new QuadtreeCollisionSpace(4000, 4000),
         statementConnectors: {},
         argumentCollisionSpace: new QuadtreeCollisionSpace(4000, 4000),
@@ -113,6 +121,9 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         },
         clearSelection: () => {
             set({ selectedBrickId: null });
+        },
+        markDragEnd: (brickId, wasMoved = false) => {
+            set({ lastDragEnd: wasMoved ? { brickId, time: Date.now() } : null });
         },
 
         removeTower: (id) => {

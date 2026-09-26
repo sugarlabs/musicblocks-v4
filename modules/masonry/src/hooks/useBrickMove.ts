@@ -6,13 +6,15 @@ import { useActionMenuStore } from '@/stores/actionMenu';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { useTrashStore } from '@/stores/trash';
+import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 import { joinArg, resolveArgumentConnection } from '@/utils/argument-connect';
 import { FOLD_TOGGLE_SELECTOR } from '@/utils/constants';
-import { isPointInsideBounds } from '@/utils/geometry';
+import { edgePanStep, isPointInsideBounds } from '@/utils/geometry';
 import { resolveCandidateConnection } from '@/utils/snap-preview-calculator';
 import { joinStatement, resolveStatementConnection } from '@/utils/statement-connect';
 import { discardTower } from '@/utils/towerDiscard';
+import type { Bounds, Point } from '@/@types/common.types';
 import type { TowerNode } from '@/@types/tower.types';
 import { listNodes } from '@/utils/tower-traversal';
 
@@ -30,6 +32,11 @@ export function triggerBrickAnimation(brickId: string, animationClass: string) {
         el.classList.add(animationClass);
         setTimeout(() => el.classList.remove(animationClass), 400);
     }
+}
+
+/** Converts a DOMRect to the `Bounds` shape the geometry helpers take. */
+function rectBounds(rect: DOMRect): Bounds {
+    return { x: rect.left, y: rect.top, w: rect.width, h: rect.height };
 }
 
 /**
@@ -83,11 +90,23 @@ export function tryConnect(towerId: string): boolean {
  * During a drag, it collects the position delta and updates the target
  * brick's coordinates in the brick layout store, visually translating it.
  *
+ * Holding the pointer near a canvas edge pans the canvas, and the dragged tower is moved back by
+ * the same amount so the brick stays under the pointer.
+ *
  * @param id - The unique identifier of the target brick.
  * @param ref - The DOM ref of the brick's wrapper element.
+ * @param canvasRef - The canvas whose edges start the pan. Without it the brick never auto-pans.
  */
-export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
+export function useBrickMove(
+    id: string,
+    ref: RefObject<HTMLElement | null>,
+    canvasRef?: RefObject<HTMLElement | null>,
+) {
     const dragPosRef = useRef({ x: 0, y: 0 });
+    const autoPanRef = useRef<{ frame: number | null; step: Point }>({
+        frame: null,
+        step: { x: 0, y: 0 },
+    });
     const dragStateRef = useRef<{
         node: TowerNode;
         towerId: string;
@@ -99,6 +118,74 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
     useEffect(() => {
         const el = ref.current;
         if (!el) return;
+
+        /** Cancels the pending pan frame, if there is one, and clears the step. */
+        const stopAutoPan = () => {
+            if (autoPanRef.current.frame !== null) {
+                cancelAnimationFrame(autoPanRef.current.frame);
+                autoPanRef.current.frame = null;
+            }
+
+            autoPanRef.current.step = { x: 0, y: 0 };
+        };
+
+        /** Points the snap preview at whatever the dragged tower would join if dropped now. */
+        const updatePreview = (towerId: string) => {
+            const candidate = resolveCandidateConnection(towerId, useWorkspaceStore.getState());
+            if (candidate) {
+                useConnectionPreviewStore
+                    .getState()
+                    .setPreviewTarget(candidate.target, candidate.isValid, candidate.snapPosition);
+            } else {
+                useConnectionPreviewStore.getState().clearPreviewTarget();
+            }
+        };
+
+        /** Pans one step and moves the dragged tower back by the same amount. */
+        const stepAutoPan = () => {
+            const state = dragStateRef.current;
+            const { step } = autoPanRef.current;
+
+            if (!state || (step.x === 0 && step.y === 0)) {
+                stopAutoPan();
+
+                return;
+            }
+
+            // The store clamps the offset at the origin, so use what it actually moved.
+            const before = useWorkspaceViewportStore.getState().offset;
+            useWorkspaceViewportStore.getState().panBy(step);
+            const after = useWorkspaceViewportStore.getState().offset;
+
+            const applied = { x: after.x - before.x, y: after.y - before.y };
+
+            // Stuck at the clamp, so stop. The next `move` starts the loop again.
+            if (applied.x === 0 && applied.y === 0) {
+                stopAutoPan();
+
+                return;
+            }
+
+            state.towerPosition.x -= applied.x;
+            state.towerPosition.y -= applied.y;
+
+            useWorkspaceStore.getState().updateTowerPosition(state.towerId, {
+                x: state.towerPosition.x + dragPosRef.current.x,
+                y: state.towerPosition.y + dragPosRef.current.y,
+            });
+
+            // The pointer hasn't moved, so no `move` will update the preview for the new position.
+            updatePreview(state.towerId);
+
+            autoPanRef.current.frame = requestAnimationFrame(stepAutoPan);
+        };
+
+        /** Starts the pan loop, unless it is already running. */
+        const startAutoPan = () => {
+            if (autoPanRef.current.frame === null) {
+                autoPanRef.current.frame = requestAnimationFrame(stepAutoPan);
+            }
+        };
 
         const interactable = interact(el).draggable({
             // While bricks are hidden, nothing invisible should be grabbable — disabling the
@@ -220,6 +307,23 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                     );
                     setHovered(overTrash);
 
+                    // The Trash sits inside the bottom-right band, so don't pan while over it.
+                    const canvasRect = canvasRef?.current?.getBoundingClientRect() ?? null;
+
+                    autoPanRef.current.step = overTrash
+                        ? { x: 0, y: 0 }
+                        : edgePanStep(
+                              { x: event.clientX, y: event.clientY },
+                              canvasRect && rectBounds(canvasRect),
+                          );
+
+                    const { step } = autoPanRef.current;
+                    if (step.x === 0 && step.y === 0) {
+                        stopAutoPan();
+                    } else {
+                        startAutoPan();
+                    }
+
                     // A drop on the Trash discards, so a snap preview here would promise a
                     // connection `end` will never make.
                     if (overTrash) {
@@ -228,26 +332,13 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                         return;
                     }
 
-                    const candidate = resolveCandidateConnection(
-                        state.towerId,
-                        useWorkspaceStore.getState(),
-                    );
-                    if (candidate) {
-                        useConnectionPreviewStore
-                            .getState()
-                            .setPreviewTarget(
-                                candidate.target,
-                                candidate.isValid,
-                                candidate.snapPosition,
-                            );
-                    } else {
-                        useConnectionPreviewStore.getState().clearPreviewTarget();
-                    }
+                    updatePreview(state.towerId);
                 },
                 end(event: DragEvent) {
                     // Before the early return: a drag that ends without a tracked state must still
                     // leave the Trash unhighlighted.
                     useTrashStore.getState().setHovered(false);
+                    stopAutoPan();
 
                     const state = dragStateRef.current;
                     if (!state) return;
@@ -298,6 +389,9 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
         });
 
         return () => {
+            // Always stop the pan loop. A drag that is still going restarts it on the next `move`.
+            stopAutoPan();
+
             // Only unset if not currently dragging, to allow the drag to continue
             // even if this specific brick unmounts from its old tower and remounts in the new one.
             if (!dragStateRef.current) {
@@ -305,5 +399,5 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                 useConnectionPreviewStore.getState().clearPreviewTarget();
             }
         };
-    }, [id, ref, isMounted, areBricksHidden]);
+    }, [id, ref, canvasRef, isMounted, areBricksHidden]);
 }

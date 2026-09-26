@@ -8,14 +8,18 @@ import {
 
 export function calculateGridSpacing(
     level: ScaleLevel = DEFAULT_SCALE_LEVEL,
-    defaultSpacing: number = DEFAULT_GRID_SPACING,
+    baseSpacing: number = DEFAULT_GRID_SPACING,
 ): number {
-    const config = SCALE_LEVEL_CONFIG[level] ?? SCALE_LEVEL_CONFIG[DEFAULT_SCALE_LEVEL];
-    return defaultSpacing * config.brickScale;
+    return baseSpacing * SCALE_LEVEL_CONFIG[level].brickScale;
 }
 
 export function generateGridBackgroundImage(spacing: number): string {
-    return `repeating-linear-gradient(to right, var(--border) 0px, var(--border) 1px, transparent 1px, transparent ${spacing}px), repeating-linear-gradient(to bottom, var(--border) 0px, var(--border) 1px, transparent 1px, transparent ${spacing}px)`;
+    return ['right', 'bottom']
+        .map(
+            (direction) =>
+                `repeating-linear-gradient(to ${direction}, var(--border) 0px, var(--border) 1px, transparent 1px, transparent ${spacing}px)`,
+        )
+        .join(', ');
 }
 
 export function generateGridBackgroundPosition(offset: Point): string {

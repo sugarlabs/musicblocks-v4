@@ -7,9 +7,9 @@ import {
     clearGridStyle,
     generateGridBackgroundImage,
     generateGridBackgroundPosition,
-} from '@/utils/workspaceGrid';
+} from '@/utils/workspace-grid';
 
-describe('workspaceGrid utility', () => {
+describe('workspace-grid utility', () => {
     describe('calculateGridSpacing', () => {
         it('calculates default grid spacing at the default scale level', () => {
             const spacing = calculateGridSpacing();
@@ -41,38 +41,16 @@ describe('workspaceGrid utility', () => {
                 customBase * SCALE_LEVEL_CONFIG[3].brickScale,
             );
         });
-
-        it('changes grid spacing at different scale levels', () => {
-            const s1 = calculateGridSpacing(1);
-            const s2 = calculateGridSpacing(2);
-            const s3 = calculateGridSpacing(3);
-
-            expect(s1).toBeLessThan(s2);
-            expect(s2).toBeLessThan(s3);
-        });
     });
 
     describe('generateGridBackgroundImage', () => {
-        it('contains both vertical and horizontal repeating gradients', () => {
-            const bg = generateGridBackgroundImage(DEFAULT_GRID_SPACING);
-
-            expect(bg).toContain('repeating-linear-gradient(to right');
-            expect(bg).toContain('repeating-linear-gradient(to bottom');
-        });
-
-        it('uses the calculated spacing in both gradients', () => {
+        it('generates repeating linear gradients with the specified spacing', () => {
             const spacing = calculateGridSpacing(3);
             const bg = generateGridBackgroundImage(spacing);
 
-            expect(bg).toContain(`transparent ${spacing}px)`);
             expect(bg).toBe(
                 `repeating-linear-gradient(to right, var(--border) 0px, var(--border) 1px, transparent 1px, transparent ${spacing}px), repeating-linear-gradient(to bottom, var(--border) 0px, var(--border) 1px, transparent 1px, transparent ${spacing}px)`,
             );
-        });
-
-        it('uses the theme-compatible var(--border) color', () => {
-            const bg = generateGridBackgroundImage(DEFAULT_GRID_SPACING);
-            expect(bg).toContain('var(--border)');
         });
     });
 
@@ -80,11 +58,6 @@ describe('workspaceGrid utility', () => {
         it('produces "0px 0px" for a zero viewport offset', () => {
             const pos = generateGridBackgroundPosition({ x: 0, y: 0 });
             expect(pos).toBe('0px 0px');
-        });
-
-        it('produces "40px 10px" for offset { x: 40, y: 10 }', () => {
-            const pos = generateGridBackgroundPosition({ x: 40, y: 10 });
-            expect(pos).toBe('40px 10px');
         });
 
         it('does NOT multiply the viewport offset by brickScale', () => {

@@ -23,6 +23,7 @@ import { ActionMenu } from './ActionMenu';
 import { DragGhost } from './DragGhost';
 import { FullscreenControl } from './FullscreenControl';
 import { BricksVisibilityControl } from './BricksVisibilityControl';
+import { HomeControl } from './HomeControl';
 import { ScaleControl } from './ScaleControl';
 import { SnapHintOverlay } from './SnapHintOverlay';
 import { SnapPreviewView } from './SnapPreviewView';
@@ -274,6 +275,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
             data-testid="workspace-controls"
             className="absolute right-26 bottom-6 z-40 flex h-14 items-center gap-6"
           >
+            <HomeControl />
             <FullscreenControl />
             <ScaleControl />
           </div>

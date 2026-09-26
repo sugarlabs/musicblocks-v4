@@ -3,7 +3,7 @@ import type { StatementConnectorMeta, TowerState } from '@/@types/workspace.type
 
 import type { CollisionSpace } from './collision';
 import { querySnap } from './snap-config';
-import { findNode, hidesCavity } from './tower-traversal';
+import { findNode, findTail, hidesCavity } from './tower-traversal';
 
 /** The two tabs a statement can carry the sequence onward through; both mate with a `prev` groove. */
 export type StatementSocket = 'next' | 'nestedNext';
@@ -49,10 +49,32 @@ function isSocketFree(parent: TowerStatementNode, socket: StatementSocket): bool
     return parent.nestedNext === null && !hidesCavity(parent);
 }
 
+function hasFreeTailNext(child: TowerStatementNode): boolean {
+    const tail = findTail(child);
+    return tail.next === null && tail.model.hasConnectionNext;
+}
+
 /**
- * Direction 1 — the dragged tower hangs itself below: its root's `prev` groove seeks a free `next`
- * or `nestedNext` tab on a settled tower, which becomes the host. Only the root is considered, since
- * every other statement in the tower already has the brick above it filling its `prev`.
+ * Whether `parent`'s socket can accept `child`. A free socket always accepts; an occupied `next`
+ * socket can accept if the dragged child has a free tail to hold the displaced subtree.
+ */
+function canTakeChild(
+    parent: TowerStatementNode,
+    socket: StatementSocket,
+    child: TowerStatementNode,
+): boolean {
+    if (isSocketFree(parent, socket)) return true;
+
+    // An occupied `next` can still take the drop when the dragged tail can hold the displaced brick.
+    return socket === 'next' && hasFreeTailNext(child);
+}
+
+/**
+ * Direction 1 — the dragged tower hangs itself below: its root's `prev` groove seeks a `next` or
+ * `nestedNext` tab on a settled tower, which becomes the host. An occupied `next` tab is also a valid
+ * target when the dragged tower has a free tail to receive the displaced subtree (seam insertion).
+ * Only the root is considered, since every other statement in the tower already has the brick above
+ * it filling its `prev`.
  */
 function resolvePrevOntoTab(
     dragged: TowerState,
@@ -82,8 +104,7 @@ function resolvePrevOntoTab(
         const parent = findNode(host.root, meta.brickId);
         if (parent === null || parent.kind !== 'statement') continue;
 
-        // Empty-only: no insertion between two bricks that are already linked.
-        if (!isSocketFree(parent, meta.type)) continue;
+        if (!canTakeChild(parent, meta.type, child)) continue;
 
         const tab = parent.model.getConnectorCoords()[meta.type];
         if (!tab) continue;
@@ -131,13 +152,14 @@ export function resolveStatementConnection(
 }
 
 /**
- * Links `child` onto `parent`'s free `next` or `nestedNext` tab by editing tower-node pointers in
- * place. Pure with respect to stores and layout: the caller merges the two towers, which re-runs the
+ * Links `child` onto `parent`'s `next` or `nestedNext` tab by editing tower-node pointers in
+ * place. If `parent.next` is occupied, the displaced subtree is spliced below `child`'s tail.
+ * Pure with respect to stores and layout: the caller merges the two towers, which re-runs the
  * layout and thereby recomputes the parent's `nestingDims` and outline.
  *
  * `prev` back-points at the parent for both sockets, so a cavity head is reachable upward too.
  *
- * The caller guarantees the tab is free and that the two nodes come from different towers; see
+ * The caller guarantees `canTakeChild` holds and that the two nodes come from different towers; see
  * {@link resolveStatementConnection}.
  */
 export function joinStatement({
@@ -150,7 +172,16 @@ export function joinStatement({
     socket: StatementSocket;
 }): void {
     if (socket === 'next') {
+        const displaced = parent.next;
         parent.next = child;
+        if (displaced !== null) {
+            // Reattach the displaced chain to the bottom of the inserted tower.
+            if (displaced.kind === 'statement') {
+                const tail = findTail(child);
+                tail.next = displaced;
+                displaced.prev = tail;
+            }
+        }
     } else {
         parent.nestedNext = child;
     }

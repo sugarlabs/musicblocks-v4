@@ -75,6 +75,19 @@ export interface WorkspaceStore {
     duplicateBrickToNewTower: (nodeId: string) => string | null;
     /** Merges a joined tower into the host tower that now owns its bricks */
     absorbTower: (draggedTowerId: string, hostTowerId: string) => void;
+    /**
+     * Removes a single brick from a tower without touching the chain below it.
+     *
+     * The brick's `next` statement (if any) is reconnected to whatever held the brick — its `prev`
+     * in the linear sequence, the cavity owner, or an argument slot — so no statements are lost.
+     * The brick itself, its inline argument children, and its own cavity contents are severed and
+     * their IDs are returned for layout-store cleanup. When the removed brick was the tower root and
+     * has no `next`, the tower itself is also removed from the workspace.
+     *
+     * @returns The IDs of every brick node that was removed (the target plus its args and cavity),
+     *          or null when the tower or node could not be found.
+     */
+    spliceBrick: (towerId: string, nodeId: string) => string[] | null;
     /** Re-runs every tower's layout, leaving the towers where they are */
     refreshTowerLayouts: () => void;
     /** Sets whether all rendered bricks are hidden from the canvas. */
@@ -88,6 +101,60 @@ export interface WorkspaceStore {
      * payload is invalid. Merging into the current workspace is not supported yet.
      */
     importWorkspace: (payload: unknown, strategy?: ImportIdStrategy) => void;
+}
+
+export type ParentLink =
+    | { kind: 'prev'; node: Extract<TowerNode, { kind: 'statement' }> }
+    | { kind: 'nestedNext'; node: Extract<TowerNode, { kind: 'statement' }> }
+    | { kind: 'arg'; node: TowerNode; index: number }
+    | { kind: 'root' };
+
+/**
+ * Traverses a tower tree to locate a target node and how it is linked to its parent.
+ *
+ * @param root - The root node of the tower to search.
+ * @param nodeId - The model ID of the brick node to find.
+ * @returns The target node and its parent link, or null if the node does not exist in the tree.
+ */
+export function findParentLink(
+    root: TowerNode,
+    nodeId: string,
+): { target: TowerNode; parentLink: ParentLink } | null {
+    if (root.model.id === nodeId) {
+        return { target: root, parentLink: { kind: 'root' } };
+    }
+
+    const stack: TowerNode[] = [root];
+    while (stack.length > 0) {
+        const current = stack.pop()!;
+        if (current.kind === 'statement') {
+            if (current.next) {
+                if (current.next.model.id === nodeId) {
+                    return { target: current.next, parentLink: { kind: 'prev', node: current } };
+                }
+                stack.push(current.next);
+            }
+            if (current.nestedNext) {
+                if (current.nestedNext.model.id === nodeId) {
+                    return { target: current.nestedNext, parentLink: { kind: 'nestedNext', node: current } };
+                }
+                stack.push(current.nestedNext);
+            }
+        }
+        if (current.kind === 'statement' || current.kind === 'expression') {
+            for (let i = 0; i < current.args.length; i++) {
+                const arg = current.args[i];
+                if (arg) {
+                    if (arg.model.id === nodeId) {
+                        return { target: arg, parentLink: { kind: 'arg', node: current, index: i } };
+                    }
+                    stack.push(arg);
+                }
+            }
+        }
+    }
+
+    return null;
 }
 
 /**
@@ -243,65 +310,20 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 const tower = state.towers[sourceTowerId];
                 if (!tower) return state;
 
-                // Traverse the tree to find the target node and the node that points to it (its parent)
-                const stack: TowerNode[] = [tower.root];
-                let target: TowerNode | null = null;
-                let foundPrev: Extract<TowerNode, { kind: 'statement' }> | null = null;
-                let foundCavityParent: Extract<TowerNode, { kind: 'statement' }> | null = null;
-                let foundArgParent: TowerNode | null = null;
-                let foundArgIndex: number | null = null;
+                const found = findParentLink(tower.root, nodeId);
+                if (!found) return state;
 
-                while (stack.length > 0) {
-                    const current = stack.pop()!;
-                    if (current.model.id === nodeId) {
-                        target = current;
-                        break; // In a valid tree we won't hit this unless it's the root, but we handle it just in case
-                    }
-                    if (current.kind === 'statement') {
-                        if (current.next) {
-                            if (current.next.model.id === nodeId) {
-                                target = current.next;
-                                foundPrev = current;
-                                break;
-                            }
-                            stack.push(current.next);
-                        }
-                        if (current.nestedNext) {
-                            if (current.nestedNext.model.id === nodeId) {
-                                target = current.nestedNext;
-                                foundCavityParent = current;
-                                break;
-                            }
-                            stack.push(current.nestedNext);
-                        }
-                    }
-                    if (current.kind === 'statement' || current.kind === 'expression') {
-                        for (let i = 0; i < current.args.length; i++) {
-                            const arg = current.args[i];
-                            if (arg) {
-                                if (arg.model.id === nodeId) {
-                                    target = arg;
-                                    foundArgParent = current;
-                                    foundArgIndex = i;
-                                    break;
-                                }
-                                stack.push(arg);
-                            }
-                        }
-                        if (target) break;
-                    }
-                }
-
-                if (!target) return state;
+                const { target, parentLink } = found;
 
                 // Sever the link from the parent to the target node
-
-                if (foundPrev) {
-                    foundPrev.next = null;
-                } else if (foundCavityParent) {
-                    foundCavityParent.nestedNext = null;
-                } else if (foundArgParent && foundArgIndex !== null) {
-                    foundArgParent.args[foundArgIndex] = null;
+                if (parentLink.kind === 'prev') {
+                    parentLink.node.next = null;
+                } else if (parentLink.kind === 'nestedNext') {
+                    parentLink.node.nestedNext = null;
+                } else if (parentLink.kind === 'arg') {
+                    (parentLink.node as Extract<TowerNode, { args: (TowerNode | null)[] }>).args[
+                        parentLink.index
+                    ] = null;
                 }
 
                 if ('prev' in target) {
@@ -353,6 +375,92 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             get().createTower(duplicated);
 
             return duplicated.id;
+        },
+
+        spliceBrick: (towerId, nodeId) => {
+            const state = get();
+            const tower = state.towers[towerId];
+            if (!tower) return null;
+
+            const found = findParentLink(tower.root, nodeId);
+            if (!found) return null;
+
+            const { target, parentLink } = found;
+
+            // ── Collect IDs to remove: target + its args + its own cavity (not next) ──
+            // `next` is intentionally excluded — it will survive by being re-wired.
+            /**
+             * Recursively gathers a brick node along with its argument subtree and cavity contents,
+             * omitting its linear `next` statement chain so the chain can be spliced and preserved.
+             *
+             * @param node - The root brick node to collect subtree elements for.
+             * @returns An array of all nodes belonging strictly to this brick.
+             */
+            function collectOwnNodes(node: TowerNode): TowerNode[] {
+                const collected: TowerNode[] = [node];
+                if (node.kind === 'statement' || node.kind === 'expression') {
+                    for (const arg of node.args) {
+                        if (arg) collected.push(...collectOwnNodes(arg));
+                    }
+                }
+                // Cavity contents belong to this brick and are deleted with it.
+                if (node.kind === 'statement' && node.nestedNext) {
+                    collected.push(...listNodes(node.nestedNext));
+                }
+                return collected;
+            }
+            const removedIds = collectOwnNodes(target).map((n) => n.model.id);
+
+            // ── Determine what replaces the target in the parent slot ──────────────────
+            // Only statement bricks form linear sequences via `next`; argument and cavity
+            // bricks are not statement-chained, so there is nothing to re-wire there.
+            const successor = target.kind === 'statement' && target.next ? target.next : null;
+
+            // ── Re-wire the parent link to skip over the target ────────────────────────
+            if (parentLink.kind === 'root') {
+                if (successor) {
+                    if (successor.kind === 'statement') {
+                        successor.prev = null;
+                    }
+                    // The chain below becomes the new tower root.
+                    set((s) => ({
+                        towers: {
+                            ...s.towers,
+                            [towerId]: { ...tower, root: successor },
+                        },
+                    }));
+                } else {
+                    // No successor — the tower is now empty, remove it entirely.
+                    get().removeTower(towerId);
+                }
+            } else {
+                if (parentLink.kind === 'prev') {
+                    parentLink.node.next = successor;
+                    if (successor && successor.kind === 'statement') {
+                        successor.prev = parentLink.node;
+                    }
+                } else if (parentLink.kind === 'nestedNext') {
+                    parentLink.node.nestedNext = successor ?? null;
+                    if (successor && successor.kind === 'statement') {
+                        successor.prev = parentLink.node;
+                    }
+                } else if (parentLink.kind === 'arg') {
+                    // Argument bricks have no `next` chain, so the slot simply becomes empty.
+                    (parentLink.node as Extract<TowerNode, { args: (TowerNode | null)[] }>).args[
+                        parentLink.index
+                    ] = null;
+                }
+
+                // Touch the tower root so the layout hook re-runs the full graph.
+                set((s) => ({
+                    towers: {
+                        ...s.towers,
+                        [towerId]: { ...tower, root: { ...tower.root } },
+                    },
+                }));
+            }
+
+            return removedIds;
         },
 
         absorbTower: (draggedTowerId, hostTowerId) => {

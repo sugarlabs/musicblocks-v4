@@ -4,7 +4,8 @@
 // pure-function tests in useDragFromPalette.test.tsx and exercised manually via the playground;
 // this file verifies the pieces mount and react to the drag store correctly.
 
-import { act, cleanup, fireEvent, render } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { PaletteConfig } from '@/@types/palette.types';
@@ -22,6 +23,7 @@ import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { createBrickModel, wrapAsRootNode } from '@/utils/brick-model-factory';
 import { DEFAULT_SCALE_LEVEL, FOLD_TOGGLE_SELECTOR, MAX_SCALE_LEVEL } from '@/utils/constants';
+import { DEFAULT_PLACEMENT_ANCHOR, setPlacementPosition } from '@/utils/palette-placement';
 
 import { Workspace } from './Workspace';
 
@@ -37,6 +39,7 @@ afterEach(() => {
   useWorkspaceViewportStore.setState({ offset: { x: 0, y: 0 } });
   useConnectionPreviewStore.setState({ activeTarget: null, isValid: false, snapPosition: null });
   useWorkspaceScaleStore.setState({ level: DEFAULT_SCALE_LEVEL });
+  setPlacementPosition(DEFAULT_PLACEMENT_ANCHOR);
 });
 
 // -------------------------------------------------------------------------------------------------
@@ -161,6 +164,21 @@ function queryControls(container: HTMLElement) {
 // -------------------------------------------------------------------------------------------------
 
 describe('Workspace', () => {
+  it('creates one palette brick when Enter is pressed on the focused button', async () => {
+    render(<Workspace config={{ palette: paletteConfig }} />);
+
+    const user = userEvent.setup();
+    const slot = screen.getByRole('button', { name: 'Note: play a note' });
+
+    slot.focus();
+    await user.keyboard('{Enter}');
+
+    const towers = Object.values(useWorkspaceStore.getState().towers);
+    expect(towers).toHaveLength(1);
+    expect(towers[0].position).toEqual({ x: 16, y: 16 });
+    expect(towers[0].root.model.widget).toEqual({ type: 'label', text: 'Note' });
+  });
+
   it('renders the palette with drag-source slots and binds the drag hook without crashing', () => {
     const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
 

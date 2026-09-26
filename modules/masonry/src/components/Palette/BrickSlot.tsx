@@ -16,6 +16,7 @@ interface BrickSlotProps {
    * to this config when a drag starts on the slot.
    */
   brick: PaletteBrickConfig;
+  onActivate?: (brick: PaletteBrickConfig) => void;
 }
 
 /**
@@ -24,7 +25,7 @@ interface BrickSlotProps {
  * binds against, `data-brick-id` the payload key, and `touch-none` lets touch drags reach interact.js.
  * Clicking or pressing Enter/Space places a new standalone tower on the workspace canvas.
  */
-export function BrickSlot({ brick }: BrickSlotProps) {
+export function BrickSlot({ brick, onActivate }: BrickSlotProps) {
   const model = useMemo(() => createBrickModel(brick.brick, brick.id), [brick.brick, brick.id]);
   const isDragging = usePaletteDragStore((state) => state.dragged?.id === brick.id);
 
@@ -39,7 +40,11 @@ export function BrickSlot({ brick }: BrickSlotProps) {
     if (dragged || Date.now() - lastDragEndTime < 250) {
       return;
     }
-    placeBrickFromPalette(brick);
+    if (onActivate) {
+      onActivate(brick);
+    } else {
+      placeBrickFromPalette(brick);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -59,11 +64,17 @@ export function BrickSlot({ brick }: BrickSlotProps) {
       )}
     >
       <div className="overflow-hidden p-0.5">
-        <div
-          role="button"
+        <button
+          type="button"
           tabIndex={0}
-          aria-label={brick.name || brick.description}
           title={brick.description}
+          aria-label={
+            brick.description
+              ? brick.name
+                ? `${brick.name}: ${brick.description}`
+                : brick.description
+              : brick.name || ''
+          }
           data-brick-id={brick.id}
           onClick={handleClick}
           onKeyDown={handleKeyDown}
@@ -72,7 +83,7 @@ export function BrickSlot({ brick }: BrickSlotProps) {
           <div className="pointer-events-none">
             <BrickView {...viewProps} />
           </div>
-        </div>
+        </button>
       </div>
     </div>
   );

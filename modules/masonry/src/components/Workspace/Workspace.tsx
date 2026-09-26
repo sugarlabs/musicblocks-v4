@@ -15,9 +15,13 @@ import { useDragFromPalette } from '@/hooks/useDragFromPalette';
 import { useTowerLayout } from '@/hooks/useTowerLayout';
 import { useWorkspaceScale } from '@/hooks/useWorkspaceScale';
 import { useBrickLayoutStore } from '@/stores/brick';
+import { useWorkspaceScaleStore } from '@/stores/scale';
+import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
+import { createBrickModel } from '@/utils/brick-model-factory';
 import { discardTower } from '@/utils/towerDiscard';
 import { listVisibleNodes } from '@/utils/tower-traversal';
+import { findKeyboardPlacement, placeBrickFromPalette } from '@/utils/palette-placement';
 
 import { ActionMenu } from './ActionMenu';
 import { DragGhost } from './DragGhost';
@@ -50,10 +54,34 @@ export function Workspace({ config }: WorkspaceViewProps) {
     });
   }, []);
 
-  // Keyboard deletion of the selected brick. The listener sits on the window rather than the canvas
-  // because the canvas never holds focus: nothing in it is focusable, so a press after a click on a
-  // brick has nowhere else to land. The store is read at press time, which is what keeps the effect
-  // on empty deps and off the re-subscribe treadmill a selection dependency would put it on.
+  /**
+   * Places a brick selected from the palette into the workspace canvas.
+   * Calculates collision-free keyboard placement coordinates within the visible viewport and adds the tower.
+   *
+   * @param brick - The palette brick configuration to instantiate.
+   */
+  const placePaletteBrick = (brick: PaletteBrickConfig) => {
+    const scaleLevel = useWorkspaceScaleStore.getState().level;
+    const model = createBrickModel({ ...brick.brick, scaleLevel });
+    model.computeDims();
+
+    let dims = model.dims;
+    if (typeof document !== 'undefined') {
+      const slotSvg = document.querySelector(
+        `.palette-brick-slot[data-brick-id="${brick.id}"] svg`,
+      );
+      if (slotSvg) {
+        const rect = slotSvg.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          dims = { w: rect.width, h: rect.height };
+        }
+      }
+    }
+
+    const viewportOffset = useWorkspaceViewportStore.getState().offset;
+    const position = findKeyboardPlacement(towersRecord, dims, { viewportOffset });
+    placeBrickFromPalette(brick, { anchor: position });
+  };
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
@@ -221,7 +249,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
       <div ref={rootRef} className="relative flex min-h-0 w-full flex-1">
         {!areBricksHidden && (
           <div className="h-full max-w-80 shrink-0">
-            <Palette config={palette} />
+            <Palette config={palette} onBrickActivate={placePaletteBrick} />
           </div>
         )}
 

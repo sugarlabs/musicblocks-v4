@@ -111,7 +111,7 @@ function stepFor(key: string): number | null {
 
 export interface ActionMenuProps {
   /**
-   * The wedges to ring the brick with; the three the workspace ships with by default. Only a story
+   * The wedges to ring the brick with; the ones the workspace ships with by default. Only a story
    * passes its own, to show a ring the workspace cannot put on screen yet.
    */
   wedges?: ActionMenuWedge[];
@@ -172,7 +172,9 @@ export function ActionMenu({ wedges = ACTION_MENU_WEDGES }: ActionMenuProps = {}
 
   const ring = ringAtScale(level);
   const box = ring.outerRadius * 2;
-  const count = wedges.length;
+  // Only the wedges that belong on this brick; the ring divides itself among however many that is.
+  const shown = wedges.filter((wedge) => wedge.isVisible?.(brickId) ?? true);
+  const count = shown.length;
 
   const moveTo = (index: number) => {
     // Wrapped, because the wedges are a ring: there is no end of the row to stop at.
@@ -218,7 +220,7 @@ export function ActionMenu({ wedges = ACTION_MENU_WEDGES }: ActionMenuProps = {}
         // left to bubble rather than answered twice.
       }}
     >
-      {wedges.map((wedge, index) => (
+      {shown.map((wedge, index) => (
         <WedgeButton
           key={wedge.id}
           wedge={wedge}

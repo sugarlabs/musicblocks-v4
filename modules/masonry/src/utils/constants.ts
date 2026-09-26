@@ -85,3 +85,8 @@ export const PAN_STEP = 50;
 export const FAST_PAN_STEP = 100;
 /** How far (in pixels) the canvas pans per PageUp / PageDown press. */
 export const PAGE_PAN_STEP = 300;
+
+/** How close (in pixels) a dragged brick's pointer must get to a canvas edge to start panning. */
+export const AUTO_PAN_BAND = 96;
+/** The most (in pixels) the canvas pans per frame while a dragged brick is held at an edge. */
+export const AUTO_PAN_MAX_STEP = 12;

@@ -1,13 +1,16 @@
-import { useMemo } from 'react';
+import { useId, useMemo } from 'react';
 
 import type { BrickViewPropsWithModel } from '@/@types/brick.types';
 import type { PaletteBrickConfig } from '@/@types/palette.types';
 
 import { BrickView } from '@/components/Brick/Brick';
+import { useBrickTooltip } from '@/hooks/useBrickTooltip';
 import { cn } from '@/lib/utils';
 import { usePaletteDragStore } from '@/stores/palette';
 import { createBrickModel } from '@/utils/brick-model-factory';
 import { placeBrickFromPalette } from '@/utils/palette-placement';
+
+import { BrickTooltip } from '@/components/Brick/BrickTooltip';
 
 interface BrickSlotProps {
   /**
@@ -22,11 +25,25 @@ interface BrickSlotProps {
  * Render boundary for a single palette brick — a live SVG preview wrapped in a passive drag
  * source and click-to-place target: `palette-brick-slot` is the delegated selector `useDragFromPalette`
  * binds against, `data-brick-id` the payload key, and `touch-none` lets touch drags reach interact.js.
- * Clicking or pressing Enter/Space places a new standalone tower on the workspace canvas.
+ * Clicking or pressing Enter/Space places a new standalone tower on the workspace canvas, and
+ * hovering or focusing the slot reveals the brick's tooltip after a short delay.
  */
 export function BrickSlot({ brick }: BrickSlotProps) {
   const model = useMemo(() => createBrickModel(brick.brick, brick.id), [brick.brick, brick.id]);
   const isDragging = usePaletteDragStore((state) => state.dragged?.id === brick.id);
+
+  // The brick's own tooltip is the point of the hover; the catalog description stands in for
+  // bricks that carry no tooltip text, since it is what the slot used to show through `title`.
+  const tooltipText = model.tooltipText || brick.description;
+  const tooltip = useBrickTooltip(tooltipText);
+  const tooltipId = useId();
+
+  // The visual tooltip opens after a delay, too late for a screen reader announcing the slot as it
+  // takes focus, so the same text also sits in a visually hidden description that is there from
+  // the start. Text that only repeats the slot's name is left out, since it would be read twice.
+  const accessibleName = brick.name || brick.description;
+  const hasDescription = tooltipText !== '' && tooltipText !== accessibleName;
+  const descriptionId = `${tooltipId}-description`;
 
   // Use a type assertion because the view expects BrickViewPropsWithModel, but BrickModel
   // guarantees the model fields match the expected discriminated kind.
@@ -62,17 +79,30 @@ export function BrickSlot({ brick }: BrickSlotProps) {
         <div
           role="button"
           tabIndex={0}
-          aria-label={brick.name || brick.description}
-          title={brick.description}
+          aria-label={accessibleName}
+          aria-describedby={hasDescription ? descriptionId : undefined}
           data-brick-id={brick.id}
           onClick={handleClick}
           onKeyDown={handleKeyDown}
+          onPointerEnter={(event) => tooltip.show(event.currentTarget, 'pointer')}
+          onPointerLeave={() => tooltip.hide('pointer')}
+          onPointerDown={() => tooltip.hide()}
+          onFocus={(event) => tooltip.show(event.currentTarget, 'focus')}
+          onBlur={() => tooltip.hide('focus')}
           className="palette-brick-slot focus-visible:outline-primary flex min-h-11 w-fit cursor-grab touch-none items-center rounded-md px-1 py-1 transition-colors select-none hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-1 active:cursor-grabbing"
         >
           <div className="pointer-events-none">
             <BrickView {...viewProps} />
           </div>
         </div>
+        {hasDescription && (
+          <span id={descriptionId} className="sr-only">
+            {tooltipText}
+          </span>
+        )}
+        {tooltip.anchor !== null && (
+          <BrickTooltip id={tooltipId} text={tooltipText} anchor={tooltip.anchor} />
+        )}
       </div>
     </div>
   );

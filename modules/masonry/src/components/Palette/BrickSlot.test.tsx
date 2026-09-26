@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { BrickViewProps } from '@/@types/brick.types';
 import type { PaletteBrickConfig } from '@/@types/palette.types';
 
+import { BRICK_TOOLTIP_DELAY_MS } from '@/hooks/useBrickTooltip';
 import { usePaletteDragStore } from '@/stores/palette';
 import { placeBrickFromPalette } from '@/utils/palette-placement';
 
@@ -55,6 +56,61 @@ beforeEach(() => {
 // -------------------------------------------------------------------------------------------------
 
 describe('BrickSlot', () => {
+  // The delay, drag suppression and pointer-and-focus handling are the hook's, and are covered in
+  // useBrickTooltip.test.tsx; what is left here is what the slot itself decides.
+  describe('tooltip', () => {
+    /** Runs the hover delay down inside `act`, so the tooltip's state change is flushed. */
+    function passTheDelay() {
+      act(() => {
+        vi.advanceTimersByTime(BRICK_TOOLTIP_DELAY_MS);
+      });
+    }
+
+    it('shows the brick tooltip only after the hover delay', () => {
+      vi.useFakeTimers();
+      render(<BrickSlot brick={NOTE} />);
+
+      fireEvent.pointerEnter(slot());
+      act(() => {
+        vi.advanceTimersByTime(BRICK_TOOLTIP_DELAY_MS - 1);
+      });
+      expect(screen.queryByRole('tooltip')).toBeNull();
+
+      passTheDelay();
+      expect(screen.getByRole('tooltip').textContent).toBe('Note');
+    });
+
+    it("falls back to the entry's description when the brick carries no tooltip text", () => {
+      vi.useFakeTimers();
+      render(<BrickSlot brick={{ ...NOTE, brick: { ...NOTE.brick, tooltipText: '' } }} />);
+
+      fireEvent.pointerEnter(slot());
+      passTheDelay();
+
+      expect(screen.getByRole('tooltip').textContent).toBe('play a note');
+    });
+
+    it('describes the slot from the moment it takes focus, before the tooltip opens', () => {
+      render(
+        <BrickSlot brick={{ ...NOTE, brick: { ...NOTE.brick, tooltipText: 'Plays a note' } }} />,
+      );
+
+      // No hover and no delay: a screen reader announcing the slot on focus reads it straight away.
+      const describedBy = slot().getAttribute('aria-describedby');
+      expect(describedBy).not.toBeNull();
+      expect(document.getElementById(describedBy!)?.textContent).toBe('Plays a note');
+      // The button keeps the brick's short name.
+      expect(slot().getAttribute('aria-label')).toBe('Note');
+    });
+
+    it('leaves the description out when it would only repeat the name', () => {
+      // NOTE's tooltip text is its name, which a screen reader would otherwise read twice.
+      render(<BrickSlot brick={NOTE} />);
+
+      expect(slot().getAttribute('aria-describedby')).toBeNull();
+    });
+  });
+
   describe('accessibility', () => {
     it('exposes the slot as a focusable button named after the entry', () => {
       render(<BrickSlot brick={NOTE} />);

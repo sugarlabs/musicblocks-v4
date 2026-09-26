@@ -37,6 +37,8 @@ export const SCALE_LEVELS = Object.keys(SCALE_LEVEL_CONFIG)
 export const MIN_SCALE_LEVEL = SCALE_LEVELS[0];
 export const MAX_SCALE_LEVEL = SCALE_LEVELS[SCALE_LEVELS.length - 1];
 
+export const DEFAULT_GRID_SPACING = 20;
+
 // ── Interaction ──
 
 /**

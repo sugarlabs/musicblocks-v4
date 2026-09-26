@@ -71,6 +71,14 @@ export interface BrickOutlineOutput {
     width: number;
     /** Total outer height of the brick */
     height: number;
+    /** Margins around the brick's content, in the same unscaled SVG space as `path` */
+    margins: {
+        top: number;
+        right: number;
+        bottom: number;
+        left: number;
+    };
+
     /** Bounding rectangles for each layout region */
     bounds: {
         /** Bounds of the primary widget. */

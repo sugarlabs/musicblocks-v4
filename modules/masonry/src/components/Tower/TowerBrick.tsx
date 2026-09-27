@@ -36,7 +36,7 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
   // boolean only flips for the two bricks that actually gained or lost the selection.
   const isSelected = useWorkspaceStore((state) => state.selectedBrickId === id);
 
-  useBrickMove(id, ref);
+  const shouldSuppressClick = useBrickMove(id, ref);
 
   // We explicitly extract coords without returning a fallback object in the selector.
   // Returning a new `{ x: 0, y: 0 }` object inside the selector would cause useSyncExternalStore
@@ -58,10 +58,11 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
 
     useWorkspaceStore.getState().setNestingFold(id, !found.node.model.isNestingFolded);
   }, [id]);
-  // Read at press time like `toggleFold` above, so the handler stays keyed on `id` alone.
+  // Suppress interact.js's trailing click after this brick's own drag.
   const handleClick = useCallback(() => {
+    if (shouldSuppressClick()) return;
     useWorkspaceStore.getState().selectBrick(id);
-  }, [id]);
+  }, [id, shouldSuppressClick]);
 
   // A selected brick is ringed in a deepened shade of its own fill, dark enough to hold against the
   // light canvas the bricks sit on. `drop-shadow` follows the rendered alpha, so the ring traces the

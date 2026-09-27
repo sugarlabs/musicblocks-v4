@@ -12,7 +12,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { TowerStatementNode } from '@/@types/tower.types';
 
-import { makeEmptyStatement, makeEmptyValue} from '@/mocks/tower';
+import { makeEmptyStatement, makeEmptyValue } from '@/mocks/tower';
 import { useActionMenuStore } from '@/stores/actionMenu';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { useWorkspaceStore } from '@/stores/workspace';
@@ -26,13 +26,28 @@ vi.mock('@/components/Brick/Brick', () => ({
   },
 }));
 
+// The drag-to-click suppression lives inside `useBrickMove` (a ref, plus a returned predicate), so
+// the component tests drive that predicate directly rather than the interact.js wiring it needs a
+// real pointer sequence for.
+const { shouldSuppressClick } = vi.hoisted(() => ({
+  shouldSuppressClick: vi.fn(() => false),
+}));
+
+vi.mock('@/hooks/useBrickMove', () => ({
+  useBrickMove: () => shouldSuppressClick,
+}));
+
 const { TowerBrickView } = await import('./TowerBrick');
 
 const NODE = makeEmptyValue('visibility-brick');
 
 afterEach(() => {
   cleanup();
-  useWorkspaceStore.setState({ towers: {}, selectedBrickId: null });
+  useWorkspaceStore.setState({
+    towers: {},
+    selectedBrickId: null,
+  });
+  shouldSuppressClick.mockReturnValue(false);
   useActionMenuStore.setState({ brickId: null });
   useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
   act(() => {
@@ -233,5 +248,24 @@ describe('TowerBrickView right click', () => {
     renderBricks('brick-1');
 
     expect(useActionMenuStore.getState().brickId).toBeNull();
+  });
+});
+
+describe('TowerBrickView drag-to-click suppression', () => {
+  it('selects the brick on a plain click', () => {
+    renderBricks('brick-1');
+
+    fireEvent.click(brickEl('brick-1'));
+
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+  });
+
+  it('does not select a click the hook reports as trailing a drag', () => {
+    shouldSuppressClick.mockReturnValue(true);
+    renderBricks('brick-1');
+
+    fireEvent.click(brickEl('brick-1'));
+
+    expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
   });
 });

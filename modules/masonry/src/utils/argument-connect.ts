@@ -2,8 +2,8 @@ import type { TowerExpressionNode, TowerStatementNode, TowerValueNode } from '@/
 import type { ArgumentConnectorMeta, TowerState } from '@/@types/workspace.types';
 
 import type { CollisionSpace } from './collision';
-import { connectorCenter, querySnap } from './snap-config';
-import { findNode, listVisibleNodes } from './tower-traversal';
+import { querySnap } from './snap-config';
+import { findNode } from './tower-traversal';
 
 /** A node that owns argument slots, and can therefore receive an argument. */
 export type ArgumentParentNode = TowerExpressionNode | TowerStatementNode;
@@ -98,79 +98,9 @@ function resolveOutputIntoSlot(
 }
 
 /**
- * Direction 2 — the dragged tower picks something up: one of its own empty argument slots seeks the
- * free output tab of a settled tower, which is absorbed into it. Every empty slot in the dragged
- * tower is a candidate, not just the root's, since all of them are equally free to be filled.
- *
- * Only the slots the drag carries in plain sight, though: a brick hidden inside a folded cavity
- * offers none, since it is drawn nowhere and its recorded position is wherever the layout left it
- * before the fold shut over it. Its slots are open to a drop again when the fold is lifted.
- */
-function resolveSlotOntoOutput(
-    dragged: TowerState,
-    { space, connectors, towers }: ResolveArgumentConnectionParams,
-): ArgumentConnection | null {
-    let best: ArgumentConnection | null = null;
-
-    for (const parent of listVisibleNodes(dragged.root)) {
-        if (parent.kind !== 'expression' && parent.kind !== 'statement') continue;
-
-        const inputs = parent.model.getConnectorCoords().inputs;
-
-        parent.args.forEach((arg, slotIndex) => {
-            if (arg !== null) return;
-
-            const input = inputs[slotIndex];
-            if (!input) return;
-
-            const probe = connectorCenter(dragged.root, parent, dragged.position, input);
-
-            for (const hitId of querySnap(space, probe)) {
-                const meta = connectors[hitId];
-                if (!meta || meta.type !== 'output') continue;
-
-                // A tower never picks up a brick it already contains.
-                if (meta.towerId === dragged.id) continue;
-
-                const absorbed = towers[meta.towerId];
-                if (!absorbed) continue;
-
-                // Only a whole tower can be picked up, so the output must be its root's: any other
-                // brick's output is already plugged into the slot above it.
-                const child = absorbed.root;
-                if (child.model.id !== meta.brickId) continue;
-                if (child.kind !== 'value' && child.kind !== 'expression') continue;
-
-                const { output } = child.model.getConnectorCoords();
-                if (!output) continue;
-
-                const distance = Math.hypot(
-                    child.model.position.x + output.x - probe.x,
-                    child.model.position.y + output.y - probe.y,
-                );
-
-                if (best === null || distance < best.distance) {
-                    best = {
-                        parent,
-                        child,
-                        slotIndex,
-                        hostTowerId: dragged.id,
-                        absorbedTowerId: absorbed.id,
-                        distance,
-                    };
-                }
-            }
-        });
-    }
-
-    return best;
-}
-
-/**
  * Resolves a dropped tower into an argument connection with a settled tower, or null when nothing
- * valid is within snap distance. Both directions are tried, so which brick the user happened to drag
- * does not decide whether the two can join; an expression has both an output tab and slots of its
- * own, so when both are in range the closer pairing wins.
+ * valid is within snap distance. The dragged tower plugs itself in: its root's output tab seeks an empty argument
+ * slot on a settled tower, which becomes the host.
  *
  * Slot emptiness and output freedom are read off the live node graph, not the collision metadata, so
  * a connector point that has not been re-synced since its slot was filled cannot mislead this.
@@ -183,13 +113,7 @@ export function resolveArgumentConnection(
     const dragged = params.towers[params.draggedTowerId];
     if (!dragged) return null;
 
-    const plugIn = resolveOutputIntoSlot(dragged, params);
-    const pickUp = resolveSlotOntoOutput(dragged, params);
-
-    if (plugIn === null) return pickUp;
-    if (pickUp === null) return plugIn;
-
-    return pickUp.distance < plugIn.distance ? pickUp : plugIn;
+    return resolveOutputIntoSlot(dragged, params);
 }
 
 /**

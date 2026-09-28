@@ -1,6 +1,6 @@
 import type { DragEvent } from '@interactjs/types';
 import interact from 'interactjs';
-import { RefObject, useEffect, useRef } from 'react';
+import { RefObject, useCallback, useEffect, useRef } from 'react';
 
 import { useActionMenuStore } from '@/stores/actionMenu';
 import { useBrickLayoutStore } from '@/stores/brick';
@@ -8,7 +8,7 @@ import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { useTrashStore } from '@/stores/trash';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 import { joinArg, resolveArgumentConnection } from '@/utils/argument-connect';
-import { FOLD_TOGGLE_SELECTOR } from '@/utils/constants';
+import { DRAG_CLICK_SUPPRESSION_MS, FOLD_TOGGLE_SELECTOR } from '@/utils/constants';
 import { isPointInsideBounds } from '@/utils/geometry';
 import { resolveCandidateConnection } from '@/utils/snap-preview-calculator';
 import { joinStatement, resolveStatementConnection } from '@/utils/statement-connect';
@@ -85,6 +85,7 @@ export function tryConnect(towerId: string): boolean {
  *
  * @param id - The unique identifier of the target brick.
  * @param ref - The DOM ref of the brick's wrapper element.
+ * @returns A predicate that is true while a click trailing the brick's own drag should be ignored.
  */
 export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
     const dragPosRef = useRef({ x: 0, y: 0 });
@@ -93,6 +94,9 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
         towerId: string;
         towerPosition: { x: number; y: number };
     } | null>(null);
+    // When this brick's own drag last ended, in ms. 0 until its first drag. interact.js only
+    // starts a drag once the pointer has moved, so `end` always marks a real drag.
+    const lastDragEndRef = useRef(0);
     const isMounted = useBrickLayoutStore((state) => state.mounted[id]);
     const areBricksHidden = useWorkspaceStore((state) => state.areBricksHidden);
 
@@ -245,6 +249,10 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
                     }
                 },
                 end(event: DragEvent) {
+                    // Recorded before the early returns so the trailing click is suppressed even
+                    // when the drop was untracked or discarded.
+                    lastDragEndRef.current = Date.now();
+
                     // Before the early return: a drag that ends without a tracked state must still
                     // leave the Trash unhighlighted.
                     useTrashStore.getState().setHovered(false);
@@ -306,4 +314,8 @@ export function useBrickMove(id: string, ref: RefObject<HTMLElement | null>) {
             }
         };
     }, [id, ref, isMounted, areBricksHidden]);
+
+    // Stable, so `TowerBrickView`'s click handler can depend on it without re-subscribing. Reads
+    // the ref at press time, which is what keeps the handler keyed on `id` alone.
+    return useCallback(() => Date.now() - lastDragEndRef.current < DRAG_CLICK_SUPPRESSION_MS, []);
 }

@@ -31,7 +31,10 @@ afterEach(() => {
   vi.restoreAllMocks();
   usePaletteDragStore.setState({ dragged: null });
   useActionMenuStore.setState({ brickId: null });
-  useWorkspaceStore.setState({ towers: {}, selectedBrickId: null });
+  useWorkspaceStore.setState({
+    towers: {},
+    selectedBrickId: null,
+  });
   useTrashStore.setState({ bounds: null, isHovered: false });
   useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
   useWorkspaceViewportStore.setState({ offset: { x: 0, y: 0 } });

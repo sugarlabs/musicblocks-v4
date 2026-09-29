@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import type { Point, Size } from '@/@types/common.types';
 import type {
     TowerExpressionNode,
     TowerNode,
@@ -11,6 +12,7 @@ import {
     findNode,
     listNodes,
     listVisibleNodes,
+    measureTowerExtent,
     traverseBottomUp,
     traverseTopDown,
 } from './tower-traversal';
@@ -854,5 +856,88 @@ describe('layout traversals with a folded cavity', () => {
                 [outer, inner, innerNext, tail].map((node) => ({ ...node.model.position })),
             ).toEqual(before);
         });
+    });
+});
+
+describe('measureTowerExtent', () => {
+    const ORIGIN: Point = { x: 200, y: 150 };
+
+    /** Sets a widget size and computes dims, the way the layout's measurement pass does. */
+    function measure(node: TowerNode, widget: Size): Size {
+        node.model.widgetDims = widget;
+        node.model.computeDims();
+        return node.model.dims;
+    }
+
+    /** A statement chain of `ids`, linked in order, every brick measured. */
+    function makeChain(...ids: string[]): TowerStatementNode[] {
+        const nodes = ids.map((id) => makeStatement(id, 0, false));
+        nodes.forEach((node, index) => {
+            node.prev = nodes[index - 1] ?? null;
+            node.next = nodes[index + 1] ?? null;
+            measure(node, { w: 60, h: 20 });
+        });
+        return nodes;
+    }
+
+    it('reports the root brick alone while nothing has been laid out', () => {
+        const [head, tail] = makeChain('head', 'tail');
+
+        // Not laid out: the tail has no place on the canvas yet, so it takes no room.
+        expect(measureTowerExtent({ root: head, position: ORIGIN }, {})).toEqual(head.model.dims);
+        expect(tail.model.dims.h).toBeGreaterThan(0);
+    });
+
+    it('reaches to the farthest brick edge, relative to the tower origin', () => {
+        const [head, tail] = makeChain('head', 'tail');
+        const wide = makeValue('wide');
+        measure(wide, { w: 200, h: 10 });
+        head.args = [wide];
+        wide.parent = head;
+
+        // Laid out: the tail flush below the head, the value off to the right of the head.
+        const coords = {
+            head: ORIGIN,
+            tail: { x: ORIGIN.x, y: ORIGIN.y + head.model.dims.h },
+            wide: { x: ORIGIN.x + 30, y: ORIGIN.y },
+        };
+
+        expect(measureTowerExtent({ root: head, position: ORIGIN }, coords)).toEqual({
+            w: 30 + wide.model.dims.w,
+            h: head.model.dims.h + tail.model.dims.h,
+        });
+    });
+
+    it('leaves out the bricks a folded cavity hides', () => {
+        const outer = makeStatement('outer', 0, true);
+        measure(outer, { w: 60, h: 20 });
+        const [inner] = makeChain('inner');
+        outer.nestedNext = inner;
+        inner.prev = outer;
+
+        const coords = {
+            outer: ORIGIN,
+            inner: { x: ORIGIN.x + 20, y: ORIGIN.y + outer.model.dims.h },
+        };
+        const open = measureTowerExtent({ root: outer, position: ORIGIN }, coords);
+
+        outer.model.isNestingFolded = true;
+        const folded = measureTowerExtent({ root: outer, position: ORIGIN }, coords);
+
+        expect(open.h).toBe(outer.model.dims.h + inner.model.dims.h);
+        expect(folded).toEqual(outer.model.dims);
+    });
+
+    it('never shrinks below the root brick', () => {
+        const [head, tail] = makeChain('head', 'tail');
+
+        // The zero placeholder the layout seeds ahead of its first pass, on a tower that stands
+        // away from the canvas origin: an edge measured from there lands before the origin.
+        const placeholders = { head: { x: 0, y: 0 }, tail: { x: 0, y: 0 } };
+
+        expect(measureTowerExtent({ root: head, position: ORIGIN }, placeholders)).toEqual(
+            head.model.dims,
+        );
+        expect(tail.model.dims.h).toBeGreaterThan(0);
     });
 });

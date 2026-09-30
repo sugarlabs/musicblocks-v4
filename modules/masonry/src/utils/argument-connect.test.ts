@@ -144,7 +144,7 @@ describe('resolveArgumentConnection', () => {
             expect(result?.slotIndex).toBe(2);
         });
 
-        it('skips an occupied slot', () => {
+        it('allows replacing an occupied slot', () => {
             const host = makeEmptyExpression('host', 1);
             host.model.setPosition(500, 500);
             const dragged = makeEmptyValue('dragged');
@@ -159,7 +159,8 @@ describe('resolveArgumentConnection', () => {
             ]);
 
             // Filled after the space was seeded, so only the live graph knows the slot is taken.
-            host.args[0] = makeEmptyValue('sitting-tenant');
+            const sittingTenant = makeEmptyValue('sitting-tenant');
+            host.args[0] = sittingTenant;
 
             const result = resolveArgumentConnection({
                 draggedTowerId: 'dragged-tower',
@@ -168,7 +169,72 @@ describe('resolveArgumentConnection', () => {
                 towers,
             });
 
-            expect(result).toBeNull();
+            expect(result).toMatchObject({
+                parent: host,
+                child: dragged,
+                slotIndex: 0,
+                hostTowerId: 'host-tower',
+                absorbedTowerId: 'dragged-tower',
+                residentNode: sittingTenant,
+            });
+        });
+
+        it('reports no resident when the slot is empty', () => {
+            const host = makeEmptyExpression('host', 1);
+            host.model.setPosition(500, 500);
+            const dragged = makeEmptyValue('dragged');
+
+            const { space, connectors, towers } = workspace([
+                { id: 'host-tower', root: host, position: { x: 500, y: 500 } },
+                {
+                    id: 'dragged-tower',
+                    root: dragged,
+                    position: positionOutputAt(dragged, slotCenter(host, 0)),
+                },
+            ]);
+
+            const result = resolveArgumentConnection({
+                draggedTowerId: 'dragged-tower',
+                space,
+                connectors,
+                towers,
+            });
+
+            expect(result?.residentNode).toBeNull();
+        });
+
+        it('returns the whole expression subtree as the resident when the slot holds one', () => {
+            const host = makeEmptyExpression('host', 1);
+            host.model.setPosition(500, 500);
+            const dragged = makeEmptyValue('dragged');
+
+            // The resident is an expression with its own filled argument.
+            const resident = makeEmptyExpression('resident', 1);
+            const leaf = makeEmptyValue('leaf');
+            resident.args[0] = leaf;
+            leaf.parent = resident;
+            host.args[0] = resident;
+            resident.parent = host;
+
+            const { space, connectors, towers } = workspace([
+                { id: 'host-tower', root: host, position: { x: 500, y: 500 } },
+                {
+                    id: 'dragged-tower',
+                    root: dragged,
+                    position: positionOutputAt(dragged, slotCenter(host, 0)),
+                },
+            ]);
+
+            const result = resolveArgumentConnection({
+                draggedTowerId: 'dragged-tower',
+                space,
+                connectors,
+                towers,
+            });
+
+            expect(result?.residentNode).toBe(resident);
+            // The resident keeps its own subtree intact.
+            expect(resident.args[0]).toBe(leaf);
         });
 
         it('never plugs into a slot the dragged tower already owns', () => {
@@ -188,6 +254,289 @@ describe('resolveArgumentConnection', () => {
             });
 
             expect(result).toBeNull();
+        });
+    });
+
+    describe('dragging a slot onto an argument', () => {
+        it('picks up the settled brick the dragged slot was dropped on', () => {
+            const settled = makeEmptyValue('settled');
+            settled.model.setPosition(500, 500);
+            const dragged = makeEmptyExpression('dragged', 1);
+            const { output } = settled.model.getConnectorCoords();
+            const outputCentre = { x: 500 + output!.x, y: 500 + output!.y };
+
+            const { space, connectors, towers } = workspace([
+                { id: 'settled-tower', root: settled, position: { x: 500, y: 500 } },
+                {
+                    id: 'dragged-tower',
+                    root: dragged,
+                    position: positionSlotAt(dragged, 0, outputCentre),
+                },
+            ]);
+
+            const result = resolveArgumentConnection({
+                draggedTowerId: 'dragged-tower',
+                space,
+                connectors,
+                towers,
+            });
+
+            expect(result).toMatchObject({
+                parent: dragged,
+                child: settled,
+                slotIndex: 0,
+                // The tower that owns the slot survives, which this time is the dragged one.
+                hostTowerId: 'dragged-tower',
+                absorbedTowerId: 'settled-tower',
+            });
+        });
+
+        it('works when the slot owner is a statement brick', () => {
+            const settled = makeEmptyValue('settled');
+            settled.model.setPosition(500, 500);
+            const dragged = makeEmptyStatement('dragged', 2);
+            const { output } = settled.model.getConnectorCoords();
+            const outputCentre = { x: 500 + output!.x, y: 500 + output!.y };
+
+            const { space, connectors, towers } = workspace([
+                { id: 'settled-tower', root: settled, position: { x: 500, y: 500 } },
+                {
+                    id: 'dragged-tower',
+                    root: dragged,
+                    position: positionSlotAt(dragged, 1, outputCentre),
+                },
+            ]);
+
+            const result = resolveArgumentConnection({
+                draggedTowerId: 'dragged-tower',
+                space,
+                connectors,
+                towers,
+            });
+
+            expect(result?.parent).toBe(dragged);
+            expect(result?.child).toBe(settled);
+            expect(result?.slotIndex).toBe(1);
+        });
+
+        it('allows picking up a block when the slot is occupied', () => {
+            const settled = makeEmptyValue('settled');
+            settled.model.setPosition(500, 500);
+            const dragged = makeEmptyExpression('dragged', 1);
+
+            const sittingTenant = makeEmptyValue('sitting-tenant');
+            dragged.args[0] = sittingTenant;
+
+            const { output } = settled.model.getConnectorCoords();
+            const outputCentre = { x: 500 + output!.x, y: 500 + output!.y };
+
+            const { space, connectors, towers } = workspace([
+                { id: 'settled-tower', root: settled, position: { x: 500, y: 500 } },
+                {
+                    id: 'dragged-tower',
+                    root: dragged,
+                    position: positionSlotAt(dragged, 0, outputCentre),
+                },
+            ]);
+
+            const result = resolveArgumentConnection({
+                draggedTowerId: 'dragged-tower',
+                space,
+                connectors,
+                towers,
+            });
+
+            expect(result).toMatchObject({
+                parent: dragged,
+                child: settled,
+                slotIndex: 0,
+                hostTowerId: 'dragged-tower',
+                absorbedTowerId: 'settled-tower',
+                residentNode: sittingTenant,
+            });
+        });
+
+        it('returns the whole expression subtree as the resident when the dragged slot holds one', () => {
+            const settled = makeEmptyValue('settled');
+            settled.model.setPosition(500, 500);
+            const dragged = makeEmptyExpression('dragged', 1);
+
+            const resident = makeEmptyExpression('resident', 1);
+            const leaf = makeEmptyValue('leaf');
+            resident.args[0] = leaf;
+            leaf.parent = resident;
+            dragged.args[0] = resident;
+            resident.parent = dragged;
+
+            const { output } = settled.model.getConnectorCoords();
+            const outputCentre = { x: 500 + output!.x, y: 500 + output!.y };
+
+            const { space, connectors, towers } = workspace([
+                { id: 'settled-tower', root: settled, position: { x: 500, y: 500 } },
+                {
+                    id: 'dragged-tower',
+                    root: dragged,
+                    position: positionSlotAt(dragged, 0, outputCentre),
+                },
+            ]);
+
+            const result = resolveArgumentConnection({
+                draggedTowerId: 'dragged-tower',
+                space,
+                connectors,
+                towers,
+            });
+
+            expect(result?.residentNode).toBe(resident);
+            expect(resident.args[0]).toBe(leaf);
+        });
+
+        it('refuses a brick that is already filling another brick’s slot', () => {
+            // `tenant` is not its tower's root, so its output tab is already spoken for. It sits
+            // well away from `owner` so that only its own output tab is near the probe.
+            const owner = makeEmptyExpression('owner', 1);
+            const tenant = makeEmptyValue('tenant');
+            owner.args[0] = tenant;
+            tenant.parent = owner;
+            owner.model.setPosition(500, 500);
+            tenant.model.setPosition(900, 700);
+
+            const dragged = makeEmptyExpression('dragged', 1);
+            const { output } = tenant.model.getConnectorCoords();
+            const tenantOutput = { x: 900 + output!.x, y: 700 + output!.y };
+
+            const { space, connectors, towers } = workspace([
+                { id: 'owner-tower', root: owner, position: { x: 500, y: 500 } },
+                {
+                    id: 'dragged-tower',
+                    root: dragged,
+                    position: positionSlotAt(dragged, 0, tenantOutput),
+                },
+            ]);
+
+            const result = resolveArgumentConnection({
+                draggedTowerId: 'dragged-tower',
+                space,
+                connectors,
+                towers,
+            });
+
+            expect(result).toBeNull();
+        });
+
+        it('offers a slot from anywhere in the dragged tower, not just its root', () => {
+            const settled = makeEmptyValue('settled');
+            settled.model.setPosition(500, 500);
+
+            // A dragged tower two deep: the root's slot is taken, its child's slot is free.
+            const root = makeEmptyExpression('root', 1);
+            const inner = makeEmptyExpression('inner', 1);
+            root.args[0] = inner;
+            inner.parent = root;
+
+            const { output } = settled.model.getConnectorCoords();
+            const outputCentre = { x: 500 + output!.x, y: 500 + output!.y };
+
+            // The inner brick sits at this fixed offset within the dragged tower, as its layout
+            // would place it. Position the tower so the inner brick's groove lands on the output.
+            const INNER_OFFSET = { x: 40, y: 10 };
+            const input = inner.model.getConnectorCoords().inputs[0];
+            const draggedPosition = {
+                x: outputCentre.x - INNER_OFFSET.x - input.x,
+                y: outputCentre.y - INNER_OFFSET.y - input.y,
+            };
+            inner.model.setPosition(
+                draggedPosition.x + INNER_OFFSET.x,
+                draggedPosition.y + INNER_OFFSET.y,
+            );
+
+            const { space, connectors, towers } = workspace([
+                { id: 'settled-tower', root: settled, position: { x: 500, y: 500 } },
+                { id: 'dragged-tower', root, position: draggedPosition },
+            ]);
+
+            const result = resolveArgumentConnection({
+                draggedTowerId: 'dragged-tower',
+                space,
+                connectors,
+                towers,
+            });
+
+            expect(result?.parent).toBe(inner);
+            expect(result?.child).toBe(settled);
+        });
+    });
+
+    describe('with a folded cavity', () => {
+        /**
+         * A clamp holding one statement in its cavity, laid out at `position` the way the tower
+         * layout pass would, and folded afterwards — so the hidden brick keeps the slot positions
+         * the open cavity gave it, which is what a stale hit would snap onto.
+         */
+        function foldedClampAt(position: Point) {
+            const clamp = makeEmptyStatement('clamp', 0, true);
+            const hidden = makeEmptyStatement('hidden', 1);
+
+            clamp.nestedNext = hidden;
+            hidden.prev = clamp;
+
+            hidden.model.computeOutline();
+            clamp.model.nestingDims = { w: hidden.model.dims.w, h: hidden.model.dims.h };
+            clamp.model.computeOutline();
+
+            traverseTopDown(clamp, position);
+            clamp.model.isNestingFolded = true;
+
+            return { clamp, hidden };
+        }
+
+        it('offers no slot of a brick the fold hides, however empty that slot is', () => {
+            const { clamp, hidden } = foldedClampAt({ x: 500, y: 500 });
+
+            const settled = makeEmptyValue('settled');
+            const settledPosition = positionOutputAt(settled, slotCenter(hidden, 0));
+            settled.model.setPosition(settledPosition.x, settledPosition.y);
+
+            const { space, connectors, towers } = workspace([
+                { id: 'settled-tower', root: settled, position: settledPosition },
+                { id: 'clamp-tower', root: clamp, position: { x: 500, y: 500 } },
+            ]);
+
+            const result = resolveArgumentConnection({
+                draggedTowerId: 'clamp-tower',
+                space,
+                connectors,
+                towers,
+            });
+
+            // A hidden brick is drawn nowhere and stands wherever the layout left it before the
+            // fold shut; a snap into it would fill a slot the user cannot see.
+            expect(result).toBeNull();
+        });
+
+        it('offers that slot again once the fold is lifted', () => {
+            const { clamp, hidden } = foldedClampAt({ x: 500, y: 500 });
+            clamp.model.isNestingFolded = false;
+
+            const settled = makeEmptyValue('settled');
+            const settledPosition = positionOutputAt(settled, slotCenter(hidden, 0));
+            settled.model.setPosition(settledPosition.x, settledPosition.y);
+
+            const { space, connectors, towers } = workspace([
+                { id: 'settled-tower', root: settled, position: settledPosition },
+                { id: 'clamp-tower', root: clamp, position: { x: 500, y: 500 } },
+            ]);
+
+            const result = resolveArgumentConnection({
+                draggedTowerId: 'clamp-tower',
+                space,
+                connectors,
+                towers,
+            });
+
+            expect(result?.parent).toBe(hidden);
+            expect(result?.child).toBe(settled);
+            expect(result?.slotIndex).toBe(0);
         });
     });
 

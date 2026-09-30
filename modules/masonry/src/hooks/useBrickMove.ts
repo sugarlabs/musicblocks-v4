@@ -22,7 +22,7 @@ import { listNodes } from '@/utils/tower-traversal';
  * This is used to create visual "pulses" when bricks connect or disconnect.
  */
 export function triggerBrickAnimation(brickId: string, animationClass: string) {
-    const el = document.querySelector(`[data-brick-id="${brickId}"]`);
+    const el = document.querySelector(`[data-id="${brickId}"]`);
     if (el) {
         el.classList.remove(animationClass);
         // Force reflow to restart animation

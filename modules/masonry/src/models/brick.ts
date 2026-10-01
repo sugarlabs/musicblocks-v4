@@ -220,6 +220,12 @@ export class ValueBrickModel extends BrickModelBase {
     // value field may be mutated directly as the user interacts.
     readonly widget: WidgetDisplay | WidgetInput;
 
+    public setVariantValue(value: string): void {
+        if (this.widget.type !== 'variant') return;
+        this.widget.value = value;
+        this._notifyUpdate();
+    }
+
     protected _buildOutlineInput(): BrickOutlineInput {
         return {
             strokeWidth: this.pxToSvg(STROKE_WIDTH),
@@ -264,6 +270,13 @@ export class ExpressionBrickModel extends BrickModelBase {
 
     set argDims(value: (Size | null)[]) {
         this._argDims = value;
+        this._notifyUpdate();
+    }
+
+    /** Updates a variant widget's selected value and notifies subscribers. No-op for any other widget kind. */
+    public setVariantValue(value: string): void {
+        if (this.widget.type !== 'variant') return;
+        this.widget.value = value;
         this._notifyUpdate();
     }
 
@@ -324,6 +337,13 @@ export class StatementBrickModel extends BrickModelBase {
 
     set argDims(value: (Size | null)[]) {
         this._argDims = value;
+        this._notifyUpdate();
+    }
+
+    /** Updates a variant widget's selected value and notifies subscribers. No-op for any other widget kind. */
+    public setVariantValue(value: string): void {
+        if (this.widget.type !== 'variant') return;
+        this.widget.value = value;
         this._notifyUpdate();
     }
 

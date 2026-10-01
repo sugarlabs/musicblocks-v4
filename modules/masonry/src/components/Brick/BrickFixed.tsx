@@ -358,7 +358,14 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
                 </>
               )}
               {isVariantWidget && (
-                <Select value={variantValue} onValueChange={() => {}}>
+                <Select
+                  value={variantValue}
+                  onValueChange={(val) => {
+                    if (val !== null) {
+                      model.setVariantValue(val);
+                    }
+                  }}
+                >
                   <SelectTrigger
                     className={cn(
                       'h-7 min-w-16 gap-1 bg-transparent px-2 py-1',

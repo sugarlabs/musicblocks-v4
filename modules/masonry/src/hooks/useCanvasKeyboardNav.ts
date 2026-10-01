@@ -1,8 +1,9 @@
-import { useCallback, useEffect } from 'react';
+import { RefObject, useCallback, useEffect } from 'react';
 
 import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { FAST_PAN_STEP, PAGE_PAN_STEP, PAN_STEP } from '@/utils/constants';
+import { goHome } from '@/utils/workspace-home';
 
 /**
  * Determines if a keyboard event originated from inside an interactive text or input widget.
@@ -43,9 +44,10 @@ export function isInputFocused(event: React.KeyboardEvent | KeyboardEvent): bool
  * Handles keyboard-based canvas viewport navigation.
  *
  * Translates the canvas viewport offset upon receiving `Home`, `End`, `PageUp`, `PageDown`,
- * and the four arrow keys, while ignoring events originating from interactive inputs.
+ * and the four arrow keys, while ignoring events originating from interactive inputs. `Home` does
+ * what the Home button does, laying the towers out inside `canvasRef`.
  */
-export function useCanvasKeyboardNav() {
+export function useCanvasKeyboardNav(canvasRef?: RefObject<HTMLElement | null>) {
   const handleKeyDown = useCallback((event: React.KeyboardEvent | KeyboardEvent) => {
     // Something nearer the press has already answered it. The action menu sits inside the canvas
     // and takes the arrows while it is open, so without this its wedge step would pan the canvas
@@ -90,7 +92,7 @@ export function useCanvasKeyboardNav() {
         break;
       case 'Home':
         event.preventDefault();
-        resetOffset();
+        goHome(canvasRef?.current ?? null);
         break;
       case 'End': {
         event.preventDefault();
@@ -114,7 +116,7 @@ export function useCanvasKeyboardNav() {
       default:
         break;
     }
-  }, []);
+  }, [canvasRef]);
 
   useEffect(() => {
     const onWindowKeyDown = (event: KeyboardEvent) => {

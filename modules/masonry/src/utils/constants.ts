@@ -99,3 +99,8 @@ export const PAGE_PAN_STEP = 300;
 export const AUTO_PAN_BAND = 96;
 /** The most (in pixels) the canvas pans per frame while a dragged brick is held at an edge. */
 export const AUTO_PAN_MAX_STEP = 12;
+
+/** The width (in pixels) of a column Home lays towers out in; a wider tower spans several. */
+export const HOME_COLUMN_WIDTH = 160;
+/** The space (in pixels) Home leaves between the towers it lays out. */
+export const HOME_GAP = 24;

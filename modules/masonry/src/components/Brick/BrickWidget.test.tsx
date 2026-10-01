@@ -1,6 +1,8 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import type { WidgetInput } from '@/@types/brick.types';
+
 import { Widget } from './BrickWidget';
 
 vi.mock('@/stores/history', () => ({
@@ -13,10 +15,10 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-function textbox(value: string) {
+function textbox(value: string | Extract<WidgetInput, { type: 'textbox' }>) {
   return (
     <Widget
-      widget={{ type: 'textbox', value }}
+      widget={typeof value === 'string' ? { type: 'textbox', value } : value}
       fontSize={16}
       lineHeight={20}
       color="#ffffff"
@@ -27,6 +29,46 @@ function textbox(value: string) {
 }
 
 describe('textbox sizing', () => {
+  it('preserves focus and selection when editing causes the parent to rerender', () => {
+    vi.useFakeTimers();
+    const widget = { type: 'textbox' as const, value: 'Hello' };
+    const view = render(textbox(widget));
+    const input = screen.getByRole('textbox') as HTMLInputElement;
+    input.focus();
+
+    for (const value of ['HelloW', 'HelloWW', 'HelloWWW']) {
+      fireEvent.change(input, { target: { value } });
+      input.setSelectionRange(value.length, value.length);
+      // BrickInput rerenders after its ResizeObserver measures the new text width.
+      view.rerender(textbox(widget));
+
+      expect(screen.getByRole('textbox')).toBe(input);
+      expect(document.activeElement).toBe(input);
+      expect(input.selectionStart).toBe(value.length);
+      expect(input.selectionEnd).toBe(value.length);
+      expect(widget.value).toBe(value);
+    }
+  });
+
+  it('updates the textbox when its value changes externally without remounting', () => {
+    const view = render(textbox('Hello'));
+    const input = screen.getByRole('textbox') as HTMLInputElement;
+    view.rerender(textbox('Restored value'));
+
+    expect(screen.getByRole('textbox')).toBe(input);
+    expect(input.value).toBe('Restored value');
+    expect(input.parentElement!.querySelector('span')!.textContent).toBe('Restored value');
+  });
+
+  it('mounts the correct input when switching between textbox and numberbox', () => {
+    const view = render(textbox('Hello'));
+    view.rerender(<Widget {...textbox('Hello').props} widget={{ type: 'numberbox', value: 5 }} />);
+    expect((screen.getByRole('spinbutton') as HTMLInputElement).value).toBe('5');
+
+    view.rerender(textbox('Welcome'));
+    expect((screen.getByRole('textbox') as HTMLInputElement).value).toBe('Welcome');
+  });
+
   it('keeps the measurement text and font in sync when editing, including whitespace', () => {
     vi.useFakeTimers();
     render(textbox('WWW'));

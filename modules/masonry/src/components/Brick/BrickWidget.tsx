@@ -46,6 +46,7 @@ export function Widget({
   // Without this key, React would reuse the uncontrolled `<input>` DOM element, and a string
   // typed into the textbox would break the numberbox because "Hello" is invalid in type="number".
   // Changing the key forces React to completely destroy the old input and mount a fresh one.
+  // Textboxes synchronize their value without remounting so edits retain focus on layout updates.
   const key = `${widget.type}-${String(widget.value)}`;
 
   switch (widget.type) {
@@ -61,7 +62,7 @@ export function Widget({
         />
       );
     case 'textbox':
-      return <TextboxWidget key={key} widget={widget} commonStyle={commonStyle} />;
+      return <TextboxWidget key={widget.type} widget={widget} commonStyle={commonStyle} />;
     case 'numberbox':
       return (
         <NumberboxWidget
@@ -163,9 +164,15 @@ function TextboxWidget({
   widget: Extract<WidgetInput, { type: 'textbox' }>;
   commonStyle: React.CSSProperties;
 }) {
-  const [val, setVal] = useState(String(widget.value));
+  const value = String(widget.value);
+  const [val, setVal] = useState(value);
   const containerRef = useRef<HTMLDivElement>(null);
   const [maxWidth, setMaxWidth] = useState<number>();
+
+  // Reflect restored values and Storybook updates while keeping the focused input mounted.
+  useLayoutEffect(() => {
+    setVal(value);
+  }, [value]);
 
   useLayoutEffect(() => {
     const canvas = containerRef.current?.closest<HTMLElement>('[data-workspace-canvas]');

@@ -7,7 +7,7 @@ import type {
     StatementConnectorMeta,
     TowerState,
 } from '@/@types/workspace.types';
-import type { TowerNode } from '@/@types/tower.types';
+import type { TowerNode, TowerStatementNode } from '@/@types/tower.types';
 import { QuadtreeCollisionSpace } from '@/utils/collision';
 import { extractArgumentConnectors } from '@/utils/argument-collision';
 import { extractStatementConnectors } from '@/utils/statement-collision';
@@ -30,6 +30,11 @@ export const EXTRACTED_TOWER_MARGIN_X = 40;
 
 /** Default horizontal offset for placing extracted tower beside its old one. */
 export const EXTRACTED_TOWER_OFFSET_X = 60;
+
+/** Generates a fresh unique tower identifier. */
+function makeTowerId(): string {
+    return `tower-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+}
 
 /**
  * Collects the nodes belonging to the extracted brick's self-contained subtree
@@ -180,6 +185,8 @@ export interface WorkspaceStore {
      * placed offset from the source tower and connected to nothing.
      */
     duplicateBrickToNewTower: (nodeId: string) => string | null;
+    /** Extracts a brick alone out of its tower into a new tower beside it */
+    extractBrickToNewTower: (brickId: string) => string | null;
     /** Merges a joined tower into the host tower that now owns its bricks */
     absorbTower: (draggedTowerId: string, hostTowerId: string) => void;
     /** Re-runs every tower's layout, leaving the towers where they are */
@@ -418,7 +425,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                     target.parent = null;
                 }
 
-                newTowerId = `tower-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+                newTowerId = makeTowerId();
                 const newTower: TowerState = {
                     id: newTowerId,
                     position,
@@ -460,6 +467,102 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             get().createTower(duplicated);
 
             return duplicated.id;
+        },
+
+        extractBrickToNewTower: (brickId) => {
+            if (!canExtractBrick(brickId)) return null;
+
+            const found = findNodeAndTower(brickId);
+            if (!found) return null;
+
+            const { node: target, tower: sourceTower } = found;
+
+            if (target.kind !== 'statement') return null;
+
+            const prev = target.prev;
+            if (!prev || prev.kind !== 'statement' || prev.next !== target) {
+                return null;
+            }
+
+            // Defer unfolded clamps with non-empty cavities to Part 4
+            if (target.nestedNext && !target.model.isNestingFolded) {
+                return null;
+            }
+
+            let newTowerId: string | null = null;
+            let extractedIds: string[] = [];
+            set((state) => {
+                const tower = state.towers[sourceTower.id];
+                if (!tower) return state;
+
+                // If prev is the root, use the live root reference from the store
+                const livePrev =
+                    prev.model.id === tower.root.model.id && tower.root.kind === 'statement'
+                        ? (tower.root as TowerStatementNode)
+                        : prev;
+
+                // Close outer sequence gap in source tower
+                livePrev.next = target.next;
+                if (target.next && 'prev' in target.next) {
+                    target.next.prev = livePrev;
+                }
+
+                // Clean extracted brick's outer sequence pointers ONLY
+                target.prev = null;
+                target.next = null;
+
+                // Build new tower beside the original tower using safe placement
+                extractedIds = listNodes(target).map((n) => n.model.id);
+                newTowerId = makeTowerId();
+                const newTowerPosition = calculateExtractedTowerPosition(
+                    tower,
+                    brickId,
+                    undefined,
+                    tower.root,
+                    extractedIds,
+                );
+
+                const newTower: TowerState = {
+                    id: newTowerId,
+                    position: newTowerPosition,
+                    root: target,
+                };
+
+                const newRoot = { ...tower.root };
+                if (newRoot.kind === 'statement') {
+                    if (newRoot.next && 'prev' in newRoot.next) {
+                        newRoot.next.prev = newRoot;
+                    }
+                    if (newRoot.nestedNext && 'prev' in newRoot.nestedNext) {
+                        newRoot.nestedNext.prev = newRoot;
+                    }
+                    for (const arg of newRoot.args) {
+                        if (arg && 'parent' in arg) {
+                            arg.parent = newRoot;
+                        }
+                    }
+                }
+
+                return {
+                    towers: {
+                        ...state.towers,
+                        [sourceTower.id]: {
+                            ...tower,
+                            root: newRoot,
+                        },
+                        [newTowerId]: newTower,
+                    },
+                };
+            });
+
+            // Reset positioned flags outside the store update so React subscribers notify after workspace state commits
+            if (extractedIds.length > 0) {
+                useBrickLayoutStore
+                    .getState()
+                    .setPositioned(Object.fromEntries(extractedIds.map((id) => [id, false])));
+            }
+
+            return newTowerId;
         },
 
         absorbTower: (draggedTowerId, hostTowerId) => {

@@ -1,6 +1,7 @@
-// Guards the cost of a selection change. `TowerBrick` is rendered once per brick on the canvas, so
-// anything it subscribes to that changes workspace-wide is paid for by every brick at once. The
-// mocked `BrickView` is what makes the renders countable.
+// Component tests for TowerBrickView: the `areBricksHidden` visibility rule, and the cost of a
+// selection change. `isMounted`/`isPositioned`/`coords` are seeded directly on the brick layout
+// store rather than going through a real layout pass, the same way DisconnectShadowView.test.tsx
+// seeds its stores. The mocked `BrickView` is what makes the selection re-render tests countable.
 //
 // The right click suite below covers a real press on a rendered brick reaching the action menu
 // store with the right id. The menu itself is not drawn yet, so only the store is asserted
@@ -25,14 +26,43 @@ vi.mock('@/components/Brick/Brick', () => ({
   },
 }));
 
+// The drag-to-click suppression lives inside `useBrickMove` (a ref, plus a returned predicate), so
+// the component tests drive that predicate directly rather than the interact.js wiring it needs a
+// real pointer sequence for.
+const { shouldSuppressClick } = vi.hoisted(() => ({
+  shouldSuppressClick: vi.fn(() => false),
+}));
+
+vi.mock('@/hooks/useBrickMove', () => ({
+  useBrickMove: () => shouldSuppressClick,
+}));
+
 const { TowerBrickView } = await import('./TowerBrick');
+
+const NODE = makeEmptyValue('visibility-brick');
 
 afterEach(() => {
   cleanup();
-  useWorkspaceStore.setState({ towers: {}, selectedBrickId: null });
+  useWorkspaceStore.setState({
+    towers: {},
+    selectedBrickId: null,
+  });
+  shouldSuppressClick.mockReturnValue(false);
   useActionMenuStore.setState({ brickId: null });
   useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
+  act(() => {
+    useWorkspaceStore.setState({ areBricksHidden: false });
+  });
 });
+
+/** Marks the brick mounted and positioned, the state `TowerBrickView` needs to render visibly. */
+function seedLayout() {
+  useBrickLayoutStore.setState({
+    coords: { [NODE.model.id]: { x: 0, y: 0 } },
+    mounted: { [NODE.model.id]: true },
+    positioned: { [NODE.model.id]: true },
+  });
+}
 
 /** A single tower of `count` statement bricks joined head to tail, all mounted. */
 function makeChain(count: number): TowerStatementNode[] {
@@ -52,6 +82,58 @@ function makeChain(count: number): TowerStatementNode[] {
 }
 
 describe('TowerBrickView', () => {
+  it('is visible when positioned and bricks are not hidden', () => {
+    seedLayout();
+
+    const { container } = render(<TowerBrickView id={NODE.model.id} node={NODE} />);
+    const wrapper = container.querySelector(`[data-id="${NODE.model.id}"]`) as HTMLElement;
+
+    expect(wrapper.style.visibility).toBe('visible');
+  });
+
+  it('is hidden once areBricksHidden is set, even though it is positioned', () => {
+    seedLayout();
+    act(() => {
+      useWorkspaceStore.getState().setBricksHidden(true);
+    });
+
+    const { container } = render(<TowerBrickView id={NODE.model.id} node={NODE} />);
+    const wrapper = container.querySelector(`[data-id="${NODE.model.id}"]`) as HTMLElement;
+
+    expect(wrapper.style.visibility).toBe('hidden');
+  });
+
+  it('goes back to visible when areBricksHidden is lifted again', () => {
+    seedLayout();
+    act(() => {
+      useWorkspaceStore.getState().setBricksHidden(true);
+    });
+
+    const { container } = render(<TowerBrickView id={NODE.model.id} node={NODE} />);
+    const wrapper = container.querySelector(`[data-id="${NODE.model.id}"]`) as HTMLElement;
+    expect(wrapper.style.visibility).toBe('hidden');
+
+    act(() => {
+      useWorkspaceStore.getState().setBricksHidden(false);
+    });
+
+    expect(wrapper.style.visibility).toBe('visible');
+  });
+
+  it('stays hidden while unpositioned regardless of areBricksHidden', () => {
+    // Mounted but not yet positioned — the pre-existing rule this flag is layered on top of.
+    useBrickLayoutStore.setState({
+      coords: { [NODE.model.id]: { x: 0, y: 0 } },
+      mounted: { [NODE.model.id]: true },
+      positioned: { [NODE.model.id]: false },
+    });
+
+    const { container } = render(<TowerBrickView id={NODE.model.id} node={NODE} />);
+    const wrapper = container.querySelector(`[data-id="${NODE.model.id}"]`) as HTMLElement;
+
+    expect(wrapper.style.visibility).toBe('hidden');
+  });
+
   it('re-renders only the bricks whose selected state actually changed', () => {
     const nodes = makeChain(20);
 
@@ -166,5 +248,24 @@ describe('TowerBrickView right click', () => {
     renderBricks('brick-1');
 
     expect(useActionMenuStore.getState().brickId).toBeNull();
+  });
+});
+
+describe('TowerBrickView drag-to-click suppression', () => {
+  it('selects the brick on a plain click', () => {
+    renderBricks('brick-1');
+
+    fireEvent.click(brickEl('brick-1'));
+
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+  });
+
+  it('does not select a click the hook reports as trailing a drag', () => {
+    shouldSuppressClick.mockReturnValue(true);
+    renderBricks('brick-1');
+
+    fireEvent.click(brickEl('brick-1'));
+
+    expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
   });
 });

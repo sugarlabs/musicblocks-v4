@@ -1,145 +1,120 @@
 # Music Blocks (v4)
 
-[![Lint](https://github.com/sugarlabs/musicblocks-v4/actions/workflows/lint.yml/badge.svg?branch=develop)](https://github.com/sugarlabs/musicblocks-v4/actions/workflows/lint.yml)
-[![Continuous Integration](https://github.com/sugarlabs/musicblocks-v4/actions/workflows/CI.yml/badge.svg?branch=develop)](https://github.com/sugarlabs/musicblocks-v4/actions/workflows/CI.yml)
-[![Continuous Deployment](https://github.com/sugarlabs/musicblocks-v4/actions/workflows/CD.yml/badge.svg?branch=develop)](https://github.com/sugarlabs/musicblocks-v4/actions/workflows/CD.yml)
+[![Contributors](https://img.shields.io/github/contributors/sugarlabs/musicblocks-v4)](https://github.com/sugarlabs/musicblocks-v4/graphs/contributors)
+[![License](https://img.shields.io/github/license/sugarlabs/musicblocks-v4)](LICENSE)
+[![CI](https://github.com/sugarlabs/musicblocks-v4/actions/workflows/CI.yml/badge.svg?branch=develop)](https://github.com/sugarlabs/musicblocks-v4/actions/workflows/CI.yml)
 
-A complete overhaul of [Music Blocks](https://github.com/sugarlabs/musicblocks) — a visual,
-interactive programming environment for exploring music, art, and logic, designed for learners
-of all ages.
+Music Blocks is a playful way to learn. You snap colorful bricks together and they turn into
+music, drawings, and ideas, with no syntax to memorize and no wrong notes. Just something to
+build, and then hear.
+
+Version 4 is that idea rebuilt from the ground up, taking shape in the open.
+
+Curious why music and programming belong in the same place? The thinking behind that pairing is
+laid out in [Why Music Blocks](https://github.com/sugarlabs/musicblocks/blob/master/WhyMusicBlocks.md).
 
 ## Tech Stack
 
-Music Blocks (v4) is a client-side rendered web application written in _TypeScript_ and _React_.
-It is structured as a monorepo using _npm workspaces_, managed by _Lerna_.
+A client-side web application written in TypeScript and React, bundled by Vite, and organized
+as an npm workspaces monorepo managed by Lerna.
 
-### Stack
-
-![TypeScript 6](https://img.shields.io/badge/-TypeScript%206-000?&logo=TypeScript)
-![React 19](https://img.shields.io/badge/-React%2019-000?&logo=React)
+![TypeScript](https://img.shields.io/badge/-TypeScript%206-000?&logo=TypeScript)
+![React](https://img.shields.io/badge/-React%2019-000?&logo=React)
+![Tailwind CSS](https://img.shields.io/badge/-Tailwind%20CSS%204-000?&logo=TailwindCSS)
 ![SCSS](https://img.shields.io/badge/-SCSS-000?&logo=Sass)
-![Tailwind CSS 4](https://img.shields.io/badge/-Tailwind%20CSS%204-000?&logo=TailwindCSS)
-
-### Tooling
-
-![Node.js 24](https://img.shields.io/badge/-Node.js%2024-000?&logo=nodedotjs)
-![npm 11](https://img.shields.io/badge/-npm%2011-000?&logo=npm)
-![Vite 8](https://img.shields.io/badge/-Vite%208-000?&logo=Vite)
+![Vite](https://img.shields.io/badge/-Vite%208-000?&logo=Vite)
+![Node.js](https://img.shields.io/badge/-Node.js%2024-000?&logo=nodedotjs)
+![npm](https://img.shields.io/badge/-npm%2011-000?&logo=npm)
 ![Lerna](https://img.shields.io/badge/-Lerna-000?&logo=Lerna)
-
-### Quality
-
 ![Vitest](https://img.shields.io/badge/-Vitest-000?&logo=Vitest)
 ![Storybook](https://img.shields.io/badge/-Storybook-000?&logo=Storybook)
 ![ESLint](https://img.shields.io/badge/-ESLint-000?&logo=ESLint)
 ![Prettier](https://img.shields.io/badge/-Prettier-000?&logo=Prettier)
 
-## Project Status
+## How to Set up a Local Server
 
-This project stalled for an extended period. Most of the code written during that phase has
-reached a dead end, and the effort is being restarted from a cleaner foundation.
-
-### Active
-
-| Package | Notes |
-| --- | --- |
-| `modules/masonry` | Graphical project builder — brick geometry, layout, and rendering |
-
-### Archived
-
-All other packages (`modules/engine.old`, `modules/program`, `modules/runtime`,
-`modules/code-builder`, `modules/editor`, `modules/singer`, `modules/painter`, `modules/menu`,
-`lib/*`) are remnants of the previous effort and are not being carried forward.
-
-## Development
-
-### Monorepo Structure
-
-This repository is a monorepo using _npm workspaces_, managed by _Lerna_. It is organized into
-three layers:
-
-- **`app/`** — the main application package
-- **`modules/`** — feature modules (e.g. `editor`, `painter`, `singer`, `masonry`)
-- **`lib/`** — shared libraries used across modules (e.g. `events`, `transport`, `components`)
-
-The **root** of the repository is not a runnable package. It holds global configuration:
-workspace definitions, shared `tsconfig`, ESLint and Prettier config, and shared dev
-dependencies.
-
-- **Dev dependencies** should generally be installed at the root level, unless they are
-  specific to a single sub-package.
-- **Production dependencies** belong in the individual sub-package that uses them.
-
-When working on a specific feature or fix, navigate to the relevant sub-package directory.
-Changes to shared tooling, config, or anything cross-cutting belong at the root level.
-
-### Setup
-
-You will need [**Node.js**](https://nodejs.org/en) **v24** or later and **npm 11** or later.
-All other dependencies (TypeScript, tsx, etc.) are installed locally as part of the project
-via `npm ci` — no global installs are required.
-
-[**nvm**](https://github.com/nvm-sh/nvm) (Node Version Manager) is recommended for managing
-Node.js and npm versions. It lets you install and switch between versions easily, and ensures
-you are running the version this project expects.
-
-Verify your environment:
+You will need [Node.js](https://nodejs.org/en) 24 or later and npm 11 or later. Everything else
+is installed with the project, so nothing has to be set up globally.
 
 ```bash
-node -v
-npm -v
-```
-
-Expected output (or later):
-
-```bash
-v24.0.0
-11.0.0
-```
-
-### Commands
-
-Install all dependencies from the repository root first:
-
-```bash
+git clone https://github.com/sugarlabs/musicblocks-v4.git
+cd musicblocks-v4
 npm ci
+npm run serve
 ```
 
-If you are working within a specific sub-package, you can run the scripts directly from that
-package's directory instead.
+The application is then served at `localhost:5173` and reloads as you edit. To check a
+production build instead, run `npm run build` followed by `npm run preview`, which serves it
+at `localhost:4173`.
 
-The commands below are run from the root and delegate to the relevant sub-package scripts via
-Lerna.
+Most active work happens in the masonry module, which runs on its own:
 
-| Command | Description |
-| --- | --- |
-| `npm run serve` | Start development server at `localhost:5173` |
-| `npm run build` | Generate a production build |
-| `npm run build:gh` | Production build for GitHub Pages (base: `/musicblocks-v4/`) |
-| `npm run preview` | Serve the last production build at `localhost:4173` |
-| `npm run test` | Run all tests |
-| `npm run check` | TypeScript type-check across all packages |
-| `npm run lint` | Lint all files |
+```bash
+cd modules/masonry
+npm run playground2
+```
 
-### Editor
+That opens the brick workspace at `localhost:5602`.
 
-**Visual Studio Code** is recommended, or any VS Code-based editor such as **Cursor** or
-**Antigravity IDE**.
+## Code of Conduct
 
-Recommended extensions: `ESLint`, `Prettier`, `markdownlint`, `SVG`, and `Tailwind CSS`.
+Music Blocks is built for learners, and largely by them. Everyone taking part is expected to
+help keep it a place where a first pull request is a safe thing to open.
+
+- Be patient with beginners, and remember that everyone here was one.
+- Keep feedback on the work rather than the person, and give reasons alongside criticism.
+- Assume good intent, and ask before you escalate.
+- Harassment, personal attacks, gatekeeping, and mocking questions are not tolerated, in any
+  space belonging to this project.
+
+Read the full [Code of Conduct](CODE_OF_CONDUCT.md) for the standards in detail, what happens
+when they are broken, and how to report a problem. Reports are handled privately and are never
+held against the person raising them.
 
 ## Contributing
 
-All skill levels are welcome. Browse issues labeled
-[`good first issue`](https://github.com/sugarlabs/musicblocks-v4/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
-to find a beginner-friendly starting point, or follow the
-[project board](https://github.com/orgs/sugarlabs/projects/9) to track ongoing work and see
-what is being planned. Unassigned issues are free to pick up; if an issue has an assignee,
-comment to check whether it is still active. Feel free to ask for clarification directly on
-the issue before starting.
+Contributions are welcome from developers at every level, junior, mid, or senior. A good part
+of this codebase began as somebody's first pull request.
 
-For general questions and discussion, visit the
-[discussions](https://github.com/sugarlabs/musicblocks-v4/discussions) tab.
+- **Wait for the issue to be assigned to you before you start.** Comment on the issue to ask
+  for it, and wait for a maintainer to assign it. This is what keeps two people from building
+  the same thing twice.
+- **Talk first when something is significant.** Open a
+  [discussion](https://github.com/sugarlabs/musicblocks-v4/discussions) for anything touching
+  design, structure, or scope, or drop into our
+  [Element channel](https://matrix.to/#/!DEkxujYDjfCQImeMBM:matrix.org?via=matrix.org) for the
+  quicker back and forth. A five minute conversation can save a weekend of rework.
+- **Keep pull requests under roughly 200 lines changed.** Small pull requests get reviewed in
+  hours, large ones sit for days. If the work is bigger than that, split it into a series and
+  say so in the description.
+- **One pull request, one concern.** Unrelated fixes, formatting sweeps, and refactors belong
+  in their own pull requests, not bundled into a feature.
+- **Branch from `develop` and open the pull request against `develop`.** Name the branch after
+  the issue, reference it with `closes #N`, and open it as a draft while work is in progress.
+- **Run `npm run lint`, `npm run check`, and `npm run test` before you push.** The same checks
+  run in CI, so catching them locally saves a round trip. Add tests for what you change.
+- **Describe what you did and how you checked it.** Screenshots or a short clip for anything
+  visual. A reviewer should not have to guess at intent.
+- **Stay decent.** Review comments are about the code, never the person. Assume good intent,
+  disagree with reasons, and give reviewers time to respond before following up.
 
-See [**full contributing guide**](CONTRIBUTING.md) for code standards, commit format,
-and the pre-submit checklist.
+The [contributing guide](CONTRIBUTING.md) has the details: branch naming, commit format, and
+the checklist to run through before you submit.
+
+## Credits
+
+Music Blocks exists because of [Walter Bender](https://github.com/walterbender), who started
+Sugar Labs and has guided this work from the beginning, and
+[Devin Ulibarri](https://github.com/pikurasa), whose teaching and advocacy shaped what Music
+Blocks is for. Version 4 was architected and largely written by
+[Anindya Kundu](https://github.com/meganindya), whose groundwork the current rebuild still
+stands on.
+
+The rebuild is currently maintained by [Parth Dagia](https://github.com/parthdagia05) and
+[Syed Khubayb Ur Rahman](https://github.com/kh-ub-ayb), who triage issues, review pull
+requests, and keep the roadmap moving. Tag either of them if a pull request has been waiting
+on a review.
+
+Thanks also to every contributor who has filed an issue, reviewed a pull request, or shipped
+a fix here. The full list lives on the
+[contributors graph](https://github.com/sugarlabs/musicblocks-v4/graphs/contributors).

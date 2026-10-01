@@ -37,7 +37,19 @@ export const SCALE_LEVELS = Object.keys(SCALE_LEVEL_CONFIG)
 export const MIN_SCALE_LEVEL = SCALE_LEVELS[0];
 export const MAX_SCALE_LEVEL = SCALE_LEVELS[SCALE_LEVELS.length - 1];
 
+/** Base spacing in pixels for the workspace background grid. */
+export const BASE_GRID_SPACING = 20;
+
 // ── Interaction ──
+
+/**
+ * How long (in ms) after a moved drag ends a trailing `click` is ignored.
+ *
+ * A drag gesture ends with the browser releasing a native click on the element, which both the
+ * palette slot and a workspace brick would otherwise read as an intentional press. Shared so the
+ * two suppression guards cannot drift apart.
+ */
+export const DRAG_CLICK_SUPPRESSION_MS = 250;
 
 /**
  * Marks the fold toggle overlaid on a nesting brick's head.
@@ -85,3 +97,8 @@ export const PAN_STEP = 50;
 export const FAST_PAN_STEP = 100;
 /** How far (in pixels) the canvas pans per PageUp / PageDown press. */
 export const PAGE_PAN_STEP = 300;
+
+/** How close (in pixels) a dragged brick's pointer must get to a canvas edge to start panning. */
+export const AUTO_PAN_BAND = 96;
+/** The most (in pixels) the canvas pans per frame while a dragged brick is held at an edge. */
+export const AUTO_PAN_MAX_STEP = 12;

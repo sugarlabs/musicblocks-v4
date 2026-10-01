@@ -1,4 +1,4 @@
-import { memo, useCallback, useRef, type MouseEvent } from 'react';
+import { memo, useCallback, useRef, type MouseEvent, type RefObject } from 'react';
 
 import type { TowerNode } from '@/@types/tower.types';
 
@@ -17,6 +17,8 @@ export interface TowerBrickViewProps {
   id: string;
   /** The tower node whose brick should be rendered. */
   node: TowerNode;
+  /** The canvas the brick is dragged over, whose edges pan it during a drag. */
+  canvasRef?: RefObject<HTMLElement | null>;
 }
 
 /**
@@ -28,7 +30,7 @@ export interface TowerBrickViewProps {
  * and stays visually hidden until it's also positioned, to avoid a flash at a stale position.
  */
 export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
-  const { id, node } = props;
+  const { id, node, canvasRef } = props;
   const ref = useRef<HTMLDivElement>(null);
 
   // Subscribed as the derived boolean rather than the id itself: every brick on the canvas holds
@@ -36,7 +38,7 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
   // boolean only flips for the two bricks that actually gained or lost the selection.
   const isSelected = useWorkspaceStore((state) => state.selectedBrickId === id);
 
-  useBrickMove(id, ref);
+  const shouldSuppressClick = useBrickMove(id, ref, canvasRef);
 
   // We explicitly extract coords without returning a fallback object in the selector.
   // Returning a new `{ x: 0, y: 0 }` object inside the selector would cause useSyncExternalStore
@@ -46,6 +48,7 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
   const y = coords?.y ?? 0;
   const isMounted = useBrickLayoutStore((state) => state.mounted[id]);
   const isPositioned = useBrickLayoutStore((state) => state.positioned[id]);
+  const areBricksHidden = useWorkspaceStore((state) => state.areBricksHidden);
 
   // The fold goes through the store rather than straight onto the model: it decides what the tower
   // lays out and what the canvas draws, and `setNestingFold` is what re-seats the tower for both.
@@ -57,10 +60,11 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
 
     useWorkspaceStore.getState().setNestingFold(id, !found.node.model.isNestingFolded);
   }, [id]);
-  // Read at press time like `toggleFold` above, so the handler stays keyed on `id` alone.
+  // Suppress interact.js's trailing click after this brick's own drag.
   const handleClick = useCallback(() => {
+    if (shouldSuppressClick()) return;
     useWorkspaceStore.getState().selectBrick(id);
-  }, [id]);
+  }, [id, shouldSuppressClick]);
 
   // A selected brick is ringed in a deepened shade of its own fill, dark enough to hold against the
   // light canvas the bricks sit on. `drop-shadow` follows the rendered alpha, so the ring traces the
@@ -114,7 +118,7 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
       onContextMenu={openActionMenu}
       style={{
         transform: `translate(${x}px, ${y}px)`,
-        visibility: isPositioned ? 'visible' : 'hidden',
+        visibility: isPositioned && !areBricksHidden ? 'visible' : 'hidden',
       }}
     >
       {/*

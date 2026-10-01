@@ -150,7 +150,9 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                         event.clientY >= canvasRect.top &&
                         event.clientY <= canvasRect.bottom;
 
-                    if (isInsideCanvas) {
+                    // While bricks are hidden, no snap preview should reference them — that would
+                    // reveal a hidden brick's connection point through the highlight alone.
+                    if (isInsideCanvas && !useWorkspaceStore.getState().areBricksHidden) {
                         // The towers this is tested against sit in unpanned coordinates, so the
                         // pan comes back out of the pointer; read at event time, since these
                         // listeners bind once on mount.

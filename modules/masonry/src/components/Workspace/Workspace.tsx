@@ -21,6 +21,7 @@ import { listVisibleNodes } from '@/utils/tower-traversal';
 import { ActionMenu } from './ActionMenu';
 import { DragGhost } from './DragGhost';
 import { FullscreenControl } from './FullscreenControl';
+import { BricksVisibilityControl } from './BricksVisibilityControl';
 import { ScaleControl } from './ScaleControl';
 import { SnapHintOverlay } from './SnapHintOverlay';
 import { SnapPreviewView } from './SnapPreviewView';
@@ -38,6 +39,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
 
   const towersRecord = useWorkspaceStore((state) => state.towers);
   const clearSelection = useWorkspaceStore((state) => state.clearSelection);
+  const areBricksHidden = useWorkspaceStore((state) => state.areBricksHidden);
   const towers = useMemo(() => Object.values(towersRecord), [towersRecord]);
 
   // Initialize history on mount
@@ -211,9 +213,11 @@ export function Workspace({ config }: WorkspaceViewProps) {
 
       {/* Main Workspace Area: Contains the draggable block palette on the left and the interactive canvas on the right */}
       <div ref={rootRef} className="relative flex min-h-0 w-full flex-1">
-        <div className="h-full max-w-80 shrink-0">
-          <Palette config={palette} />
-        </div>
+        {!areBricksHidden && (
+          <div className="h-full max-w-80 shrink-0">
+            <Palette config={palette} />
+          </div>
+        )}
 
         <div
           ref={canvasRef}
@@ -247,7 +251,12 @@ export function Workspace({ config }: WorkspaceViewProps) {
           >
             {/* TowerBrickView renders the actual DOM nodes for the visible bricks in a flattened list */}
             {visibleNodes.map((node) => (
-              <TowerBrickView key={node.model.id} id={node.model.id} node={node} />
+              <TowerBrickView
+                key={node.model.id}
+                id={node.model.id}
+                node={node}
+                canvasRef={canvasRef}
+              />
             ))}
 
             <SnapHintOverlay />
@@ -270,6 +279,8 @@ export function Workspace({ config }: WorkspaceViewProps) {
           {/* The Trash is only useful once there is something to remove */}
           {towers.length > 0 && <Trash canvasRef={canvasRef} />}
         </div>
+
+        <BricksVisibilityControl />
 
         <DragGhost ref={ghostRef} />
       </div>

@@ -347,28 +347,14 @@ describe('Workspace', () => {
   });
 
   describe('trash', () => {
-    it('keeps the trash off an empty canvas, since there is nothing to remove yet', () => {
+    it('renders the trash even on an empty canvas so assistive technology can discover it ahead of time', () => {
       const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
-
-      expect(queryTrash(container)).toBeNull();
-    });
-
-    it('renders the trash as soon as the workspace holds a tower', () => {
-      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
-
-      act(() => {
-        useWorkspaceStore.getState().createTower(makeTower('t1'));
-      });
 
       expect(queryTrash(container)).not.toBeNull();
     });
 
-    it('publishes its bounds while mounted and drops them once the canvas empties', () => {
+    it('publishes its bounds on mount and keeps them published regardless of tower count', () => {
       const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
-
-      act(() => {
-        useWorkspaceStore.getState().createTower(makeTower('t1'));
-      });
 
       // jsdom reports a zero rect, so only the shape is asserted — the numbers come from layout.
       expect(useTrashStore.getState().bounds).toEqual({
@@ -379,30 +365,45 @@ describe('Workspace', () => {
       });
 
       act(() => {
-        useWorkspaceStore.getState().removeTower('t1');
-      });
-
-      expect(queryTrash(container)).toBeNull();
-      expect(useTrashStore.getState().bounds).toBeNull();
-    });
-
-    it('keeps the trash while any tower remains and removes it with the last one', () => {
-      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
-
-      act(() => {
         useWorkspaceStore.getState().createTower(makeTower('t1'));
-        useWorkspaceStore.getState().createTower(makeTower('t2'));
-      });
-
-      act(() => {
-        useWorkspaceStore.getState().removeTower('t1');
       });
       expect(queryTrash(container)).not.toBeNull();
 
       act(() => {
-        useWorkspaceStore.getState().removeTower('t2');
+        useWorkspaceStore.getState().removeTower('t1');
       });
-      expect(queryTrash(container)).toBeNull();
+
+      expect(queryTrash(container)).not.toBeNull();
+      expect(useTrashStore.getState().bounds).not.toBeNull();
+    });
+
+    it('has an accessible name for assistive technology', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      const trash = queryTrash(container);
+      expect(trash).not.toBeNull();
+      expect(trash?.getAttribute('role')).toBe('button');
+      expect(trash?.getAttribute('aria-label')).toBe('Trash');
+    });
+
+    it('announces the hover state through a live region', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      const liveRegion = container.querySelector('[aria-live="polite"]');
+      expect(liveRegion).not.toBeNull();
+      expect(liveRegion?.textContent?.trim()).toBe('');
+
+      act(() => {
+        useTrashStore.getState().setHovered(true);
+      });
+
+      expect(liveRegion?.textContent?.trim()).toBe('Release to delete');
+
+      act(() => {
+        useTrashStore.getState().setHovered(false);
+      });
+
+      expect(liveRegion?.textContent?.trim()).toBe('');
     });
 
     it('swaps to its destructive styling while the drag store reports a hover', () => {
@@ -634,7 +635,7 @@ describe('Workspace', () => {
       const controls = queryControls(container);
       expect(controls).not.toBeNull();
 
-      const labels = [...controls!.querySelectorAll('button')].map((button) =>
+      const labels = Array.from(controls!.querySelectorAll('button')).map((button) =>
         button.getAttribute('aria-label'),
       );
 
@@ -643,7 +644,7 @@ describe('Workspace', () => {
       // and leaves the magnifiers where the pointer left them.
       expect(labels).toEqual(['Enter fullscreen', 'Reset zoom', 'Zoom out', 'Zoom in']);
 
-      for (const button of controls!.querySelectorAll('button')) {
+      for (const button of Array.from(controls!.querySelectorAll('button'))) {
         expect(button.className).not.toContain('absolute');
       }
     });

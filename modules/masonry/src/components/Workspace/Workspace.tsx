@@ -257,7 +257,12 @@ export function Workspace({ config }: WorkspaceViewProps) {
           >
             {/* TowerBrickView renders the actual DOM nodes for the visible bricks in a flattened list */}
             {visibleNodes.map((node) => (
-              <TowerBrickView key={node.model.id} id={node.model.id} node={node} />
+              <TowerBrickView
+                key={node.model.id}
+                id={node.model.id}
+                node={node}
+                canvasRef={canvasRef}
+              />
             ))}
 
             <SnapHintOverlay />

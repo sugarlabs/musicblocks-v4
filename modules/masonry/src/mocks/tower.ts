@@ -142,6 +142,7 @@ export function makeEmptyStatement(
     id: string,
     slotCount: number,
     hasNesting = false,
+    hasConnectionNext = true,
 ): TowerStatementNode {
     return {
         kind: 'statement',
@@ -153,7 +154,7 @@ export function makeEmptyStatement(
             params: makeParams(slotCount),
             hasNesting,
             hasConnectionPrev: true,
-            hasConnectionNext: true,
+            hasConnectionNext,
         }),
         prev: null,
         next: null,

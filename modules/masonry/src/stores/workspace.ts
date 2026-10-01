@@ -25,6 +25,113 @@ import { listNodes, listVisibleNodes } from '@/utils/tower-traversal';
 /** How far a duplicated tower sits from the tower it was copied from. */
 const DUPLICATE_TOWER_OFFSET: Point = { x: 60, y: 40 };
 
+/** Minimum margin (in px) separating an extracted tower from the source tower's rightmost bounding box. */
+export const EXTRACTED_TOWER_MARGIN_X = 40;
+
+/** Default horizontal offset for placing extracted tower beside its old one. */
+export const EXTRACTED_TOWER_OFFSET_X = 60;
+
+/**
+ * Collects the nodes belonging to the extracted brick's self-contained subtree
+ * (the brick itself, its arguments, and its cavity children if folded), excluding its `next`
+ * statement chain which remains in the source tower.
+ * Per #797, cavity contents stay in the source tower unless the brick is folded,
+ * so only include nestedNext when isNestingFolded.
+ */
+function getExtractedSubtreeNodeIds(node: TowerNode): string[] {
+    const ids: string[] = [node.model.id];
+    const stack: TowerNode[] = [];
+
+    if (node.kind === 'statement') {
+        for (const arg of node.args) {
+            if (arg) stack.push(arg);
+        }
+        if (node.nestedNext && node.model.isNestingFolded) {
+            stack.push(node.nestedNext);
+        }
+    } else if (node.kind === 'expression') {
+        for (const arg of node.args) {
+            if (arg) stack.push(arg);
+        }
+    }
+
+    while (stack.length > 0) {
+        const curr = stack.pop()!;
+        ids.push(curr.model.id);
+
+        if (curr.kind === 'statement') {
+            if (curr.next) stack.push(curr.next);
+            if (curr.nestedNext) stack.push(curr.nestedNext);
+            for (const arg of curr.args) {
+                if (arg) stack.push(arg);
+            }
+        } else if (curr.kind === 'expression') {
+            for (const arg of curr.args) {
+                if (arg) stack.push(arg);
+            }
+        }
+    }
+
+    return ids;
+}
+
+/**
+ * Calculates a safe position for an extracted brick to form a new tower without
+ * overlapping or colliding with the source tower or its horizontal argument tree.
+ */
+export function calculateExtractedTowerPosition(
+    sourceTower: TowerState,
+    targetBrickId: string,
+    requestedPosition?: Point,
+    remainingRoot?: TowerNode,
+    excludedNodeIds?: string[],
+): Point {
+    if (requestedPosition) return requestedPosition;
+
+    const rootToMeasure = remainingRoot ?? sourceTower.root;
+    const coords = useBrickLayoutStore.getState().coords;
+    const targetCoord = coords[targetBrickId];
+
+    const targetNode =
+        listNodes(sourceTower.root).find((n) => n.model.id === targetBrickId) ?? null;
+    const targetFound = targetNode ? { node: targetNode, tower: sourceTower } : null;
+
+    // Find the rightmost extent (maxX) among all visible nodes in the remaining source tower
+    let maxTowerX = sourceTower.position.x;
+    let targetNodeIds: Set<string>;
+    if (excludedNodeIds) {
+        targetNodeIds = new Set(excludedNodeIds);
+    } else {
+        targetNodeIds = new Set(
+            targetFound ? getExtractedSubtreeNodeIds(targetFound.node) : [targetBrickId],
+        );
+    }
+    const visibleNodes = listVisibleNodes(rootToMeasure).filter(
+        (node) => !targetNodeIds.has(node.model.id),
+    );
+    for (const node of visibleNodes) {
+        const pt = coords[node.model.id];
+        const width = node.model.dims?.w ?? 0;
+        const nodeX = pt?.x ?? node.model.position?.x ?? sourceTower.position.x;
+        const right = nodeX + width;
+        if (right > maxTowerX) {
+            maxTowerX = right;
+        }
+    }
+
+    const fallbackY =
+        targetCoord?.y ?? targetFound?.node.model.position?.y ?? sourceTower.position.y;
+    const fallbackX =
+        (targetCoord?.x ?? targetFound?.node.model.position?.x ?? sourceTower.position.x) +
+        EXTRACTED_TOWER_OFFSET_X;
+    const safeX = Math.max(maxTowerX + EXTRACTED_TOWER_MARGIN_X, fallbackX);
+
+    return {
+        x: safeX,
+        y: fallbackY,
+    };
+}
+
 export interface WorkspaceStore {
     /** Record of all towers currently in the workspace, keyed by their unique ID */
     towers: Record<string, TowerState>;
@@ -490,4 +597,46 @@ export function findNodeAndTower(id: string): { node: TowerNode; tower: TowerSta
         }
     }
     return null;
+}
+
+/**
+ * Checks whether a brick can be extracted out of its tower.
+ *
+ * Extraction removes only the target brick from its parent's sequence, preserving
+ * its entire internal structure (arguments and cavity subtree), while closing the gap
+ * in the source tower.
+ * It is disabled where extraction would leave an invalid/empty source tower (lone root),
+ * or for an unattached/free-floating argument brick.
+ */
+export function canExtractBrick(id: string): boolean {
+    const found = findNodeAndTower(id);
+    if (!found) return false;
+
+    const { node, tower } = found;
+
+    // Value and Expression (Argument) bricks:
+    if (node.kind === 'value' || node.kind === 'expression') {
+        // Only extractable if plugged into an argument slot of a parent
+        return Boolean(node.parent);
+    }
+
+    // Statement brick:
+    if (node.kind === 'statement') {
+        const isRoot = tower.root.model.id === node.model.id;
+        if (isRoot) {
+            // A root statement can be extracted if it has a next sibling (which becomes
+            // the new root of the remaining tower), or if it is a clamp with an unfolded
+            // non-empty cavity (the cavity children remain in the source tower as the new root,
+            // "remove the wrapper" case per #797).
+            if (node.next) return true;
+            if (node.nestedNext && !node.model.isNestingFolded) return true;
+            return false;
+        }
+
+        // Inside a chain (has prev) or inside a cavity (has cavity parent),
+        // extracting the brick leaves the remaining tower intact.
+        return true;
+    }
+
+    return false;
 }

@@ -37,6 +37,9 @@ export const SCALE_LEVELS = Object.keys(SCALE_LEVEL_CONFIG)
 export const MIN_SCALE_LEVEL = SCALE_LEVELS[0];
 export const MAX_SCALE_LEVEL = SCALE_LEVELS[SCALE_LEVELS.length - 1];
 
+/** Base spacing in pixels for the workspace background grid. */
+export const BASE_GRID_SPACING = 20;
+
 // ── Interaction ──
 
 /**

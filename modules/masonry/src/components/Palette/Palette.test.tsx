@@ -584,4 +584,97 @@ describe('Palette', () => {
       expect(screen.getByRole('heading', { name: 'Rhythm' })).toBeTruthy();
     });
   });
+
+  describe('cross-classification search', () => {
+    it('finds a match that lives in a classification other than the active one', () => {
+      render(<Palette config={config} />);
+
+      // Music is active by default; "Repeat" only exists under Logic.
+      search('repeat');
+
+      expect(screen.getByText('Repeat')).toBeTruthy();
+    });
+
+    it('groups matches under the classification they came from', () => {
+      // "e" matches something in both classifications: Note/Rest/Beat (Music) and Repeat (Logic).
+      render(<Palette config={config} />);
+
+      search('e');
+
+      expect(screen.getByRole('heading', { name: 'Music' })).toBeTruthy();
+      expect(screen.getByRole('heading', { name: 'Logic' })).toBeTruthy();
+      expect(screen.getByRole('heading', { name: 'Flow' })).toBeTruthy();
+      expect(screen.getByText('Repeat')).toBeTruthy();
+    });
+
+    it('omits a classification with no matching bricks from the grouped results', () => {
+      render(<Palette config={config} />);
+
+      // Only Music has anything matching "note".
+      search('note');
+
+      expect(screen.queryByRole('heading', { name: 'Logic' })).toBeNull();
+      expect(screen.queryByRole('heading', { name: 'Flow' })).toBeNull();
+    });
+
+    it('keeps the sidebar populated with matches from every classification while searching', () => {
+      render(<Palette config={config} />);
+
+      // "e" matches something in both classifications: Note/Rest/Beat (Music) and Repeat (Logic).
+      search('e');
+
+      expect(screen.getByRole('button', { name: 'Rhythm' })).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Meter' })).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Flow' })).toBeTruthy();
+    });
+
+    it('drops a category from the sidebar once search narrows it out, same as within one classification', () => {
+      render(<Palette config={config} />);
+
+      search('note');
+
+      expect(screen.getByRole('button', { name: 'Rhythm' })).toBeTruthy();
+      // Meter has no match for "note", in any classification.
+      expect(screen.queryByRole('button', { name: 'Meter' })).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Flow' })).toBeNull();
+    });
+
+    it('scrolls to a category found by a cross-classification search when its sidebar button is clicked', () => {
+      render(<Palette config={config} />);
+
+      search('repeat');
+      fireEvent.click(screen.getByRole('button', { name: 'Flow' }));
+
+      expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+
+    it('restores the single-classification sidebar and list once the query is cleared', () => {
+      render(<Palette config={config} />);
+
+      search('repeat');
+      expect(screen.queryByRole('button', { name: 'Rhythm' })).toBeNull();
+
+      search('');
+      expect(screen.getByRole('button', { name: 'Rhythm' })).toBeTruthy();
+      // Back to the active-classification view: Logic's content is not shown any more.
+      expect(screen.queryByText('Repeat')).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Flow' })).toBeNull();
+    });
+
+    it('clears a cross-classification search when a classification tab is selected', () => {
+      render(<Palette config={config} />);
+
+      search('repeat');
+      expect(screen.getByText('Repeat')).toBeTruthy();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Logic' }));
+
+      expect((screen.getByPlaceholderText('Search bricks') as HTMLInputElement).value).toBe('');
+      // Logic is now the active classification, browsed normally rather than via search.
+      expect(screen.getByRole('button', { name: 'Flow' })).toBeTruthy();
+    });
+  });
 });

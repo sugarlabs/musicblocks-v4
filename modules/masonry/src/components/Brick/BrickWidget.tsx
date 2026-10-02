@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 
 import { useWorkspaceHistoryStore } from '@/stores/history';
 
@@ -46,6 +46,7 @@ export function Widget({
   // Without this key, React would reuse the uncontrolled `<input>` DOM element, and a string
   // typed into the textbox would break the numberbox because "Hello" is invalid in type="number".
   // Changing the key forces React to completely destroy the old input and mount a fresh one.
+  // Textboxes synchronize their value without remounting so edits retain focus on layout updates.
   const key = `${widget.type}-${String(widget.value)}`;
 
   switch (widget.type) {
@@ -61,7 +62,7 @@ export function Widget({
         />
       );
     case 'textbox':
-      return <TextboxWidget key={key} widget={widget} commonStyle={commonStyle} />;
+      return <TextboxWidget key={widget.type} widget={widget} commonStyle={commonStyle} />;
     case 'numberbox':
       return (
         <NumberboxWidget
@@ -163,20 +164,63 @@ function TextboxWidget({
   widget: Extract<WidgetInput, { type: 'textbox' }>;
   commonStyle: React.CSSProperties;
 }) {
-  const [val, setVal] = useState(String(widget.value));
+  const value = String(widget.value);
+  const [val, setVal] = useState(value);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [maxWidth, setMaxWidth] = useState<number>();
+
+  // Reflect restored values and Storybook updates while keeping the focused input mounted.
+  useLayoutEffect(() => {
+    setVal(value);
+  }, [value]);
+
+  useLayoutEffect(() => {
+    const canvas = containerRef.current?.closest<HTMLElement>('[data-workspace-canvas]');
+    const updateMaxWidth = () => {
+      // Reserve space for the widget wrapper and SVG outline at every brick scale.
+      const availableWidth = canvas ? canvas.clientWidth : window.innerWidth;
+      setMaxWidth(Math.max(1, availableWidth - 64));
+    };
+    updateMaxWidth();
+
+    if (canvas) {
+      const observer = new ResizeObserver(updateMaxWidth);
+      observer.observe(canvas);
+      return () => observer.disconnect();
+    }
+
+    window.addEventListener('resize', updateMaxWidth);
+    return () => window.removeEventListener('resize', updateMaxWidth);
+  }, []);
+
   return (
-    <Input
-      type="text"
-      defaultValue={widget.value as string}
-      onChange={(e) => {
-        setVal(e.target.value);
-        widget.value = e.target.value;
-        debouncedCommit();
-      }}
-      maxLength={widget.maxLength}
-      className="h-7 border-black/20 bg-transparent px-2 py-1 transition-colors hover:bg-black/5 focus-visible:ring-1 focus-visible:ring-black/20 dark:border-white/20 dark:hover:bg-white/5 dark:focus-visible:ring-white/20"
-      style={{ ...commonStyle, width: `${Math.max(4, val.length + 2)}ch` }}
-    />
+    <div
+      ref={containerRef}
+      className="relative grid h-7 w-max min-w-0"
+      style={{ ...commonStyle, maxWidth }}
+    >
+      {/* The span measures proportional text, including whitespace and padding.
+          A capped input scrolls its value normally without expanding the brick. */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none invisible col-start-1 row-start-1 min-w-0 overflow-hidden border px-2 py-1 whitespace-pre"
+        style={{ ...commonStyle, minWidth: '4ch' }}
+      >
+        {val || '\u00a0'}
+      </span>
+      <Input
+        type="text"
+        value={val}
+        onChange={(e) => {
+          setVal(e.target.value);
+          widget.value = e.target.value;
+          debouncedCommit();
+        }}
+        maxLength={widget.maxLength}
+        className="absolute inset-0 h-7 border-black/20 bg-transparent px-2 py-1 transition-colors hover:bg-black/5 focus-visible:ring-1 focus-visible:ring-black/20 dark:border-white/20 dark:hover:bg-white/5 dark:focus-visible:ring-white/20"
+        style={{ ...commonStyle, width: '100%' }}
+      />
+    </div>
   );
 }
 

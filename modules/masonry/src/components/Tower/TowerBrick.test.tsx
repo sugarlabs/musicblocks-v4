@@ -174,16 +174,21 @@ describe('TowerBrickView right click', () => {
 describe('BrickErrorBoundary', () => {
   /** Seeds layout store and workspace store, then renders one TowerBrickView per id. */
   function renderInTower(towerId: string, ...ids: string[]) {
-    const root = makeEmptyStatement(ids[0], 0);
+    const nodes = ids.map((id) => makeEmptyStatement(id, 0));
+    nodes.forEach((node, i) => {
+      if (i === 0) return;
+      nodes[i - 1].next = node;
+      node.prev = nodes[i - 1];
+    });
     act(() => {
       useBrickLayoutStore.getState().setMounted(Object.fromEntries(ids.map((id) => [id, true])));
       useBrickLayoutStore.getState().setPositioned(Object.fromEntries(ids.map((id) => [id, true])));
-      useWorkspaceStore.getState().createTower({ id: towerId, root, position: { x: 0, y: 0 } });
+      useWorkspaceStore.getState().createTower({ id: towerId, root: nodes[0], position: { x: 0, y: 0 } });
     });
     return render(
       <>
-        {ids.map((id) => (
-          <TowerBrickView key={id} id={id} node={makeEmptyStatement(id, 0)} />
+        {nodes.map((node) => (
+          <TowerBrickView key={node.model.id} id={node.model.id} node={node} />
         ))}
       </>,
     );

@@ -174,8 +174,12 @@ export class BrickOutlineGenerator {
             ) {
                 throw new Error('V-notch must fit between the tail foot corners');
             }
-            if (H_NOTCH_OFFSET_Y - H_NOTCH_WIDTH / 2 - strokeWidth / 2 < CORNER_RADIUS) {
-                throw new Error('H-notch must start below the top corner');
+            if (
+                H_NOTCH_OFFSET_Y - H_NOTCH_WIDTH / 2 - strokeWidth / 2 < CORNER_RADIUS ||
+                H_NOTCH_OFFSET_Y + H_NOTCH_WIDTH / 2 + strokeWidth / 2 + CORNER_RADIUS >
+                    this.minimums.minArgHeight
+            ) {
+                throw new Error('H-notch must fit within the minimum arg slot height');
             }
         }
     }

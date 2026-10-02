@@ -55,6 +55,7 @@ describe('geometry validation', () => {
         ['H_NOTCH_RADIUS', -1, 'H_NOTCH_RADIUS'],
         ['H_NOTCH_WIDTH', 3, 'H_NOTCH_RADIUS'],
         ['H_NOTCH_OFFSET_Y', 11, 'H-notch'],
+        ['H_NOTCH_OFFSET_Y', 29, 'H-notch'],
     ])('rejects %s = %s in development', (key, value, message) => {
         vi.stubEnv('DEV', true);
         Reflect.set(BrickOutlineGenerator, key, value);
@@ -92,6 +93,7 @@ describe('geometry validation', () => {
                 ['V_NOTCH_OFFSET_X', 12, 'V-notch'],
                 ['V_NOTCH_OFFSET_X', 28, 'V-notch'],
                 ['H_NOTCH_OFFSET_Y', 12, 'H-notch'],
+                ['H_NOTCH_OFFSET_Y', 28, 'H-notch'],
             ])('rejects %s = %s with stroke clearance', (key, value, message) => {
                 vi.stubEnv('DEV', true);
                 Reflect.set(BrickOutlineGenerator, key, value);
@@ -108,12 +110,14 @@ describe('geometry validation', () => {
                 const generator = new BrickOutlineGenerator(MINIMUMS);
                 expect(() => generator[method](input)).not.toThrow();
                 Reflect.set(BrickOutlineGenerator, 'V_NOTCH_OFFSET_X', 25);
+                Reflect.set(BrickOutlineGenerator, 'H_NOTCH_OFFSET_Y', 27);
                 expect(() => generator[method](input)).not.toThrow();
             });
 
             it('does not validate stroke clearance in production', () => {
                 vi.stubEnv('DEV', false);
                 Reflect.set(BrickOutlineGenerator, 'V_NOTCH_RADIUS', 8);
+                Reflect.set(BrickOutlineGenerator, 'H_NOTCH_OFFSET_Y', 28);
                 const generator = new BrickOutlineGenerator(MINIMUMS);
                 expect(() => generator[method](input)).not.toThrow();
             });

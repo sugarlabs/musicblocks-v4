@@ -153,7 +153,7 @@ export class BrickOutlineGenerator {
             }
             if (
                 V_NOTCH_RADIUS < 0 ||
-                2 * BrickOutlineGenerator.vNotchDepth(strokeWidth) > V_NOTCH_WIDTH
+                2 * BrickOutlineGenerator.vNotchDepth(strokeWidth) >= V_NOTCH_WIDTH
             ) {
                 throw new Error(
                     'V_NOTCH_RADIUS and stroke clearance must fit within V_NOTCH_WIDTH',
@@ -161,7 +161,7 @@ export class BrickOutlineGenerator {
             }
             if (
                 H_NOTCH_RADIUS < 0 ||
-                2 * BrickOutlineGenerator.hNotchDepth(strokeWidth) > H_NOTCH_WIDTH
+                2 * BrickOutlineGenerator.hNotchDepth(strokeWidth) >= H_NOTCH_WIDTH
             ) {
                 throw new Error(
                     'H_NOTCH_RADIUS and stroke clearance must fit within H_NOTCH_WIDTH',
@@ -935,6 +935,18 @@ export class BrickOutlineGenerator {
 
         const height = headHeight + tailHeight;
 
+        if (
+            import.meta.env.DEV &&
+            inputNormalised.hasOutputNotch &&
+            BrickOutlineGenerator.H_NOTCH_OFFSET_Y +
+                BrickOutlineGenerator.H_NOTCH_WIDTH / 2 +
+                strokeWidth / 2 +
+                BrickOutlineGenerator.CORNER_RADIUS >
+                height
+        ) {
+            throw new Error('H-notch output must fit above the bottom corner');
+        }
+
         return {
             width,
             height,
@@ -959,8 +971,8 @@ export class BrickOutlineGenerator {
         // Recompute dimensions only when the normalised input has actually changed.
         const normalized = this.normalizeInput(input);
         if (!this.inputsEqual(normalized, this.input)) {
-            this.input = normalized;
             this.dimensions = this.computeDimensions(input);
+            this.input = normalized;
         }
 
         const { width, height } = this.dimensions;
@@ -1023,8 +1035,8 @@ export class BrickOutlineGenerator {
         // Recompute dimensions only when the normalised input has actually changed.
         const normalized = this.normalizeInput(input);
         if (!this.inputsEqual(normalized, this.input)) {
-            this.input = normalized;
             this.dimensions = this.computeDimensions(input);
+            this.input = normalized;
         }
 
         const strokeWidth = this.input.strokeWidth;

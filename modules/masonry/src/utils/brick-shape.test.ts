@@ -44,14 +44,14 @@ describe('geometry validation', () => {
         ['CORNER_RADIUS', 7, 'CORNER_RADIUS'],
         ['CORNER_RADIUS', -1, 'CORNER_RADIUS'],
         ['TAIL_STEP_H', 7, 'CORNER_RADIUS'],
-        ['V_NOTCH_RADIUS', 9, 'V_NOTCH_RADIUS'],
+        ['V_NOTCH_RADIUS', 8, 'V_NOTCH_RADIUS'],
         ['V_NOTCH_RADIUS', -1, 'V_NOTCH_RADIUS'],
         ['V_NOTCH_WIDTH', 3, 'V_NOTCH_RADIUS'],
         ['V_NOTCH_OFFSET_X', 11, 'V-notch'],
         ['V_NOTCH_OFFSET_X', 29, 'V-notch'],
         ['TAIL_STEP_W', 37, 'V-notch'],
         ['TAIL_INDENT_W', 19, 'V-notch'],
-        ['H_NOTCH_RADIUS', 9, 'H_NOTCH_RADIUS'],
+        ['H_NOTCH_RADIUS', 8, 'H_NOTCH_RADIUS'],
         ['H_NOTCH_RADIUS', -1, 'H_NOTCH_RADIUS'],
         ['H_NOTCH_WIDTH', 3, 'H_NOTCH_RADIUS'],
         ['H_NOTCH_OFFSET_Y', 11, 'H-notch'],
@@ -88,8 +88,10 @@ describe('geometry validation', () => {
             };
 
             it.each([
-                ['V_NOTCH_RADIUS', 8, 'V_NOTCH_RADIUS'],
-                ['H_NOTCH_RADIUS', 8, 'H_NOTCH_RADIUS'],
+                ['V_NOTCH_RADIUS', 6, 'V_NOTCH_RADIUS'],
+                ['V_NOTCH_RADIUS', 5, 'V_NOTCH_RADIUS'],
+                ['H_NOTCH_RADIUS', 6, 'H_NOTCH_RADIUS'],
+                ['H_NOTCH_RADIUS', 5, 'H_NOTCH_RADIUS'],
                 ['V_NOTCH_OFFSET_X', 12, 'V-notch'],
                 ['V_NOTCH_OFFSET_X', 28, 'V-notch'],
                 ['H_NOTCH_OFFSET_Y', 12, 'H-notch'],
@@ -101,10 +103,10 @@ describe('geometry validation', () => {
                 expect(() => generator[method](input)).toThrow(message);
             });
 
-            it('allows notches whose arcs and corners meet with stroke clearance', () => {
+            it('renders tabs with positive middle spans at the placement boundaries', () => {
                 vi.stubEnv('DEV', true);
-                Reflect.set(BrickOutlineGenerator, 'V_NOTCH_RADIUS', 5);
-                Reflect.set(BrickOutlineGenerator, 'H_NOTCH_RADIUS', 5);
+                Reflect.set(BrickOutlineGenerator, 'V_NOTCH_RADIUS', 4);
+                Reflect.set(BrickOutlineGenerator, 'H_NOTCH_RADIUS', 4);
                 Reflect.set(BrickOutlineGenerator, 'V_NOTCH_OFFSET_X', 13);
                 Reflect.set(BrickOutlineGenerator, 'H_NOTCH_OFFSET_Y', 13);
                 const generator = new BrickOutlineGenerator(MINIMUMS);
@@ -112,6 +114,26 @@ describe('geometry validation', () => {
                 Reflect.set(BrickOutlineGenerator, 'V_NOTCH_OFFSET_X', 25);
                 Reflect.set(BrickOutlineGenerator, 'H_NOTCH_OFFSET_Y', 27);
                 expect(() => generator[method](input)).not.toThrow();
+                const path = generator.generate(input).path;
+                expect(path).not.toBe(generator.generate({ ...input, hasNextNotch: false }).path);
+                expect(path).not.toBe(generator.generate({ ...input, hasOutputNotch: false }).path);
+            });
+
+            it('validates output clearance against the actual brick height', () => {
+                vi.stubEnv('DEV', true);
+                Reflect.set(BrickOutlineGenerator, 'H_NOTCH_OFFSET_Y', 27);
+                const generator = new BrickOutlineGenerator(MINIMUMS);
+                const shortInput = { ...input, paramArgDims: [], nestingDims: undefined };
+                expect(() => generator[method](shortInput)).toThrow('H-notch output');
+                expect(() => generator[method](shortInput)).toThrow('H-notch output');
+                expect(() =>
+                    generator[method]({ ...shortInput, hasOutputNotch: false }),
+                ).not.toThrow();
+                const tallerInput = { ...shortInput, widgetDims: { w: 100, h: 26 } };
+                expect(() => generator[method](tallerInput)).not.toThrow();
+                expect(generator.generate(tallerInput).path).not.toBe(
+                    generator.generate({ ...tallerInput, hasOutputNotch: false }).path,
+                );
             });
 
             it('does not validate stroke clearance in production', () => {

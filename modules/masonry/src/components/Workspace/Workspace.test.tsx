@@ -641,7 +641,7 @@ describe('Workspace', () => {
       // Every control the row holds is laid out by the row, in the order it reads left to right.
       // The row is anchored on its right edge, so the reset arriving shifts the fullscreen button
       // and leaves the magnifiers where the pointer left them.
-      expect(labels).toEqual(['Enter fullscreen', 'Reset zoom', 'Zoom out', 'Zoom in']);
+      expect(labels).toEqual(['Home', 'Enter fullscreen', 'Reset zoom', 'Zoom out', 'Zoom in']);
 
       for (const button of controls!.querySelectorAll('button')) {
         expect(button.className).not.toContain('absolute');

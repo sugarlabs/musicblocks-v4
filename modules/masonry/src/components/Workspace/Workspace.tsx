@@ -23,6 +23,7 @@ import { ActionMenu } from './ActionMenu';
 import { DragGhost } from './DragGhost';
 import { FullscreenControl } from './FullscreenControl';
 import { BricksVisibilityControl } from './BricksVisibilityControl';
+import { HomeControl } from './HomeControl';
 import { ScaleControl } from './ScaleControl';
 import { SnapHintOverlay } from './SnapHintOverlay';
 import { SnapPreviewView } from './SnapPreviewView';
@@ -155,13 +156,13 @@ export function Workspace({ config }: WorkspaceViewProps) {
     return towers.flatMap((tower) => listVisibleNodes(tower.root));
   }, [towers]);
 
-  const { handleKeyDown } = useCanvasKeyboardNav();
-
   // palette drag-and-drop wiring: the root element scopes the delegated drag
   // selector and positions the ghost overlay; the canvas element anchors drop coordinates.
   const rootRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const ghostRef = useRef<HTMLDivElement>(null);
+
+  const { handleKeyDown } = useCanvasKeyboardNav(canvasRef);
 
   // The node the towers and their overlays are drawn in. A pan moves this one element, so brick
   // coordinates stay canvas-local and nothing has to be laid out again.
@@ -279,6 +280,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
             data-testid="workspace-controls"
             className="absolute right-26 bottom-6 z-40 flex h-14 items-center gap-6"
           >
+            <HomeControl canvasRef={canvasRef} />
             <FullscreenControl />
             <ScaleControl />
           </div>

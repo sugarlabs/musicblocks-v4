@@ -32,7 +32,7 @@ const MINIMUMS: BrickMinimums = {
 
 const brickOutlineGenerator = new BrickOutlineGeneratorTest(MINIMUMS);
 
-describe('constructor', () => {
+describe('geometry validation', () => {
     const constants = Object.getOwnPropertyDescriptors(BrickOutlineGenerator);
 
     afterEach(() => {
@@ -72,6 +72,62 @@ describe('constructor', () => {
         Reflect.set(BrickOutlineGenerator, 'CORNER_RADIUS', 100);
         expect(() => new BrickOutlineGenerator(MINIMUMS)).not.toThrow();
     });
+
+    describe.each(['computeDimensions', 'generate', 'getConnectorCoords'] as const)(
+        '%s',
+        (method) => {
+            const input = {
+                strokeWidth: 2,
+                widgetDims: { w: 100, h: 20 },
+                paramArgDims: [{ param: null, arg: { w: 50, h: 40 } }],
+                nestingDims: { w: 60, h: 60 },
+                hasPrevNotch: true,
+                hasNextNotch: true,
+                hasOutputNotch: true,
+            };
+
+            it.each([
+                ['V_NOTCH_RADIUS', 8, 'V_NOTCH_RADIUS'],
+                ['H_NOTCH_RADIUS', 8, 'H_NOTCH_RADIUS'],
+                ['V_NOTCH_OFFSET_X', 12, 'V-notch'],
+                ['V_NOTCH_OFFSET_X', 28, 'V-notch'],
+                ['H_NOTCH_OFFSET_Y', 12, 'H-notch'],
+            ])('rejects %s = %s with stroke clearance', (key, value, message) => {
+                vi.stubEnv('DEV', true);
+                Reflect.set(BrickOutlineGenerator, key, value);
+                const generator = new BrickOutlineGenerator(MINIMUMS);
+                expect(() => generator[method](input)).toThrow(message);
+            });
+
+            it('allows notches whose arcs and corners meet with stroke clearance', () => {
+                vi.stubEnv('DEV', true);
+                Reflect.set(BrickOutlineGenerator, 'V_NOTCH_RADIUS', 5);
+                Reflect.set(BrickOutlineGenerator, 'H_NOTCH_RADIUS', 5);
+                Reflect.set(BrickOutlineGenerator, 'V_NOTCH_OFFSET_X', 13);
+                Reflect.set(BrickOutlineGenerator, 'H_NOTCH_OFFSET_Y', 13);
+                const generator = new BrickOutlineGenerator(MINIMUMS);
+                expect(() => generator[method](input)).not.toThrow();
+                Reflect.set(BrickOutlineGenerator, 'V_NOTCH_OFFSET_X', 25);
+                expect(() => generator[method](input)).not.toThrow();
+            });
+
+            it('does not validate stroke clearance in production', () => {
+                vi.stubEnv('DEV', false);
+                Reflect.set(BrickOutlineGenerator, 'V_NOTCH_RADIUS', 8);
+                const generator = new BrickOutlineGenerator(MINIMUMS);
+                expect(() => generator[method](input)).not.toThrow();
+            });
+
+            it('validates the stroke width on subsequent calls', () => {
+                vi.stubEnv('DEV', true);
+                const generator = new BrickOutlineGenerator(MINIMUMS);
+                generator[method](input);
+                expect(() => generator[method]({ ...input, strokeWidth: 5 })).toThrow(
+                    'V_NOTCH_RADIUS',
+                );
+            });
+        },
+    );
 });
 
 describe('computeDimensions', () => {

@@ -32,6 +32,48 @@ const MINIMUMS: BrickMinimums = {
 
 const brickOutlineGenerator = new BrickOutlineGeneratorTest(MINIMUMS);
 
+describe('constructor', () => {
+    const constants = Object.getOwnPropertyDescriptors(BrickOutlineGenerator);
+
+    afterEach(() => {
+        Object.defineProperties(BrickOutlineGenerator, constants);
+        vi.unstubAllEnvs();
+    });
+
+    it.each([
+        ['CORNER_RADIUS', 7, 'CORNER_RADIUS'],
+        ['CORNER_RADIUS', -1, 'CORNER_RADIUS'],
+        ['TAIL_STEP_H', 7, 'CORNER_RADIUS'],
+        ['V_NOTCH_RADIUS', 9, 'V_NOTCH_RADIUS'],
+        ['V_NOTCH_RADIUS', -1, 'V_NOTCH_RADIUS'],
+        ['V_NOTCH_WIDTH', 3, 'V_NOTCH_RADIUS'],
+        ['V_NOTCH_OFFSET_X', 11, 'V-notch'],
+        ['V_NOTCH_OFFSET_X', 29, 'V-notch'],
+        ['TAIL_STEP_W', 37, 'V-notch'],
+        ['TAIL_INDENT_W', 19, 'V-notch'],
+        ['H_NOTCH_RADIUS', 9, 'H_NOTCH_RADIUS'],
+        ['H_NOTCH_RADIUS', -1, 'H_NOTCH_RADIUS'],
+        ['H_NOTCH_WIDTH', 3, 'H_NOTCH_RADIUS'],
+        ['H_NOTCH_OFFSET_Y', 11, 'H-notch'],
+    ])('rejects %s = %s in development', (key, value, message) => {
+        vi.stubEnv('DEV', true);
+        Reflect.set(BrickOutlineGenerator, key, value);
+        expect(() => new BrickOutlineGenerator(MINIMUMS)).toThrow(message);
+    });
+
+    it('allows corners that meet at the tail step', () => {
+        vi.stubEnv('DEV', true);
+        Reflect.set(BrickOutlineGenerator, 'CORNER_RADIUS', 6);
+        expect(() => new BrickOutlineGenerator(MINIMUMS)).not.toThrow();
+    });
+
+    it('does not validate geometry constants in production', () => {
+        vi.stubEnv('DEV', false);
+        Reflect.set(BrickOutlineGenerator, 'CORNER_RADIUS', 100);
+        expect(() => new BrickOutlineGenerator(MINIMUMS)).not.toThrow();
+    });
+});
+
 describe('computeDimensions', () => {
     // Use a realistic stroke width throughout; strokeWidth/2 bleeds into every dimension
     // that has a stroke-inset at each end.

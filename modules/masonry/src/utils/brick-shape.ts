@@ -128,7 +128,41 @@ export class BrickOutlineGenerator {
         tailHeight: 0,
     };
 
-    public constructor(private readonly minimums: BrickMinimums) {}
+    public constructor(private readonly minimums: BrickMinimums) {
+        if (import.meta.env.DEV) {
+            const {
+                CORNER_RADIUS,
+                TAIL_STEP_H,
+                TAIL_STEP_W,
+                TAIL_INDENT_W,
+                V_NOTCH_RADIUS,
+                V_NOTCH_WIDTH,
+                V_NOTCH_OFFSET_X,
+                H_NOTCH_RADIUS,
+                H_NOTCH_WIDTH,
+                H_NOTCH_OFFSET_Y,
+            } = BrickOutlineGenerator;
+
+            if (CORNER_RADIUS < 0 || 2 * CORNER_RADIUS > TAIL_STEP_H) {
+                throw new Error('CORNER_RADIUS must fit within half of TAIL_STEP_H');
+            }
+            if (V_NOTCH_RADIUS < 0 || 2 * V_NOTCH_RADIUS > V_NOTCH_WIDTH) {
+                throw new Error('V_NOTCH_RADIUS must fit within half of V_NOTCH_WIDTH');
+            }
+            if (H_NOTCH_RADIUS < 0 || 2 * H_NOTCH_RADIUS > H_NOTCH_WIDTH) {
+                throw new Error('H_NOTCH_RADIUS must fit within half of H_NOTCH_WIDTH');
+            }
+            if (
+                V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 < CORNER_RADIUS ||
+                V_NOTCH_OFFSET_X + V_NOTCH_WIDTH / 2 + CORNER_RADIUS > TAIL_STEP_W - TAIL_INDENT_W
+            ) {
+                throw new Error('V-notch must fit between the tail foot corners');
+            }
+            if (H_NOTCH_OFFSET_Y - H_NOTCH_WIDTH / 2 < CORNER_RADIUS) {
+                throw new Error('H-notch must start below the top corner');
+            }
+        }
+    }
 
     private normalizeInput(input: BrickOutlineInput): NormalizedInput {
         const hasNesting = input.nestingDims !== undefined;

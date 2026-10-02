@@ -147,6 +147,22 @@ describe('BrickViewFixed param label', () => {
   });
 });
 
+describe('BrickViewFixed output-notch translation', () => {
+  it('compensates the left output-notch margin instead of shifting the body right', () => {
+    const { container } = renderExpressionBrick();
+
+    const group = container.querySelector('svg > g');
+    const transform = group?.getAttribute('transform');
+    const x = Number(transform?.match(/translate\(([-\d.]+)\s+([-\d.]+)/)?.[1]);
+    const expectedX = SCALE_LEVEL_CONFIG[2].brickScale * (2 + (3 * 2) / 2);
+
+    expect(transform).toBeTruthy();
+    expect(Number.isFinite(x)).toBe(true);
+    expect(x).toBeGreaterThan(0);
+    expect(x).toBeCloseTo(expectedX, 6);
+  });
+});
+
 describe('BrickViewFixed nesting fold', () => {
   const CAVITY_HEIGHT = 200;
 

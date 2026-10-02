@@ -92,6 +92,12 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
   const [paramBoundsList, setParamBoundsList] = useState<(Bounds | null)[]>([]);
 
   const [foldToggleBounds, setFoldToggleBounds] = useState<Bounds | null>(null);
+  const [margins, setMargins] = useState({
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+  });
 
   const labelRef = useRef<HTMLDivElement>(null);
   const paramRefs = useRef<(HTMLParagraphElement | null)[]>([]);
@@ -232,6 +238,7 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
     const {
       width,
       height,
+      margins,
       path: generatedPath,
       bounds,
     } = generateOutline.generate({
@@ -249,6 +256,7 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
 
     setPath(generatedPath);
     setDims({ w: width, h: height });
+    setMargins(margins);
 
     setLabelBounds({
       x: svgToPx(bounds.widget.x),
@@ -301,214 +309,215 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={svgToPx(dims.w)}
-      height={svgToPx(dims.h)}
-      className="overflow-visible"
+      width={svgToPx(dims.w + margins.left + margins.right)}
+      height={svgToPx(dims.h + margins.top + margins.bottom)}
     >
-      <path
-        d={path}
-        transform={`scale(${brickScale})`}
-        fill={colorsDefault.background}
-        stroke={colorsDefault.border}
-        strokeWidth={pxToSvg(STROKE_WIDTH)}
-      />
+      <g transform={`translate(${svgToPx(margins.left)} ${svgToPx(margins.top)})`}>
+        <path
+          d={path}
+          transform={`scale(${brickScale})`}
+          fill={colorsDefault.background}
+          stroke={colorsDefault.border}
+          strokeWidth={pxToSvg(STROKE_WIDTH)}
+        />
 
-      {/* Main Widget */}
-      {(isLabelWidget || isVariantWidget || isGraphicWidget) && (
-        <foreignObject
-          x={labelBounds.x}
-          y={labelBounds.y}
-          width={labelBounds.w || 9999}
-          height={labelBounds.h || 9999}
-        >
-          <div
-            className="flex items-center"
-            style={{
-              width: labelBounds.w || undefined,
-              height: labelBounds.h || undefined,
-            }}
-          >
-            <div ref={labelRef} className="flex w-max items-center gap-1">
-              {isLabelWidget && (
-                <>
-                  <p
-                    className="m-0 max-w-none whitespace-nowrap"
-                    style={{
-                      fontSize,
-                      lineHeight: `${lineHeight}px`,
-                      color: colorsDefault.foreground,
-                    }}
-                  >
-                    {labelText}
-                  </p>
-                  {labelGlyph?.src && (
-                    <img
-                      src={labelGlyph.src}
-                      alt="glyph"
-                      className="shrink-0 object-contain"
-                      style={{ width: fontSize, height: fontSize }}
-                    />
-                  )}
-                  {labelGlyph?.name && !labelGlyph.src && (
-                    <span
-                      className={`glyph-${labelGlyph.name} shrink-0`}
-                      style={{ color: labelGlyph.color, fontSize }}
-                    />
-                  )}
-                </>
-              )}
-              {isVariantWidget && (
-                <Select value={variantValue} onValueChange={() => {}}>
-                  <SelectTrigger
-                    className={cn(
-                      'h-7 min-w-16 gap-1 bg-transparent px-2 py-1',
-                      'transition-colors hover:bg-black/5 dark:hover:bg-white/5',
-                    )}
-                    style={{
-                      fontSize,
-                      lineHeight: `${lineHeight}px`,
-                      color: colorsDefault.foreground,
-                      borderColor: colorsDefault.border,
-                    }}
-                  >
-                    <div className="grid">
-                      <span
-                        className="pointer-events-none invisible col-start-1 row-start-1 w-max"
-                        aria-hidden="true"
-                      >
-                        {variantOptions.reduce(
-                          (a: string, b: string) => (a.length > b.length ? a : b),
-                          '',
-                        )}
-                      </span>
-                      <span className="col-start-1 row-start-1 flex min-w-0 items-center justify-start">
-                        <SelectValue />
-                      </span>
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent
-                    alignItemWithTrigger={false}
-                    className="min-w-0"
-                    style={{
-                      backgroundColor: colorsDefault.background,
-                      borderColor: colorsDefault.border,
-                      color: colorsDefault.foreground,
-                    }}
-                  >
-                    {variantOptions.map((opt: string) => (
-                      <SelectItem
-                        key={opt}
-                        value={opt}
-                        className="focus:bg-black/10 focus:text-inherit dark:focus:bg-white/10"
-                      >
-                        {opt}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              {isGraphicWidget && graphicSrc && (
-                <img src={graphicSrc} alt="graphic widget" className="shrink-0 object-contain" />
-              )}
-            </div>
-          </div>
-        </foreignObject>
-      )}
-
-      {/* Parameters */}
-      {paramArgs.map((pa, i) => {
-        const paramText = pa.param;
-        if (!paramText) return null;
-
-        const bounds = paramBoundsList[i] || { x: 0, y: 0, w: 0, h: 0 };
-
-        return (
+        {/* Main Widget */}
+        {(isLabelWidget || isVariantWidget || isGraphicWidget) && (
           <foreignObject
-            key={i}
-            x={bounds.x}
-            y={bounds.y}
-            width={bounds.w || 9999}
-            height={bounds.h || 9999}
+            x={labelBounds.x}
+            y={labelBounds.y}
+            width={labelBounds.w || 9999}
+            height={labelBounds.h || 9999}
           >
             <div
               className="flex items-center"
               style={{
-                width: bounds.w || undefined,
-                height: bounds.h || undefined,
+                width: labelBounds.w || undefined,
+                height: labelBounds.h || undefined,
               }}
             >
-              <p
-                ref={(el) => {
-                  paramRefs.current[i] = el;
-                }}
-                className="m-0 max-w-none whitespace-nowrap"
-                style={{
-                  fontSize: paramFontSize,
-                  lineHeight: `${paramLineHeight}px`,
-                  color: colorsDefault.foreground,
-                }}
-              >
-                {paramText}
-              </p>
+              <div ref={labelRef} className="flex w-max items-center gap-1">
+                {isLabelWidget && (
+                  <>
+                    <p
+                      className="m-0 max-w-none whitespace-nowrap"
+                      style={{
+                        fontSize,
+                        lineHeight: `${lineHeight}px`,
+                        color: colorsDefault.foreground,
+                      }}
+                    >
+                      {labelText}
+                    </p>
+                    {labelGlyph?.src && (
+                      <img
+                        src={labelGlyph.src}
+                        alt="glyph"
+                        className="shrink-0 object-contain"
+                        style={{ width: fontSize, height: fontSize }}
+                      />
+                    )}
+                    {labelGlyph?.name && !labelGlyph.src && (
+                      <span
+                        className={`glyph-${labelGlyph.name} shrink-0`}
+                        style={{ color: labelGlyph.color, fontSize }}
+                      />
+                    )}
+                  </>
+                )}
+                {isVariantWidget && (
+                  <Select value={variantValue} onValueChange={() => { }}>
+                    <SelectTrigger
+                      className={cn(
+                        'h-7 min-w-16 gap-1 bg-transparent px-2 py-1',
+                        'transition-colors hover:bg-black/5 dark:hover:bg-white/5',
+                      )}
+                      style={{
+                        fontSize,
+                        lineHeight: `${lineHeight}px`,
+                        color: colorsDefault.foreground,
+                        borderColor: colorsDefault.border,
+                      }}
+                    >
+                      <div className="grid">
+                        <span
+                          className="pointer-events-none invisible col-start-1 row-start-1 w-max"
+                          aria-hidden="true"
+                        >
+                          {variantOptions.reduce(
+                            (a: string, b: string) => (a.length > b.length ? a : b),
+                            '',
+                          )}
+                        </span>
+                        <span className="col-start-1 row-start-1 flex min-w-0 items-center justify-start">
+                          <SelectValue />
+                        </span>
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent
+                      alignItemWithTrigger={false}
+                      className="min-w-0"
+                      style={{
+                        backgroundColor: colorsDefault.background,
+                        borderColor: colorsDefault.border,
+                        color: colorsDefault.foreground,
+                      }}
+                    >
+                      {variantOptions.map((opt: string) => (
+                        <SelectItem
+                          key={opt}
+                          value={opt}
+                          className="focus:bg-black/10 focus:text-inherit dark:focus:bg-white/10"
+                        >
+                          {opt}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                {isGraphicWidget && graphicSrc && (
+                  <img src={graphicSrc} alt="graphic widget" className="shrink-0 object-contain" />
+                )}
+              </div>
             </div>
           </foreignObject>
-        );
-      })}
+        )}
 
-      {/*
+        {/* Parameters */}
+        {paramArgs.map((pa, i) => {
+          const paramText = pa.param;
+          if (!paramText) return null;
+
+          const bounds = paramBoundsList[i] || { x: 0, y: 0, w: 0, h: 0 };
+
+          return (
+            <foreignObject
+              key={i}
+              x={bounds.x}
+              y={bounds.y}
+              width={bounds.w || 9999}
+              height={bounds.h || 9999}
+            >
+              <div
+                className="flex items-center"
+                style={{
+                  width: bounds.w || undefined,
+                  height: bounds.h || undefined,
+                }}
+              >
+                <p
+                  ref={(el) => {
+                    paramRefs.current[i] = el;
+                  }}
+                  className="m-0 max-w-none whitespace-nowrap"
+                  style={{
+                    fontSize: paramFontSize,
+                    lineHeight: `${paramLineHeight}px`,
+                    color: colorsDefault.foreground,
+                  }}
+                >
+                  {paramText}
+                </p>
+              </div>
+            </foreignObject>
+          );
+        })}
+
+        {/*
         Fold toggle. Drawn last so it sits over the outline: it is overlaid on the head rather than
         given space in it, which is what leaves the brick's outer geometry the same either way.
         Points down at an open cavity and right at a folded one, the way the cavity's own contents
         do. Disabled while there is nothing in there to fold.
       */}
-      {foldToggleBounds && (
-        <foreignObject
-          x={foldToggleBounds.x}
-          y={foldToggleBounds.y}
-          width={foldToggleBounds.w}
-          height={foldToggleBounds.h}
-        >
-          <button
-            type="button"
-            data-fold-toggle=""
-            disabled={isFoldDisabled}
-            aria-expanded={!nestingIsFolded}
-            aria-label={nestingIsFolded ? 'Unfold cavity' : 'Fold cavity'}
-            title={
-              isFoldDisabled
-                ? 'Nothing in the cavity to fold'
-                : nestingIsFolded
-                  ? 'Unfold cavity'
-                  : 'Fold cavity'
-            }
-            // interact.js starts a brick drag off a pointerdown anywhere on the brick, so the
-            // toggle swallows its own: a press here folds rather than tearing the brick out of its
-            // tower. `useBrickMove` also names this button in the draggable's `ignoreFrom`, which
-            // is what covers the press that turns into a drag. A disabled toggle dispatches no
-            // pointer events at all, so the drag it would have blocked reaches the brick instead.
-            onPointerDown={(event) => event.stopPropagation()}
-            onClick={() => fold?.onToggle()}
-            className={cn(
-              'flex items-center justify-center rounded-sm border-0 bg-transparent p-0',
-              isFoldDisabled
-                ? 'cursor-default opacity-40'
-                : 'cursor-pointer transition-colors hover:bg-black/10 dark:hover:bg-white/10',
-            )}
-            style={{
-              width: foldToggleBounds.w,
-              height: foldToggleBounds.h,
-              color: colorsDefault.foreground,
-            }}
+        {foldToggleBounds && (
+          <foreignObject
+            x={foldToggleBounds.x}
+            y={foldToggleBounds.y}
+            width={foldToggleBounds.w}
+            height={foldToggleBounds.h}
           >
-            {/* Sized off the box the generator reserved, itself derived from SCALE_LEVEL_CONFIG. */}
-            {nestingIsFolded ? (
-              <ChevronRight size={foldToggleBounds.w} strokeWidth={2.5} aria-hidden="true" />
-            ) : (
-              <ChevronDown size={foldToggleBounds.w} strokeWidth={2.5} aria-hidden="true" />
-            )}
-          </button>
-        </foreignObject>
-      )}
+            <button
+              type="button"
+              data-fold-toggle=""
+              disabled={isFoldDisabled}
+              aria-expanded={!nestingIsFolded}
+              aria-label={nestingIsFolded ? 'Unfold cavity' : 'Fold cavity'}
+              title={
+                isFoldDisabled
+                  ? 'Nothing in the cavity to fold'
+                  : nestingIsFolded
+                    ? 'Unfold cavity'
+                    : 'Fold cavity'
+              }
+              // interact.js starts a brick drag off a pointerdown anywhere on the brick, so the
+              // toggle swallows its own: a press here folds rather than tearing the brick out of its
+              // tower. `useBrickMove` also names this button in the draggable's `ignoreFrom`, which
+              // is what covers the press that turns into a drag. A disabled toggle dispatches no
+              // pointer events at all, so the drag it would have blocked reaches the brick instead.
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={() => fold?.onToggle()}
+              className={cn(
+                'flex items-center justify-center rounded-sm border-0 bg-transparent p-0',
+                isFoldDisabled
+                  ? 'cursor-default opacity-40'
+                  : 'cursor-pointer transition-colors hover:bg-black/10 dark:hover:bg-white/10',
+              )}
+              style={{
+                width: foldToggleBounds.w,
+                height: foldToggleBounds.h,
+                color: colorsDefault.foreground,
+              }}
+            >
+              {/* Sized off the box the generator reserved, itself derived from SCALE_LEVEL_CONFIG. */}
+              {nestingIsFolded ? (
+                <ChevronRight size={foldToggleBounds.w} strokeWidth={2.5} aria-hidden="true" />
+              ) : (
+                <ChevronDown size={foldToggleBounds.w} strokeWidth={2.5} aria-hidden="true" />
+              )}
+            </button>
+          </foreignObject>
+        )}
+      </g>
     </svg>
   );
 }

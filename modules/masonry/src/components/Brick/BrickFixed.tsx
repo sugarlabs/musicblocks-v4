@@ -219,6 +219,29 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
     }
   }, [widgetContent, paramArgsString, fontSize, lineHeight, model]);
 
+  // Layout Effect 1b: Re-measures the widget box as it resizes after mount. Input widgets
+  // mutate `widget.value` in place without notifying the model (e.g. a textbox grows as text
+  // is typed), so the one-shot measure above would leave the brick at stale bounds. Mirrors
+  // BrickViewInput: observes the rendered box and writes dims back to `model.widgetDims`,
+  // which intentionally does not notify, so this cannot loop. The setLabelDims guard makes
+  // no-change observations a no-op.
+  useLayoutEffect(() => {
+    const el = labelRef.current;
+    if (!el) return;
+
+    const measure = () => {
+      const { width, height } = el.getBoundingClientRect();
+      setLabelDims((prev) =>
+        width !== prev.w || height !== prev.h ? { w: width, h: height } : prev,
+      );
+      model.widgetDims = { w: width, h: height };
+    };
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [model, widgetContent]);
+
   // Layout Effect 2: Converts measured DOM dimensions to SVG units and generates the
   // brick outline path. argDims and nestingDims come from outside — this component only
   // allocates slot space, never renders those bricks.

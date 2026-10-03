@@ -315,3 +315,37 @@ describe('BrickViewFixed fold toggle', () => {
     expect(container.querySelectorAll(FOLD_TOGGLE_SELECTOR)).toHaveLength(1);
   });
 });
+
+describe('statement brick with input widget (#893)', () => {
+  it('renders a textbox input instead of an empty widget area', () => {
+    const model = new StatementBrickModel({
+      colorsDefault,
+      tooltipText: '',
+      widget: { type: 'textbox', value: '5' },
+      hasConnectionPrev: true,
+      hasConnectionNext: true,
+    });
+    render(<BrickViewFixed kind="statement" model={model} />);
+
+    const input = screen.getByRole('textbox') as HTMLInputElement;
+    expect(input).toBeTruthy();
+    expect(input.value).toBe('5');
+  });
+
+  it('renders a numberbox input and writes edits back to the model', () => {
+    const model = new StatementBrickModel({
+      colorsDefault,
+      tooltipText: '',
+      widget: { type: 'numberbox', value: 10 },
+      hasConnectionPrev: true,
+      hasConnectionNext: true,
+    });
+    render(<BrickViewFixed kind="statement" model={model} />);
+
+    const input = screen.getByRole('spinbutton') as HTMLInputElement;
+    expect(input.value).toBe('10');
+
+    fireEvent.change(input, { target: { value: '42' } });
+    expect((model.widget as { value: number }).value).toBe(42);
+  });
+});

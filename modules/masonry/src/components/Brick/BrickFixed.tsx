@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BrickOutlineGenerator } from '@/utils/brick-shape';
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
 
+import { Widget } from './BrickWidget';
+
 const STROKE_WIDTH = 2;
 const DEFAULT_SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
 // Param labels render smaller than the main label so the brick's identity
@@ -18,9 +20,10 @@ const DEFAULT_SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
 const PARAM_FONT_SCALE = 0.8;
 
 /**
- * Renders a brick whose widget is fixed — no free user input. The variant widget is the sole
- * exception, using a select UI, but it remains semantically fixed: the brick represents a
- * predetermined concept, and the select only switches between its predefined forms.
+ * Renders a brick whose widget is fixed or an inline input (statement bricks with textbox,
+ * numberbox, toggle, slider or select widgets). The variant widget uses a select UI but remains
+ * semantically fixed: the brick represents a predetermined concept, and the select only switches
+ * between its predefined forms. Input widgets edit the model's widget value in place.
  *
  * The model is the single source of truth for all rendering data. The component:
  *  1. Reads configuration (colors, widget, params, argDims, nesting) from `model`.
@@ -99,6 +102,12 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
   const isLabelWidget = widget.type === 'label';
   const isVariantWidget = widget.type === 'variant';
   const isGraphicWidget = widget.type === 'graphic';
+  const isInputWidget =
+    widget.type === 'textbox' ||
+    widget.type === 'numberbox' ||
+    widget.type === 'toggle' ||
+    widget.type === 'slider' ||
+    widget.type === 'select';
 
   const labelText = widget.type === 'label' ? widget.text : '';
   const labelGlyph = widget.type === 'label' ? widget.glyph : undefined;
@@ -115,7 +124,13 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
         ? widget.value
         : widget.type === 'graphic'
           ? widget.src
-          : '';
+          : widget.type === 'textbox' ||
+              widget.type === 'numberbox' ||
+              widget.type === 'toggle' ||
+              widget.type === 'slider' ||
+              widget.type === 'select'
+            ? JSON.stringify(widget)
+            : '';
 
   const generateOutline = useMemo(
     () =>
@@ -314,7 +329,7 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
       />
 
       {/* Main Widget */}
-      {(isLabelWidget || isVariantWidget || isGraphicWidget) && (
+      {(isLabelWidget || isVariantWidget || isGraphicWidget || isInputWidget) && (
         <foreignObject
           x={labelBounds.x}
           y={labelBounds.y}
@@ -409,6 +424,21 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
               )}
               {isGraphicWidget && graphicSrc && (
                 <img src={graphicSrc} alt="graphic widget" className="shrink-0 object-contain" />
+              )}
+              {isInputWidget && (
+                <Widget
+                  widget={
+                    widget as Extract<
+                      typeof widget,
+                      { type: 'textbox' | 'numberbox' | 'toggle' | 'slider' | 'select' }
+                    >
+                  }
+                  fontSize={fontSize}
+                  lineHeight={lineHeight}
+                  color={colorsDefault.foreground}
+                  borderColor={colorsDefault.border}
+                  backgroundColor={colorsDefault.background}
+                />
               )}
             </div>
           </div>

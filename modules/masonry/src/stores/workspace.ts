@@ -479,14 +479,32 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
             if (target.kind !== 'statement') return null;
 
-            const prev = target.prev;
-            if (!prev || prev.kind !== 'statement' || prev.next !== target) {
-                return null;
-            }
-
             // Defer unfolded clamps with non-empty cavities to Part 4
             if (target.nestedNext && !target.model.isNestingFolded) {
                 return null;
+            }
+
+            const isRoot = sourceTower.root.model.id === target.model.id;
+            let prev: TowerStatementNode | null = null;
+            let promotedRoot: TowerStatementNode | null = null;
+
+            if (isRoot) {
+                // Root extraction: promote next sibling as new root
+                if (!target.next || target.next.kind !== 'statement') {
+                    return null;
+                }
+                promotedRoot = target.next as TowerStatementNode;
+            } else {
+                // Intermediate extraction: target must be connected via prev.next
+                const candidatePrev = target.prev;
+                if (
+                    !candidatePrev ||
+                    candidatePrev.kind !== 'statement' ||
+                    candidatePrev.next !== target
+                ) {
+                    return null;
+                }
+                prev = candidatePrev as TowerStatementNode;
             }
 
             let newTowerId: string | null = null;
@@ -495,16 +513,27 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 const tower = state.towers[sourceTower.id];
                 if (!tower) return state;
 
-                // If prev is the root, use the live root reference from the store
-                const livePrev =
-                    prev.model.id === tower.root.model.id && tower.root.kind === 'statement'
-                        ? (tower.root as TowerStatementNode)
-                        : prev;
+                let remainingRoot: TowerNode;
 
-                // Close outer sequence gap in source tower
-                livePrev.next = target.next;
-                if (target.next && 'prev' in target.next) {
-                    target.next.prev = livePrev;
+                if (isRoot && promotedRoot) {
+                    // Disconnect promoted root from the extracted target root
+                    promotedRoot.prev = null;
+                    remainingRoot = promotedRoot;
+                } else if (prev) {
+                    // If prev is the root, use the live root reference from the store
+                    const livePrev =
+                        prev.model.id === tower.root.model.id && tower.root.kind === 'statement'
+                            ? (tower.root as TowerStatementNode)
+                            : prev;
+
+                    // Close outer sequence gap in source tower
+                    livePrev.next = target.next;
+                    if (target.next && 'prev' in target.next) {
+                        target.next.prev = livePrev;
+                    }
+                    remainingRoot = tower.root;
+                } else {
+                    return state;
                 }
 
                 // Clean extracted brick's outer sequence pointers ONLY
@@ -518,7 +547,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                     tower,
                     brickId,
                     undefined,
-                    tower.root,
+                    remainingRoot,
                     extractedIds,
                 );
 
@@ -528,7 +557,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                     root: target,
                 };
 
-                const newRoot = { ...tower.root };
+                const newRoot = { ...remainingRoot };
                 if (newRoot.kind === 'statement') {
                     if (newRoot.next && 'prev' in newRoot.next) {
                         newRoot.next.prev = newRoot;

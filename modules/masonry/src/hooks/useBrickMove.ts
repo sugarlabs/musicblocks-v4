@@ -7,7 +7,11 @@ import { useBrickLayoutStore } from '@/stores/brick';
 import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { useTrashStore } from '@/stores/trash';
 import { useWorkspaceViewportStore } from '@/stores/viewport';
-import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
+import {
+    calculateExtractedTowerPosition,
+    findNodeAndTower,
+    useWorkspaceStore,
+} from '@/stores/workspace';
 import { joinArg, resolveArgumentConnection } from '@/utils/argument-connect';
 import { DRAG_CLICK_SUPPRESSION_MS, FOLD_TOGGLE_SELECTOR } from '@/utils/constants';
 import { edgePanStep, isPointInsideBounds } from '@/utils/geometry';
@@ -16,7 +20,7 @@ import { joinStatement, resolveStatementConnection } from '@/utils/statement-con
 import { discardTower } from '@/utils/towerDiscard';
 import type { Bounds, Point } from '@/@types/common.types';
 import type { TowerNode } from '@/@types/tower.types';
-import { listNodes } from '@/utils/tower-traversal';
+import { listNodes, traverseTopDown } from '@/utils/tower-traversal';
 
 /**
  * Triggers a CSS keyframe animation on a specific brick by temporarily removing
@@ -75,6 +79,31 @@ export function tryConnect(towerId: string): boolean {
     }
 
     if (argument !== null) {
+        if (argument.residentNode) {
+            const hostTower = store.towers[argument.hostTowerId];
+            if (hostTower) {
+                const dropPos = calculateExtractedTowerPosition(
+                    hostTower,
+                    argument.residentNode.model.id,
+                );
+                const newTowerId = store.detachBrickToNewTower(
+                    argument.hostTowerId,
+                    argument.residentNode.model.id,
+                    dropPos,
+                );
+
+                if (newTowerId) {
+                    const latestStore = useWorkspaceStore.getState();
+                    const newTower = latestStore.towers[newTowerId];
+                    if (newTower) {
+                        traverseTopDown(newTower.root, newTower.position);
+                        latestStore.syncStatementConnectors(newTowerId, newTower.root);
+                        latestStore.syncArgumentConnectors(newTowerId, newTower.root);
+                    }
+                }
+            }
+        }
+
         joinArg(argument);
         store.absorbTower(argument.absorbedTowerId, argument.hostTowerId);
         triggerBrickAnimation(towerId, 'brick-snap-pulse');

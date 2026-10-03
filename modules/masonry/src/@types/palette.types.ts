@@ -73,4 +73,6 @@ export interface PaletteConfig {
 export interface PaletteViewProps {
     /** Full Classification → Category → Brick hierarchy the palette renders. */
     config: PaletteConfig;
+    /** Called when a palette brick is activated from the keyboard. */
+    onBrickActivate?: (brick: PaletteBrickConfig) => void;
 }

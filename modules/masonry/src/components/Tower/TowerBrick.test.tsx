@@ -260,6 +260,51 @@ describe('TowerBrickView drag-to-click suppression', () => {
     expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
   });
 
+  it('deselects the brick when it is clicked while already selected', () => {
+    renderBricks('brick-1');
+
+    fireEvent.click(brickEl('brick-1'));
+    fireEvent.click(brickEl('brick-1'));
+
+    expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
+  });
+
+  it('leaves the selection alone when a press lands inside a control label', () => {
+    renderBricks('brick-1');
+
+    // A toggle widget renders its visible track and text inside a `<label>`, with only the
+    // `sr-only` checkbox matching `input`; the label's descendants must count as the control too.
+    const label = document.createElement('label');
+    const track = document.createElement('span');
+    label.append(track);
+    brickEl('brick-1').append(label);
+
+    fireEvent.click(brickEl('brick-1'));
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+
+    fireEvent.click(track);
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+  });
+
+  it('leaves the selection alone when a press lands inside a slider', () => {
+    renderBricks('brick-1');
+
+    // Base UI renders the slider thumb as a `div`, so the press lands on an element that is not a
+    // native control; the root's `data-slot` is what marks the whole slider as the control.
+    const slider = document.createElement('div');
+    slider.setAttribute('data-slot', 'slider');
+    const thumb = document.createElement('div');
+    thumb.setAttribute('data-slot', 'slider-thumb');
+    slider.append(thumb);
+    brickEl('brick-1').append(slider);
+
+    fireEvent.click(brickEl('brick-1'));
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+
+    fireEvent.click(thumb);
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+  });
+
   it('does not select a click the hook reports as trailing a drag', () => {
     shouldSuppressClick.mockReturnValue(true);
     renderBricks('brick-1');

@@ -1,0 +1,2 @@
+import{n as e,t}from"./preload-helper-BOH_arBD.js";var n={},r={};async function i(i=`en`){r=(await t(async()=>{let{default:e}=await import(`./lang.en-eU122Ap0.js`);return{default:e}},[])).default,n=i===`en`?{...r}:(await e(Object.assign({"../lang/en.ts":()=>t(()=>import(`./lang.en-eU122Ap0.js`),[]),"../lang/es.ts":()=>t(()=>import(`./lang.es-CVU3yF8W.js`),[])}),`../lang/${i}.ts`,3)).default}function a(e){return Object.fromEntries(e.map(e=>[e,e in n?n[e]:e in r?r[e]:e]))}export{a as getStrings,i as importStrings};
+//# sourceMappingURL=lib.i18n-BQfNvKMP.js.map

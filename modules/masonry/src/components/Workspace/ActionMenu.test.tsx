@@ -118,6 +118,38 @@ describe('ActionMenu', () => {
       ]);
     });
 
+    it('leaves out a wedge that does not belong on this brick, and rings the rest', () => {
+      placeBrick('b1', 100, 100);
+      placeBrick('b2', 300, 100);
+
+      // Belongs on b2 only, the way help belongs only on a brick that has help text.
+      const onlyOnB2: ActionMenuWedge = {
+        id: 'only-b2',
+        label: 'Only on b2',
+        tooltip: 'Belongs on one brick',
+        Icon: (props) => <span data-testid="icon-only-b2" {...props} />,
+        isVisible: (brickId) => brickId === 'b2',
+        isEnabled: () => true,
+        run: () => {},
+      };
+      const ringOf = () =>
+        Array.from(document.querySelectorAll<HTMLElement>('[role="menuitem"]')).map(
+          (wedge) => wedge.dataset.wedge,
+        );
+
+      render(<ActionMenu wedges={[...wedges, onlyOnB2]} />);
+
+      act(() => {
+        useActionMenuStore.getState().open('b1');
+      });
+      expect(ringOf()).toEqual(['act', 'inert', 'third']);
+
+      act(() => {
+        useActionMenuStore.getState().open('b2');
+      });
+      expect(ringOf()).toEqual(['act', 'inert', 'third', 'only-b2']);
+    });
+
     it('gives every wedge its name, its tooltip and its icon', () => {
       placeBrick('b1', 100, 100);
       const { getByRole, getByTestId } = openOn('b1');
@@ -402,13 +434,67 @@ describe('ActionMenu', () => {
   });
 
   describe('the wedges it ships with', () => {
-    it('carries the three the pie menu is specified with, each named and explained', async () => {
+    it('shows help only on a brick with tooltip text, and running it opens the help panel', async () => {
+      const actual =
+        await vi.importActual<typeof import('./actionMenuWedges')>('./actionMenuWedges');
+      const { useBrickHelpStore } = await import('@/stores/brickHelp');
+      const { useWorkspaceStore } = await import('@/stores/workspace');
+      const { StatementBrickModel } = await import('@/models/brick');
+
+      const seat = (id: string, tooltipText: string) => {
+        useWorkspaceStore.getState().createTower({
+          id: `tower-${id}`,
+          root: {
+            kind: 'statement',
+            model: new StatementBrickModel({
+              id,
+              colorsDefault: { background: '#000', foreground: '#fff', border: '#000' },
+              tooltipText,
+              widget: { type: 'label', text: id },
+              params: [],
+              hasConnectionPrev: true,
+              hasConnectionNext: true,
+            }),
+            prev: null,
+            next: null,
+            args: [],
+          },
+          position: { x: 0, y: 0 },
+        });
+      };
+
+      const help = actual.ACTION_MENU_WEDGES.find((wedge) => wedge.id === 'help')!;
+
+      seat('with-text', 'Plays a note');
+      seat('without-text', '');
+
+      // As in v3, the wedge is only on the ring of a brick with help to give, rather than drawn
+      // disabled on the rest.
+      expect(help.isVisible?.('with-text')).toBe(true);
+      expect(help.isVisible?.('without-text')).toBe(false);
+      // A brick that is no longer on the canvas has nothing to explain either.
+      expect(help.isVisible?.('gone')).toBe(false);
+      expect(help.isEnabled('with-text')).toBe(true);
+
+      help.run('with-text');
+      const opened = useBrickHelpStore.getState().help;
+      expect(opened?.title).toBe('with-text');
+      expect(opened?.text).toBe('Plays a note');
+      // A copy to draw, never the live brick, which the canvas is still measuring.
+      expect(opened?.preview.id).not.toBe('with-text');
+
+      useBrickHelpStore.setState({ help: null });
+      useWorkspaceStore.setState({ towers: {}, selectedBrickId: null });
+    });
+
+    it('carries the four the pie menu is specified with, each named and explained', async () => {
       const actual =
         await vi.importActual<typeof import('./actionMenuWedges')>('./actionMenuWedges');
 
       expect(actual.ACTION_MENU_WEDGES.map((wedge) => wedge.id)).toEqual([
         'duplicate',
         'extract',
+        'help',
         'trash',
       ]);
 
@@ -425,7 +511,7 @@ describe('ActionMenu', () => {
           ))}
         </>,
       );
-      expect(container.querySelectorAll('svg')).toHaveLength(3);
+      expect(container.querySelectorAll('svg')).toHaveLength(4);
     });
 
     it('enables duplicate and invokes duplicateBrickToNewTower with history commit on run', async () => {

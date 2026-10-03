@@ -33,7 +33,10 @@ afterEach(() => {
   vi.restoreAllMocks();
   usePaletteDragStore.setState({ dragged: null });
   useActionMenuStore.setState({ brickId: null });
-  useWorkspaceStore.setState({ towers: {}, selectedBrickId: null });
+  useWorkspaceStore.setState({
+    towers: {},
+    selectedBrickId: null,
+  });
   useTrashStore.setState({ bounds: null, isHovered: false });
   useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
   useWorkspaceViewportStore.setState({ offset: { x: 0, y: 0 } });
@@ -168,7 +171,7 @@ describe('Workspace', () => {
     render(<Workspace config={{ palette: paletteConfig }} />);
 
     const user = userEvent.setup();
-    const slot = screen.getByRole('button', { name: 'Note: play a note' });
+    const slot = screen.getByRole('button', { name: 'Note' });
 
     slot.focus();
     await user.keyboard('{Enter}');
@@ -656,7 +659,7 @@ describe('Workspace', () => {
       // Every control the row holds is laid out by the row, in the order it reads left to right.
       // The row is anchored on its right edge, so the reset arriving shifts the fullscreen button
       // and leaves the magnifiers where the pointer left them.
-      expect(labels).toEqual(['Enter fullscreen', 'Reset zoom', 'Zoom out', 'Zoom in']);
+      expect(labels).toEqual(['Home', 'Enter fullscreen', 'Reset zoom', 'Zoom out', 'Zoom in']);
 
       for (const button of controls!.querySelectorAll('button')) {
         expect(button.className).not.toContain('absolute');

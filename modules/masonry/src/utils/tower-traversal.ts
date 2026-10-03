@@ -1,5 +1,6 @@
-import type { Point } from '@/@types/common.types';
+import type { Point, Size } from '@/@types/common.types';
 import { TowerNode, TowerStatementNode } from '@/@types/tower.types';
+import type { TowerState } from '@/@types/workspace.types';
 
 /**
  * Pushes `start` onto `stack`, along with the rest of its statement chain if it has one.
@@ -102,6 +103,40 @@ export function listVisibleNodes(root: TowerNode): TowerNode[] {
 }
 
 /**
+ * Measures how far a tower reaches right and down from its origin: the farthest right edge and the
+ * farthest bottom edge over its visible bricks, each read as the brick's laid-out position in
+ * `coords` relative to `tower.position`, plus its `model.dims`.
+ *
+ * The root sits at the origin by definition, so its own dims are the floor of the result: a tower
+ * whose bricks have no laid-out position yet — or still hold the zero placeholder the layout seeds
+ * ahead of its first pass — measures as its root brick rather than as nothing, so a caller laying
+ * towers out side by side never stacks two of them on the same spot.
+ *
+ * Bricks inside a folded cavity are not on screen, so they take no room here either.
+ *
+ * @param tower - The tower to measure; only its root and position are read.
+ * @param coords - Laid-out brick positions keyed by brick id, as the brick layout store holds them.
+ * @returns The width and height of the tower's bounding box, anchored at its origin.
+ */
+export function measureTowerExtent(
+    tower: Pick<TowerState, 'root' | 'position'>,
+    coords: Record<string, Point>,
+): Size {
+    const { root, position } = tower;
+    let { w, h } = root.model.dims;
+
+    for (const node of listVisibleNodes(root)) {
+        const at = coords[node.model.id];
+        if (at === undefined) continue;
+
+        w = Math.max(w, at.x - position.x + node.model.dims.w);
+        h = Math.max(h, at.y - position.y + node.model.dims.h);
+    }
+
+    return { w, h };
+}
+
+/**
  * Finds the node in a tower whose brick model id matches `brickId`, or null if none does.
  *
  * Used to resolve a collision-space hit — which carries only ids — back to the live tower node it
@@ -109,6 +144,15 @@ export function listVisibleNodes(root: TowerNode): TowerNode[] {
  */
 export function findNode(root: TowerNode, brickId: string): TowerNode | null {
     return listNodes(root).find((node) => node.model.id === brickId) ?? null;
+}
+
+/**
+ * Walks down the linear `next` chain from `node` to find its bottom-most statement.
+ */
+export function findTail(node: TowerStatementNode): TowerStatementNode {
+    let tail = node;
+    while (tail.next !== null && tail.next.kind === 'statement') tail = tail.next as TowerStatementNode;
+    return tail;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

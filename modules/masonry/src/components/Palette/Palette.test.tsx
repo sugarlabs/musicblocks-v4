@@ -203,7 +203,7 @@ describe('Palette', () => {
       expect(meter.nodeName).toBe('H3');
     });
 
-    it('renders each BrickSlot as a button with its name, description, and data-brick-id', () => {
+    it('renders a BrickSlot per brick with its name and data-brick-id', () => {
       const { container } = render(<Palette config={config} />);
 
       const note = container.querySelector('[data-brick-id="r1"]');
@@ -212,8 +212,9 @@ describe('Palette', () => {
 
       expect(note).not.toBeNull();
       expect(note?.nodeName).toBe('BUTTON');
-      expect(note?.getAttribute('title')).toBe('play a note');
-      expect(note?.getAttribute('aria-label')).toBe('Note: play a note');
+      // The description used to ride on `title`; it now reaches the user through the slot's
+      // delayed tooltip, covered in BrickSlot.test.tsx.
+      expect(note?.getAttribute('title')).toBeNull();
       expect(note?.textContent).toContain('Note');
 
       expect(rest).not.toBeNull();
@@ -504,22 +505,24 @@ describe('Palette', () => {
       expect(screen.getByRole('textbox')).toBe(byPlaceholder);
     });
 
-    it('exposes each brick name and description as a focusable button name', () => {
+    it('exposes each brick as a focusable button', () => {
       render(<Palette config={config} />);
 
-      const note = screen.getByRole('button', { name: 'Note: play a note' });
+      const note = screen.getByRole('button', { name: 'Note' });
       note.focus();
 
       expect(document.activeElement).toBe(note);
     });
 
-    it("exposes each brick's description via a title tooltip on its slot", () => {
+    it("names each brick's slot for assistive tech, without a native title tooltip", () => {
       const { container } = render(<Palette config={config} />);
 
-      expect(container.querySelector('[data-brick-id="r1"]')?.getAttribute('title')).toBe(
-        'play a note',
-      );
-      expect(screen.getByTitle('a silence').getAttribute('data-brick-id')).toBe('r2');
+      // The description reached the user through `title` until the slot grew a delayed tooltip of
+      // its own; keeping both would stack a native tooltip on top of it. The accessible name still
+      // carries the entry, and the tooltip itself is covered in BrickSlot.test.tsx.
+      expect(container.querySelector('[data-brick-id="r1"]')?.getAttribute('title')).toBeNull();
+      expect(screen.queryByTitle('a silence')).toBeNull();
+      expect(screen.getByRole('button', { name: 'Note' }).getAttribute('data-brick-id')).toBe('r1');
     });
   });
 

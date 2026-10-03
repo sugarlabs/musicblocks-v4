@@ -1,7 +1,14 @@
 import { act } from '@testing-library/react';
 
-import { useWorkspaceStore } from './workspace';
+import {
+    calculateExtractedTowerPosition,
+    canExtractBrick,
+    EXTRACTED_TOWER_MARGIN_X,
+    EXTRACTED_TOWER_OFFSET_X,
+    useWorkspaceStore,
+} from './workspace';
 import { useBrickLayoutStore } from './brick';
+import { useWorkspaceHistoryStore } from '@/stores/history';
 import {
     expressionTree,
     makeEmptyExpression,
@@ -14,6 +21,7 @@ import { exportWorkspace } from '@/utils/import-export';
 import { listNodes, listVisibleNodes, traverseTopDown } from '@/utils/tower-traversal';
 import type { Bounds, Point } from '@/@types/common.types';
 import type { TowerExpressionNode, TowerNode, TowerStatementNode } from '@/@types/tower.types';
+import type { TowerState } from '@/@types/workspace.types';
 import type { BrickModel } from '@/models/brick';
 import type { QuadtreeCollisionSpace } from '@/utils/collision';
 
@@ -1224,6 +1232,520 @@ describe('Workspace Store Collision Space', () => {
                 useWorkspaceStore.getState().setBricksHidden(false);
             });
             expect(useWorkspaceStore.getState().areBricksHidden).toBe(false);
+        });
+    });
+
+    describe('extractBrickToNewTower - eligibility and safe placement', () => {
+        it('disables extraction for no-op cases and leaves state completely immutable', () => {
+            // Case 1: lone root statement with no next
+            const lone = makeEmptyStatement('lone', 0);
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-lone',
+                    root: lone,
+                    position: { x: 10, y: 20 },
+                });
+            });
+            const towersBeforeCase1 = useWorkspaceStore.getState().towers;
+            expect(canExtractBrick('lone')).toBe(false);
+            expect(useWorkspaceStore.getState().towers).toBe(towersBeforeCase1);
+            expect(useWorkspaceStore.getState().towers['tower-lone'].position).toEqual({
+                x: 10,
+                y: 20,
+            });
+            expect(useWorkspaceStore.getState().towers['tower-lone'].root).toBe(lone);
+            expect(lone.next).toBeNull();
+            expect(lone.prev).toBeNull();
+
+            // Case 2: lone folded root statement with no next
+            const loneFolded = makeEmptyStatement('lone-folded', 0, true);
+            const loneInner = makeEmptyStatement('lone-inner', 0);
+            loneFolded.nestedNext = loneInner;
+            loneInner.prev = loneFolded;
+            loneFolded.model.isNestingFolded = true;
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-lone-folded',
+                    root: loneFolded,
+                    position: { x: 30, y: 40 },
+                });
+            });
+            const towersBeforeCase2 = useWorkspaceStore.getState().towers;
+            expect(canExtractBrick('lone-folded')).toBe(false);
+            expect(useWorkspaceStore.getState().towers).toBe(towersBeforeCase2);
+            expect(useWorkspaceStore.getState().towers['tower-lone-folded'].position).toEqual({
+                x: 30,
+                y: 40,
+            });
+            expect(loneFolded.nestedNext).toBe(loneInner);
+            expect(loneInner.prev).toBe(loneFolded);
+            expect(loneFolded.next).toBeNull();
+
+            // Case 3: unattached argument brick
+            const unattachedArg = makeEmptyValue('unattached-val');
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-unattached',
+                    root: unattachedArg,
+                    position: { x: 50, y: 60 },
+                });
+            });
+            const towersBeforeCase3 = useWorkspaceStore.getState().towers;
+            expect(canExtractBrick('unattached-val')).toBe(false);
+            expect(
+                useWorkspaceStore.getState().extractBrickToNewTower('unattached-val'),
+            ).toBeNull();
+            expect(useWorkspaceStore.getState().towers).toBe(towersBeforeCase3);
+            expect(useWorkspaceStore.getState().towers['tower-unattached'].position).toEqual({
+                x: 50,
+                y: 60,
+            });
+            expect(unattachedArg.parent).toBeNull();
+
+            // Case 4: non-existent brick
+            const towersBeforeCase4 = useWorkspaceStore.getState().towers;
+            expect(canExtractBrick('non-existent')).toBe(false);
+            expect(useWorkspaceStore.getState().towers).toBe(towersBeforeCase4);
+
+            // Workspace towers count and instances unchanged
+            expect(Object.keys(useWorkspaceStore.getState().towers)).toEqual([
+                'tower-lone',
+                'tower-lone-folded',
+                'tower-unattached',
+            ]);
+        });
+
+        it('allows extraction for bricks in a chain, cavity, root clamp, or root with next', () => {
+            // Chain bricks
+            const a = makeEmptyStatement('chain-a', 0);
+            const b = makeEmptyStatement('chain-b', 0);
+            a.next = b;
+            b.prev = a;
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-chain',
+                    root: a,
+                    position: { x: 0, y: 0 },
+                });
+            });
+            // a has next, b has prev
+            expect(canExtractBrick('chain-a')).toBe(true);
+            expect(canExtractBrick('chain-b')).toBe(true);
+
+            // Cavity brick
+            const container = makeEmptyStatement('clamp', 0, true);
+            const inner = makeEmptyStatement('cavity-stmt', 0);
+            container.nestedNext = inner;
+            inner.prev = container;
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-cavity',
+                    root: container,
+                    position: { x: 0, y: 0 },
+                });
+            });
+            expect(canExtractBrick('cavity-stmt')).toBe(true);
+
+            // Root clamp with unfolded cavity and no next ("remove the wrapper" case)
+            expect(container.model.isNestingFolded).toBe(false);
+            expect(container.next).toBeNull();
+            expect(canExtractBrick('clamp')).toBe(true);
+
+            // Attached argument brick
+            const argStmt = makeEmptyStatement('stmt-arg', 1);
+            const val = makeEmptyValue('val-child');
+            argStmt.args[0] = val;
+            val.parent = argStmt;
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-arg',
+                    root: argStmt,
+                    position: { x: 0, y: 0 },
+                });
+            });
+            expect(canExtractBrick('val-child')).toBe(true);
+        });
+
+        it('calculates safe bounding box placement clear of wide arguments', () => {
+            const root = makeEmptyStatement('safe-root', 0);
+            const wideArg = makeEmptyExpression('wide-arg', 0);
+            Object.defineProperty(wideArg.model, 'dims', {
+                value: { w: 350, h: 50 },
+                configurable: true,
+            });
+
+            const nextStmt = makeEmptyStatement('safe-next', 1);
+            nextStmt.args[0] = wideArg;
+            wideArg.parent = nextStmt;
+
+            root.next = nextStmt;
+            nextStmt.prev = root;
+
+            const tower: TowerState = {
+                id: 'safe-tower',
+                root,
+                position: { x: 100, y: 100 },
+            };
+
+            act(() => {
+                useWorkspaceStore.getState().createTower(tower);
+                useBrickLayoutStore.getState().setCoords({
+                    'safe-root': { x: 100, y: 100 },
+                    'safe-next': { x: 100, y: 150 },
+                    'wide-arg': { x: 140, y: 150 },
+                });
+            });
+
+            const pos = calculateExtractedTowerPosition(tower, 'safe-next');
+            // When safe-next (and its wideArg) are extracted, remaining source tower only contains safe-root (x: 100).
+            // safeX is Math.max(100 + EXTRACTED_TOWER_MARGIN_X, 100 + EXTRACTED_TOWER_OFFSET_X) = 160.
+            expect(pos.x).toBe(100 + EXTRACTED_TOWER_OFFSET_X);
+            expect(pos.y).toBe(150);
+        });
+
+        it('does not exclude surviving next statements with wide arguments when target is extracted', () => {
+            // Target is root statement being extracted; nextStmt stays in the source tower with a wide argument
+            const targetStmt = makeEmptyStatement('target-stmt', 0);
+            const survivingNext = makeEmptyStatement('surviving-next', 1);
+            const wideArg = makeEmptyExpression('surviving-wide-arg', 0);
+            Object.defineProperty(wideArg.model, 'dims', {
+                value: { w: 400, h: 50 },
+                configurable: true,
+            });
+            survivingNext.args[0] = wideArg;
+            wideArg.parent = survivingNext;
+
+            targetStmt.next = survivingNext;
+            survivingNext.prev = targetStmt;
+
+            const tower: TowerState = {
+                id: 'target-tower',
+                root: targetStmt,
+                position: { x: 50, y: 50 },
+            };
+
+            act(() => {
+                useWorkspaceStore.getState().createTower(tower);
+                useBrickLayoutStore.getState().setCoords({
+                    'target-stmt': { x: 50, y: 50 },
+                    'surviving-next': { x: 50, y: 100 },
+                    'surviving-wide-arg': { x: 90, y: 100 },
+                });
+            });
+
+            const pos = calculateExtractedTowerPosition(tower, 'target-stmt');
+            // The position must clear survivingNext's wide argument (x: 90, w: 400 => right: 490)
+            expect(pos.x).toBe(90 + 400 + EXTRACTED_TOWER_MARGIN_X);
+            expect(pos.y).toBe(50);
+        });
+    });
+
+    describe('extractBrickToNewTower - chain statement extraction', () => {
+        function expectGraphAcyclic(root: TowerNode) {
+            const visited = new Set<TowerNode>();
+            const stack: TowerNode[] = [root];
+            while (stack.length > 0) {
+                const node = stack.pop()!;
+                expect(visited.has(node)).toBe(false);
+                visited.add(node);
+                if (node.kind === 'statement') {
+                    if (node.next) stack.push(node.next);
+                    if (node.nestedNext) stack.push(node.nestedNext);
+                }
+                if (node.kind === 'statement' || node.kind === 'expression') {
+                    for (const arg of node.args) {
+                        if (arg) stack.push(arg);
+                    }
+                }
+            }
+        }
+
+        function expectPointersConsistent(root: TowerNode) {
+            if (root.kind === 'statement') {
+                expect(root.prev).toBeNull();
+            }
+            const stack: TowerNode[] = [root];
+            while (stack.length > 0) {
+                const node = stack.pop()!;
+                if (node.kind === 'statement') {
+                    if (node.next) {
+                        if ('prev' in node.next) {
+                            expect(node.next.prev?.model.id).toBe(node.model.id);
+                        }
+                        stack.push(node.next);
+                    }
+                    if (node.nestedNext) {
+                        if ('prev' in node.nestedNext) {
+                            expect(node.nestedNext.prev?.model.id).toBe(node.model.id);
+                        }
+                        stack.push(node.nestedNext);
+                    }
+                }
+                if (node.kind === 'statement' || node.kind === 'expression') {
+                    for (const arg of node.args) {
+                        if (arg) {
+                            if ('parent' in arg) {
+                                expect(arg.parent?.model.id).toBe(node.model.id);
+                            }
+                            stack.push(arg);
+                        }
+                    }
+                }
+            }
+        }
+
+        it('extracts an intermediate brick from a normal chain and splices the gap', () => {
+            const a = makeEmptyStatement('a', 0);
+            const b = makeEmptyStatement('b', 0);
+            const c = makeEmptyStatement('c', 0);
+            a.next = b;
+            b.prev = a;
+            b.next = c;
+            c.prev = b;
+
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'source-tower',
+                    root: a,
+                    position: { x: 100, y: 100 },
+                });
+            });
+
+            expect(canExtractBrick('b')).toBe(true);
+
+            let newTowerId: string | null = null;
+            act(() => {
+                newTowerId = useWorkspaceStore.getState().extractBrickToNewTower('b');
+            });
+
+            expect(newTowerId).toBeTruthy();
+            const towers = useWorkspaceStore.getState().towers;
+            const sourceTower = towers['source-tower'];
+            const newTower = towers[newTowerId!];
+
+            expect(sourceTower.root.model.id).toBe('a');
+            expect((sourceTower.root as TowerStatementNode).next?.model.id).toBe('c');
+            expect(c.prev?.model.id).toBe('a');
+
+            expect(newTower.root.model.id).toBe('b');
+            expect((newTower.root as TowerStatementNode).prev).toBeNull();
+            expect((newTower.root as TowerStatementNode).next).toBeNull();
+
+            expectGraphAcyclic(sourceTower.root);
+            expectGraphAcyclic(newTower.root);
+            expectPointersConsistent(sourceTower.root);
+            expectPointersConsistent(newTower.root);
+
+            const allNodeIds = [
+                ...listNodes(sourceTower.root).map((n) => n.model.id),
+                ...listNodes(newTower.root).map((n) => n.model.id),
+            ].sort();
+            expect(allNodeIds).toEqual(['a', 'b', 'c']);
+        });
+
+        it('does not commit history directly, allowing caller to commit for undo and redo', () => {
+            useWorkspaceHistoryStore.getState().clear();
+            useWorkspaceHistoryStore.getState().init();
+
+            const a = makeEmptyStatement('hist-a', 0);
+            const b = makeEmptyStatement('hist-b', 0);
+            const c = makeEmptyStatement('hist-c', 0);
+            a.next = b;
+            b.prev = a;
+            b.next = c;
+            c.prev = b;
+
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-hist',
+                    root: a,
+                    position: { x: 0, y: 0 },
+                });
+            });
+            useWorkspaceHistoryStore.getState().commit();
+
+            const historyLenBefore = useWorkspaceHistoryStore.getState().history.length;
+
+            let newTowerId: string | null = null;
+            act(() => {
+                newTowerId = useWorkspaceStore.getState().extractBrickToNewTower('hist-b');
+            });
+            expect(newTowerId).toBeTruthy();
+
+            // The action itself must not commit history directly (the wedge handles this in Part 5)
+            expect(useWorkspaceHistoryStore.getState().history.length).toBe(historyLenBefore);
+
+            // Caller commits history
+            act(() => {
+                useWorkspaceHistoryStore.getState().commit();
+            });
+            expect(useWorkspaceHistoryStore.getState().history.length).toBe(historyLenBefore + 1);
+
+            // Undo
+            act(() => {
+                useWorkspaceHistoryStore.getState().undo();
+            });
+            expect(useWorkspaceStore.getState().towers['tower-hist']).toBeDefined();
+            expect(useWorkspaceStore.getState().towers[newTowerId!]).toBeUndefined();
+
+            // Redo
+            act(() => {
+                useWorkspaceHistoryStore.getState().redo();
+            });
+            expect(useWorkspaceStore.getState().towers[newTowerId!]).toBeDefined();
+        });
+
+        it('returns null when attempting to extract an unfolded clamp with a non-empty cavity', () => {
+            const a = makeEmptyStatement('clamp-a', 0);
+            const b = makeEmptyStatement('clamp-b', 0, true);
+            const c = makeEmptyStatement('clamp-c', 0);
+            const x = makeEmptyStatement('clamp-x', 0);
+
+            a.next = b;
+            b.prev = a;
+            b.next = c;
+            c.prev = b;
+            b.nestedNext = x;
+            x.prev = b;
+            b.model.isNestingFolded = false;
+
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-clamp',
+                    root: a,
+                    position: { x: 100, y: 100 },
+                });
+            });
+
+            let result: string | null = null;
+            act(() => {
+                result = useWorkspaceStore.getState().extractBrickToNewTower('clamp-b');
+            });
+
+            expect(result).toBeNull();
+            // Source tower remains intact
+            const sourceTower = useWorkspaceStore.getState().towers['tower-clamp'];
+            expect((sourceTower.root as TowerStatementNode).next?.model.id).toBe('clamp-b');
+            expect(b.next?.model.id).toBe('clamp-c');
+            expect(b.nestedNext?.model.id).toBe('clamp-x');
+        });
+
+        it('extracts a folded clamp with its non-empty cavity preserved into a new tower', () => {
+            const a = makeEmptyStatement('fold-a', 0);
+            const b = makeEmptyStatement('fold-b', 0, true);
+            const c = makeEmptyStatement('fold-c', 0);
+            const x = makeEmptyStatement('fold-x', 0);
+
+            a.next = b;
+            b.prev = a;
+            b.next = c;
+            c.prev = b;
+            b.nestedNext = x;
+            x.prev = b;
+            b.model.isNestingFolded = true;
+
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-folded-extract',
+                    root: a,
+                    position: { x: 100, y: 100 },
+                });
+            });
+
+            let newTowerId: string | null = null;
+            act(() => {
+                newTowerId = useWorkspaceStore.getState().extractBrickToNewTower('fold-b');
+            });
+
+            expect(newTowerId).toBeTruthy();
+            const towers = useWorkspaceStore.getState().towers;
+            const sourceTower = towers['tower-folded-extract'];
+            const newTower = towers[newTowerId!];
+
+            // Source tower chain spliced: a -> c
+            expect(sourceTower.root.model.id).toBe('fold-a');
+            expect((sourceTower.root as TowerStatementNode).next?.model.id).toBe('fold-c');
+            expect(c.prev?.model.id).toBe('fold-a');
+
+            // Extracted tower contains folded b and its cavity x
+            expect(newTower.root.model.id).toBe('fold-b');
+            expect((newTower.root as TowerStatementNode).prev).toBeNull();
+            expect((newTower.root as TowerStatementNode).next).toBeNull();
+            expect((newTower.root as TowerStatementNode).nestedNext?.model.id).toBe('fold-x');
+
+            expectGraphAcyclic(sourceTower.root);
+            expectGraphAcyclic(newTower.root);
+            expectPointersConsistent(sourceTower.root);
+            expectPointersConsistent(newTower.root);
+        });
+
+        it('resets positioned flags for extracted bricks in layout store', () => {
+            const a = makeEmptyStatement('pos-a', 0);
+            const b = makeEmptyStatement('pos-b', 0);
+            a.next = b;
+            b.prev = a;
+
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-pos-test',
+                    root: a,
+                    position: { x: 0, y: 0 },
+                });
+                useBrickLayoutStore.getState().setPositioned({
+                    'pos-a': true,
+                    'pos-b': true,
+                });
+            });
+
+            act(() => {
+                useWorkspaceStore.getState().extractBrickToNewTower('pos-b');
+            });
+
+            expect(useBrickLayoutStore.getState().positioned['pos-b']).toBe(false);
+            expect(useBrickLayoutStore.getState().positioned['pos-a']).toBe(true);
+        });
+
+        it('supports repeated extraction on the same tower without node loss or cycles', () => {
+            const a = makeEmptyStatement('node-a', 0);
+            const b = makeEmptyStatement('node-b', 0);
+            const c = makeEmptyStatement('node-c', 0);
+            const d = makeEmptyStatement('node-d', 0);
+            const e = makeEmptyStatement('node-e', 0);
+
+            a.next = b;
+            b.prev = a;
+            b.next = c;
+            c.prev = b;
+            c.next = d;
+            d.prev = c;
+            d.next = e;
+            e.prev = d;
+
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-multi-extract',
+                    root: a,
+                    position: { x: 0, y: 0 },
+                });
+            });
+
+            act(() => {
+                useWorkspaceStore.getState().extractBrickToNewTower('node-b');
+            });
+            act(() => {
+                useWorkspaceStore.getState().extractBrickToNewTower('node-d');
+            });
+            act(() => {
+                useWorkspaceStore.getState().extractBrickToNewTower('node-c');
+            });
+
+            const towers = useWorkspaceStore.getState().towers;
+            expect(Object.keys(towers).length).toBe(4);
+
+            for (const tower of Object.values(towers)) {
+                expectGraphAcyclic(tower.root);
+                expectPointersConsistent(tower.root);
+            }
         });
     });
 });

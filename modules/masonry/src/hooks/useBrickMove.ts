@@ -44,6 +44,7 @@ export function triggerBrickAnimation(brickId: string, animationClass: string) {
  */
 export function tryConnect(towerId: string): boolean {
     const store = useWorkspaceStore.getState();
+    const draggedBrickId = store.towers[towerId]?.root.model.id;
 
     const argument = resolveArgumentConnection({
         draggedTowerId: towerId,
@@ -62,16 +63,18 @@ export function tryConnect(towerId: string): boolean {
     if (statement !== null && (argument === null || statement.distance < argument.distance)) {
         joinStatement(statement);
         store.absorbTower(statement.absorbedTowerId, statement.hostTowerId);
-        triggerBrickAnimation(towerId, 'brick-snap-pulse');
-
+        requestAnimationFrame(()=>{
+            triggerBrickAnimation(draggedBrickId, 'brick-snap-pulse');
+        })
         return true;
     }
 
     if (argument !== null) {
         joinArg(argument);
         store.absorbTower(argument.absorbedTowerId, argument.hostTowerId);
-        triggerBrickAnimation(towerId, 'brick-snap-pulse');
-
+        requestAnimationFrame(()=>{
+            triggerBrickAnimation(draggedBrickId, 'brick-snap-pulse');
+        })
         return true;
     }
 

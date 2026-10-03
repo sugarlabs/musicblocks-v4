@@ -25,7 +25,7 @@ export function Trash({ canvasRef }: TrashProps) {
 
   useLayoutEffect(() => {
     const el = ref.current;
-    const canvas = canvasRef.current;
+    const canvas = canvasRef.current ?? el?.parentElement ?? null;
     if (!el || !canvas) return;
 
     const { setBounds } = useTrashStore.getState();
@@ -48,18 +48,24 @@ export function Trash({ canvasRef }: TrashProps) {
   }, [canvasRef]);
 
   return (
-    <div
-      ref={ref}
-      aria-hidden="true"
-      data-testid="workspace-trash"
-      className={`pointer-events-none absolute right-6 bottom-6 z-40 flex size-14 items-center justify-center rounded-full border-2 transition-colors duration-150 ${
-        isHighlighted
-          ? 'border-destructive bg-destructive/15 text-destructive'
-          : 'border-border bg-card text-muted-foreground'
-      }`}
-    >
-      <Trash2 className="size-6" />
-    </div>
+    <>
+      <div
+        ref={ref}
+        role="button"
+        aria-label="Trash"
+        data-testid="workspace-trash"
+        className={`pointer-events-none absolute right-6 bottom-6 z-40 flex size-14 items-center justify-center rounded-full border-2 transition-colors duration-150 ${
+          isHighlighted
+            ? 'border-destructive bg-destructive/15 text-destructive'
+            : 'border-border bg-card text-muted-foreground'
+        }`}
+      >
+        <Trash2 className="size-6" />
+      </div>
+      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+        {isHovered ? 'Release to delete' : ''}
+      </div>
+    </>
   );
 }
 

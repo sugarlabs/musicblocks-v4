@@ -1,4 +1,9 @@
 import type { BrickViewProps } from '@/@types/brick.types';
+import type {
+    ExportedExpressionConfig,
+    ExportedStatementConfig,
+    ExportedValueConfig,
+} from '@/@types/import-export.types';
 import type { TowerNode } from '@/@types/tower.types';
 
 import {
@@ -54,6 +59,51 @@ export function createBrickModel(props: BrickViewProps, id?: string): BrickModel
                 hasConnectionPrev: props.hasConnectionPrev,
                 hasConnectionNext: props.hasConnectionNext,
             });
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The config a brick model was built from, read back off the model: what its constructor needs to
+ * build the same brick again, minus `id` and the measured dimensions. The one place that lists a
+ * model's fields, so the export and the help panel's preview copy cannot drift apart when a field
+ * is added. Widgets and params are copied rather than shared, since an input widget's `value` is
+ * mutated in place as the user types.
+ *
+ * @param model - the brick to read
+ * @returns its config, typed by its kind
+ */
+export function modelConfigOf(model: ValueBrickModel): ExportedValueConfig;
+export function modelConfigOf(model: ExpressionBrickModel): ExportedExpressionConfig;
+export function modelConfigOf(model: StatementBrickModel): ExportedStatementConfig;
+export function modelConfigOf(
+    model: BrickModel,
+): ExportedValueConfig | ExportedExpressionConfig | ExportedStatementConfig;
+export function modelConfigOf(
+    model: BrickModel,
+): ExportedValueConfig | ExportedExpressionConfig | ExportedStatementConfig {
+    const base = {
+        colorsDefault: { ...model.colorsDefault },
+        tooltipText: model.tooltipText,
+        scaleLevel: model.scaleLevel,
+    };
+
+    switch (model.kind) {
+        case 'value':
+            return { ...base, widget: structuredClone(model.widget) };
+        case 'expression':
+            return { ...base, widget: structuredClone(model.widget), params: [...model.params] };
+        case 'statement':
+            return {
+                ...base,
+                widget: structuredClone(model.widget),
+                params: [...model.params],
+                hasNesting: model.hasNesting,
+                isNestingFolded: model.isNestingFolded,
+                hasConnectionPrev: model.hasConnectionPrev,
+                hasConnectionNext: model.hasConnectionNext,
+            };
     }
 }
 

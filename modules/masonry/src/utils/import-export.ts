@@ -9,7 +9,7 @@ import type {
 import type { TowerNode } from '@/@types/tower.types';
 import type { TowerState } from '@/@types/workspace.types';
 
-import { createBrickModel, wrapAsRootNode } from '@/utils/brick-model-factory';
+import { createBrickModel, modelConfigOf, wrapAsRootNode } from '@/utils/brick-model-factory';
 import { listNodes } from '@/utils/tower-traversal';
 
 /** Schema version stamped on every payload `exportWorkspace` produces. */
@@ -24,48 +24,25 @@ function pointerId(node: TowerNode | null | undefined): string | null {
 
 /**
  * Serialises a single node, replacing each of its downward references with the referenced brick's
- * id. Widgets are cloned rather than handed over by reference — an input widget's `value` is
- * mutated in place as the user types, so sharing it would let the workspace edit an export that
- * has already been handed to the caller.
+ * id. The brick's own config comes from `modelConfigOf`, which copies its widget rather than
+ * handing it over, so the workspace cannot edit an export already handed to the caller.
  */
 function exportNode(node: TowerNode): ExportedNode {
-    const config = {
-        colorsDefault: { ...node.model.colorsDefault },
-        tooltipText: node.model.tooltipText,
-        scaleLevel: node.model.scaleLevel,
-    };
-
     switch (node.kind) {
         case 'value':
-            return {
-                kind: 'value',
-                id: node.model.id,
-                modelConfig: { ...config, widget: structuredClone(node.model.widget) },
-            };
+            return { kind: 'value', id: node.model.id, modelConfig: modelConfigOf(node.model) };
         case 'expression':
             return {
                 kind: 'expression',
                 id: node.model.id,
-                modelConfig: {
-                    ...config,
-                    widget: structuredClone(node.model.widget),
-                    params: [...node.model.params],
-                },
+                modelConfig: modelConfigOf(node.model),
                 args: node.args.map(pointerId),
             };
         case 'statement':
             return {
                 kind: 'statement',
                 id: node.model.id,
-                modelConfig: {
-                    ...config,
-                    widget: structuredClone(node.model.widget),
-                    params: [...node.model.params],
-                    hasNesting: node.model.hasNesting,
-                    isNestingFolded: node.model.isNestingFolded,
-                    hasConnectionPrev: node.model.hasConnectionPrev,
-                    hasConnectionNext: node.model.hasConnectionNext,
-                },
+                modelConfig: modelConfigOf(node.model),
                 args: node.args.map(pointerId),
                 next: pointerId(node.next),
                 // A brick without a cavity carries no nested pointer at all, not a null one.

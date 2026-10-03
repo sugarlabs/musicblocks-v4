@@ -19,6 +19,13 @@ export interface ActionMenuWedge {
     Icon: ComponentType<{ size?: number; className?: string; style?: CSSProperties }>;
     /** Whether the action has anything to do on this brick; a `false` draws the wedge disabled. */
     isEnabled: (brickId: string) => boolean;
+    /**
+     * Whether the wedge belongs on this brick's ring at all; a `false` leaves it out and the ring
+     * closes up around the rest. Omitted, the wedge is always there. For a wedge that only makes
+     * sense on some bricks, such as help on a brick with no help text, where drawing it disabled
+     * would promise something the brick cannot offer.
+     */
+    isVisible?: (brickId: string) => boolean;
     /** Carries the action out on the brick the menu is open on. */
     run: (brickId: string) => void;
 }

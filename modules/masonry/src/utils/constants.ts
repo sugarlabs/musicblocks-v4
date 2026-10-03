@@ -107,3 +107,14 @@ export const AUTO_PAN_MAX_STEP = 12;
 export const HOME_COLUMN_WIDTH = 160;
 /** The space (in pixels) Home leaves between the towers it lays out. */
 export const HOME_GAP = 24;
+
+// ── Workspace ──
+
+/**
+ * How far `cleanWorkspace` keeps the towers from the canvas edges, in pixels: the first tower of
+ * every column starts here, and a column may run down to this far from the bottom.
+ */
+export const CLEAN_WORKSPACE_PADDING = 24;
+
+/** The room `cleanWorkspace` leaves between one tower and the next, and between columns. */
+export const CLEAN_WORKSPACE_GAP = 24;

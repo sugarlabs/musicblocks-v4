@@ -123,6 +123,26 @@ describe('snap-preview-calculator', () => {
         expect(result).toBeNull();
     });
 
+    it('resolveCandidateConnection looks up a given probe tower without touching the store', () => {
+        (statementConnect.resolveStatementConnection as Mock).mockReturnValue(null);
+        (argumentConnect.resolveArgumentConnection as Mock).mockReturnValue(null);
+        const store = useWorkspaceStore.getState();
+        const probe = { id: 'probe', root: {}, position: { x: 0, y: 0 } };
+
+        resolveCandidateConnection(
+            'probe',
+            store,
+            probe as unknown as Parameters<typeof resolveCandidateConnection>[2],
+        );
+
+        const statementArgs = (statementConnect.resolveStatementConnection as Mock).mock.calls[0];
+        const argumentArgs = (argumentConnect.resolveArgumentConnection as Mock).mock.calls[0];
+        expect(statementArgs[0].towers.probe).toBe(probe);
+        expect(statementArgs[0].towers.tower1).toBe(store.towers.tower1);
+        expect(argumentArgs[0].towers.probe).toBe(probe);
+        expect(store.towers).not.toHaveProperty('probe');
+    });
+
     it('resolveCandidateConnection prefers statement over argument if distance is smaller', () => {
         const parentModel = createMockModel(2, { next: { x: 10, y: 20 } });
         parentModel.id = 'parent-id';

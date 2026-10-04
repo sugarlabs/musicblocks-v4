@@ -163,17 +163,17 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                             useWorkspaceViewportStore.getState().offset,
                         );
 
-                        // Temporarily mock a tower ID for collision detection
+                        // A probe tower for collision detection, passed in directly so the store
+                        // is never mutated.
                         const mockTowerId = 'temp-palette-drag';
-                        useWorkspaceStore.getState().towers[mockTowerId] = {
-                            id: mockTowerId,
-                            root: wrapAsRootNode(createBrickModel(drag.config.brick)),
-                            position,
-                        };
-
                         const candidate = resolveCandidateConnection(
                             mockTowerId,
                             useWorkspaceStore.getState(),
+                            {
+                                id: mockTowerId,
+                                root: wrapAsRootNode(createBrickModel(drag.config.brick)),
+                                position,
+                            },
                         );
                         if (candidate) {
                             useConnectionPreviewStore
@@ -186,8 +186,6 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                         } else {
                             useConnectionPreviewStore.getState().clearPreviewTarget();
                         }
-
-                        delete useWorkspaceStore.getState().towers[mockTowerId];
                     } else {
                         useConnectionPreviewStore.getState().clearPreviewTarget();
                     }

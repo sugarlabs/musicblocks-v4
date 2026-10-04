@@ -19,6 +19,14 @@ import { clientToLocalPoint, useDragFromPalette } from './useDragFromPalette';
 
 const { draggable } = vi.hoisted(() => ({ draggable: vi.fn() }));
 
+const { resolveCandidate } = vi.hoisted(() => ({ resolveCandidate: vi.fn() }));
+
+vi.mock('@/utils/snap-preview-calculator', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/utils/snap-preview-calculator')>();
+  resolveCandidate.mockImplementation(actual.resolveCandidateConnection);
+  return { ...actual, resolveCandidateConnection: resolveCandidate };
+});
+
 vi.mock('interactjs', () => ({
   default: vi.fn(() => ({
     draggable: (options: unknown) => {
@@ -214,5 +222,51 @@ describe('useDragFromPalette drop placement', () => {
     dragSlotTo(slot, { x: 40, y: 0 }, { x: 320, y: 250 });
 
     expect(droppedTowers()).toHaveLength(0);
+  });
+});
+
+// -------------------------------------------------------------------------------------------------
+
+// The snap preview probes with a stand-in tower while the brick is over the canvas. That tower is
+// handed to the resolver directly and must never land in the workspace store.
+describe('useDragFromPalette snap probe', () => {
+  const PROBE_ID = 'temp-palette-drag';
+
+  function startAndMoveInsideCanvas(slot: HTMLElement) {
+    const { start, move } = dragListeners();
+    start({ target: slot, clientX0: SLOT_RECT.left, clientY0: SLOT_RECT.top });
+    move({ dx: 400, dy: 200, clientX: 500, clientY: 250 });
+  }
+
+  it('passes the probe tower to the resolver without writing it into the store', () => {
+    const { slot } = mountPaletteDrag();
+
+    startAndMoveInsideCanvas(slot);
+
+    expect(resolveCandidate).toHaveBeenCalled();
+    const [towerId, store, probe] = resolveCandidate.mock.calls.at(-1)!;
+    expect(towerId).toBe(PROBE_ID);
+    expect(probe).toMatchObject({ id: PROBE_ID });
+    expect(store.towers[PROBE_ID]).toBeUndefined();
+  });
+
+  it('leaves no probe tower behind when a drag ends outside the canvas', () => {
+    const { slot } = mountPaletteDrag();
+
+    startAndMoveInsideCanvas(slot);
+    dragListeners().end({ clientX: 100, clientY: 250 });
+
+    expect(useWorkspaceStore.getState().towers[PROBE_ID]).toBeUndefined();
+    expect(droppedTowers()).toHaveLength(0);
+  });
+
+  it('leaves no probe tower behind when resolving the snap target throws', () => {
+    const { slot } = mountPaletteDrag();
+    resolveCandidate.mockImplementationOnce(() => {
+      throw new Error('boom');
+    });
+
+    expect(() => startAndMoveInsideCanvas(slot)).toThrow('boom');
+    expect(useWorkspaceStore.getState().towers[PROBE_ID]).toBeUndefined();
   });
 });

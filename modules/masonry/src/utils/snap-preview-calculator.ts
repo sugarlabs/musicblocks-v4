@@ -1,4 +1,5 @@
 import type { Point } from '@/@types/common.types';
+import type { TowerState } from '@/@types/workspace.types';
 
 import type { ArgumentConnection } from '@/utils/argument-connect';
 import type { StatementConnection } from '@/utils/statement-connect';
@@ -95,28 +96,33 @@ export function computeArgumentPreview(
  * 2. Compares the two to find the absolute closest candidate.
  * 3. Calculates the geometric centroid (for the hint overlay) and the snap position (for the ghost block).
  *
+ * @param probeTower - Optional tower that is not in the store (e.g. a brick still being dragged
+ * from the palette). It is looked up as `draggedTowerId` without writing it into the store.
  * @returns Metadata about the target connection, or null if nothing is close enough.
  */
 export function resolveCandidateConnection(
     draggedTowerId: string,
     store: ReturnType<typeof useWorkspaceStore.getState>,
+    probeTower?: TowerState,
 ): {
     target: ActiveTargetMeta;
     isValid: boolean;
     snapPosition: Point;
 } | null {
+    const towers = probeTower ? { ...store.towers, [draggedTowerId]: probeTower } : store.towers;
+
     const argument = resolveArgumentConnection({
         draggedTowerId,
         space: store.argumentCollisionSpace,
         connectors: store.argumentConnectors,
-        towers: store.towers,
+        towers,
     });
 
     const statement = resolveStatementConnection({
         draggedTowerId,
         space: store.statementCollisionSpace,
         connectors: store.statementConnectors,
-        towers: store.towers,
+        towers,
     });
 
     if (statement !== null && (argument === null || statement.distance < argument.distance)) {

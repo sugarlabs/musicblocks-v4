@@ -51,8 +51,8 @@ Storybook is used for developing and documenting the isolated UI components with
 
 - **Port:** Storybook runs on **port 6006**.
 - **Location:** Storybook is configured to automatically discover stories inside the `src/`
-  directory matching `*.stories.tsx` or `*.mdx` files. The configuration is stored in
-  `.storybook/main.ts`.
+  directory matching `*.stories.tsx`, `*.stories.ts`, `*.stories.jsx`, `*.stories.js`,
+  or `*.mdx` files. The configuration is stored in `.storybook/main.ts`.
 
 ## Testing
 
@@ -84,8 +84,9 @@ Masonry uses **Vitest** for unit testing.
     This runs ESLint strictly over the `src/` directory.
 
 - **Type Checking & Building:** There is no module-specific `npm run check` or `npm run build`
-  command within Masonry. Type checking, markdown/text linting, and building are handled by
-  the repository's root Lerna scripts.
+  command within Masonry. The root `npm run check` does **not** type-check Masonry; the root
+  `npm run build` only builds `@sugarlabs/mb4-app`. The root `npm run lint` handles
+  repository-wide Markdown/text linting.
 
 ## Project Structure
 
@@ -113,11 +114,12 @@ files (as specified in #636).
 
 When working on the Masonry module, the standard workflow is:
 
-1. Make targeted changes in `src/`.
-2. Boot up `npm run playground2` to visualize and manually verify the interactive behavior
+1. Request assignment to the relevant issue before starting work (see #879).
+2. Make targeted changes in `src/`.
+3. Boot up `npm run playground2` to visualize and manually verify the interactive behavior
    of the bricks and the workspace.
-3. Write or update colocated tests in `src/` and run `npm run test` to verify them.
-4. If you created a new UI component, write a story for it and view it using
+4. Write or update colocated tests in `src/` and run `npm run test` to verify them.
+5. If you created a new UI component, write a story for it and view it using
    `npm run storybook`.
-5. Run `npm run lint` within the `modules/masonry` directory.
-6. Verify your changes via `git diff` before committing.
+6. Run `npm run lint` within the `modules/masonry` directory.
+7. Verify your changes via `git diff` before committing.

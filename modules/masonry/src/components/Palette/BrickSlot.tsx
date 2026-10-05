@@ -6,10 +6,10 @@ import type { PaletteBrickConfig } from '@/@types/palette.types';
 import { BrickView } from '@/components/Brick/Brick';
 import { BrickTooltip } from '@/components/Brick/BrickTooltip';
 import { useBrickTooltip } from '@/hooks/useBrickTooltip';
+import { isTrailingDragClick } from '@/hooks/useDragClickSuppression';
 import { cn } from '@/lib/utils';
 import { usePaletteDragStore } from '@/stores/palette';
 import { createBrickModel } from '@/utils/brick-model-factory';
-import { DRAG_CLICK_SUPPRESSION_MS } from '@/utils/constants';
 import { placeBrickFromPalette } from '@/utils/palette-placement';
 
 interface BrickSlotProps {
@@ -52,7 +52,7 @@ export function BrickSlot({ brick }: BrickSlotProps) {
     const { dragged, lastDragEndTime } = usePaletteDragStore.getState();
     // Guard against drag-to-click double placement: ignore click if actively dragging
     // or if a drag gesture ended within the suppression window.
-    if (dragged || Date.now() - lastDragEndTime < DRAG_CLICK_SUPPRESSION_MS) {
+    if (dragged || isTrailingDragClick(lastDragEndTime)) {
       return;
     }
     placeBrickFromPalette(brick);

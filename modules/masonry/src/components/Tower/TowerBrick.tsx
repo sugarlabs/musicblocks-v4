@@ -8,6 +8,7 @@ import { useActionMenuStore } from '@/stores/actionMenu';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 import { darkenColor } from '@/utils/color';
+import { BRICK_CONTROL_SELECTOR } from '@/utils/constants';
 
 /** How far a selected brick rises off the canvas, in px. */
 const LIFT_PX = 3;
@@ -60,11 +61,28 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
 
     useWorkspaceStore.getState().setNestingFold(id, !found.node.model.isNestingFolded);
   }, [id]);
-  // Suppress interact.js's trailing click after this brick's own drag.
-  const handleClick = useCallback(() => {
-    if (shouldSuppressClick()) return;
-    useWorkspaceStore.getState().selectBrick(id);
-  }, [id, shouldSuppressClick]);
+  // Suppress interact.js's trailing click after this brick's own drag. Otherwise a press toggles
+  // the selection: one on another brick moves it here, and one on this brick while it is already
+  // selected is how the user puts it back down.
+  const handleClick = useCallback(
+    (event: MouseEvent<HTMLDivElement>) => {
+      if (shouldSuppressClick()) return;
+
+      // A press on one of the brick's own controls belongs to that control, not the selection
+      // behind it. The marker also catches a select's options, which arrive here through a portal.
+      if ((event.target as HTMLElement).closest(BRICK_CONTROL_SELECTOR)) {
+        return;
+      }
+
+      const store = useWorkspaceStore.getState();
+      if (store.selectedBrickId === id) {
+        store.clearSelection();
+      } else {
+        store.selectBrick(id);
+      }
+    },
+    [id, shouldSuppressClick],
+  );
 
   // A selected brick is ringed in a deepened shade of its own fill, dark enough to hold against the
   // light canvas the bricks sit on. `drop-shadow` follows the rendered alpha, so the ring traces the

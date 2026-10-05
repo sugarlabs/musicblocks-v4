@@ -7,7 +7,10 @@
 // store with the right id. The menu itself is not drawn yet, so only the store is asserted
 // against.
 
+import type { ReactNode } from 'react';
+
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
+import { createPortal } from 'react-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { TowerStatementNode } from '@/@types/tower.types';
@@ -19,10 +22,18 @@ import { useWorkspaceStore } from '@/stores/workspace';
 
 const renders = { count: 0 };
 
+// Rendered inside `BrickView` to stand in for a control that reaches the brick through a portal.
+let portalControl: ReactNode = null;
+
 vi.mock('@/components/Brick/Brick', () => ({
   BrickView: (props: { model: { id: string } }) => {
     renders.count += 1;
-    return <span data-brick={props.model.id} />;
+    return (
+      <>
+        <span data-brick={props.model.id} />
+        {portalControl}
+      </>
+    );
   },
 }));
 
@@ -48,6 +59,7 @@ afterEach(() => {
     selectedBrickId: null,
   });
   shouldSuppressClick.mockReturnValue(false);
+  portalControl = null;
   useActionMenuStore.setState({ brickId: null });
   useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
   act(() => {
@@ -258,6 +270,72 @@ describe('TowerBrickView drag-to-click suppression', () => {
     fireEvent.click(brickEl('brick-1'));
 
     expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+  });
+
+  it('deselects the brick when it is clicked while already selected', () => {
+    renderBricks('brick-1');
+
+    fireEvent.click(brickEl('brick-1'));
+    fireEvent.click(brickEl('brick-1'));
+
+    expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
+  });
+
+  it('leaves the selection alone when a press lands inside a marked control', () => {
+    renderBricks('brick-1');
+
+    // A toggle's visible track sits inside its marked label, so the label's descendants count too.
+    const label = document.createElement('label');
+    label.setAttribute('data-brick-control', '');
+    const track = document.createElement('span');
+    label.append(track);
+    brickEl('brick-1').append(label);
+
+    fireEvent.click(brickEl('brick-1'));
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+
+    fireEvent.click(track);
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+  });
+
+  it('leaves the selection alone when a press lands inside a slider', () => {
+    renderBricks('brick-1');
+
+    // The slider's thumb is a plain `div`, so the marker on its root is what covers the widget.
+    const slider = document.createElement('div');
+    slider.setAttribute('data-brick-control', '');
+    const thumb = document.createElement('div');
+    slider.append(thumb);
+    brickEl('brick-1').append(slider);
+
+    fireEvent.click(brickEl('brick-1'));
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+
+    fireEvent.click(thumb);
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+  });
+
+  it('leaves the selection alone when a press lands on a portalled control', () => {
+    // A select's options render through a portal, so the marker on the option is what catches the
+    // click React bubbles up to the brick.
+    portalControl = createPortal(
+      <>
+        <div role="option" data-brick-control="" />
+        <div data-testid="plain-portal" />
+      </>,
+      document.body,
+    );
+    renderBricks('brick-1');
+
+    fireEvent.click(brickEl('brick-1'));
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+
+    fireEvent.click(document.querySelector('[role="option"]') as HTMLElement);
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+
+    // An unmarked portal element still clears, so the assertion above is not vacuous.
+    fireEvent.click(document.querySelector('[data-testid="plain-portal"]') as HTMLElement);
+    expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
   });
 
   it('does not select a click the hook reports as trailing a drag', () => {

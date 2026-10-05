@@ -2,12 +2,12 @@ import type { DragEvent } from '@interactjs/types';
 import type { RefObject } from 'react';
 
 import interact from 'interactjs';
-import { useEffect, useLayoutEffect } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 
 import type { Point } from '@/@types/common.types';
 
 import { useWorkspaceViewportStore } from '@/stores/viewport';
-import { TOWER_BRICK_SELECTOR } from '@/utils/constants';
+import { DRAG_CLICK_SUPPRESSION_MS, TOWER_BRICK_SELECTOR } from '@/utils/constants';
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -32,9 +32,13 @@ export interface UseCanvasPanOptions {
  * re-render of every brick per pointer frame is exactly the cost a pan is meant to avoid. Going
  * through the store rather than straight from the gesture means anything else that writes the
  * offset — a home button, wheel scrolling, keyboard navigation — moves the canvas the same way.
+ *
+ * @returns A predicate that is true while a click trailing the canvas' own pan should be ignored.
  */
 export function useCanvasPan(options: UseCanvasPanOptions) {
     const { canvasRef, viewportRef } = options;
+    // interact.js only starts a drag once the pointer has moved, so `end` marks a real pan.
+    const lastPanEndRef = useRef(0);
 
     useLayoutEffect(() => {
         const viewport = viewportRef.current;
@@ -69,6 +73,11 @@ export function useCanvasPan(options: UseCanvasPanOptions) {
                 move(event: DragEvent) {
                     useWorkspaceViewportStore.getState().panBy({ x: event.dx, y: event.dy });
                 },
+                // A pan that starts and ends on the empty background leaves a click on the
+                // viewport; stamp its end so `Workspace` can swallow that click.
+                end(_event: DragEvent) {
+                    lastPanEndRef.current = Date.now();
+                },
             },
         });
 
@@ -76,4 +85,6 @@ export function useCanvasPan(options: UseCanvasPanOptions) {
             interactable.unset();
         };
     }, [canvasRef]);
+
+    return useCallback(() => Date.now() - lastPanEndRef.current < DRAG_CLICK_SUPPRESSION_MS, []);
 }

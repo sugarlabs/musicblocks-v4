@@ -4,7 +4,7 @@
 // pure-function tests in useDragFromPalette.test.tsx and exercised manually via the playground;
 // this file verifies the pieces mount and react to the drag store correctly.
 
-import { act, cleanup, fireEvent, render } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import interact from 'interactjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -419,28 +419,14 @@ describe('Workspace', () => {
   });
 
   describe('trash', () => {
-    it('keeps the trash off an empty canvas, since there is nothing to remove yet', () => {
+    it('renders the trash even on an empty canvas so assistive technology can discover it ahead of time', () => {
       const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
-
-      expect(queryTrash(container)).toBeNull();
-    });
-
-    it('renders the trash as soon as the workspace holds a tower', () => {
-      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
-
-      act(() => {
-        useWorkspaceStore.getState().createTower(makeTower('t1'));
-      });
 
       expect(queryTrash(container)).not.toBeNull();
     });
 
-    it('publishes its bounds while mounted and drops them once the canvas empties', () => {
+    it('publishes its bounds on mount and keeps them published regardless of tower count', () => {
       const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
-
-      act(() => {
-        useWorkspaceStore.getState().createTower(makeTower('t1'));
-      });
 
       // jsdom reports a zero rect, so only the shape is asserted — the numbers come from layout.
       expect(useTrashStore.getState().bounds).toEqual({
@@ -451,30 +437,51 @@ describe('Workspace', () => {
       });
 
       act(() => {
-        useWorkspaceStore.getState().removeTower('t1');
-      });
-
-      expect(queryTrash(container)).toBeNull();
-      expect(useTrashStore.getState().bounds).toBeNull();
-    });
-
-    it('keeps the trash while any tower remains and removes it with the last one', () => {
-      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
-
-      act(() => {
         useWorkspaceStore.getState().createTower(makeTower('t1'));
-        useWorkspaceStore.getState().createTower(makeTower('t2'));
-      });
-
-      act(() => {
-        useWorkspaceStore.getState().removeTower('t1');
       });
       expect(queryTrash(container)).not.toBeNull();
 
       act(() => {
-        useWorkspaceStore.getState().removeTower('t2');
+        useWorkspaceStore.getState().removeTower('t1');
       });
-      expect(queryTrash(container)).toBeNull();
+
+      expect(queryTrash(container)).not.toBeNull();
+      expect(useTrashStore.getState().bounds).not.toBeNull();
+    });
+
+    it('drops its published bounds when the Workspace unmounts', () => {
+      const { unmount } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+      expect(useTrashStore.getState().bounds).not.toBeNull();
+
+      unmount();
+
+      expect(useTrashStore.getState().bounds).toBeNull();
+    });
+
+    it('has an accessible name for assistive technology', () => {
+      render(<Workspace config={{ palette: paletteConfig }} />);
+
+      expect(screen.getByRole('img', { name: 'Trash' })).toBeTruthy();
+    });
+
+    it('announces the hover state through a live region', () => {
+      render(<Workspace config={{ palette: paletteConfig }} />);
+
+      const liveRegion = screen.getByRole('status');
+      expect(liveRegion.textContent?.trim()).toBe('');
+
+      act(() => {
+        useTrashStore.getState().setHovered(true);
+      });
+
+      expect(liveRegion.textContent?.trim()).toBe('Release to delete');
+
+      act(() => {
+        useTrashStore.getState().setHovered(false);
+      });
+
+      expect(liveRegion.textContent?.trim()).toBe('');
     });
 
     it('swaps to its destructive styling while the drag store reports a hover', () => {
@@ -541,10 +548,10 @@ describe('Workspace', () => {
     });
 
     it('re-measures and updates bounds in the store when the canvas is resized', () => {
-      let resizeCallback: () => void = () => {};
+      const resizeCallbacks: (() => void)[] = [];
       class MockResizeObserver {
         constructor(cb: () => void) {
-          resizeCallback = cb;
+          resizeCallbacks.push(cb);
         }
         observe() {}
         unobserve() {}
@@ -574,7 +581,7 @@ describe('Workspace', () => {
       });
 
       act(() => {
-        resizeCallback();
+        resizeCallbacks.forEach((cb) => cb());
       });
 
       expect(useTrashStore.getState().bounds).toEqual({

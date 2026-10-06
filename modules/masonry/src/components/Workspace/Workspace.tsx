@@ -293,8 +293,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
             <FullscreenControl />
             <ScaleControl />
           </div>
-          {/* The Trash is only useful once there is something to remove */}
-          {towers.length > 0 && <Trash canvasRef={canvasRef} />}
+          <Trash />
         </div>
 
         <BricksVisibilityControl />

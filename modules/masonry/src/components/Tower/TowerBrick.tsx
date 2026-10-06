@@ -3,6 +3,7 @@ import { memo, useCallback, useRef, type MouseEvent, type RefObject } from 'reac
 import type { TowerNode } from '@/@types/tower.types';
 
 import { BrickView } from '@/components/Brick/Brick';
+import { BrickErrorBoundary } from '@/components/Tower/BrickErrorBoundary';
 import { useBrickMove } from '@/hooks/useBrickMove';
 import { useActionMenuStore } from '@/stores/actionMenu';
 import { useBrickLayoutStore } from '@/stores/brick';
@@ -145,15 +146,17 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
         rect off it. Raising the brick inside leaves all of that reading exactly what it did before,
         and leaves this transform free to animate without fighting a drag.
       */}
-      <div
-        style={{
-          transform: isSelected ? `translateY(-${LIFT_PX}px)` : undefined,
-          filter: isSelected ? highlightFilter : undefined,
-          transition: 'transform 120ms ease-out',
-        }}
-      >
-        {brick}
-      </div>
+      <BrickErrorBoundary brickId={id}>
+        <div
+          style={{
+            transform: isSelected ? `translateY(-${LIFT_PX}px)` : undefined,
+            filter: isSelected ? highlightFilter : undefined,
+            transition: 'transform 120ms ease-out',
+          }}
+        >
+          {brick}
+        </div>
+      </BrickErrorBoundary>
     </div>
   );
 });

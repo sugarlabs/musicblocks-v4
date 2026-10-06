@@ -20,7 +20,7 @@ import { useActionMenuStore } from '@/stores/actionMenu';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { useWorkspaceStore } from '@/stores/workspace';
 
-const renders = { count: 0 };
+const renders = { count: 0, throwingId: null as string | null };
 
 // Rendered inside `BrickView` to stand in for a control that reaches the brick through a portal.
 let portalControl: ReactNode = null;
@@ -28,6 +28,7 @@ let portalControl: ReactNode = null;
 vi.mock('@/components/Brick/Brick', () => ({
   BrickView: (props: { model: { id: string } }) => {
     renders.count += 1;
+    if (renders.throwingId === props.model.id) throw new Error('render error');
     return (
       <>
         <span data-brick={props.model.id} />
@@ -54,6 +55,7 @@ const NODE = makeEmptyValue('visibility-brick');
 
 afterEach(() => {
   cleanup();
+  renders.throwingId = null;
   useWorkspaceStore.setState({
     towers: {},
     selectedBrickId: null,
@@ -260,6 +262,74 @@ describe('TowerBrickView right click', () => {
     renderBricks('brick-1');
 
     expect(useActionMenuStore.getState().brickId).toBeNull();
+  });
+});
+
+describe('BrickErrorBoundary', () => {
+  /** Seeds layout store and workspace store, then renders one TowerBrickView per id. */
+  function renderInTower(towerId: string, ...ids: string[]) {
+    const nodes = ids.map((id) => makeEmptyStatement(id, 0));
+    nodes.forEach((node, i) => {
+      if (i === 0) return;
+      nodes[i - 1].next = node;
+      node.prev = nodes[i - 1];
+    });
+    act(() => {
+      useBrickLayoutStore.getState().setMounted(Object.fromEntries(ids.map((id) => [id, true])));
+      useBrickLayoutStore.getState().setPositioned(Object.fromEntries(ids.map((id) => [id, true])));
+      useWorkspaceStore
+        .getState()
+        .createTower({ id: towerId, root: nodes[0], position: { x: 0, y: 0 } });
+    });
+    return render(
+      <>
+        {nodes.map((node) => (
+          <TowerBrickView key={node.model.id} id={node.model.id} node={node} />
+        ))}
+      </>,
+    );
+  }
+
+  it('shows the error fallback when a brick throws during render', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    renders.throwingId = 'bad-brick';
+
+    const { getByTestId } = renderInTower('tower-1', 'bad-brick');
+
+    expect(getByTestId('brick-error-fallback')).not.toBeNull();
+    spy.mockRestore();
+  });
+
+  it('does not prevent a sibling brick from rendering', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    renders.throwingId = 'bad-brick';
+
+    const { getByTestId, container } = renderInTower('tower-1', 'bad-brick', 'good-brick');
+
+    expect(getByTestId('brick-error-fallback')).not.toBeNull();
+    expect(container.querySelector('[data-brick="good-brick"]')).not.toBeNull();
+    spy.mockRestore();
+  });
+
+  it('logs the brick ID and tower ID when a brick throws', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    renders.throwingId = 'bad-brick';
+
+    renderInTower('tower-1', 'bad-brick');
+
+    const message = spy.mock.calls.find(
+      (args) => typeof args[0] === 'string' && args[0].startsWith('[BrickErrorBoundary]'),
+    )?.[0] as string;
+    expect(message).toContain('"bad-brick"');
+    expect(message).toContain('"tower-1"');
+    spy.mockRestore();
+  });
+
+  it('renders normally and shows no fallback when no brick throws', () => {
+    const { queryByTestId, container } = renderInTower('tower-1', 'good-brick');
+
+    expect(queryByTestId('brick-error-fallback')).toBeNull();
+    expect(container.querySelector('[data-brick="good-brick"]')).not.toBeNull();
   });
 });
 

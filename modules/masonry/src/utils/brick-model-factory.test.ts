@@ -1,4 +1,5 @@
-// Unit tests for the shared config → model factory and root tower-node wrapper. Pure model-level
+// Unit tests for the shared config → model factory, its model → config inverse, and the root
+// tower-node wrapper. Pure model-level
 // logic — no DOM, no pointer events — so this runs in the node environment.
 
 import { describe, expect, it } from 'vitest';
@@ -11,7 +12,7 @@ import type {
 
 import { ExpressionBrickModel, StatementBrickModel, ValueBrickModel } from '@/models/brick';
 
-import { createBrickModel, wrapAsRootNode } from './brick-model-factory';
+import { createBrickModel, modelConfigOf, wrapAsRootNode } from './brick-model-factory';
 
 // -------------------------------------------------------------------------------------------------
 // Fixtures
@@ -149,5 +150,46 @@ describe('wrapAsRootNode', () => {
         expect(node.kind).toBe('statement');
         if (node.kind !== 'statement') return;
         expect(node.nestedNext).toBeUndefined();
+    });
+});
+
+describe('modelConfigOf', () => {
+    it("reads back everything a statement brick's constructor took, minus its id", () => {
+        const model = createBrickModel(statementProps) as StatementBrickModel;
+
+        expect(modelConfigOf(model)).toEqual({
+            colorsDefault,
+            tooltipText: model.tooltipText,
+            scaleLevel: model.scaleLevel,
+            widget: model.widget,
+            params: model.params,
+            hasNesting: model.hasNesting,
+            isNestingFolded: model.isNestingFolded,
+            hasConnectionPrev: model.hasConnectionPrev,
+            hasConnectionNext: model.hasConnectionNext,
+        });
+    });
+
+    it('builds the same brick again', () => {
+        const model = createBrickModel(expressionProps) as ExpressionBrickModel;
+        const config = modelConfigOf(model);
+        const rebuilt = new ExpressionBrickModel({
+            ...config,
+            params: config.params as [string | null, ...(string | null)[]],
+        });
+
+        expect(rebuilt.id).not.toBe(model.id);
+        expect(modelConfigOf(rebuilt)).toEqual(config);
+    });
+
+    it('copies the widget and params rather than sharing them with the live brick', () => {
+        const model = createBrickModel(valueProps) as ValueBrickModel;
+        const config = modelConfigOf(model);
+
+        expect(config.widget).not.toBe(model.widget);
+        expect(config.colorsDefault).not.toBe(model.colorsDefault);
+
+        const statement = createBrickModel(statementProps) as StatementBrickModel;
+        expect(modelConfigOf(statement).params).not.toBe(statement.params);
     });
 });

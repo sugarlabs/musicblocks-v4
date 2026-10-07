@@ -7,7 +7,10 @@
 // store with the right id. The menu itself is not drawn yet, so only the store is asserted
 // against.
 
+import type { ReactNode } from 'react';
+
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
+import { createPortal } from 'react-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { TowerStatementNode } from '@/@types/tower.types';
@@ -17,12 +20,21 @@ import { useActionMenuStore } from '@/stores/actionMenu';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { useWorkspaceStore } from '@/stores/workspace';
 
-const renders = { count: 0 };
+const renders = { count: 0, throwingId: null as string | null };
+
+// Rendered inside `BrickView` to stand in for a control that reaches the brick through a portal.
+let portalControl: ReactNode = null;
 
 vi.mock('@/components/Brick/Brick', () => ({
   BrickView: (props: { model: { id: string } }) => {
     renders.count += 1;
-    return <span data-brick={props.model.id} />;
+    if (renders.throwingId === props.model.id) throw new Error('render error');
+    return (
+      <>
+        <span data-brick={props.model.id} />
+        {portalControl}
+      </>
+    );
   },
 }));
 
@@ -43,11 +55,13 @@ const NODE = makeEmptyValue('visibility-brick');
 
 afterEach(() => {
   cleanup();
+  renders.throwingId = null;
   useWorkspaceStore.setState({
     towers: {},
     selectedBrickId: null,
   });
   shouldSuppressClick.mockReturnValue(false);
+  portalControl = null;
   useActionMenuStore.setState({ brickId: null });
   useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
   act(() => {
@@ -251,6 +265,74 @@ describe('TowerBrickView right click', () => {
   });
 });
 
+describe('BrickErrorBoundary', () => {
+  /** Seeds layout store and workspace store, then renders one TowerBrickView per id. */
+  function renderInTower(towerId: string, ...ids: string[]) {
+    const nodes = ids.map((id) => makeEmptyStatement(id, 0));
+    nodes.forEach((node, i) => {
+      if (i === 0) return;
+      nodes[i - 1].next = node;
+      node.prev = nodes[i - 1];
+    });
+    act(() => {
+      useBrickLayoutStore.getState().setMounted(Object.fromEntries(ids.map((id) => [id, true])));
+      useBrickLayoutStore.getState().setPositioned(Object.fromEntries(ids.map((id) => [id, true])));
+      useWorkspaceStore
+        .getState()
+        .createTower({ id: towerId, root: nodes[0], position: { x: 0, y: 0 } });
+    });
+    return render(
+      <>
+        {nodes.map((node) => (
+          <TowerBrickView key={node.model.id} id={node.model.id} node={node} />
+        ))}
+      </>,
+    );
+  }
+
+  it('shows the error fallback when a brick throws during render', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    renders.throwingId = 'bad-brick';
+
+    const { getByTestId } = renderInTower('tower-1', 'bad-brick');
+
+    expect(getByTestId('brick-error-fallback')).not.toBeNull();
+    spy.mockRestore();
+  });
+
+  it('does not prevent a sibling brick from rendering', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    renders.throwingId = 'bad-brick';
+
+    const { getByTestId, container } = renderInTower('tower-1', 'bad-brick', 'good-brick');
+
+    expect(getByTestId('brick-error-fallback')).not.toBeNull();
+    expect(container.querySelector('[data-brick="good-brick"]')).not.toBeNull();
+    spy.mockRestore();
+  });
+
+  it('logs the brick ID and tower ID when a brick throws', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    renders.throwingId = 'bad-brick';
+
+    renderInTower('tower-1', 'bad-brick');
+
+    const message = spy.mock.calls.find(
+      (args) => typeof args[0] === 'string' && args[0].startsWith('[BrickErrorBoundary]'),
+    )?.[0] as string;
+    expect(message).toContain('"bad-brick"');
+    expect(message).toContain('"tower-1"');
+    spy.mockRestore();
+  });
+
+  it('renders normally and shows no fallback when no brick throws', () => {
+    const { queryByTestId, container } = renderInTower('tower-1', 'good-brick');
+
+    expect(queryByTestId('brick-error-fallback')).toBeNull();
+    expect(container.querySelector('[data-brick="good-brick"]')).not.toBeNull();
+  });
+});
+
 describe('TowerBrickView drag-to-click suppression', () => {
   it('selects the brick on a plain click', () => {
     renderBricks('brick-1');
@@ -258,6 +340,72 @@ describe('TowerBrickView drag-to-click suppression', () => {
     fireEvent.click(brickEl('brick-1'));
 
     expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+  });
+
+  it('deselects the brick when it is clicked while already selected', () => {
+    renderBricks('brick-1');
+
+    fireEvent.click(brickEl('brick-1'));
+    fireEvent.click(brickEl('brick-1'));
+
+    expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
+  });
+
+  it('leaves the selection alone when a press lands inside a marked control', () => {
+    renderBricks('brick-1');
+
+    // A toggle's visible track sits inside its marked label, so the label's descendants count too.
+    const label = document.createElement('label');
+    label.setAttribute('data-brick-control', '');
+    const track = document.createElement('span');
+    label.append(track);
+    brickEl('brick-1').append(label);
+
+    fireEvent.click(brickEl('brick-1'));
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+
+    fireEvent.click(track);
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+  });
+
+  it('leaves the selection alone when a press lands inside a slider', () => {
+    renderBricks('brick-1');
+
+    // The slider's thumb is a plain `div`, so the marker on its root is what covers the widget.
+    const slider = document.createElement('div');
+    slider.setAttribute('data-brick-control', '');
+    const thumb = document.createElement('div');
+    slider.append(thumb);
+    brickEl('brick-1').append(slider);
+
+    fireEvent.click(brickEl('brick-1'));
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+
+    fireEvent.click(thumb);
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+  });
+
+  it('leaves the selection alone when a press lands on a portalled control', () => {
+    // A select's options render through a portal, so the marker on the option is what catches the
+    // click React bubbles up to the brick.
+    portalControl = createPortal(
+      <>
+        <div role="option" data-brick-control="" />
+        <div data-testid="plain-portal" />
+      </>,
+      document.body,
+    );
+    renderBricks('brick-1');
+
+    fireEvent.click(brickEl('brick-1'));
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+
+    fireEvent.click(document.querySelector('[role="option"]') as HTMLElement);
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('brick-1');
+
+    // An unmarked portal element still clears, so the assertion above is not vacuous.
+    fireEvent.click(document.querySelector('[data-testid="plain-portal"]') as HTMLElement);
+    expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
   });
 
   it('does not select a click the hook reports as trailing a drag', () => {

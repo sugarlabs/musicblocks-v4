@@ -3,14 +3,14 @@
 // the offset lands, which presses are left alone, and that the two paths never pan twice over one
 // key. The file is .tsx so it runs in the dom project: the window listener is bound in an effect.
 
-import { fireEvent, render } from '@testing-library/react';
+import { fireEvent, render, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { TowerState } from '@/@types/workspace.types';
 import { makeEmptyStatement } from '@/mocks/tower';
 import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
-import { FAST_PAN_STEP, PAGE_PAN_STEP, PAN_STEP } from '@/utils/constants';
+import { AUTO_PAN_BAND, FAST_PAN_STEP, PAGE_PAN_STEP, PAN_STEP } from '@/utils/constants';
 
 import { isInputFocused, useCanvasKeyboardNav } from './useCanvasKeyboardNav';
 
@@ -108,6 +108,21 @@ describe('useCanvasKeyboardNav', () => {
 
     fireEvent.keyDown(canvas, { key: 'Home' });
     expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+  });
+
+  it('lays an off-screen tower out inside the canvas on Home, as the Home button does', () => {
+    const root = makeEmptyStatement('t1-brick', 0);
+    useWorkspaceStore.getState().createTower({ id: 't1', root, position: { x: -400, y: 900 } });
+    const canvas = document.createElement('div');
+    canvas.getBoundingClientRect = () => ({ width: 1000, height: 600 }) as DOMRect;
+    renderHook(() => useCanvasKeyboardNav({ current: canvas }));
+
+    fireEvent.keyDown(window, { key: 'Home' });
+
+    expect(useWorkspaceStore.getState().towers.t1.position).toEqual({
+      x: AUTO_PAN_BAND,
+      y: AUTO_PAN_BAND,
+    });
   });
 
   it('pans to active tower extents on End', () => {

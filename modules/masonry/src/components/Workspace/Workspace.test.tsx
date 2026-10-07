@@ -6,6 +6,7 @@
 
 import userEvent from '@testing-library/user-event';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import interact from 'interactjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { PaletteConfig } from '@/@types/palette.types';
@@ -256,6 +257,44 @@ describe('Workspace', () => {
     expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
   });
 
+  it('clears the selection from the pan layer, not just the canvas beneath it', () => {
+    // Regression: the viewport covers the canvas, so on empty background the pointer lands on the
+    // viewport and the canvas' own handler never sees the press.
+    const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+    act(() => {
+      useWorkspaceStore.getState().createTower(makeNestingTower('pan-layer'));
+    });
+
+    const brick = container.querySelector('[data-id="pan-layer-outer"]') as HTMLElement;
+    fireEvent.click(brick);
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('pan-layer-outer');
+
+    fireEvent.click(queryViewport(container)!);
+
+    expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
+  });
+
+  it('leaves the selection alone for the click trailing a pan', () => {
+    // A pan leaves a click on the viewport; it must not put the selected brick back down.
+    const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+    act(() => {
+      useWorkspaceStore.getState().createTower(makeNestingTower('pan-trailing'));
+    });
+
+    fireEvent.click(container.querySelector('[data-id="pan-trailing-outer"]') as HTMLElement);
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('pan-trailing-outer');
+
+    // Stand in for interact.js's `end`, which fires once a real pan finishes.
+    const canvas = container.querySelector('[data-testid="workspace-canvas"]') as HTMLElement;
+    interact(canvas).fire({ type: 'dragend' });
+
+    fireEvent.click(queryViewport(container)!);
+
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('pan-trailing-outer');
+  });
+
   it('deletes a selected root and extracts then discards a selected nested brick', () => {
     const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
     const tower = makeNestingTower('keyboard');
@@ -301,6 +340,39 @@ describe('Workspace', () => {
 
     expect(useWorkspaceStore.getState().towers['typing']).toBeDefined();
     expect(useWorkspaceStore.getState().selectedBrickId).toBe('typing-root');
+  });
+
+  it('deselects the brick when it is clicked while already selected', () => {
+    const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+    act(() => {
+      useWorkspaceStore.getState().createTower(makeNestingTower('toggle'));
+    });
+
+    const brick = container.querySelector('[data-id="toggle-outer"]') as HTMLElement;
+
+    fireEvent.click(brick);
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('toggle-outer');
+
+    fireEvent.click(brick);
+    expect(useWorkspaceStore.getState().selectedBrickId).toBeNull();
+  });
+
+  it('leaves the selection alone when a press lands on one of the brick controls', () => {
+    const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+    act(() => {
+      useWorkspaceStore.getState().createTower(makeTowerWithInput('control'));
+    });
+
+    fireEvent.click(container.querySelector('[data-id="control-root"]') as HTMLElement);
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('control-root');
+
+    // The number field belongs to the brick, so a press in it is not a press that puts the brick
+    // back down.
+    fireEvent.click(container.querySelector('input[type="number"]') as HTMLElement);
+
+    expect(useWorkspaceStore.getState().selectedBrickId).toBe('control-root');
   });
 
   it('leaves the canvas untouched when a delete key arrives with nothing selected', () => {

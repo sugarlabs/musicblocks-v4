@@ -6,10 +6,10 @@
 
 import { cleanup, renderHook } from '@testing-library/react';
 import interact from 'interactjs';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useWorkspaceViewportStore } from '@/stores/viewport';
-import { TOWER_BRICK_SELECTOR } from '@/utils/constants';
+import { DRAG_CLICK_SUPPRESSION_MS, TOWER_BRICK_SELECTOR } from '@/utils/constants';
 
 import { useCanvasPan } from './useCanvasPan';
 
@@ -39,7 +39,10 @@ function draggableOptions() {
       element: unknown,
       interacting: boolean,
     ) => string;
-    listeners: { move: (event: { dx: number; dy: number }) => void };
+    listeners: {
+      move: (event: { dx: number; dy: number }) => void;
+      end: (event: unknown) => void;
+    };
   };
 }
 
@@ -125,5 +128,50 @@ describe('useCanvasPan', () => {
 
     useWorkspaceViewportStore.getState().setOffset({ x: 100, y: 100 });
     expect(viewport.style.transform).toBe('translate(0px, 0px)');
+  });
+});
+
+describe('useCanvasPan drag-to-click suppression', () => {
+  // `end` only fires after a real drag, so a moved pan stamps the window and a plain click never
+  // does. Only Date is faked so the window can be stepped through deterministically.
+  const T0 = new Date('2026-01-01T00:00:00Z').getTime();
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(T0);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  /** Drives a moved pan through the listeners the hook registered. */
+  function panCanvas() {
+    const { move, end } = draggableOptions().listeners;
+    move({ dx: 10, dy: 6 });
+    end({});
+  }
+
+  it('reports suppression right after a moved pan ends', () => {
+    const { result } = mountCanvasPan();
+
+    panCanvas();
+
+    expect(result.current()).toBe(true);
+  });
+
+  it('stops reporting suppression once the window has elapsed', () => {
+    const { result } = mountCanvasPan();
+
+    panCanvas();
+    vi.setSystemTime(T0 + DRAG_CLICK_SUPPRESSION_MS);
+
+    expect(result.current()).toBe(false);
+  });
+
+  it('reports no suppression before the canvas has ever been panned', () => {
+    const { result } = mountCanvasPan();
+
+    expect(result.current()).toBe(false);
   });
 });

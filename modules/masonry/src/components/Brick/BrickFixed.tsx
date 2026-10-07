@@ -360,6 +360,7 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
               {isVariantWidget && (
                 <Select value={variantValue} onValueChange={() => {}}>
                   <SelectTrigger
+                    data-brick-control=""
                     className={cn(
                       'h-7 min-w-16 gap-1 bg-transparent px-2 py-1',
                       'transition-colors hover:bg-black/5 dark:hover:bg-white/5',
@@ -387,6 +388,7 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
                     </div>
                   </SelectTrigger>
                   <SelectContent
+                    data-brick-control=""
                     alignItemWithTrigger={false}
                     className="min-w-0"
                     style={{
@@ -471,6 +473,7 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
           <button
             type="button"
             data-fold-toggle=""
+            data-brick-control=""
             disabled={isFoldDisabled}
             aria-expanded={!nestingIsFolded}
             aria-label={nestingIsFolded ? 'Unfold cavity' : 'Fold cavity'}

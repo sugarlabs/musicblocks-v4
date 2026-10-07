@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, type MouseEvent } from 'react';
 
 import type { PaletteBrickConfig } from '@/@types/palette.types';
 import type { WorkspaceViewProps } from '@/@types/workspace.types';
@@ -214,7 +214,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
   useDragFromPalette({ rootRef, canvasRef, ghostRef, bricksById });
 
   // Dragging the empty background pans; the viewport node follows the store's offset
-  useCanvasPan({ canvasRef, viewportRef });
+  const shouldSuppressBackgroundClick = useCanvasPan({ canvasRef, viewportRef });
 
   // Resize every brick and re-run the layouts whenever the scale level changes
   useWorkspaceScale();
@@ -243,6 +243,16 @@ export function Workspace({ config }: WorkspaceViewProps) {
     );
   }, []);
 
+  // Clears the selection when a press lands on the empty background itself; the canvas and the
+  // viewport above it both share this. A click trailing a pan is ignored.
+  const handleBackgroundClick = useCallback(
+    (event: MouseEvent<HTMLDivElement>) => {
+      if (shouldSuppressBackgroundClick()) return;
+      if (event.target === event.currentTarget) clearSelection();
+    },
+    [clearSelection, shouldSuppressBackgroundClick],
+  );
+
   return (
     <div className="flex h-full w-full flex-col">
       <Navbar />
@@ -264,11 +274,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
           tabIndex={0}
           onKeyDown={handleKeyDown}
           className="bg-background focus:ring-ring focus-visible:ring-ring relative h-full w-full shrink overflow-hidden outline-none select-none focus:ring-2 focus:ring-inset focus-visible:ring-2 focus-visible:ring-inset"
-          // Only a press on the canvas itself clears: the bricks are its children, so without the
-          // target check every click that selected one would arrive here and drop it again.
-          onClick={(event) => {
-            if (event.target === event.currentTarget) clearSelection();
-          }}
+          onClick={handleBackgroundClick}
         >
           {/* TowerLayoutEngine runs the layout hooks for each tower to compute brick positions */}
           {towers.map((tower) => (
@@ -284,6 +290,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
             ref={viewportRef}
             data-testid="workspace-viewport"
             className="absolute inset-0 will-change-transform"
+            onClick={handleBackgroundClick}
           >
             {/* TowerBrickView renders the actual DOM nodes for the visible bricks in a flattened list */}
             {visibleNodes.map((node) => (

@@ -1,17 +1,17 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 import { Workspace } from '@/components/Workspace/Workspace';
 import { mockPaletteConfig } from '@/mocks/palette';
 import { createMockTowerRoot } from '@/mocks/workspaceTower';
 import { useWorkspaceStore } from '@/stores/workspace';
 
-export default function WorkspaceDemo() {
-  const initialized = useRef(false);
+let isMockWorkspaceInitialized = false;
 
+export default function WorkspaceDemo() {
   useEffect(() => {
-    // Initialize the workspace with a pre-configured mock tower containing nested bricks for testing
-    if (!initialized.current) {
-      initialized.current = true;
+    // Initialize the workspace once per session with a pre-configured mock tower containing nested bricks for testing
+    if (!isMockWorkspaceInitialized) {
+      isMockWorkspaceInitialized = true;
       const root = createMockTowerRoot();
       useWorkspaceStore.getState().createTower({
         id: 'mock-tower-1',

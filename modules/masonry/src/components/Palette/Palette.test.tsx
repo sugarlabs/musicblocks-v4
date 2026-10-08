@@ -211,6 +211,7 @@ describe('Palette', () => {
       const beat = container.querySelector('[data-brick-id="m1"]');
 
       expect(note).not.toBeNull();
+      expect(note?.nodeName).toBe('BUTTON');
       // The description used to ride on `title`; it now reaches the user through the slot's
       // delayed tooltip, covered in BrickSlot.test.tsx.
       expect(note?.getAttribute('title')).toBeNull();
@@ -502,6 +503,15 @@ describe('Palette', () => {
 
       const byPlaceholder = screen.getByPlaceholderText('Search bricks');
       expect(screen.getByRole('textbox')).toBe(byPlaceholder);
+    });
+
+    it('exposes each brick as a focusable button', () => {
+      render(<Palette config={config} />);
+
+      const note = screen.getByRole('button', { name: 'Note' });
+      note.focus();
+
+      expect(document.activeElement).toBe(note);
     });
 
     it("names each brick's slot for assistive tech, without a native title tooltip", () => {

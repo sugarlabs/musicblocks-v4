@@ -112,9 +112,9 @@ export function Palette({ config }: PaletteViewProps) {
   };
 
   return (
-    <div className="border-border bg-background text-foreground flex h-full min-h-0 w-full overflow-hidden rounded-lg border">
+    <div className="border-border bg-background text-foreground flex h-full min-h-0 w-full overflow-hidden rounded-lg border font-sans">
       {/* Category sidebar: one button per (filtered) category of the active classification. */}
-      <nav className="border-border bg-muted/40 flex w-20 shrink-0 flex-col gap-1 overflow-y-auto border-r px-2 pt-[104px] pb-2">
+      <nav className="border-border bg-muted/40 flex w-20 shrink-0 flex-col gap-1 overflow-y-auto border-r px-2 pt-26 pb-2">
         {visibleCategories.map(({ category, index }) => {
           const Icon = category.icon;
           return (
@@ -124,7 +124,7 @@ export function Palette({ config }: PaletteViewProps) {
               size="default"
               title={category.name}
               onClick={() => scrollToCategory(index)}
-              className="h-auto cursor-pointer flex-col gap-1 px-1 py-2 text-[0.7rem]"
+              className="h-auto cursor-pointer flex-col gap-1 px-1 py-2 text-[0.7rem] active:not-aria-[haspopup]:translate-y-0"
             >
               <Icon className="size-5" style={{ color: category.color }} />
               <span className="w-full truncate text-center">{category.name}</span>
@@ -147,7 +147,12 @@ export function Palette({ config }: PaletteViewProps) {
                 aria-pressed={isActive}
                 title={classification.name}
                 onClick={() => selectClassification(index)}
-                className="h-9 flex-1 cursor-pointer"
+                className={cn(
+                  'h-9 flex-1 cursor-pointer active:not-aria-[haspopup]:translate-y-0',
+                  isActive
+                    ? 'bg-accent-foreground/10 text-foreground hover:bg-accent'
+                    : 'hover:bg-muted/90',
+                )}
               >
                 <Icon className="size-5" />
                 <span className="sr-only">{classification.name}</span>
@@ -162,7 +167,7 @@ export function Palette({ config }: PaletteViewProps) {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search bricks"
+              placeholder="Search"
               className="pl-8"
             />
           </div>
@@ -170,13 +175,13 @@ export function Palette({ config }: PaletteViewProps) {
 
         {/* Main list: every visible category of the active classification stacked in one container. */}
         {visibleCategories.length === 0 ? (
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-3">
             <p className="text-muted-foreground text-sm">No bricks match your search.</p>
           </div>
         ) : (
           <div
             className={cn(
-              'flex-1 overflow-y-auto p-4 transition-[padding-bottom] duration-500',
+              'flex-1 overflow-y-auto p-3 transition-[padding-bottom] duration-500',
               isDragging && 'pb-32',
             )}
           >
@@ -188,7 +193,7 @@ export function Palette({ config }: PaletteViewProps) {
                   ref={(el) => {
                     categoryRefs.current[index] = el;
                   }}
-                  className="mb-6 scroll-mt-4"
+                  className="mb-6 scroll-mt-4 last:mb-0"
                 >
                   <div
                     data-flashing={flashedCategory === index ? 'true' : undefined}

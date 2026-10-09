@@ -141,7 +141,7 @@ export type WidgetDisplay =
     /** Selector for choosing a structural variant of the brick (e.g. which operator or loop type). */
     | { type: 'variant'; options: string[]; value: string };
 
-/** Interactive input widgets — exclusively for value-kind bricks. */
+/** Interactive input widgets — for value-kind bricks and statement bricks with inline inputs. */
 export type WidgetInput =
     /** Freeform text input. */
     | { type: 'textbox'; value: string; maxLength?: number }
@@ -196,7 +196,7 @@ export interface ExpressionBrickViewProps extends BrickViewPropsBase {
 /** An executable brick that participates in a sequence — statement, block, loop, conditional, etc. */
 export interface StatementBrickViewProps extends BrickViewPropsBase {
     kind: 'statement';
-    widget: WidgetDisplay;
+    widget: WidgetDisplay | WidgetInput;
     /** Omitted if the brick has no param/arg slots. */
     paramArgs?: ParamArgPair[];
     /**

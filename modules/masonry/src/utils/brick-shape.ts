@@ -128,9 +128,64 @@ export class BrickOutlineGenerator {
         tailHeight: 0,
     };
 
-    public constructor(private readonly minimums: BrickMinimums) {}
+    public constructor(private readonly minimums: BrickMinimums) {
+        this.validateGeometry(0);
+    }
+
+    /** Checks the fixed corner and notch geometry with the current stroke clearance. */
+    private validateGeometry(strokeWidth: number): void {
+        if (import.meta.env.DEV) {
+            const {
+                CORNER_RADIUS,
+                TAIL_STEP_H,
+                TAIL_STEP_W,
+                TAIL_INDENT_W,
+                V_NOTCH_RADIUS,
+                V_NOTCH_WIDTH,
+                V_NOTCH_OFFSET_X,
+                H_NOTCH_RADIUS,
+                H_NOTCH_WIDTH,
+                H_NOTCH_OFFSET_Y,
+            } = BrickOutlineGenerator;
+
+            if (CORNER_RADIUS < 0 || 2 * CORNER_RADIUS > TAIL_STEP_H) {
+                throw new Error('CORNER_RADIUS must fit within half of TAIL_STEP_H');
+            }
+            if (
+                V_NOTCH_RADIUS < 0 ||
+                2 * BrickOutlineGenerator.vNotchDepth(strokeWidth) >= V_NOTCH_WIDTH
+            ) {
+                throw new Error(
+                    'V_NOTCH_RADIUS and stroke clearance must fit within V_NOTCH_WIDTH',
+                );
+            }
+            if (
+                H_NOTCH_RADIUS < 0 ||
+                2 * BrickOutlineGenerator.hNotchDepth(strokeWidth) >= H_NOTCH_WIDTH
+            ) {
+                throw new Error(
+                    'H_NOTCH_RADIUS and stroke clearance must fit within H_NOTCH_WIDTH',
+                );
+            }
+            if (
+                V_NOTCH_OFFSET_X - V_NOTCH_WIDTH / 2 - strokeWidth / 2 < CORNER_RADIUS ||
+                V_NOTCH_OFFSET_X + V_NOTCH_WIDTH / 2 + CORNER_RADIUS + (3 * strokeWidth) / 2 >
+                    TAIL_STEP_W - TAIL_INDENT_W
+            ) {
+                throw new Error('V-notch must fit between the tail foot corners');
+            }
+            if (
+                H_NOTCH_OFFSET_Y - H_NOTCH_WIDTH / 2 - strokeWidth / 2 < CORNER_RADIUS ||
+                H_NOTCH_OFFSET_Y + H_NOTCH_WIDTH / 2 + strokeWidth / 2 + CORNER_RADIUS >
+                    this.minimums.minArgHeight
+            ) {
+                throw new Error('H-notch must fit within the minimum arg slot height');
+            }
+        }
+    }
 
     private normalizeInput(input: BrickOutlineInput): NormalizedInput {
+        this.validateGeometry(input.strokeWidth);
         const hasNesting = input.nestingDims !== undefined;
         const hasFoldToggle = input.hasFoldToggle ?? false;
         const hasPrevNotch = input.hasPrevNotch ?? false;
@@ -880,6 +935,18 @@ export class BrickOutlineGenerator {
 
         const height = headHeight + tailHeight;
 
+        if (
+            import.meta.env.DEV &&
+            inputNormalised.hasOutputNotch &&
+            BrickOutlineGenerator.H_NOTCH_OFFSET_Y +
+                BrickOutlineGenerator.H_NOTCH_WIDTH / 2 +
+                strokeWidth / 2 +
+                BrickOutlineGenerator.CORNER_RADIUS >
+                height
+        ) {
+            throw new Error('H-notch output must fit above the bottom corner');
+        }
+
         return {
             width,
             height,
@@ -904,8 +971,8 @@ export class BrickOutlineGenerator {
         // Recompute dimensions only when the normalised input has actually changed.
         const normalized = this.normalizeInput(input);
         if (!this.inputsEqual(normalized, this.input)) {
-            this.input = normalized;
             this.dimensions = this.computeDimensions(input);
+            this.input = normalized;
         }
 
         const { width, height } = this.dimensions;
@@ -968,8 +1035,8 @@ export class BrickOutlineGenerator {
         // Recompute dimensions only when the normalised input has actually changed.
         const normalized = this.normalizeInput(input);
         if (!this.inputsEqual(normalized, this.input)) {
-            this.input = normalized;
             this.dimensions = this.computeDimensions(input);
+            this.input = normalized;
         }
 
         const strokeWidth = this.input.strokeWidth;

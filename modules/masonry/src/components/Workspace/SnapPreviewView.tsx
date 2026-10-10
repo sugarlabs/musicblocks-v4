@@ -58,7 +58,7 @@ export function SnapPreviewView() {
   return (
     <div
       data-testid="snap-preview-view"
-      className="pointer-events-none absolute top-0 left-0 z-30 opacity-60 drop-shadow-[0_0_12px_rgba(34,197,94,0.7)] filter"
+      className="pointer-events-none absolute top-0 left-0 opacity-60 drop-shadow-[0_0_12px_rgba(34,197,94,0.7)] filter"
       style={{
         transform: `translate(${snapPosition.x}px, ${snapPosition.y}px)`,
       }}

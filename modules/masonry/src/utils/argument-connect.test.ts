@@ -31,6 +31,7 @@ function workspace(towers: { id: string; root: TowerNode; position: Point }[]) {
 /** World centre of one of a brick's argument grooves, once the brick is positioned. */
 function slotCenter(node: TowerNode, slotIndex: number): Point {
     const input = node.model.getConnectorCoords().inputs[slotIndex];
+    if (!input) throw new Error(`No drawn groove for argument slot ${slotIndex}`);
     return { x: node.model.position.x + input.x, y: node.model.position.y + input.y };
 }
 

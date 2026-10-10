@@ -65,6 +65,23 @@ describe('extractArgumentConnectors', () => {
         expect(results.every((r) => r.meta.id === r.object.id)).toBe(true);
         expect(results.every((r) => r.meta.towerId === 'tower')).toBe(true);
     });
+
+    it('omits undrawn grooves and keeps later connectors at their original slot indices', () => {
+        const host = makeEmptyStatement('host', 3);
+        host.model.setPosition(300, 400);
+        const bounds = { x: 100, y: 16, w: 5, h: 16 };
+        vi.spyOn(host.model, 'getConnectorCoords').mockReturnValue({
+            inputs: [bounds, null, { ...bounds, y: 32 }],
+        });
+
+        const results = extractArgumentConnectors('tower', host);
+
+        expect(results.map(({ meta }) => meta.slotIndex)).toEqual([0, 2]);
+        expect(results.map(({ object }) => ({ x: object.x, y: object.y }))).toEqual([
+            { x: 400, y: 416 },
+            { x: 400, y: 432 },
+        ]);
+    });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

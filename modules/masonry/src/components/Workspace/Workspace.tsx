@@ -264,6 +264,8 @@ export function Workspace({ config }: WorkspaceViewProps) {
             className="absolute inset-0 will-change-transform"
             onClick={handleBackgroundClick}
           >
+            <SnapPreviewView />
+            <DisconnectShadowView />
             {/* TowerBrickView renders the actual DOM nodes for the visible bricks in a flattened list */}
             {visibleNodes.map((node) => (
               <TowerBrickView
@@ -275,8 +277,6 @@ export function Workspace({ config }: WorkspaceViewProps) {
             ))}
 
             <SnapHintOverlay />
-            <SnapPreviewView />
-            <DisconnectShadowView />
             {/* Last in the overlay, so the menu draws over the bricks it is opened on */}
             <ActionMenu />
             <HelpPanel />

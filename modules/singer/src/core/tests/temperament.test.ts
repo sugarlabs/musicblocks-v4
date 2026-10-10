@@ -282,4 +282,44 @@ describe('class Temperament', () => {
             expect(tuple).toStrictEqual([2, 0]);
         });
     });
+
+    describe('numberOfOctaves setter and getter', () => {
+        test('Setting numberOfOctaves to 8 stores 8 and regenerates correct frequency count', () => {
+            const t = new Temperament();
+            t.numberOfOctaves = 8;
+            expect(t.numberOfOctaves).toBe(8);
+
+            t.generate('equal');
+            // Equal temperament: 1 base frequency + 8 octaves * 11 notes = 89 frequencies
+            expect(t.numberOfNotesInTemperament).toBe(89);
+        });
+
+        test('Clamps inputs below 1 (0 and negative) to 1 and regenerates correct frequency count', () => {
+            const t = new Temperament();
+
+            t.numberOfOctaves = 0;
+            expect(t.numberOfOctaves).toBe(1);
+            t.generate('equal');
+            // 1 base frequency + 1 octave * 11 notes = 12 frequencies
+            expect(t.numberOfNotesInTemperament).toBe(12);
+
+            t.numberOfOctaves = -3;
+            expect(t.numberOfOctaves).toBe(1);
+            t.generate('equal');
+            expect(t.numberOfNotesInTemperament).toBe(12);
+        });
+
+        test('Guards non-finite inputs by defaulting to 1', () => {
+            const t = new Temperament();
+
+            t.numberOfOctaves = NaN;
+            expect(t.numberOfOctaves).toBe(1);
+
+            t.numberOfOctaves = Infinity;
+            expect(t.numberOfOctaves).toBe(1);
+
+            t.numberOfOctaves = -Infinity;
+            expect(t.numberOfOctaves).toBe(1);
+        });
+    });
 });

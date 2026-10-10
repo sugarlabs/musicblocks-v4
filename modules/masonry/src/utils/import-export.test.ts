@@ -606,6 +606,22 @@ describe('importProject', () => {
                 match: /missing colorsDefault\.border/,
             },
             {
+                rule: 'an incomplete highlight palette',
+                breakIt: (p) =>
+                    Object.assign(p.nodes['Statement 1'].modelConfig, {
+                        colorsHighlight: { background: '#fff' },
+                    }),
+                match: /colorsHighlight is missing foreground/,
+            },
+            {
+                rule: 'an incomplete shadow offset',
+                breakIt: (p) =>
+                    Object.assign(p.nodes['Statement 1'].modelConfig, {
+                        shadow: { offset: { x: 2 }, blur: 3, color: '#000' },
+                    }),
+                match: /shadow\.offset must contain finite x and y numbers/,
+            },
+            {
                 rule: 'an out-of-range scale level',
                 breakIt: (p) =>
                     Object.assign(p.nodes['Statement 1'].modelConfig, { scaleLevel: 7 }),

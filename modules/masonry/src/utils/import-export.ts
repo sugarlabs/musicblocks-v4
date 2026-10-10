@@ -154,14 +154,43 @@ function assertPointerArray(value: unknown, where: string): (string | null)[] {
     return value as (string | null)[];
 }
 
+/** Asserts a complete color palette. */
+function assertColors(value: unknown, path: string): void {
+    if (!isRecord(value)) reject(`${path} is not an object`);
+    for (const channel of ['background', 'foreground', 'border']) {
+        if (typeof value[channel] !== 'string') {
+            reject(`${path} is missing ${channel}`);
+        }
+    }
+}
+
+/** Asserts an optional shadow with complete numeric and color fields. */
+function assertShadow(value: unknown, path: string): void {
+    if (!isRecord(value)) reject(`${path} is not an object`);
+    if (!isRecord(value.offset)) reject(`${path} has no offset`);
+    if (
+        typeof value.offset.x !== 'number' ||
+        !Number.isFinite(value.offset.x) ||
+        typeof value.offset.y !== 'number' ||
+        !Number.isFinite(value.offset.y)
+    ) {
+        reject(`${path}.offset must contain finite x and y numbers`);
+    }
+    if (typeof value.blur !== 'number' || !Number.isFinite(value.blur)) {
+        reject(`${path} has an invalid blur`);
+    }
+    if (typeof value.color !== 'string') reject(`${path} has no color`);
+}
+
 /** Asserts the config every brick kind shares. Widget contents beyond `type` are not inspected. */
 function assertBaseConfig(config: Record<string, unknown>, where: string): void {
-    const colors = config.colorsDefault;
-    if (!isRecord(colors)) reject(`${where} has no colorsDefault`);
-    for (const channel of ['background', 'foreground', 'border']) {
-        if (typeof colors[channel] !== 'string') {
-            reject(`${where} is missing colorsDefault.${channel}`);
-        }
+    if (!isRecord(config.colorsDefault)) reject(`${where} has no colorsDefault`);
+    assertColors(config.colorsDefault, `${where}.colorsDefault`);
+    if (config.colorsHighlight !== undefined) {
+        assertColors(config.colorsHighlight, `${where}.colorsHighlight`);
+    }
+    if (config.shadow !== undefined) {
+        assertShadow(config.shadow, `${where}.shadow`);
     }
     if (typeof config.tooltipText !== 'string') reject(`${where} has no tooltipText`);
     if (config.scaleLevel !== 1 && config.scaleLevel !== 2 && config.scaleLevel !== 3) {
@@ -437,7 +466,9 @@ function toViewProps(node: ExportedNode): BrickViewProps {
     const base = {
         colorsDefault: { ...config.colorsDefault },
         ...(config.colorsHighlight ? { colorsHighlight: { ...config.colorsHighlight } } : {}),
-        ...(config.shadow ? { shadow: { ...config.shadow, offset: { ...config.shadow.offset } } } : {}),
+        ...(config.shadow
+            ? { shadow: { ...config.shadow, offset: { ...config.shadow.offset } } }
+            : {}),
         tooltipText: config.tooltipText,
         scaleLevel: config.scaleLevel,
     };

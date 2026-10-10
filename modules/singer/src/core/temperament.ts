@@ -282,7 +282,8 @@ export default class Temperament implements ITemperament {
      * span 96 notes).
      */
     public set numberOfOctaves(num: number) {
-        this._numberOfOctaves = Math.max(1, Math.floor(Number(num)));
+        const n = Math.floor(Number(num));
+        this._numberOfOctaves = Number.isFinite(n) ? Math.max(1, n) : 1;
     }
 
     /**

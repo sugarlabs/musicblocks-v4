@@ -286,13 +286,13 @@ describe('class Temperament', () => {
     describe('Number of Octaves setter', () => {
         test('Expect setter to store assigned value and reflect it after generate', () => {
             const t = new Temperament();
-            t.numberOfOctaves = 2;
-            expect(t.numberOfOctaves).toBe(2);
+            t.numberOfOctaves = 8;
+            expect(t.numberOfOctaves).toBe(8);
             t.generate('equal');
-            const twoOctaveCount = t.numberOfNotesInTemperament;
+            const eightOctaveCount = t.numberOfNotesInTemperament;
             t.numberOfOctaves = 1;
             t.generate('equal');
-            expect(twoOctaveCount).toBeGreaterThan(t.numberOfNotesInTemperament);
+            expect(eightOctaveCount).toBeGreaterThan(t.numberOfNotesInTemperament);
         });
 
         test('Expect setter to clamp values below 1 to 1', () => {
@@ -300,6 +300,14 @@ describe('class Temperament', () => {
             t.numberOfOctaves = 0;
             expect(t.numberOfOctaves).toBe(1);
             t.numberOfOctaves = -3;
+            expect(t.numberOfOctaves).toBe(1);
+        });
+
+        test('Expect setter to fall back to 1 for non-finite values', () => {
+            const t = new Temperament();
+            t.numberOfOctaves = Infinity;
+            expect(t.numberOfOctaves).toBe(1);
+            t.numberOfOctaves = NaN;
             expect(t.numberOfOctaves).toBe(1);
         });
     });

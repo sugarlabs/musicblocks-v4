@@ -1,16 +1,18 @@
-import { Copy, Scissors, Trash2 } from 'lucide-react';
+import { CircleQuestionMark, Copy, Scissors, Trash2 } from 'lucide-react';
 
 import type { ActionMenuWedge } from '@/@types/action-menu.types';
+import { useBrickHelpStore } from '@/stores/brickHelp';
 import { useWorkspaceHistoryStore } from '@/stores/history';
 import { acknowledgeTrash } from '@/stores/trash';
-import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
+import { canExtractBrick, findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
+import { brickHelpFor } from '@/utils/brick-help';
 import { discardTower } from '@/utils/towerDiscard';
 
 /**
  * The wedges the pie menu carries, in the order they ring the brick, starting at twelve o'clock.
  *
- * Each one's behaviour lands with its own issue — duplicate in #796 and the move to the trash in
- * #798. Extract answers `isEnabled` with `false` until its issue lands and is drawn disabled.
+ * Each one's behaviour lands with its own issue — duplicate in #796, extract in #797,
+ * the move to the trash in #798 and help in #843.
  */
 export const ACTION_MENU_WEDGES: ActionMenuWedge[] = [
     {
@@ -31,8 +33,27 @@ export const ACTION_MENU_WEDGES: ActionMenuWedge[] = [
         label: 'Extract',
         tooltip: 'Take this brick out on its own, closing the gap it leaves',
         Icon: Scissors,
-        isEnabled: () => false,
-        run: () => {},
+        isEnabled: (brickId: string) => canExtractBrick(brickId),
+        run: (brickId: string) => {
+            const newTowerId = useWorkspaceStore.getState().extractBrickToNewTower(brickId);
+            if (newTowerId) {
+                useWorkspaceHistoryStore.getState().commit();
+            }
+        },
+    },
+    {
+        id: 'help',
+        label: 'Help',
+        tooltip: 'Show what this brick does',
+        Icon: CircleQuestionMark,
+        // As in v3, the wedge is only on the ring of a brick that has help to give. Left out
+        // rather than drawn disabled, since there is no brick it could ever work on without text.
+        isVisible: (brickId: string) => Boolean(findNodeAndTower(brickId)?.node.model.tooltipText),
+        isEnabled: () => true,
+        run: (brickId: string) => {
+            const help = brickHelpFor(brickId);
+            if (help !== null) useBrickHelpStore.getState().show(help);
+        },
     },
     {
         id: 'trash',

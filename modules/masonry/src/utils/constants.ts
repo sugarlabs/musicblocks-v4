@@ -43,11 +43,9 @@ export const BASE_GRID_SPACING = 20;
 // ── Interaction ──
 
 /**
- * How long (in ms) after a moved drag ends a trailing `click` is ignored.
- *
- * A drag gesture ends with the browser releasing a native click on the element, which both the
- * palette slot and a workspace brick would otherwise read as an intentional press. Shared so the
- * two suppression guards cannot drift apart.
+ * How long (in ms) after a moved drag ends a trailing `click` is ignored. Read only by
+ * `useDragClickSuppression`, the one place the palette slot, a workspace brick and a canvas pan
+ * share.
  */
 export const DRAG_CLICK_SUPPRESSION_MS = 250;
 
@@ -68,6 +66,12 @@ export const FOLD_TOGGLE_SELECTOR = '[data-fold-toggle]';
  * press that lands on a brick drags the brick rather than panning the canvas underneath it.
  */
 export const TOWER_BRICK_SELECTOR = '[data-tower-brick]';
+
+/**
+ * Marks a widget inside a brick that keeps its own presses, so clicking it does not toggle the
+ * brick's selection. A marker rather than a tag list also catches a select's portalled options.
+ */
+export const BRICK_CONTROL_SELECTOR = '[data-brick-control]';
 
 /**
  * Marks the action menu's own DOM, so a press inside it is not an outside press: the menu stamps

@@ -6,6 +6,7 @@ import { useEffect, useLayoutEffect } from 'react';
 
 import type { Point } from '@/@types/common.types';
 
+import { useDragClickSuppression } from '@/hooks/useDragClickSuppression';
 import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { TOWER_BRICK_SELECTOR } from '@/utils/constants';
 
@@ -32,9 +33,14 @@ export interface UseCanvasPanOptions {
  * re-render of every brick per pointer frame is exactly the cost a pan is meant to avoid. Going
  * through the store rather than straight from the gesture means anything else that writes the
  * offset — a home button, wheel scrolling, keyboard navigation — moves the canvas the same way.
+ *
+ * @returns A predicate that is true while a click trailing the canvas' own pan should be ignored.
  */
 export function useCanvasPan(options: UseCanvasPanOptions) {
     const { canvasRef, viewportRef } = options;
+    // Suppresses the click interact.js leaves trailing the pan. interact.js only starts a drag
+    // once the pointer has moved, so `end` always marks a real pan.
+    const { markDragEnd, shouldSuppressClick } = useDragClickSuppression();
 
     useLayoutEffect(() => {
         const viewport = viewportRef.current;
@@ -69,11 +75,18 @@ export function useCanvasPan(options: UseCanvasPanOptions) {
                 move(event: DragEvent) {
                     useWorkspaceViewportStore.getState().panBy({ x: event.dx, y: event.dy });
                 },
+                // A pan that starts and ends on the empty background leaves a click on the
+                // viewport; stamp its end so `Workspace` can swallow that click.
+                end(_event: DragEvent) {
+                    markDragEnd();
+                },
             },
         });
 
         return () => {
             interactable.unset();
         };
-    }, [canvasRef]);
+    }, [canvasRef, markDragEnd]);
+
+    return shouldSuppressClick;
 }

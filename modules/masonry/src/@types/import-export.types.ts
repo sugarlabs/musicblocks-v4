@@ -53,12 +53,12 @@ interface ExportedBrickConfigBase {
 }
 
 /** Config of a value brick; its widget may be interactive, so it carries user-entered values. */
-interface ExportedValueConfig extends ExportedBrickConfigBase {
+export interface ExportedValueConfig extends ExportedBrickConfigBase {
     widget: WidgetDisplay | WidgetInput;
 }
 
 /** Config of an expression brick. */
-interface ExportedExpressionConfig extends ExportedBrickConfigBase {
+export interface ExportedExpressionConfig extends ExportedBrickConfigBase {
     widget: WidgetDisplay;
     /**
      * Param labels, one per argument slot in declaration order.
@@ -69,7 +69,7 @@ interface ExportedExpressionConfig extends ExportedBrickConfigBase {
 }
 
 /** Config of a statement brick. */
-interface ExportedStatementConfig extends ExportedBrickConfigBase {
+export interface ExportedStatementConfig extends ExportedBrickConfigBase {
     widget: WidgetDisplay;
     /** Param labels, one per argument slot in declaration order. */
     params: (string | null)[];

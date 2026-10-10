@@ -119,6 +119,7 @@ function SelectWidget({
       }}
     >
       <SelectTrigger
+        data-brick-control=""
         className="h-7 min-w-16 gap-1 border-black/20 bg-transparent px-2 py-1 transition-colors hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/5"
         style={commonStyle}
       >
@@ -138,6 +139,7 @@ function SelectWidget({
         </div>
       </SelectTrigger>
       <SelectContent
+        data-brick-control=""
         alignItemWithTrigger={false}
         className="min-w-0"
         style={{ backgroundColor, color, borderColor }}
@@ -166,6 +168,7 @@ function TextboxWidget({
   const [val, setVal] = useState(String(widget.value));
   return (
     <Input
+      data-brick-control=""
       type="text"
       defaultValue={widget.value as string}
       onChange={(e) => {
@@ -191,6 +194,7 @@ function NumberboxWidget({
 }) {
   return (
     <Input
+      data-brick-control=""
       type="number"
       defaultValue={widget.value as number}
       onChange={(e) => {
@@ -225,6 +229,7 @@ function ToggleWidget({
 }) {
   return (
     <label
+      data-brick-control=""
       className="relative flex h-7 min-w-12 cursor-pointer items-center rounded-full p-0.5"
       style={{ ...commonStyle, backgroundColor: borderColor }}
     >
@@ -269,7 +274,11 @@ function SliderWidget({
   borderColor: string;
 }) {
   return (
-    <div className="flex h-6 min-w-32 cursor-pointer items-center gap-2 px-1" style={commonStyle}>
+    <div
+      data-brick-control=""
+      className="flex h-6 min-w-32 cursor-pointer items-center gap-2 px-1"
+      style={commonStyle}
+    >
       <span className="text-xs font-medium opacity-80 select-none">{widget.min}</span>
       <div className="flex flex-1 items-center">
         <Slider

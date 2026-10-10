@@ -18,6 +18,7 @@ import {
     statementTreeWithNesting,
 } from '@/mocks/tower';
 import { exportWorkspace } from '@/utils/import-export';
+import { joinStatement, resolveStatementConnection } from '@/utils/statement-connect';
 import {
     listNodes,
     listVisibleNodes,
@@ -1249,19 +1250,19 @@ describe('Workspace Store Collision Space', () => {
                 useWorkspaceStore.getState().createTower({
                     id: 'tower-lone',
                     root: lone,
-                    position: { x: 10, y: 20 },
+                    position: { x: 0, y: 0 },
                 });
             });
             const towersBeforeCase1 = useWorkspaceStore.getState().towers;
             expect(canExtractBrick('lone')).toBe(false);
+            expect(useWorkspaceStore.getState().extractBrickToNewTower('lone')).toBeNull();
             expect(useWorkspaceStore.getState().towers).toBe(towersBeforeCase1);
             expect(useWorkspaceStore.getState().towers['tower-lone'].position).toEqual({
-                x: 10,
-                y: 20,
+                x: 0,
+                y: 0,
             });
-            expect(useWorkspaceStore.getState().towers['tower-lone'].root).toBe(lone);
-            expect(lone.next).toBeNull();
             expect(lone.prev).toBeNull();
+            expect(lone.next).toBeNull();
 
             // Case 2: lone folded root statement with no next
             const loneFolded = makeEmptyStatement('lone-folded', 0, true);
@@ -1273,16 +1274,18 @@ describe('Workspace Store Collision Space', () => {
                 useWorkspaceStore.getState().createTower({
                     id: 'tower-lone-folded',
                     root: loneFolded,
-                    position: { x: 30, y: 40 },
+                    position: { x: 10, y: 20 },
                 });
             });
             const towersBeforeCase2 = useWorkspaceStore.getState().towers;
             expect(canExtractBrick('lone-folded')).toBe(false);
+            expect(useWorkspaceStore.getState().extractBrickToNewTower('lone-folded')).toBeNull();
             expect(useWorkspaceStore.getState().towers).toBe(towersBeforeCase2);
             expect(useWorkspaceStore.getState().towers['tower-lone-folded'].position).toEqual({
-                x: 30,
-                y: 40,
+                x: 10,
+                y: 20,
             });
+            expect(loneFolded.prev).toBeNull();
             expect(loneFolded.nestedNext).toBe(loneInner);
             expect(loneInner.prev).toBe(loneFolded);
             expect(loneFolded.next).toBeNull();
@@ -1372,6 +1375,32 @@ describe('Workspace Store Collision Space', () => {
             expect(canExtractBrick('val-child')).toBe(true);
         });
 
+        it('rejects unfolded cavity extraction when its tail has no next connector', () => {
+            const clamp = makeEmptyStatement('invalid-clamp', 0, true);
+            const cavityTail = makeEmptyStatement('invalid-cavity-tail', 0, false, false);
+            const outerNext = makeEmptyStatement('invalid-outer-next', 0);
+            clamp.nestedNext = cavityTail;
+            cavityTail.prev = clamp;
+            clamp.next = outerNext;
+            outerNext.prev = clamp;
+
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-invalid-cavity-tail',
+                    root: clamp,
+                    position: { x: 0, y: 0 },
+                });
+            });
+
+            expect(canExtractBrick('invalid-clamp')).toBe(false);
+            expect(useWorkspaceStore.getState().extractBrickToNewTower('invalid-clamp')).toBeNull();
+            expect(useWorkspaceStore.getState().towers).toHaveProperty('tower-invalid-cavity-tail');
+            expect(clamp.nestedNext).toBe(cavityTail);
+            expect(clamp.next).toBe(outerNext);
+            expect(cavityTail.next).toBeNull();
+            expect(outerNext.prev).toBe(clamp);
+        });
+
         it('calculates safe bounding box placement clear of wide arguments', () => {
             const root = makeEmptyStatement('safe-root', 0);
             const wideArg = makeEmptyExpression('wide-arg', 0);
@@ -1446,7 +1475,7 @@ describe('Workspace Store Collision Space', () => {
         });
     });
 
-    describe('extractBrickToNewTower - chain statement extraction', () => {
+    describe('extractBrickToNewTower', () => {
         function expectGraphAcyclic(root: TowerNode) {
             const visited = new Set<TowerNode>();
             const stack: TowerNode[] = [root];
@@ -1476,13 +1505,13 @@ describe('Workspace Store Collision Space', () => {
                 if (node.kind === 'statement') {
                     if (node.next) {
                         if ('prev' in node.next) {
-                            expect(node.next.prev?.model.id).toBe(node.model.id);
+                            expect(node.next.prev).toBe(node);
                         }
                         stack.push(node.next);
                     }
                     if (node.nestedNext) {
                         if ('prev' in node.nestedNext) {
-                            expect(node.nestedNext.prev?.model.id).toBe(node.model.id);
+                            expect(node.nestedNext.prev).toBe(node);
                         }
                         stack.push(node.nestedNext);
                     }
@@ -1491,7 +1520,7 @@ describe('Workspace Store Collision Space', () => {
                     for (const arg of node.args) {
                         if (arg) {
                             if ('parent' in arg) {
-                                expect(arg.parent?.model.id).toBe(node.model.id);
+                                expect(arg.parent).toBe(node);
                             }
                             stack.push(arg);
                         }
@@ -1549,6 +1578,344 @@ describe('Workspace Store Collision Space', () => {
             expect(allNodeIds).toEqual(['a', 'b', 'c']);
         });
 
+        it('extracts an unfolded clamp with its cavity contents', () => {
+            const a = makeEmptyStatement('a', 0);
+            const clamp = makeEmptyStatement('clamp', 0, true);
+            const inner1 = makeEmptyStatement('inner-1', 0);
+            const inner2 = makeEmptyStatement('inner-2', 0);
+            const c = makeEmptyStatement('c', 0);
+
+            a.next = clamp;
+            clamp.prev = a;
+            clamp.next = c;
+            c.prev = clamp;
+
+            clamp.nestedNext = inner1;
+            inner1.prev = clamp;
+            inner1.next = inner2;
+            inner2.prev = inner1;
+
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'source-tower-cavity',
+                    root: a,
+                    position: { x: 50, y: 50 },
+                });
+            });
+
+            expect(canExtractBrick('clamp')).toBe(true);
+
+            let newTowerId: string | null = null;
+            act(() => {
+                newTowerId = useWorkspaceStore.getState().extractBrickToNewTower('clamp');
+            });
+
+            expect(newTowerId).toBeTruthy();
+            const towers = useWorkspaceStore.getState().towers;
+            const sourceTower = towers['source-tower-cavity'];
+            const newTower = towers[newTowerId!];
+
+            // Source tower: a → inner-1 → inner-2 → c (cavity contents promoted into the gap).
+            expect(sourceTower.root.model.id).toBe('a');
+            expect((sourceTower.root as TowerStatementNode).next?.model.id).toBe('inner-1');
+            expect(inner1.prev?.model.id).toBe('a');
+            expect(inner2.next?.model.id).toBe('c');
+            expect(c.prev?.model.id).toBe('inner-2');
+
+            // Extracted tower: clamp alone, with its unfolded cavity cleared.
+            expect(newTower.root.model.id).toBe('clamp');
+            const newRoot = newTower.root as TowerStatementNode;
+            expect(newRoot.prev).toBeNull();
+            expect(newRoot.next).toBeNull();
+            expect(newRoot.nestedNext).toBeNull();
+
+            expectGraphAcyclic(sourceTower.root);
+            expectGraphAcyclic(newTower.root);
+            expectPointersConsistent(sourceTower.root);
+            expectPointersConsistent(newTower.root);
+
+            const allNodeIds = [
+                ...listNodes(sourceTower.root).map((n) => n.model.id),
+                ...listNodes(newTower.root).map((n) => n.model.id),
+            ].sort();
+            expect(allNodeIds).toEqual(['a', 'c', 'clamp', 'inner-1', 'inner-2']);
+        });
+
+        it('extracts a cavity head brick', () => {
+            const parent = makeEmptyStatement('parent', 0, true);
+            const h1 = makeEmptyStatement('h1', 0);
+            const h2 = makeEmptyStatement('h2', 0);
+
+            parent.nestedNext = h1;
+            // The live graph still owns h1 through nestedNext even if its reverse pointer has not
+            // been populated yet, as can happen while the first workspace layout is settling.
+            h1.prev = null;
+            h1.next = h2;
+            h2.prev = h1;
+
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-cavity-head',
+                    root: parent,
+                    position: { x: 0, y: 0 },
+                });
+            });
+
+            expect(canExtractBrick('h1')).toBe(true);
+
+            let newTowerId: string | null = null;
+            act(() => {
+                newTowerId = useWorkspaceStore.getState().extractBrickToNewTower('h1');
+            });
+
+            expect(newTowerId).toBeTruthy();
+            const towers = useWorkspaceStore.getState().towers;
+            const sourceTower = towers['tower-cavity-head'];
+            const newTower = towers[newTowerId!];
+
+            expect((sourceTower.root as TowerStatementNode).nestedNext?.model.id).toBe('h2');
+            expect(h2.prev?.model.id).toBe('parent');
+
+            expect(newTower.root.model.id).toBe('h1');
+            expect((newTower.root as TowerStatementNode).prev).toBeNull();
+            expect((newTower.root as TowerStatementNode).next).toBeNull();
+
+            expectGraphAcyclic(sourceTower.root);
+            expectGraphAcyclic(newTower.root);
+            expectPointersConsistent(sourceTower.root);
+            expectPointersConsistent(newTower.root);
+        });
+
+        it('extracts a root brick and preserves the original tower position', () => {
+            const root = makeEmptyStatement('root-stmt', 0);
+            const nextStmt = makeEmptyStatement('next-stmt', 0);
+            root.next = nextStmt;
+            nextStmt.prev = root;
+
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-root',
+                    root,
+                    position: { x: 150, y: 250 },
+                });
+            });
+
+            expect(canExtractBrick('root-stmt')).toBe(true);
+
+            let newTowerId: string | null = null;
+            act(() => {
+                newTowerId = useWorkspaceStore.getState().extractBrickToNewTower('root-stmt');
+            });
+
+            expect(newTowerId).toBeTruthy();
+            const towers = useWorkspaceStore.getState().towers;
+            const sourceTower = towers['tower-root'];
+            const newTower = towers[newTowerId!];
+
+            expect(sourceTower.position).toEqual({ x: 150, y: 250 });
+            expect(sourceTower.root.model.id).toBe('next-stmt');
+            expect((sourceTower.root as TowerStatementNode).prev).toBeNull();
+
+            expect(newTower.root.model.id).toBe('root-stmt');
+            expect((newTower.root as TowerStatementNode).prev).toBeNull();
+            expect((newTower.root as TowerStatementNode).next).toBeNull();
+
+            expectGraphAcyclic(sourceTower.root);
+            expectGraphAcyclic(newTower.root);
+            expectPointersConsistent(sourceTower.root);
+            expectPointersConsistent(newTower.root);
+        });
+
+        it('extracts a root brick by promoting its unfolded cavity before its next chain', () => {
+            const clampRoot = makeEmptyStatement('clamp-root', 0, true);
+            const cavity1 = makeEmptyStatement('cavity-1', 0);
+            const outerNext = makeEmptyStatement('outer-next', 0);
+
+            clampRoot.nestedNext = cavity1;
+            cavity1.prev = clampRoot;
+            clampRoot.next = outerNext;
+            outerNext.prev = clampRoot;
+
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-root-cavity',
+                    root: clampRoot,
+                    position: { x: 100, y: 100 },
+                });
+            });
+
+            expect(canExtractBrick('clamp-root')).toBe(true);
+
+            let newTowerId: string | null = null;
+            act(() => {
+                newTowerId = useWorkspaceStore.getState().extractBrickToNewTower('clamp-root');
+            });
+
+            expect(newTowerId).toBeTruthy();
+            const towers = useWorkspaceStore.getState().towers;
+            const sourceTower = towers['tower-root-cavity'];
+            const newTower = towers[newTowerId!];
+
+            expect(sourceTower.position).toEqual({ x: 100, y: 100 });
+            expect(sourceTower.root.model.id).toBe('cavity-1');
+            expect((sourceTower.root as TowerStatementNode).prev).toBeNull();
+            expect((sourceTower.root as TowerStatementNode).next?.model.id).toBe('outer-next');
+            expect(outerNext.prev?.model.id).toBe('cavity-1');
+
+            expect(newTower.root.model.id).toBe('clamp-root');
+            const newRoot = newTower.root as TowerStatementNode;
+            expect(newRoot.prev).toBeNull();
+            expect(newRoot.next).toBeNull();
+            expect(newRoot.nestedNext).toBeNull();
+
+            expectGraphAcyclic(sourceTower.root);
+            expectGraphAcyclic(newTower.root);
+            expectPointersConsistent(sourceTower.root);
+            expectPointersConsistent(newTower.root);
+        });
+
+        it('extracts a folded brick, taking its hidden cavity contents with it', () => {
+            const head = makeEmptyStatement('head', 0);
+            const clamp = makeEmptyStatement('clamp', 0, true);
+            const inner = makeEmptyStatement('inner', 0);
+            const tail = makeEmptyStatement('tail', 0);
+
+            head.next = clamp;
+            clamp.prev = head;
+            clamp.next = tail;
+            tail.prev = clamp;
+            clamp.nestedNext = inner;
+            inner.prev = clamp;
+
+            clamp.model.isNestingFolded = true;
+
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-folded-test',
+                    root: head,
+                    position: { x: 0, y: 0 },
+                });
+            });
+
+            expect(canExtractBrick('clamp')).toBe(true);
+
+            let newTowerId: string | null = null;
+            act(() => {
+                newTowerId = useWorkspaceStore.getState().extractBrickToNewTower('clamp');
+            });
+
+            expect(newTowerId).toBeTruthy();
+            const towers = useWorkspaceStore.getState().towers;
+            const sourceTower = towers['tower-folded-test'];
+            const newTower = towers[newTowerId!];
+
+            expect((sourceTower.root as TowerStatementNode).next?.model.id).toBe('tail');
+            expect(tail.prev?.model.id).toBe('head');
+
+            expect(newTower.root.model.id).toBe('clamp');
+            const newRoot = newTower.root as TowerStatementNode;
+            expect(newRoot.model.isNestingFolded).toBe(true);
+            expect(newRoot.nestedNext?.model.id).toBe('inner');
+            expect(inner.prev?.model.id).toBe('clamp');
+            expect(newRoot.next).toBeNull();
+            expect(newRoot.prev).toBeNull();
+
+            expectGraphAcyclic(sourceTower.root);
+            expectGraphAcyclic(newTower.root);
+            expectPointersConsistent(sourceTower.root);
+            expectPointersConsistent(newTower.root);
+        });
+
+        it('extracts a folded root brick with an outer next chain', () => {
+            const clamp = makeEmptyStatement('clamp-root-fold', 0, true);
+            const inner = makeEmptyStatement('inner-fold', 0);
+            const outerNext = makeEmptyStatement('outer-next-fold', 0);
+
+            clamp.nestedNext = inner;
+            inner.prev = clamp;
+            clamp.next = outerNext;
+            outerNext.prev = clamp;
+            clamp.model.isNestingFolded = true;
+
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-folded-root',
+                    root: clamp,
+                    position: { x: 200, y: 200 },
+                });
+            });
+
+            expect(canExtractBrick('clamp-root-fold')).toBe(true);
+
+            let newTowerId: string | null = null;
+            act(() => {
+                newTowerId = useWorkspaceStore.getState().extractBrickToNewTower('clamp-root-fold');
+            });
+
+            expect(newTowerId).toBeTruthy();
+            const towers = useWorkspaceStore.getState().towers;
+            const sourceTower = towers['tower-folded-root'];
+            const newTower = towers[newTowerId!];
+
+            expect(sourceTower.position).toEqual({ x: 200, y: 200 });
+            expect(sourceTower.root.model.id).toBe('outer-next-fold');
+            expect((sourceTower.root as TowerStatementNode).prev).toBeNull();
+
+            expect(newTower.root.model.id).toBe('clamp-root-fold');
+            const newRoot = newTower.root as TowerStatementNode;
+            expect(newRoot.model.isNestingFolded).toBe(true);
+            expect(newRoot.nestedNext?.model.id).toBe('inner-fold');
+            expect(newRoot.next).toBeNull();
+            expect(newRoot.prev).toBeNull();
+
+            expectGraphAcyclic(sourceTower.root);
+            expectGraphAcyclic(newTower.root);
+            expectPointersConsistent(sourceTower.root);
+            expectPointersConsistent(newTower.root);
+        });
+
+        it('routes argument bricks to detachBrickToNewTower', () => {
+            const stmt = makeEmptyStatement('stmt-with-arg', 1);
+            const argExpr = makeEmptyExpression('arg-expr', 1);
+            const childVal = makeEmptyValue('child-val');
+
+            stmt.args[0] = argExpr;
+            argExpr.parent = stmt;
+            argExpr.args[0] = childVal;
+            childVal.parent = argExpr;
+
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-arg',
+                    root: stmt,
+                    position: { x: 100, y: 100 },
+                });
+            });
+
+            expect(canExtractBrick('arg-expr')).toBe(true);
+
+            let newTowerId: string | null = null;
+            act(() => {
+                newTowerId = useWorkspaceStore.getState().extractBrickToNewTower('arg-expr');
+            });
+
+            expect(newTowerId).toBeTruthy();
+            const towers = useWorkspaceStore.getState().towers;
+            const sourceTower = towers['tower-arg'];
+            const newTower = towers[newTowerId!];
+
+            expect((sourceTower.root as TowerStatementNode).args[0]).toBeNull();
+
+            expect(newTower.root.model.id).toBe('arg-expr');
+            expect((newTower.root as TowerExpressionNode).parent).toBeNull();
+            expect((newTower.root as TowerExpressionNode).args[0]?.model.id).toBe('child-val');
+
+            expectGraphAcyclic(sourceTower.root);
+            expectGraphAcyclic(newTower.root);
+            expectPointersConsistent(sourceTower.root);
+            expectPointersConsistent(newTower.root);
+        });
+
         it('does not commit history directly, allowing caller to commit for undo and redo', () => {
             useWorkspaceHistoryStore.getState().clear();
             useWorkspaceHistoryStore.getState().init();
@@ -1578,7 +1945,7 @@ describe('Workspace Store Collision Space', () => {
             });
             expect(newTowerId).toBeTruthy();
 
-            // The action itself must not commit history directly (the wedge handles this in Part 5)
+            // The action itself must not commit history directly
             expect(useWorkspaceHistoryStore.getState().history.length).toBe(historyLenBefore);
 
             // Caller commits history
@@ -1598,117 +1965,101 @@ describe('Workspace Store Collision Space', () => {
             act(() => {
                 useWorkspaceHistoryStore.getState().redo();
             });
+            expect(useWorkspaceStore.getState().towers['tower-hist']).toBeDefined();
             expect(useWorkspaceStore.getState().towers[newTowerId!]).toBeDefined();
         });
 
-        it('returns null when attempting to extract an unfolded clamp with a non-empty cavity', () => {
-            const a = makeEmptyStatement('clamp-a', 0);
-            const b = makeEmptyStatement('clamp-b', 0, true);
-            const c = makeEmptyStatement('clamp-c', 0);
-            const x = makeEmptyStatement('clamp-x', 0);
-
-            a.next = b;
-            b.prev = a;
-            b.next = c;
-            c.prev = b;
-            b.nestedNext = x;
-            x.prev = b;
-            b.model.isNestingFolded = false;
-
-            act(() => {
-                useWorkspaceStore.getState().createTower({
-                    id: 'tower-clamp',
-                    root: a,
-                    position: { x: 100, y: 100 },
-                });
+        it('calculates safe bounding box placement clear of wide arguments', () => {
+            const root = makeEmptyStatement('safe-root', 1);
+            const wideArg = makeEmptyExpression('wide-arg', 0);
+            Object.defineProperty(wideArg.model, 'dims', {
+                value: { w: 350, h: 50 },
+                configurable: true,
             });
+            root.args[0] = wideArg;
+            wideArg.parent = root;
 
-            let result: string | null = null;
-            act(() => {
-                result = useWorkspaceStore.getState().extractBrickToNewTower('clamp-b');
-            });
+            const nextStmt = makeEmptyStatement('safe-next', 0);
+            root.next = nextStmt;
+            nextStmt.prev = root;
 
-            expect(result).toBeNull();
-            // Source tower remains intact
-            const sourceTower = useWorkspaceStore.getState().towers['tower-clamp'];
-            expect((sourceTower.root as TowerStatementNode).next?.model.id).toBe('clamp-b');
-            expect(b.next?.model.id).toBe('clamp-c');
-            expect(b.nestedNext?.model.id).toBe('clamp-x');
+            const tower: TowerState = {
+                id: 'safe-tower',
+                root,
+                position: { x: 100, y: 100 },
+            };
+
+            const pos = calculateExtractedTowerPosition(tower, 'safe-next');
+            expect(pos.x).toBeGreaterThanOrEqual(100 + 350 + EXTRACTED_TOWER_MARGIN_X);
         });
 
-        it('extracts a folded clamp with its non-empty cavity preserved into a new tower', () => {
-            const a = makeEmptyStatement('fold-a', 0);
-            const b = makeEmptyStatement('fold-b', 0, true);
-            const c = makeEmptyStatement('fold-c', 0);
-            const x = makeEmptyStatement('fold-x', 0);
+        it('extracts a nested brick containing both argument children and cavity children', () => {
+            const top = makeEmptyStatement('top', 0);
+            const nestedClamp = makeEmptyStatement('nested-clamp', 1, true);
+            const clampArg = makeEmptyExpression('clamp-arg', 0);
+            const innerChild = makeEmptyStatement('inner-child', 0);
+            const bottom = makeEmptyStatement('bottom', 0);
 
-            a.next = b;
-            b.prev = a;
-            b.next = c;
-            c.prev = b;
-            b.nestedNext = x;
-            x.prev = b;
-            b.model.isNestingFolded = true;
+            top.next = nestedClamp;
+            nestedClamp.prev = top;
+            nestedClamp.next = bottom;
+            bottom.prev = nestedClamp;
+
+            nestedClamp.args[0] = clampArg;
+            clampArg.parent = nestedClamp;
+
+            nestedClamp.nestedNext = innerChild;
+            innerChild.prev = nestedClamp;
 
             act(() => {
                 useWorkspaceStore.getState().createTower({
-                    id: 'tower-folded-extract',
-                    root: a,
-                    position: { x: 100, y: 100 },
+                    id: 'tower-nested-combo',
+                    root: top,
+                    position: { x: 0, y: 0 },
                 });
             });
+
+            expect(canExtractBrick('nested-clamp')).toBe(true);
 
             let newTowerId: string | null = null;
             act(() => {
-                newTowerId = useWorkspaceStore.getState().extractBrickToNewTower('fold-b');
+                newTowerId = useWorkspaceStore.getState().extractBrickToNewTower('nested-clamp');
             });
 
             expect(newTowerId).toBeTruthy();
             const towers = useWorkspaceStore.getState().towers;
-            const sourceTower = towers['tower-folded-extract'];
+            const sourceTower = towers['tower-nested-combo'];
             const newTower = towers[newTowerId!];
 
-            // Source tower chain spliced: a -> c
-            expect(sourceTower.root.model.id).toBe('fold-a');
-            expect((sourceTower.root as TowerStatementNode).next?.model.id).toBe('fold-c');
-            expect(c.prev?.model.id).toBe('fold-a');
+            expect((sourceTower.root as TowerStatementNode).next?.model.id).toBe('inner-child');
+            expect(innerChild.prev?.model.id).toBe('top');
+            expect(innerChild.next?.model.id).toBe('bottom');
 
-            // Extracted tower contains folded b and its cavity x
-            expect(newTower.root.model.id).toBe('fold-b');
-            expect((newTower.root as TowerStatementNode).prev).toBeNull();
-            expect((newTower.root as TowerStatementNode).next).toBeNull();
-            expect((newTower.root as TowerStatementNode).nestedNext?.model.id).toBe('fold-x');
+            expect(newTower.root.model.id).toBe('nested-clamp');
+            const extractedRoot = newTower.root as TowerStatementNode;
+            expect(extractedRoot.args[0]?.model.id).toBe('clamp-arg');
+            expect(clampArg.parent?.model.id).toBe('nested-clamp');
+            expect(extractedRoot.nestedNext).toBeNull();
+
+            expect(extractedRoot.prev).toBeNull();
+            expect(extractedRoot.next).toBeNull();
 
             expectGraphAcyclic(sourceTower.root);
             expectGraphAcyclic(newTower.root);
             expectPointersConsistent(sourceTower.root);
             expectPointersConsistent(newTower.root);
-        });
 
-        it('resets positioned flags for extracted bricks in layout store', () => {
-            const a = makeEmptyStatement('pos-a', 0);
-            const b = makeEmptyStatement('pos-b', 0);
-            a.next = b;
-            b.prev = a;
-
-            act(() => {
-                useWorkspaceStore.getState().createTower({
-                    id: 'tower-pos-test',
-                    root: a,
-                    position: { x: 0, y: 0 },
-                });
-                useBrickLayoutStore.getState().setPositioned({
-                    'pos-a': true,
-                    'pos-b': true,
-                });
-            });
-
-            act(() => {
-                useWorkspaceStore.getState().extractBrickToNewTower('pos-b');
-            });
-
-            expect(useBrickLayoutStore.getState().positioned['pos-b']).toBe(false);
-            expect(useBrickLayoutStore.getState().positioned['pos-a']).toBe(true);
+            const allNodeIds = [
+                ...listNodes(sourceTower.root).map((n) => n.model.id),
+                ...listNodes(newTower.root).map((n) => n.model.id),
+            ].sort();
+            expect(allNodeIds).toEqual([
+                'bottom',
+                'clamp-arg',
+                'inner-child',
+                'nested-clamp',
+                'top',
+            ]);
         });
 
         it('supports repeated extraction on the same tower without node loss or cycles', () => {
@@ -1748,10 +2099,177 @@ describe('Workspace Store Collision Space', () => {
             const towers = useWorkspaceStore.getState().towers;
             expect(Object.keys(towers).length).toBe(4);
 
+            const sourceTower = towers['tower-multi-extract'];
+            expect(sourceTower.root.model.id).toBe('node-a');
+            expect((sourceTower.root as TowerStatementNode).next?.model.id).toBe('node-e');
+            expect(e.prev?.model.id).toBe('node-a');
+
             for (const tower of Object.values(towers)) {
                 expectGraphAcyclic(tower.root);
                 expectPointersConsistent(tower.root);
             }
+        });
+
+        it('resets positioned flags for extracted bricks in layout store', () => {
+            const a = makeEmptyStatement('pos-a', 0);
+            const b = makeEmptyStatement('pos-b', 0);
+            a.next = b;
+            b.prev = a;
+
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-pos-test',
+                    root: a,
+                    position: { x: 0, y: 0 },
+                });
+                useBrickLayoutStore.getState().setPositioned({
+                    'pos-a': true,
+                    'pos-b': true,
+                });
+            });
+
+            act(() => {
+                useWorkspaceStore.getState().extractBrickToNewTower('pos-b');
+            });
+
+            expect(useBrickLayoutStore.getState().positioned['pos-b']).toBe(false);
+            expect(useBrickLayoutStore.getState().positioned['pos-a']).toBe(true);
+        });
+
+        it('handles interleaved extraction and drag operations correctly', () => {
+            const a = makeEmptyStatement('inter-a', 0);
+            const b = makeEmptyStatement('inter-b', 0);
+            const c = makeEmptyStatement('inter-c', 0);
+            const d = makeEmptyStatement('inter-d', 0);
+            const e = makeEmptyStatement('inter-e', 0);
+
+            a.next = b;
+            b.prev = a;
+            b.next = c;
+            c.prev = b;
+            c.next = d;
+            d.prev = c;
+            d.next = e;
+            e.prev = d;
+
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-interleaved',
+                    root: a,
+                    position: { x: 0, y: 0 },
+                });
+            });
+
+            // 1. Extract 'inter-c'
+            let extractedId: string | null = null;
+            act(() => {
+                extractedId = useWorkspaceStore.getState().extractBrickToNewTower('inter-c');
+            });
+            expect(extractedId).toBeTruthy();
+
+            // 2. Drag 'inter-d' out to a new tower
+            let draggedId: string | null = null;
+            act(() => {
+                draggedId = useWorkspaceStore
+                    .getState()
+                    .detachBrickToNewTower('tower-interleaved', 'inter-d', { x: 500, y: 500 });
+            });
+            expect(draggedId).toBeTruthy();
+
+            const towers = useWorkspaceStore.getState().towers;
+            expect(Object.keys(towers).length).toBe(3);
+
+            const source = towers['tower-interleaved'];
+            const extracted = towers[extractedId!];
+            const dragged = towers[draggedId!];
+
+            // Source: a -> b
+            expect(source.root.model.id).toBe('inter-a');
+            expect((source.root as TowerStatementNode).next?.model.id).toBe('inter-b');
+            expect(
+                ((source.root as TowerStatementNode).next as TowerStatementNode).next,
+            ).toBeNull();
+
+            // Extracted: c alone
+            expect(extracted.root.model.id).toBe('inter-c');
+            expect((extracted.root as TowerStatementNode).prev).toBeNull();
+            expect((extracted.root as TowerStatementNode).next).toBeNull();
+
+            // Dragged: d -> e
+            expect(dragged.root.model.id).toBe('inter-d');
+            expect((dragged.root as TowerStatementNode).prev).toBeNull();
+            expect((dragged.root as TowerStatementNode).next?.model.id).toBe('inter-e');
+
+            for (const t of [source, extracted, dragged]) {
+                expectGraphAcyclic(t.root);
+                expectPointersConsistent(t.root);
+            }
+
+            const allNodeIds = [
+                ...listNodes(source.root).map((n) => n.model.id),
+                ...listNodes(extracted.root).map((n) => n.model.id),
+                ...listNodes(dragged.root).map((n) => n.model.id),
+            ].sort();
+            expect(allNodeIds).toEqual(['inter-a', 'inter-b', 'inter-c', 'inter-d', 'inter-e']);
+        });
+
+        it('can manually reattach an extracted statement through the refreshed collision space', () => {
+            const host = makeEmptyStatement('reattach-host', 0);
+            const extracted = makeEmptyStatement('reattach-child', 0);
+            host.next = extracted;
+            extracted.prev = host;
+
+            act(() => {
+                useWorkspaceStore.getState().createTower({
+                    id: 'tower-reattach',
+                    root: host,
+                    position: { x: 400, y: 400 },
+                });
+            });
+
+            const extractedId = useWorkspaceStore
+                .getState()
+                .extractBrickToNewTower('reattach-child');
+            expect(extractedId).toBeTruthy();
+
+            const state = useWorkspaceStore.getState();
+            const source = state.towers['tower-reattach'];
+            const detached = state.towers[extractedId!];
+            const hostNext = host.model.getConnectorCoords().next!;
+            const childPrev = extracted.model.getConnectorCoords().prev!;
+            const dropPosition = {
+                x: host.model.position.x + hostNext.x - childPrev.x,
+                y: host.model.position.y + hostNext.y - childPrev.y,
+            };
+
+            useWorkspaceStore.getState().updateTowerPosition(detached.id, dropPosition);
+            traverseTopDown(detached.root, dropPosition);
+            useWorkspaceStore.getState().syncStatementConnectors(detached.id, detached.root);
+            useWorkspaceStore.getState().syncArgumentConnectors(detached.id, detached.root);
+
+            const connection = resolveStatementConnection({
+                draggedTowerId: detached.id,
+                space: state.statementCollisionSpace,
+                connectors: useWorkspaceStore.getState().statementConnectors,
+                towers: useWorkspaceStore.getState().towers,
+            });
+
+            expect(connection).toMatchObject({
+                parent: host,
+                child: extracted,
+                socket: 'next',
+                hostTowerId: source.id,
+                absorbedTowerId: detached.id,
+            });
+
+            joinStatement(connection!);
+            useWorkspaceStore.getState().absorbTower(detached.id, source.id);
+
+            expect(useWorkspaceStore.getState().towers[detached.id]).toBeUndefined();
+            expect(
+                (useWorkspaceStore.getState().towers[source.id].root as TowerStatementNode).next,
+            ).toBe(extracted);
+            expect(extracted.prev).toBe(useWorkspaceStore.getState().towers[source.id].root);
         });
     });
 

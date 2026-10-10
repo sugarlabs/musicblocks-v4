@@ -3,10 +3,11 @@
 // panel's size, the size is stubbed.
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { StatementBrickModel } from '@/models/brick';
 import { useBrickHelpStore } from '@/stores/brickHelp';
+import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
 import type { BrickHelp } from '@/utils/brick-help';
 
@@ -26,6 +27,7 @@ afterEach(() => {
 /** Help for a "repeat" brick, the way the wedge captures it. */
 function helpFor(title = 'repeat', anchor: BrickHelp['anchor'] = null): BrickHelp {
   return {
+    brickId: 'repeat-1',
     title,
     anchor,
     text: 'Repeats the bricks inside it the given number of times.',
@@ -419,6 +421,117 @@ describe('HelpPanel', () => {
 
       expect(dialog.style.left).toBe(`${800 - PANEL.w - 8}px`);
       expect(dialog.style.top).toBe(top);
+    });
+  });
+
+  describe('following its brick', () => {
+    // The brick's element on the page, moved by hand where a pan would move it; jsdom lays nothing
+    // out. Its head is the row at its top, 24px tall.
+    const brickBox = { left: 100, top: 300, right: 180 };
+    const headNow = () => ({
+      x: brickBox.left,
+      y: brickBox.top,
+      w: brickBox.right - brickBox.left,
+      h: 24,
+    });
+    let frames: FrameRequestCallback[] = [];
+
+    /** Runs the animation frame the panel waits on before measuring its brick again. */
+    function nextFrame() {
+      act(() => {
+        const due = frames;
+        frames = [];
+        due.forEach((frame) => frame(0));
+      });
+    }
+
+    /** Pans the canvas, and moves the brick's element by as much, as the viewport transform does. */
+    function pan(delta: { x: number; y: number }) {
+      act(() => useWorkspaceViewportStore.getState().panBy(delta));
+      brickBox.left += delta.x;
+      brickBox.right += delta.x;
+      brickBox.top += delta.y;
+      nextFrame();
+    }
+
+    beforeEach(() => {
+      Object.assign(brickBox, { left: 100, top: 300, right: 180 });
+      frames = [];
+      vi.stubGlobal('requestAnimationFrame', (frame: FrameRequestCallback) => frames.push(frame));
+      vi.stubGlobal('cancelAnimationFrame', () => {
+        frames = [];
+      });
+
+      const model = new StatementBrickModel({
+        id: 'repeat-1',
+        colorsDefault: { background: '#e07a5f', foreground: '#ffffff', border: '#00000033' },
+        tooltipText: 'Repeats the bricks inside it the given number of times.',
+        widget: { type: 'label', text: 'repeat' },
+        params: [],
+      });
+      vi.spyOn(model, 'bounds', 'get').mockReturnValue({ widget: { x: 4, y: 0, w: 60, h: 24 } });
+      useWorkspaceStore.getState().createTower({
+        id: 'tower-1',
+        root: { kind: 'statement', model, prev: null, next: null, args: [], nestedNext: undefined },
+        position: { x: 0, y: 0 },
+      });
+
+      const brick = document.createElement('div');
+      brick.dataset.towerBrick = '';
+      brick.dataset.id = model.id;
+      vi.spyOn(brick, 'getBoundingClientRect').mockImplementation(
+        () => ({ ...brickBox }) as DOMRect,
+      );
+      document.body.appendChild(brick);
+    });
+
+    afterEach(() => {
+      document.querySelectorAll('[data-tower-brick]').forEach((brick) => brick.remove());
+      useWorkspaceStore.setState({ towers: {} });
+      useWorkspaceViewportStore.setState({ offset: { x: 0, y: 0 } });
+      vi.unstubAllGlobals();
+    });
+
+    it('moves with its brick when the canvas pans, still pointing at it', () => {
+      stubPanelSize();
+      const dialog = open(helpFor('repeat', headNow()));
+      expect(dialog.style.left).toBe('194px');
+
+      pan({ x: 200, y: 100 });
+
+      expect(dialog.style.left).toBe('394px');
+      expect(dialog.style.top).toBe(`${300 + 100 + 12 - 20}px`);
+      expect(screen.getByTestId('help-panel-arrow')).toBeTruthy();
+    });
+
+    it('stays where it was put once dragged, whatever its brick does', () => {
+      stubPanelSize();
+      const dialog = open(helpFor('repeat', headNow()));
+      const titleBar = screen.getByTestId('help-panel-title-bar');
+      act(() => {
+        fireEvent.pointerDown(titleBar, { clientX: 400, clientY: 300, pointerId: 1 });
+        fireEvent.pointerMove(titleBar, { clientX: 450, clientY: 330, pointerId: 1 });
+        fireEvent.pointerUp(titleBar, { clientX: 450, clientY: 330, pointerId: 1 });
+      });
+      const dragged = { left: dialog.style.left, top: dialog.style.top };
+
+      pan({ x: 200, y: 100 });
+
+      expect({ left: dialog.style.left, top: dialog.style.top }).toEqual(dragged);
+      expect(screen.queryByTestId('help-panel-arrow')).toBeNull();
+    });
+
+    it('keeps its place without an arrow once its brick is deleted', () => {
+      stubPanelSize();
+      const dialog = open(helpFor('repeat', headNow()));
+      const before = { left: dialog.style.left, top: dialog.style.top };
+
+      act(() => useWorkspaceStore.getState().removeTower('tower-1'));
+      nextFrame();
+
+      expect(screen.getByRole('dialog')).toBeTruthy();
+      expect({ left: dialog.style.left, top: dialog.style.top }).toEqual(before);
+      expect(screen.queryByTestId('help-panel-arrow')).toBeNull();
     });
   });
 });

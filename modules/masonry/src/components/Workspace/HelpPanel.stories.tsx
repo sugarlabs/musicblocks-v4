@@ -31,6 +31,7 @@ function Opened({ help }: { help: BrickHelp }) {
 }
 
 const REPEAT: BrickHelp = {
+  brickId: 'repeat-1',
   title: 'repeat',
   text: 'Repeats the bricks inside it the given number of times, then carries on with whatever comes after it.',
   preview: new StatementBrickModel({
@@ -45,6 +46,7 @@ const REPEAT: BrickHelp = {
 };
 
 const ADD: BrickHelp = {
+  brickId: 'add-1',
   title: 'Add',
   text: 'Adds its two numbers together.',
   preview: new ExpressionBrickModel({

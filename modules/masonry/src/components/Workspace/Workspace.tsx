@@ -232,7 +232,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
       {/* Main Workspace Area: Contains the draggable block palette on the left and the interactive canvas on the right */}
       <div ref={rootRef} className="relative flex min-h-0 w-full flex-1">
         {!areBricksHidden && (
-          <div className="h-full max-w-80 shrink-0">
+          <div className="h-full max-w-72 shrink-0">
             <Palette config={palette} />
           </div>
         )}

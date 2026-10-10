@@ -877,7 +877,7 @@ describe('Workspace', () => {
     it('does not pan the canvas when typing inside the palette search box', () => {
       const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
       const searchInput = container.querySelector(
-        'input[placeholder="Search bricks"]',
+        'input[placeholder="Search"]',
       ) as HTMLElement;
 
       fireEvent.keyDown(searchInput, { key: 'ArrowDown' });

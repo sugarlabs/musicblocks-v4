@@ -282,4 +282,20 @@ describe('class Temperament', () => {
             expect(tuple).toStrictEqual([2, 0]);
         });
     });
+
+    describe('Number of Octaves setter', () => {
+        test('Expect setter to store assigned value instead of clamping to 1', () => {
+            const t = new Temperament();
+            t.numberOfOctaves = 8;
+            expect(t.numberOfOctaves).toBe(8);
+        });
+
+        test('Expect setter to clamp values below 1 to 1', () => {
+            const t = new Temperament();
+            t.numberOfOctaves = 0;
+            expect(t.numberOfOctaves).toBe(1);
+            t.numberOfOctaves = -3;
+            expect(t.numberOfOctaves).toBe(3);
+        });
+    });
 });

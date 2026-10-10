@@ -102,6 +102,44 @@ export const StatementSimple: Story = {
   ),
 };
 
+export const StatementHighlight: Story = {
+  render: () => (
+    <BrickView
+      kind="statement"
+      model={
+        new StatementBrickModel({
+          colorsDefault: { background: '#3498db', foreground: '#ffffff', border: '#1d4ed8' },
+          colorsHighlight: { background: '#f97316', foreground: '#ffffff', border: '#c2410c' },
+          tooltipText: 'Hover to highlight',
+          widget: { type: 'label', text: 'Highlight brick' },
+          hasConnectionPrev: true,
+          hasConnectionNext: true,
+        })
+      }
+    />
+  ),
+};
+StatementHighlight.storyName = 'Statement - Highlight';
+
+export const StatementShadow: Story = {
+  render: () => (
+    <BrickView
+      kind="statement"
+      model={
+        new StatementBrickModel({
+          colorsDefault: { background: '#2ecc71', foreground: '#ffffff', border: '#15803d' },
+          shadow: { offset: { x: 4, y: 5 }, blur: 5, color: '#00000080' },
+          tooltipText: 'Brick with a drop shadow',
+          widget: { type: 'label', text: 'Shadow brick' },
+          hasConnectionPrev: true,
+          hasConnectionNext: true,
+        })
+      }
+    />
+  ),
+};
+StatementShadow.storyName = 'Statement - Shadow';
+
 export const StatementNested: Story = {
   render: () => (
     <BrickView

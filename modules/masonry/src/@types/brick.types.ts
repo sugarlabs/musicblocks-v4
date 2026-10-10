@@ -162,21 +162,31 @@ export interface ParamArgPair {
     argDims: Size | null;
 }
 
+export interface BrickColors {
+    background: string;
+    foreground: string;
+    border: string;
+}
+
+export interface BrickShadow {
+    offset: { x: number; y: number };
+    blur: number;
+    color: string;
+}
+
 /** Props shared by every brick kind. */
 interface BrickViewPropsBase {
     /** Colors used in the default (non-highlighted, non-selected) render state. */
-    colorsDefault: {
-        background: string;
-        foreground: string;
-        border: string;
-    };
+    colorsDefault: BrickColors;
+    /** Colors to use when the brick is in highlighted state. */
+    colorsHighlight?: BrickColors;
     /** Tooltip text displayed on hover. */
     tooltipText: string;
     /** Controls brick size and font scaling; defaults to 2. */
     scaleLevel?: 1 | 2 | 3;
 
-    // TODO: colorsHighlight — colors to use when the brick is in highlighted state (mirrors colorsDefault shape)
-    // TODO: shadow — brick drop-shadow spec (e.g. offset, blur, color)
+    /** Optional drop-shadow specification. */
+    shadow?: BrickShadow;
 }
 
 /** A terminal value brick — literal, variable, constant, or input widget. */
@@ -214,7 +224,6 @@ export interface StatementBrickViewProps extends BrickViewPropsBase {
     /** Whether this brick connects to the following brick in a sequence. */
     hasConnectionNext?: boolean;
 
-    // TODO: hasSwitchButton — renders a button to swap to an alternate brick type
 }
 
 /** Discriminated union over all brick kinds; narrow via `kind`. */

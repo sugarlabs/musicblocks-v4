@@ -29,6 +29,7 @@ const PARAM_FONT_SCALE = 0.8;
  */
 export function BrickViewFixed(props: BrickViewPropsWithModel) {
   const { model } = props;
+  const [isHighlighted, setIsHighlighted] = useState(false);
 
   // ── Model reactivity ─────────────────────────────────────────────────────────
   const [, setTick] = useState(0);
@@ -44,7 +45,9 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
     SCALE_LEVEL_CONFIG[scaleLevel];
 
   const colorsDefault = model.colorsDefault;
+  const colors = isHighlighted && model.colorsHighlight ? model.colorsHighlight : colorsDefault;
   const widget = model.widget;
+  const shadowFilterId = `brick-shadow-${model.id}`;
 
   // Param labels share the main label's color but render at a smaller size.
   const paramFontSize = Math.round(fontSize * PARAM_FONT_SCALE);
@@ -304,13 +307,28 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
       width={svgToPx(dims.w)}
       height={svgToPx(dims.h)}
       className="overflow-visible"
+      onMouseEnter={() => setIsHighlighted(true)}
+      onMouseLeave={() => setIsHighlighted(false)}
     >
+      {model.shadow && (
+        <defs>
+          <filter id={shadowFilterId} x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow
+              dx={model.shadow.offset.x}
+              dy={model.shadow.offset.y}
+              stdDeviation={model.shadow.blur}
+              floodColor={model.shadow.color}
+            />
+          </filter>
+        </defs>
+      )}
       <path
         d={path}
         transform={`scale(${brickScale})`}
-        fill={colorsDefault.background}
-        stroke={colorsDefault.border}
+        fill={colors.background}
+        stroke={colors.border}
         strokeWidth={pxToSvg(STROKE_WIDTH)}
+        filter={model.shadow ? `url(#${shadowFilterId})` : undefined}
       />
 
       {/* Main Widget */}
@@ -336,7 +354,7 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
                     style={{
                       fontSize,
                       lineHeight: `${lineHeight}px`,
-                      color: colorsDefault.foreground,
+                      color: colors.foreground,
                     }}
                   >
                     {labelText}
@@ -368,8 +386,8 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
                     style={{
                       fontSize,
                       lineHeight: `${lineHeight}px`,
-                      color: colorsDefault.foreground,
-                      borderColor: colorsDefault.border,
+                      color: colors.foreground,
+                      borderColor: colors.border,
                     }}
                   >
                     <div className="grid">
@@ -392,9 +410,9 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
                     alignItemWithTrigger={false}
                     className="min-w-0"
                     style={{
-                      backgroundColor: colorsDefault.background,
-                      borderColor: colorsDefault.border,
-                      color: colorsDefault.foreground,
+                      backgroundColor: colors.background,
+                      borderColor: colors.border,
+                      color: colors.foreground,
                     }}
                   >
                     {variantOptions.map((opt: string) => (
@@ -447,7 +465,7 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
                 style={{
                   fontSize: paramFontSize,
                   lineHeight: `${paramLineHeight}px`,
-                  color: colorsDefault.foreground,
+                  color: colors.foreground,
                 }}
               >
                 {paramText}
@@ -500,7 +518,7 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
             style={{
               width: foldToggleBounds.w,
               height: foldToggleBounds.h,
-              color: colorsDefault.foreground,
+              color: colors.foreground,
             }}
           >
             {/* Sized off the box the generator reserved, itself derived from SCALE_LEVEL_CONFIG. */}
@@ -512,6 +530,7 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
           </button>
         </foreignObject>
       )}
+
     </svg>
   );
 }

@@ -436,6 +436,8 @@ function toViewProps(node: ExportedNode): BrickViewProps {
     const config = node.modelConfig;
     const base = {
         colorsDefault: { ...config.colorsDefault },
+        ...(config.colorsHighlight ? { colorsHighlight: { ...config.colorsHighlight } } : {}),
+        ...(config.shadow ? { shadow: { ...config.shadow, offset: { ...config.shadow.offset } } } : {}),
         tooltipText: config.tooltipText,
         scaleLevel: config.scaleLevel,
     };

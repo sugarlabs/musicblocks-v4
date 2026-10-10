@@ -10,7 +10,7 @@
 //
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { WidgetDisplay, WidgetInput } from './brick.types';
+import type { BrickColors, BrickShadow, WidgetDisplay, WidgetInput } from './brick.types';
 import type { Point } from './common.types';
 
 /**
@@ -45,7 +45,9 @@ export interface ExportedTower {
  */
 interface ExportedBrickConfigBase {
     /** Colors used in the default render state. */
-    colorsDefault: { background: string; foreground: string; border: string };
+    colorsDefault: BrickColors;
+    colorsHighlight?: BrickColors;
+    shadow?: BrickShadow;
     /** Tooltip text displayed on hover. */
     tooltipText: string;
     /** Controls brick size and font scaling. */

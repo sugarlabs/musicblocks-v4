@@ -4,6 +4,8 @@ import type {
     BrickOutlineOutput,
     WidgetDisplay,
     WidgetInput,
+    BrickColors,
+    BrickShadow,
 } from '@/@types/brick.types';
 import type { Bounds, Point, Size } from '@/@types/common.types';
 
@@ -23,6 +25,8 @@ abstract class BrickModelBase {
         readonly foreground: string;
         readonly border: string;
     };
+    readonly colorsHighlight?: BrickColors;
+    readonly shadow?: BrickShadow;
     readonly tooltipText: string;
 
     /** Rendered size of the primary widget; set by the view after measurement. */
@@ -198,12 +202,16 @@ abstract class BrickModelBase {
 
     constructor(config: {
         id?: string;
-        colorsDefault: { background: string; foreground: string; border: string };
+        colorsDefault: BrickColors;
+        colorsHighlight?: BrickColors;
+        shadow?: BrickShadow;
         tooltipText: string;
         scaleLevel?: 1 | 2 | 3;
     }) {
         this.id = config.id ?? crypto.randomUUID();
         this.colorsDefault = config.colorsDefault;
+        this.colorsHighlight = config.colorsHighlight;
+        this.shadow = config.shadow;
         this.tooltipText = config.tooltipText;
         this._scaleLevel = config.scaleLevel ?? 2;
         this._outlineGenerator = BrickModelBase._buildOutlineGenerator(this._scaleLevel);
@@ -231,7 +239,9 @@ export class ValueBrickModel extends BrickModelBase {
 
     constructor(config: {
         id?: string;
-        colorsDefault: { background: string; foreground: string; border: string };
+        colorsDefault: BrickColors;
+        colorsHighlight?: BrickColors;
+        shadow?: BrickShadow;
         tooltipText: string;
         scaleLevel?: 1 | 2 | 3;
         widget: WidgetDisplay | WidgetInput;
@@ -286,7 +296,9 @@ export class ExpressionBrickModel extends BrickModelBase {
 
     constructor(config: {
         id?: string;
-        colorsDefault: { background: string; foreground: string; border: string };
+        colorsDefault: BrickColors;
+        colorsHighlight?: BrickColors;
+        shadow?: BrickShadow;
         tooltipText: string;
         scaleLevel?: 1 | 2 | 3;
         widget: WidgetDisplay;
@@ -400,7 +412,9 @@ export class StatementBrickModel extends BrickModelBase {
 
     constructor(config: {
         id?: string;
-        colorsDefault: { background: string; foreground: string; border: string };
+        colorsDefault: BrickColors;
+        colorsHighlight?: BrickColors;
+        shadow?: BrickShadow;
         tooltipText: string;
         scaleLevel?: 1 | 2 | 3;
         widget: WidgetDisplay;

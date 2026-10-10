@@ -34,6 +34,7 @@ const DEFAULT_SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
  */
 export function BrickViewInput(props: BrickViewInputPropsWithModel) {
   const { model } = props;
+  const [isHighlighted, setIsHighlighted] = useState(false);
 
   // ── Model reactivity ─────────────────────────────────────────────────────────
   const [, setTick] = useState(0);
@@ -49,7 +50,9 @@ export function BrickViewInput(props: BrickViewInputPropsWithModel) {
     SCALE_LEVEL_CONFIG[scaleLevel];
 
   const colorsDefault = model.colorsDefault;
+  const colors = isHighlighted && model.colorsHighlight ? model.colorsHighlight : colorsDefault;
   const widget: WidgetInput = model.widget;
+  const shadowFilterId = `brick-shadow-${model.id}`;
 
   const pxToSvg = useCallback((px: number) => px / brickScale, [brickScale]);
   const svgToPx = useCallback((u: number) => u * brickScale, [brickScale]);
@@ -134,13 +137,28 @@ export function BrickViewInput(props: BrickViewInputPropsWithModel) {
       width={svgToPx(dims.w)}
       height={svgToPx(dims.h)}
       className="overflow-visible"
+      onMouseEnter={() => setIsHighlighted(true)}
+      onMouseLeave={() => setIsHighlighted(false)}
     >
+      {model.shadow && (
+        <defs>
+          <filter id={shadowFilterId} x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow
+              dx={model.shadow.offset.x}
+              dy={model.shadow.offset.y}
+              stdDeviation={model.shadow.blur}
+              floodColor={model.shadow.color}
+            />
+          </filter>
+        </defs>
+      )}
       <path
         d={path}
         transform={`scale(${brickScale})`}
-        fill={colorsDefault.background}
-        stroke={colorsDefault.border}
+        fill={colors.background}
+        stroke={colors.border}
         strokeWidth={pxToSvg(STROKE_WIDTH)}
+        filter={model.shadow ? `url(#${shadowFilterId})` : undefined}
       />
 
       {/* foreignObject acts as a viewport embedding standard HTML inside the SVG */}
@@ -165,9 +183,9 @@ export function BrickViewInput(props: BrickViewInputPropsWithModel) {
               widget={widget}
               fontSize={fontSize}
               lineHeight={lineHeight}
-              color={colorsDefault.foreground}
-              borderColor={colorsDefault.border}
-              backgroundColor={colorsDefault.background}
+              color={colors.foreground}
+              borderColor={colors.border}
+              backgroundColor={colors.background}
             />
           </div>
         </div>

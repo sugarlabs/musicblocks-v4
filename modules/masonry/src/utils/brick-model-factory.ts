@@ -27,6 +27,8 @@ export function createBrickModel(props: BrickViewProps, id?: string): BrickModel
             return new ValueBrickModel({
                 id,
                 colorsDefault: props.colorsDefault,
+                colorsHighlight: props.colorsHighlight,
+                shadow: props.shadow,
                 tooltipText: props.tooltipText,
                 scaleLevel: props.scaleLevel,
                 widget: props.widget,
@@ -35,6 +37,8 @@ export function createBrickModel(props: BrickViewProps, id?: string): BrickModel
             return new ExpressionBrickModel({
                 id,
                 colorsDefault: props.colorsDefault,
+                colorsHighlight: props.colorsHighlight,
+                shadow: props.shadow,
                 tooltipText: props.tooltipText,
                 scaleLevel: props.scaleLevel,
                 widget: props.widget,
@@ -48,6 +52,8 @@ export function createBrickModel(props: BrickViewProps, id?: string): BrickModel
             return new StatementBrickModel({
                 id,
                 colorsDefault: props.colorsDefault,
+                colorsHighlight: props.colorsHighlight,
+                shadow: props.shadow,
                 tooltipText: props.tooltipText,
                 scaleLevel: props.scaleLevel,
                 widget: props.widget,
@@ -85,6 +91,8 @@ export function modelConfigOf(
 ): ExportedValueConfig | ExportedExpressionConfig | ExportedStatementConfig {
     const base = {
         colorsDefault: { ...model.colorsDefault },
+        ...(model.colorsHighlight ? { colorsHighlight: { ...model.colorsHighlight } } : {}),
+        ...(model.shadow ? { shadow: { ...model.shadow, offset: { ...model.shadow.offset } } } : {}),
         tooltipText: model.tooltipText,
         scaleLevel: model.scaleLevel,
     };

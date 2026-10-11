@@ -151,5 +151,7 @@ describe('useCanvasGrid', () => {
       useWorkspaceViewportStore.getState().setOffset({ x: 100, y: 100 });
       useWorkspaceScaleStore.getState().zoomIn();
     });
+    expect(canvas.style.backgroundImage).toBe('');
+expect(canvas.style.backgroundPosition).toBe('');
   });
 });

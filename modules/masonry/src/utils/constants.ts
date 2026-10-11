@@ -111,3 +111,18 @@ export const AUTO_PAN_MAX_STEP = 12;
 export const HOME_COLUMN_WIDTH = 160;
 /** The space (in pixels) Home leaves between the towers it lays out. */
 export const HOME_GAP = 24;
+
+// ── Workspace ──
+
+/**
+ * How far `cleanWorkspace` keeps the towers from the canvas edges, in pixels: the first tower of
+ * every column starts here, and a column may run down to this far from the bottom.
+ *
+ * The auto pan band, so no tidied tower sits where a drag starts panning: a brick dropped onto
+ * one would otherwise scroll the canvas away under the pointer. Auto pan works on all four
+ * edges, so the bottom keeps the same distance. Home starts its layout there too.
+ */
+export const CLEAN_WORKSPACE_PADDING = AUTO_PAN_BAND;
+
+/** The room `cleanWorkspace` leaves between one tower and the next, and between columns. */
+export const CLEAN_WORKSPACE_GAP = 24;

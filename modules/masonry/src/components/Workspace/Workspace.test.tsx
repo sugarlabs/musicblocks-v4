@@ -938,4 +938,69 @@ describe('Workspace', () => {
       expect(useWorkspaceStore.getState().selectedBrickId).toBe('pan-selection-outer');
     });
   });
+
+  describe('palette collapse', () => {
+    /** The palette toggle, whichever way it points; its labels are tested in PaletteControl. */
+    function paletteToggle(container: HTMLElement) {
+      return container.querySelector<HTMLButtonElement>(
+        '[aria-label="Collapse palette"], [aria-label="Expand palette"]',
+      )!;
+    }
+
+    /** The palette's wrapper, found the way assistive tech does: through the toggle. */
+    function paletteOf(container: HTMLElement) {
+      return document.getElementById(paletteToggle(container).getAttribute('aria-controls')!)!;
+    }
+
+    it('folds the palette to a rail of classification icons and opens it again', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const palette = paletteOf(container);
+
+      fireEvent.click(paletteToggle(container));
+
+      expect(palette.className).toContain('w-16');
+      expect(palette.querySelector('.palette-brick-slot')).toBeNull();
+
+      fireEvent.click(paletteToggle(container));
+
+      expect(palette.className).toContain('w-80');
+      expect(palette.querySelector('.palette-brick-slot')).not.toBeNull();
+    });
+
+    it('lets the Trash measure itself again when the canvas resizes after a fold', () => {
+      // An observer that can be played back, unlike the setup's stub that never fires.
+      const observers: Array<{ callback: () => void; targets: Element[] }> = [];
+      vi.stubGlobal(
+        'ResizeObserver',
+        class {
+          targets: Element[] = [];
+          constructor(callback: () => void) {
+            observers.push({ callback, targets: this.targets });
+          }
+          observe(target: Element) {
+            this.targets.push(target);
+          }
+          unobserve() {}
+          disconnect() {}
+        },
+      );
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      act(() => {
+        useWorkspaceStore.getState().createTower(makeNestingTower('fold'));
+      });
+      const canvas = container.querySelector('[data-testid="workspace-canvas"]')!;
+
+      fireEvent.click(paletteToggle(container));
+      // The canvas is wider now, so the Trash pinned to its corner sits somewhere new.
+      queryTrash(container)!.getBoundingClientRect = () =>
+        ({ left: 1200, top: 700, width: 56, height: 56 }) as DOMRect;
+      act(() => {
+        observers
+          .filter((observer) => observer.targets.includes(canvas))
+          .forEach((observer) => observer.callback());
+      });
+
+      expect(useTrashStore.getState().bounds).toEqual({ x: 1200, y: 700, w: 56, h: 56 });
+    });
+  });
 });

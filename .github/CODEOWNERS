@@ -1,0 +1,4 @@
+# Reviewers requested automatically when a PR touches these paths.
+# Later rules override earlier ones for the same files.
+
+/modules/masonry/ @parthdagia05 @kh-ub-ayb

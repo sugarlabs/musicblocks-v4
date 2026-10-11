@@ -15,7 +15,7 @@ import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { AUTO_PAN_MAX_STEP, DRAG_CLICK_SUPPRESSION_MS } from '@/utils/constants';
 
-import { useBrickMove } from './useBrickMove';
+import { triggerBrickAnimation, useBrickMove } from './useBrickMove';
 
 const { interactableMock, interactMock } = vi.hoisted(() => {
   const interactableMock = {
@@ -81,6 +81,37 @@ afterEach(() => {
   });
   useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
   useTrashStore.setState({ bounds: null, isHovered: false });
+});
+
+describe('useBrickMode triggerBrickAnimation', () => {
+  beforeEach(() => {
+      vi.useFakeTimers();
+      document.body.innerHTML = '<div data-id="test-element"></div>';
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    document.body.innerHTML = '';
+  });
+
+  it('adds the animationClass to the brick and then removes it after 400ms', () => {
+
+    const element = document.querySelector<HTMLElement>(`[data-id="test-element"]`);
+
+    expect(element).not.toBeNull();
+
+    act(()=>{
+      triggerBrickAnimation("test-element", "test-animation");
+    })
+
+    expect(element?.classList.contains("test-animation")).toBe(true);
+
+    act(()=>{
+      vi.advanceTimersByTime(400);
+    });
+
+    expect(element?.classList.contains("test-animation")).toBe(false);
+  });
 });
 
 describe('useBrickMove visibility', () => {

@@ -9,6 +9,7 @@ import {
     getCanvasMaxHeight,
     getCurrentPlacementPosition,
     getNextPlacementPosition,
+    MAX_OVERLAP_AVOIDANCE_ATTEMPTS,
     placeBrickFromPalette,
     setPlacementPosition,
 } from './palette-placement';
@@ -126,6 +127,34 @@ describe('palette-placement utils', () => {
             expect(wrapped.position).not.toEqual(first.position);
             expect(wrapped.position.x).toBeGreaterThan(first.position.x);
             expect(wrapped.position).toEqual({ x: 200, y: 20 });
+        });
+
+        it('terminates safely without freezing when columnStep.x is zero', () => {
+            placeBrickFromPalette(mockPaletteBrick);
+
+            // With columnStep.x = 0, fallback to default step to prevent infinite loop
+            const next = placeBrickFromPalette(mockPaletteBrick, {
+                columnStep: { x: 0, y: 0 },
+            });
+            expect(next.position).toBeDefined();
+            expect(Number.isFinite(next.position.x)).toBe(true);
+        });
+
+        it('bounds overlap search iterations by MAX_OVERLAP_AVOIDANCE_ATTEMPTS', () => {
+            // Seed towers across many column positions at y: 20
+            for (let i = 0; i < 10; i++) {
+                placeBrickFromPalette(mockPaletteBrick, {
+                    columnStep: { x: 180, y: 0 },
+                });
+                setPlacementPosition({ x: 20, y: 20 });
+            }
+
+            // Should complete quickly and terminate within maximum allowed attempts
+            const placed = placeBrickFromPalette(mockPaletteBrick, {
+                columnStep: { x: 180, y: 0 },
+            });
+            expect(placed.position).toBeDefined();
+            expect(Number.isFinite(placed.position.x)).toBe(true);
         });
     });
 });

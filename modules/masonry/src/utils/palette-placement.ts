@@ -30,6 +30,12 @@ export const DEFAULT_COLUMN_STEP: Point = { x: 180, y: 0 };
 export const DEFAULT_MAX_CANVAS_HEIGHT = 600;
 
 /**
+ * Maximum number of column advance attempts when avoiding overlap with existing towers.
+ * Prevents infinite loops if column step is zero or too many towers occupy the placement ray.
+ */
+export const MAX_OVERLAP_AVOIDANCE_ATTEMPTS = 100;
+
+/**
  * Configuration options for computing cascade placement coordinates.
  */
 export interface CascadePlacementOptions {
@@ -135,7 +141,10 @@ export function placeBrickFromPalette(
     const towers = useWorkspaceStore.getState().towers;
 
     // Ensure placement does not overlap directly on an existing tower
+    let attempts = 0;
+    const stepX = columnStep.x > 0 ? columnStep.x : DEFAULT_COLUMN_STEP.x;
     while (
+        attempts < MAX_OVERLAP_AVOIDANCE_ATTEMPTS &&
         Object.values(towers).some(
             (t) =>
                 Math.abs(t.position.x - position.x) < 40 &&
@@ -143,9 +152,10 @@ export function placeBrickFromPalette(
         )
     ) {
         position = {
-            x: position.x + columnStep.x,
+            x: position.x + stepX,
             y: anchor.y,
         };
+        attempts++;
     }
 
     const scaleLevel = useWorkspaceScaleStore.getState().level;

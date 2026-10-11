@@ -32,8 +32,8 @@ export const EXTRACTED_TOWER_MARGIN_X = 40;
 export const EXTRACTED_TOWER_OFFSET_X = 60;
 
 /** Generates a fresh unique tower identifier. */
-function makeTowerId(): string {
-    return `tower-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+export function makeTowerId(): string {
+    return `tower-${crypto.randomUUID()}`;
 }
 
 type StatementConnection = {

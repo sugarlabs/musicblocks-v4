@@ -12,6 +12,8 @@ import { modelConfigOf } from '@/utils/brick-model-factory';
 
 /** Everything the help panel shows for a brick, captured when the help wedge runs. */
 export interface BrickHelp {
+    /** The brick the help is about, so the panel can find it again to keep pointing at it. */
+    brickId: string;
     /** The panel's title: what the brick calls itself. */
     title: string;
     /** The brick's help text. */
@@ -19,8 +21,9 @@ export interface BrickHelp {
     /** A standalone copy of the brick, drawn in the panel as its picture. */
     preview: BrickModel;
     /**
-     * Where the brick's head was on screen, in window coordinates, so the panel can open beside it
-     * and point at it. Null when the brick could not be found on the page, and the panel centres.
+     * Where the brick's head was on screen when the wedge ran, in window coordinates, so the panel
+     * can open beside it and point at it. Null when the brick could not be found on the page, and
+     * the panel centres.
      */
     anchor?: Bounds | null;
 }
@@ -125,11 +128,25 @@ export function headOnScreenOf(node: TowerNode): Bounds | null {
 }
 
 /**
+ * Where a brick in the workspace has its head on screen now, looked up by id. Null when the brick
+ * is no longer in the workspace, or not on the page.
+ *
+ * @param brickId - the brick to find
+ * @returns its head's box on screen, or null
+ */
+export function brickHeadOnScreen(brickId: string): Bounds | null {
+    const found = findNodeAndTower(brickId);
+
+    return found === null ? null : headOnScreenOf(found.node);
+}
+
+/**
  * The help for a brick in the workspace, or null when there is none to give: the brick has left
  * the canvas, or carries no help text.
  *
- * Captured whole rather than looked up as the panel renders, so the panel stays as it was opened
- * even if the brick is then moved, edited or deleted.
+ * What the panel shows is captured whole rather than looked up as the panel renders, so it stays
+ * as it was opened even if the brick is then edited or deleted. Only where the brick is gets
+ * looked up again, through its id, so the panel can follow it.
  *
  * @param brickId - the brick the help wedge was used on
  * @returns the brick's help, or null
@@ -141,6 +158,7 @@ export function brickHelpFor(brickId: string): BrickHelp | null {
     const { model } = found.node;
 
     return {
+        brickId,
         title: titleOf(model),
         text: model.tooltipText,
         preview: previewModelOf(model),

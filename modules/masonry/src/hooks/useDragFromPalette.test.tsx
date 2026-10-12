@@ -10,8 +10,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Point } from '@/@types/common.types';
 import type { PaletteBrickConfig } from '@/@types/palette.types';
 
+import { useWorkspaceScaleStore } from '@/stores/scale';
 import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
+import { resolveCandidateConnection } from '@/utils/snap-preview-calculator';
 
 import { clientToLocalPoint, useDragFromPalette } from './useDragFromPalette';
 
@@ -27,6 +29,11 @@ vi.mock('interactjs', () => ({
     },
   })),
 }));
+
+vi.mock('@/utils/snap-preview-calculator', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/utils/snap-preview-calculator')>();
+  return { ...actual, resolveCandidateConnection: vi.fn(actual.resolveCandidateConnection) };
+});
 
 /** Canvas sits right of the palette, so its left edge is the boundary a drop must clear. */
 const CANVAS_RECT = { left: 300, top: 50, right: 1000, bottom: 700 };
@@ -112,6 +119,7 @@ afterEach(() => {
   draggable.mockClear();
   useWorkspaceStore.setState({ towers: {} });
   useWorkspaceViewportStore.setState({ offset: { x: 0, y: 0 } });
+  useWorkspaceScaleStore.getState().reset();
 });
 
 // -------------------------------------------------------------------------------------------------
@@ -214,5 +222,28 @@ describe('useDragFromPalette drop placement', () => {
     dragSlotTo(slot, { x: 40, y: 0 }, { x: 320, y: 250 });
 
     expect(droppedTowers()).toHaveLength(0);
+  });
+});
+
+// -------------------------------------------------------------------------------------------------
+
+// The snap distance comes from the dragged brick's level, so the probe that picks a snap target
+// during a palette drag has to be built at the workspace level, like the brick the drop creates.
+describe('useDragFromPalette snap probe', () => {
+  it('builds the probe brick at the workspace zoom level', () => {
+    const { slot } = mountPaletteDrag();
+    useWorkspaceScaleStore.getState().setLevel(3);
+
+    let probeLevel: number | undefined;
+    vi.mocked(resolveCandidateConnection).mockImplementationOnce((towerId, store) => {
+      probeLevel = store.towers[towerId].root.model.scaleLevel;
+      return null;
+    });
+
+    const { start, move } = dragListeners();
+    start({ target: slot, clientX0: SLOT_RECT.left, clientY0: SLOT_RECT.top });
+    move({ dx: 200, dy: 100, clientX: 500, clientY: 250 });
+
+    expect(probeLevel).toBe(3);
   });
 });

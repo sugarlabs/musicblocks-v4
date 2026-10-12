@@ -41,6 +41,49 @@ function positionOutputAt(root: TowerNode, point: Point): Point {
 }
 
 describe('resolveArgumentConnection', () => {
+    describe('snap distance at each zoom level', () => {
+        // The reach is half the probe box (37.5 / 50 / 62.5px) plus half the settled connector, so
+        // an extra 44px falls between levels 1 and 2 and an extra 56px between levels 2 and 3.
+        const LEVELS = [
+            [1, 44, false],
+            [2, 44, true],
+            [2, 56, false],
+            [3, 56, true],
+        ] as const;
+
+        const resolve = (settled: TowerNode, dragged: TowerNode, position: Point) => {
+            const { space, connectors, towers } = workspace([
+                { id: 'settled-tower', root: settled, position: { x: 500, y: 500 } },
+                { id: 'dragged-tower', root: dragged, position },
+            ]);
+            return resolveArgumentConnection({
+                draggedTowerId: 'dragged-tower',
+                space,
+                connectors,
+                towers,
+            });
+        };
+
+        it.each(LEVELS)(
+            'an output at level %i, %ipx past the slot, snaps: %s',
+            (level, extra, snaps) => {
+                const host = makeEmptyExpression('host', 1);
+                host.model.setPosition(500, 500);
+                const dragged = makeEmptyValue('dragged');
+                dragged.model.scaleLevel = level;
+
+                const slot = slotCenter(host, 0);
+                const halfSlot = host.model.getConnectorCoords().inputs[0].w / 2;
+                const position = positionOutputAt(dragged, {
+                    x: slot.x + halfSlot + extra,
+                    y: slot.y,
+                });
+
+                expect(resolve(host, dragged, position) !== null).toBe(snaps);
+            },
+        );
+    });
+
     describe('dragging an argument onto a slot', () => {
         it('plugs the dragged tower into the slot it was dropped on', () => {
             const host = makeEmptyExpression('host', 1);

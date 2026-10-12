@@ -163,11 +163,18 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                             useWorkspaceViewportStore.getState().offset,
                         );
 
-                        // Temporarily mock a tower ID for collision detection
+                        // Temporarily mock a tower ID for collision detection. The probe is built at
+                        // the workspace level, like the drop below, so its snap distance follows the
+                        // zoom too.
                         const mockTowerId = 'temp-palette-drag';
                         useWorkspaceStore.getState().towers[mockTowerId] = {
                             id: mockTowerId,
-                            root: wrapAsRootNode(createBrickModel(drag.config.brick)),
+                            root: wrapAsRootNode(
+                                createBrickModel({
+                                    ...drag.config.brick,
+                                    scaleLevel: useWorkspaceScaleStore.getState().level,
+                                }),
+                            ),
                             position,
                         };
 

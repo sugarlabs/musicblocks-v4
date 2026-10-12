@@ -71,8 +71,8 @@ export const useConnectionPreviewStore = create<ConnectionPreviewStore>()(
                 current.activeTarget?.targetTowerId === target?.targetTowerId &&
                 current.activeTarget?.targetBrickId === target?.targetBrickId &&
                 current.activeTarget?.type === target?.type &&
-                current.activeTarget?.centroid.x === target?.centroid?.x &&
-                current.activeTarget?.centroid.y === target?.centroid?.y &&
+                current.activeTarget?.centroid?.x === target?.centroid?.x &&
+                current.activeTarget?.centroid?.y === target?.centroid?.y &&
                 current.isValid === isValid &&
                 current.snapPosition?.x === snapPosition?.x &&
                 current.snapPosition?.y === snapPosition?.y

@@ -112,6 +112,41 @@ describe('useConnectionPreviewStore', () => {
         expect(state2.activeTarget?.centroid).toEqual({ x: 80, y: 50 });
     });
 
+    it('should update state when draggedTowerId changes on same target brick', () => {
+        const baseTarget = {
+            draggedTowerId: 'tower1',
+            targetTowerId: 'tower2',
+            targetBrickId: 'brick1',
+            type: 'statement' as const,
+            distance: 10,
+            centroid: { x: 50, y: 50 },
+        };
+        const snapPos = { x: 100, y: 100 };
+
+        useConnectionPreviewStore.getState().setPreviewTarget(baseTarget, true, snapPos);
+        const state1 = useConnectionPreviewStore.getState();
+
+        // Switch dragged tower to a different tower
+        useConnectionPreviewStore
+            .getState()
+            .setPreviewTarget({ ...baseTarget, draggedTowerId: 'tower3' }, true, snapPos);
+        const state2 = useConnectionPreviewStore.getState();
+
+        expect(state2).not.toBe(state1);
+        expect(state2.activeTarget?.draggedTowerId).toBe('tower3');
+    });
+
+    it('should not update state when setting null target repeatedly', () => {
+        const store = useConnectionPreviewStore.getState();
+        store.setPreviewTarget(null, false, null);
+        const state1 = useConnectionPreviewStore.getState();
+
+        store.setPreviewTarget(null, false, null);
+        const state2 = useConnectionPreviewStore.getState();
+
+        expect(state1).toBe(state2);
+    });
+
     it('should set and clear disconnect shadow', () => {
         const store = useConnectionPreviewStore.getState();
         const shadow = {

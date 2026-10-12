@@ -2,8 +2,8 @@ import type { TowerExpressionNode, TowerStatementNode, TowerValueNode } from '@/
 import type { ArgumentConnectorMeta, TowerState } from '@/@types/workspace.types';
 
 import type { CollisionSpace } from './collision';
-import { querySnap } from './snap-config';
-import { findNode } from './tower-traversal';
+import { connectorCenter, querySnap } from './snap-config';
+import { findNode, listVisibleNodes } from './tower-traversal';
 
 /** A node that owns argument slots, and can therefore receive an argument. */
 export type ArgumentParentNode = TowerExpressionNode | TowerStatementNode;
@@ -13,7 +13,7 @@ export type ArgumentChildNode = TowerValueNode | TowerExpressionNode;
 
 /** A validated argument connection between two towers, ready to be spliced and merged. */
 export interface ArgumentConnection {
-    /** The node whose empty argument slot is being filled. */
+    /** The node whose argument slot is being filled (may already be occupied). */
     parent: ArgumentParentNode;
     /** The node being plugged into that slot. */
     child: ArgumentChildNode;
@@ -25,6 +25,8 @@ export interface ArgumentConnection {
     absorbedTowerId: string;
     /** Gap between the two connectors at drop time; used to pick between rival connections. */
     distance: number;
+    /** The node currently occupying the slot, if any; `null` when the slot is empty. */
+    residentNode: ArgumentChildNode | null;
 }
 
 export interface ResolveArgumentConnectionParams {
@@ -39,9 +41,10 @@ export interface ResolveArgumentConnectionParams {
 }
 
 /**
- * Direction 1 — the dragged tower plugs itself in: its root's output tab seeks an empty argument
- * slot on a settled tower, which becomes the host. Only the root is considered, since every other
- * brick in the tower already has its output filled.
+ * Direction 1 — the dragged tower plugs itself in: its root's output tab seeks an argument
+ * slot (empty or occupied) on a settled tower, which becomes the host. When the slot already holds
+ * a brick, that resident is recorded so the caller can evict it before merging. Only the root is
+ * considered, since every other brick in the tower already has its output filled.
  */
 function resolveOutputIntoSlot(
     dragged: TowerState,
@@ -71,8 +74,7 @@ function resolveOutputIntoSlot(
         const parent = findNode(host.root, meta.brickId);
         if (!parent || (parent.kind !== 'expression' && parent.kind !== 'statement')) continue;
 
-        // Empty-only: no displace, no replace.
-        if (parent.args[meta.slotIndex] !== null) continue;
+        const residentNode = parent.args[meta.slotIndex] as ArgumentChildNode | null;
 
         const input = parent.model.getConnectorCoords().inputs[meta.slotIndex];
         if (!input) continue;
@@ -90,6 +92,7 @@ function resolveOutputIntoSlot(
                 hostTowerId: host.id,
                 absorbedTowerId: dragged.id,
                 distance,
+                residentNode,
             };
         }
     }
@@ -98,9 +101,80 @@ function resolveOutputIntoSlot(
 }
 
 /**
+ * Direction 2 — the dragged tower picks something up: one of its own argument slots (empty or
+ * occupied) seeks the free output tab of a settled tower, which is absorbed into it. Every slot in
+ * the dragged tower is a candidate, not just the root's, since all of them are equally free to be
+ * filled. When a slot already holds a brick, that resident is recorded so the caller can evict it.
+ *
+ * Only the slots the drag carries in plain sight, though: a brick hidden inside a folded cavity
+ * offers none, since it is drawn nowhere and its recorded position is wherever the layout left it
+ * before the fold shut over it. Its slots are open to a drop again when the fold is lifted.
+ */
+function resolveSlotOntoOutput(
+    dragged: TowerState,
+    { space, connectors, towers }: ResolveArgumentConnectionParams,
+): ArgumentConnection | null {
+    let best: ArgumentConnection | null = null;
+
+    for (const parent of listVisibleNodes(dragged.root)) {
+        if (parent.kind !== 'expression' && parent.kind !== 'statement') continue;
+
+        const inputs = parent.model.getConnectorCoords().inputs;
+
+        parent.args.forEach((_resident, slotIndex) => {
+            const residentNode = _resident as ArgumentChildNode | null;
+            const input = inputs[slotIndex];
+            if (!input) return;
+
+            const probe = connectorCenter(dragged.root, parent, dragged.position, input);
+
+            for (const hitId of querySnap(space, probe)) {
+                const meta = connectors[hitId];
+                if (!meta || meta.type !== 'output') continue;
+
+                // A tower never picks up a brick it already contains.
+                if (meta.towerId === dragged.id) continue;
+
+                const absorbed = towers[meta.towerId];
+                if (!absorbed) continue;
+
+                // Only a whole tower can be picked up, so the output must be its root's: any other
+                // brick's output is already plugged into the slot above it.
+                const child = absorbed.root;
+                if (child.model.id !== meta.brickId) continue;
+                if (child.kind !== 'value' && child.kind !== 'expression') continue;
+
+                const { output } = child.model.getConnectorCoords();
+                if (!output) continue;
+
+                const distance = Math.hypot(
+                    child.model.position.x + output.x - probe.x,
+                    child.model.position.y + output.y - probe.y,
+                );
+
+                if (best === null || distance < best.distance) {
+                    best = {
+                        parent,
+                        child,
+                        slotIndex,
+                        hostTowerId: dragged.id,
+                        absorbedTowerId: absorbed.id,
+                        distance,
+                        residentNode,
+                    };
+                }
+            }
+        });
+    }
+
+    return best;
+}
+
+/**
  * Resolves a dropped tower into an argument connection with a settled tower, or null when nothing
- * valid is within snap distance. The dragged tower plugs itself in: its root's output tab seeks an empty argument
- * slot on a settled tower, which becomes the host.
+ * valid is within snap distance. Both directions are tried, so which brick the user happened to drag
+ * does not decide whether the two can join; an expression has both an output tab and slots of its
+ * own, so when both are in range the closer pairing wins.
  *
  * Slot emptiness and output freedom are read off the live node graph, not the collision metadata, so
  * a connector point that has not been re-synced since its slot was filled cannot mislead this.
@@ -113,16 +187,22 @@ export function resolveArgumentConnection(
     const dragged = params.towers[params.draggedTowerId];
     if (!dragged) return null;
 
-    return resolveOutputIntoSlot(dragged, params);
+    const plugIn = resolveOutputIntoSlot(dragged, params);
+    const pickUp = resolveSlotOntoOutput(dragged, params);
+
+    if (plugIn === null) return pickUp;
+    if (pickUp === null) return plugIn;
+
+    return pickUp.distance < plugIn.distance ? pickUp : plugIn;
 }
 
 /**
- * Plugs `child` into `parent`'s empty argument slot by editing tower-node pointers in place. Pure
+ * Plugs `child` into `parent`'s argument slot by editing tower-node pointers in place. Pure
  * with respect to stores and layout: the caller merges the two towers, which re-runs the layout and
  * thereby recomputes the parent's `argDims` and outline.
  *
- * The caller guarantees the slot is empty and that the two nodes come from different towers; see
- * {@link resolveArgumentConnection}.
+ * When the slot is occupied, the caller is responsible for evicting the resident first (via
+ * `detachBrickToNewTower` in the hook layer); see {@link resolveArgumentConnection}.
  */
 export function joinArg({
     parent,

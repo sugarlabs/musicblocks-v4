@@ -8,8 +8,12 @@ import { useBrickLayoutStore } from '@/stores/brick';
 import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { useTrashStore } from '@/stores/trash';
 import { useWorkspaceViewportStore } from '@/stores/viewport';
-import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
-import { joinArg, resolveArgumentConnection } from '@/utils/argument-connect';
+import {
+    calculateExtractedTowerPosition,
+    findNodeAndTower,
+    useWorkspaceStore,
+} from '@/stores/workspace';
+import { joinArg, resolveArgumentConnection, type ArgumentParentNode } from '@/utils/argument-connect';
 import { FOLD_TOGGLE_SELECTOR } from '@/utils/constants';
 import { edgePanStep, isPointInsideBounds } from '@/utils/geometry';
 import { resolveCandidateConnection } from '@/utils/snap-preview-calculator';
@@ -17,7 +21,7 @@ import { joinStatement, resolveStatementConnection } from '@/utils/statement-con
 import { discardTower } from '@/utils/towerDiscard';
 import type { Bounds, Point } from '@/@types/common.types';
 import type { TowerNode } from '@/@types/tower.types';
-import { listNodes } from '@/utils/tower-traversal';
+import { findNode, listNodes, measureTowerExtent, traverseTopDown } from '@/utils/tower-traversal';
 
 /**
  * Triggers a CSS keyframe animation on a specific brick by temporarily removing
@@ -50,7 +54,11 @@ function rectBounds(rect: DOMRect): Bounds {
  * @param towerId - The ID of the tower that was just dropped.
  * @returns Whether a join happened, in which case one of the two towers no longer exists.
  */
-export function tryConnect(towerId: string): boolean {
+export function tryConnect(
+    towerId: string,
+    originPosition?: Point,
+    originSlot?: { towerId: string; parentId: string; slotIndex: number } | null,
+): boolean {
     const store = useWorkspaceStore.getState();
 
     const argument = resolveArgumentConnection({
@@ -76,8 +84,122 @@ export function tryConnect(towerId: string): boolean {
     }
 
     if (argument !== null) {
+        let isSameTreeSwap = false;
+
+        if (argument.residentNode) {
+            const treeTowerId =
+                originSlot?.towerId === argument.hostTowerId
+                    ? argument.hostTowerId
+                    : originSlot?.towerId === argument.absorbedTowerId
+                      ? argument.absorbedTowerId
+                      : null;
+
+            isSameTreeSwap = treeTowerId !== null && typeof originSlot?.slotIndex === 'number';
+
+            const hostTower = treeTowerId ? store.towers[treeTowerId] : store.towers[argument.hostTowerId];
+            if (hostTower) {
+                const originParent =
+                    isSameTreeSwap && originSlot
+                        ? (findNode(hostTower.root, originSlot.parentId) as ArgumentParentNode | null)
+                        : null;
+
+                const residentDescendantIds = new Set(
+                    listNodes(argument.residentNode).map((n) => n.model.id),
+                );
+                const isAcyclic = originParent
+                    ? !residentDescendantIds.has(originParent.model.id)
+                    : false;
+
+                if (
+                    isSameTreeSwap &&
+                    originSlot &&
+                    originParent &&
+                    isAcyclic &&
+                    (originParent.kind === 'expression' || originParent.kind === 'statement') &&
+                    originParent.args[originSlot.slotIndex] === null
+                ) {
+                    originParent.args[originSlot.slotIndex] = argument.residentNode;
+                    argument.residentNode.parent = originParent;
+
+                    // If the connection resolved in a way that made the dragged tower the host,
+                    // swap the IDs so the original tree survives as the host.
+                    if (argument.absorbedTowerId === treeTowerId) {
+                        const tempHost = argument.hostTowerId;
+                        argument.hostTowerId = argument.absorbedTowerId;
+                        argument.absorbedTowerId = tempHost;
+                    }
+                } else {
+                    const targetPosition =
+                        argument.hostTowerId === towerId
+                            ? store.towers[argument.absorbedTowerId]?.position
+                            : originPosition;
+                    const coords = useBrickLayoutStore.getState().coords;
+                    const { [argument.absorbedTowerId]: _absorbed, ...remainingTowers } =
+                        store.towers;
+
+                    let isColliding = false;
+                    if (targetPosition) {
+                        const residentDims = measureTowerExtent(
+                            { root: argument.residentNode, position: targetPosition },
+                            coords,
+                        );
+                        const residentW = Math.max(residentDims.w, 40);
+                        const residentH = Math.max(residentDims.h, 30);
+
+                        isColliding = Object.values(remainingTowers).some((t) => {
+                            if (t.id === argument.hostTowerId && isSameTreeSwap) return false;
+                            const ext = measureTowerExtent(t, coords);
+                            return (
+                                targetPosition.x < t.position.x + ext.w + 10 &&
+                                targetPosition.x + residentW + 10 > t.position.x &&
+                                targetPosition.y < t.position.y + ext.h + 10 &&
+                                targetPosition.y + residentH + 10 > t.position.y
+                            );
+                        });
+                    }
+
+                    const dropPos =
+                        targetPosition && !isColliding
+                            ? targetPosition
+                            : calculateExtractedTowerPosition(
+                                  hostTower,
+                                  argument.residentNode.model.id,
+                                  undefined,
+                                  undefined,
+                                  remainingTowers,
+                              );
+                    const newTowerId = store.detachBrickToNewTower(
+                        argument.hostTowerId,
+                        argument.residentNode.model.id,
+                        dropPos,
+                    );
+
+                    if (newTowerId) {
+                        const latestStore = useWorkspaceStore.getState();
+                        const newTower = latestStore.towers[newTowerId];
+                        if (newTower) {
+                            traverseTopDown(newTower.root, newTower.position);
+                            latestStore.syncStatementConnectors(newTowerId, newTower.root);
+                            latestStore.syncArgumentConnectors(newTowerId, newTower.root);
+                        }
+                    }
+                }
+            }
+        }
+
         joinArg(argument);
         store.absorbTower(argument.absorbedTowerId, argument.hostTowerId);
+
+        if (isSameTreeSwap) {
+            const latestStore = useWorkspaceStore.getState();
+            const updatedHost = latestStore.towers[argument.hostTowerId];
+            if (updatedHost) {
+                traverseTopDown(updatedHost.root, updatedHost.position);
+                latestStore.syncStatementConnectors(argument.hostTowerId, updatedHost.root);
+                latestStore.syncArgumentConnectors(argument.hostTowerId, updatedHost.root);
+            }
+        }
+
         triggerBrickAnimation(towerId, 'brick-snap-pulse');
 
         return true;
@@ -113,6 +235,12 @@ export function useBrickMove(
         node: TowerNode;
         towerId: string;
         towerPosition: { x: number; y: number };
+        originPosition: { x: number; y: number };
+        originSlot?: {
+            towerId: string;
+            parentId: string;
+            slotIndex: number;
+        } | null;
     } | null>(null);
     // Suppresses the click interact.js leaves trailing this brick's own drag. interact.js only
     // starts a drag once the pointer has moved, so `end` always marks a real drag.
@@ -222,11 +350,14 @@ export function useBrickMove(
                     let targetTowerId = tower.id;
                     let targetPosition = { x: tower.position.x, y: tower.position.y };
 
-                    if (isChild) {
-                        const absPos = current
-                            ? { x: current.x, y: current.y }
-                            : { x: tower.position.x, y: tower.position.y };
+                    const absPos = current
+                        ? { x: current.x, y: current.y }
+                        : { x: tower.position.x, y: tower.position.y };
+                    const originPosition = { ...absPos };
+                    let originSlot: { towerId: string; parentId: string; slotIndex: number } | null =
+                        null;
 
+                    if (isChild) {
                         // Find parent to leave a disconnect shadow
                         let shadowSocket: 'next' | 'nestedNext' | 'output' | number | null = null;
                         let shadowParentId: string | null = null;
@@ -253,6 +384,14 @@ export function useBrickMove(
                             }
                         }
 
+                        if (typeof shadowSocket === 'number' && shadowParentId) {
+                            originSlot = {
+                                towerId: tower.id,
+                                parentId: shadowParentId,
+                                slotIndex: shadowSocket,
+                            };
+                        }
+
                         if (shadowParentId && shadowSocket !== null) {
                             useConnectionPreviewStore.getState().setDisconnectShadow({
                                 hostTowerId: tower.id,
@@ -267,6 +406,8 @@ export function useBrickMove(
                             node,
                             towerId: '', // Will be updated immediately below
                             towerPosition: { x: 0, y: 0 },
+                            originPosition,
+                            originSlot,
                         };
 
                         // Detach from the parent and create a new tower for this subtree
@@ -285,6 +426,8 @@ export function useBrickMove(
                         node,
                         towerId: targetTowerId,
                         towerPosition: targetPosition,
+                        originPosition,
+                        originSlot,
                     };
                 },
                 move(event: DragEvent) {
@@ -378,7 +521,7 @@ export function useBrickMove(
                     // both connector spaces for the whole merged graph. A plain move only runs the
                     // layout's position fast-path, which never touches `positioned` and so never
                     // triggers the Workspace's sync — hence the refresh here.
-                    if (!tryConnect(state.towerId)) {
+                    if (!tryConnect(state.towerId, state.originPosition, state.originSlot)) {
                         const rootNode = useWorkspaceStore.getState().towers[state.towerId]?.root;
                         if (rootNode) {
                             queueMicrotask(() => {

@@ -20,7 +20,12 @@ import {
 } from '@/utils/import-export';
 import type { ExportedProject, ImportIdStrategy } from '@/@types/import-export.types';
 import { useBrickLayoutStore } from '@/stores/brick';
-import { listNodes, listVisibleNodes, traverseTopDown } from '@/utils/tower-traversal';
+import {
+    listNodes,
+    listVisibleNodes,
+    measureTowerExtent,
+    traverseTopDown,
+} from '@/utils/tower-traversal';
 
 /** How far a duplicated tower sits from the tower it was copied from. */
 const DUPLICATE_TOWER_OFFSET: Point = { x: 60, y: 40 };
@@ -151,13 +156,15 @@ function getExtractedSubtreeNodeIds(node: TowerNode): string[] {
 
 /**
  * Calculates a safe position for an extracted brick to form a new tower without
- * overlapping or colliding with the source tower or its horizontal argument tree.
+ * overlapping or colliding with the source tower or its horizontal argument tree,
+ * and avoids colliding with other settled towers on the workspace when workspaceTowers are provided.
  */
 export function calculateExtractedTowerPosition(
     sourceTower: TowerState,
     targetBrickId: string,
     remainingRoot?: TowerNode,
     excludedNodeIds?: string[],
+    workspaceTowers?: Record<string, TowerState>,
 ): Point {
     const rootToMeasure = remainingRoot ?? sourceTower.root;
     const coords = useBrickLayoutStore.getState().coords;
@@ -198,9 +205,68 @@ export function calculateExtractedTowerPosition(
         EXTRACTED_TOWER_OFFSET_X;
     const safeX = Math.max(maxTowerX + EXTRACTED_TOWER_MARGIN_X, fallbackX);
 
+    if (!workspaceTowers) {
+        return {
+            x: safeX,
+            y: fallbackY,
+        };
+    }
+
+    const targetOrigin = targetCoord ?? targetNode?.model.position ?? { x: 0, y: 0 };
+    const extractedDims = targetNode
+        ? measureTowerExtent({ root: targetNode, position: targetOrigin }, coords)
+        : { w: 80, h: 40 };
+    const extractedW = Math.max(extractedDims.w, 40);
+    const extractedH = Math.max(extractedDims.h, 30);
+
+    let candidateX = safeX;
+    let candidateY = fallbackY;
+    const stepY = extractedH + 16;
+    const stepX = extractedW + 24;
+    const maxY = fallbackY + 500;
+    const maxAttempts = 50;
+
+    const checkCollision = (x: number, y: number) =>
+        Object.values(workspaceTowers).find((t) => {
+            if (t.id === sourceTower.id) return false;
+            const ext = measureTowerExtent(t, coords);
+            return (
+                x < t.position.x + ext.w + 10 &&
+                x + extractedW + 10 > t.position.x &&
+                y < t.position.y + ext.h + 10 &&
+                y + extractedH + 10 > t.position.y
+            );
+        });
+
+    let attempts = 0;
+    while (attempts < maxAttempts) {
+        const collidingTower = checkCollision(candidateX, candidateY);
+        if (!collidingTower) {
+            break;
+        }
+
+        candidateY += stepY;
+        if (candidateY > maxY) {
+            candidateY = fallbackY;
+            candidateX += stepX;
+        }
+        attempts++;
+    }
+
+    if (checkCollision(candidateX, candidateY)) {
+        let maxSettledX = safeX;
+        for (const t of Object.values(workspaceTowers)) {
+            if (t.id === sourceTower.id) continue;
+            const ext = measureTowerExtent(t, coords);
+            maxSettledX = Math.max(maxSettledX, t.position.x + ext.w);
+        }
+        candidateX = maxSettledX + EXTRACTED_TOWER_MARGIN_X;
+        candidateY = fallbackY;
+    }
+
     return {
-        x: safeX,
-        y: fallbackY,
+        x: candidateX,
+        y: candidateY,
     };
 }
 
@@ -564,6 +630,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                     brickId,
                     sourceTower.root,
                     extractedIds,
+                    get().towers,
                 );
                 // Reset positioned flags for the extracted bricks in layout store to prevent stale flashes
                 useBrickLayoutStore
@@ -662,6 +729,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                     brickId,
                     remainingRoot,
                     extractedIds,
+                    state.towers,
                 );
 
                 const newTower: TowerState = {

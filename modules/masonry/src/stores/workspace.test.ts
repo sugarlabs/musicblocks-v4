@@ -1467,6 +1467,94 @@ describe('Workspace Store Collision Space', () => {
             expect(pos.x).toBe(90 + 400 + EXTRACTED_TOWER_MARGIN_X);
             expect(pos.y).toBe(50);
         });
+
+        it('steps down to avoid overlapping another settled tower on the workspace', () => {
+            const rootStmt = makeEmptyStatement('root-stmt', 1);
+            const arg = makeEmptyValue('extracted-val');
+            rootStmt.args[0] = arg;
+            arg.parent = rootStmt;
+
+            const tower: TowerState = {
+                id: 'source-tower',
+                root: rootStmt,
+                position: { x: 50, y: 50 },
+            };
+
+            useBrickLayoutStore.getState().setCoords({
+                'root-stmt': { x: 50, y: 50 },
+                'extracted-val': { x: 90, y: 50 },
+            });
+
+            const initialPos = calculateExtractedTowerPosition(tower, 'extracted-val');
+
+            // An existing settled tower already occupying the default extracted spot
+            const blockingStmt = makeEmptyStatement('blocking-stmt', 0);
+            const blockingTower: TowerState = {
+                id: 'blocking-tower',
+                root: blockingStmt,
+                position: { x: initialPos.x, y: initialPos.y },
+            };
+
+            const adjustedPos = calculateExtractedTowerPosition(
+                tower,
+                'extracted-val',
+                undefined,
+                undefined,
+                {
+                    [tower.id]: tower,
+                    [blockingTower.id]: blockingTower,
+                },
+            );
+
+            // It should have stepped down to avoid colliding with blockingTower
+            expect(adjustedPos.y).toBeGreaterThan(initialPos.y);
+            expect(adjustedPos.x).toBe(initialPos.x);
+        });
+
+        it('falls back to a position beyond settled towers when search attempts are exhausted', () => {
+            const rootStmt = makeEmptyStatement('root-stmt', 1);
+            const arg = makeEmptyValue('extracted-val');
+            rootStmt.args[0] = arg;
+            arg.parent = rootStmt;
+
+            const tower: TowerState = {
+                id: 'source-tower',
+                root: rootStmt,
+                position: { x: 50, y: 50 },
+            };
+
+            useBrickLayoutStore.getState().setCoords({
+                'root-stmt': { x: 50, y: 50 },
+                'extracted-val': { x: 90, y: 50 },
+            });
+
+            // A huge blocking tower covering the entire search area
+            const blockingStmt = makeEmptyStatement('huge-blocking-stmt', 0);
+            Object.defineProperty(blockingStmt.model, 'dims', {
+                value: { w: 1000, h: 1000 },
+                configurable: true,
+            });
+            const blockingTower: TowerState = {
+                id: 'huge-blocking-tower',
+                root: blockingStmt,
+                position: { x: 100, y: 0 },
+            };
+
+            const adjustedPos = calculateExtractedTowerPosition(
+                tower,
+                'extracted-val',
+                undefined,
+                undefined,
+                {
+                    [tower.id]: tower,
+                    [blockingTower.id]: blockingTower,
+                },
+            );
+
+            expect(adjustedPos.x).toBeGreaterThan(
+                blockingTower.position.x + blockingStmt.model.dims.w,
+            );
+        });
     });
 
     describe('extractBrickToNewTower', () => {

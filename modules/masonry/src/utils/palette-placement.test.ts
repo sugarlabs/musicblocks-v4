@@ -4,11 +4,13 @@ import type { PaletteBrickConfig } from '@/@types/palette.types';
 import { useWorkspaceScaleStore } from '@/stores/scale';
 import { useWorkspaceStore } from '@/stores/workspace';
 import {
+    DEFAULT_COLUMN_STEP,
     DEFAULT_MAX_CANVAS_HEIGHT,
     DEFAULT_PLACEMENT_ANCHOR,
     getCanvasMaxHeight,
     getCurrentPlacementPosition,
     getNextPlacementPosition,
+    MAX_OVERLAP_AVOIDANCE_ATTEMPTS,
     placeBrickFromPalette,
     setPlacementPosition,
 } from './palette-placement';
@@ -87,7 +89,9 @@ describe('palette-placement utils', () => {
         it('creates a new tower at current placement position and advances cascade position', () => {
             expect(getCurrentPlacementPosition()).toEqual(DEFAULT_PLACEMENT_ANCHOR);
 
-            const { towerId, position } = placeBrickFromPalette(mockPaletteBrick);
+            const result = placeBrickFromPalette(mockPaletteBrick);
+            expect(result).not.toBeNull();
+            const { towerId, position } = result!;
 
             expect(position).toEqual(DEFAULT_PLACEMENT_ANCHOR);
             const tower = useWorkspaceStore.getState().towers[towerId];
@@ -103,18 +107,21 @@ describe('palette-placement utils', () => {
             const res1 = placeBrickFromPalette(mockPaletteBrick);
             const res2 = placeBrickFromPalette(mockPaletteBrick);
 
-            expect(res1.position).toEqual({ x: 20, y: 20 });
-            expect(res2.position).toEqual({ x: 20, y: 80 });
+            expect(res1).not.toBeNull();
+            expect(res2).not.toBeNull();
+            expect(res1!.position).toEqual({ x: 20, y: 20 });
+            expect(res2!.position).toEqual({ x: 20, y: 80 });
 
             const towers = useWorkspaceStore.getState().towers;
             expect(Object.keys(towers).length).toBe(2);
-            expect(towers[res1.towerId]).toBeDefined();
-            expect(towers[res2.towerId]).toBeDefined();
+            expect(towers[res1!.towerId]).toBeDefined();
+            expect(towers[res2!.towerId]).toBeDefined();
         });
 
         it('ensures wrapped placement does not overlap the existing anchor tower', () => {
             const first = placeBrickFromPalette(mockPaletteBrick);
-            expect(first.position).toEqual(DEFAULT_PLACEMENT_ANCHOR);
+            expect(first).not.toBeNull();
+            expect(first!.position).toEqual(DEFAULT_PLACEMENT_ANCHOR);
 
             // Advance cascade to position at wrap threshold
             setPlacementPosition({ x: 20, y: 560 });
@@ -123,9 +130,61 @@ describe('palette-placement utils', () => {
 
             // The wrapped placement lands in the next column, non-overlapping the anchor tower
             const wrapped = placeBrickFromPalette(mockPaletteBrick, { maxHeight: 600 });
-            expect(wrapped.position).not.toEqual(first.position);
-            expect(wrapped.position.x).toBeGreaterThan(first.position.x);
-            expect(wrapped.position).toEqual({ x: 200, y: 20 });
+            expect(wrapped).not.toBeNull();
+            expect(wrapped!.position).not.toEqual(first!.position);
+            expect(wrapped!.position.x).toBeGreaterThan(first!.position.x);
+            expect(wrapped!.position).toEqual({ x: 200, y: 20 });
+        });
+
+        it('terminates safely without freezing when columnStep.x is zero', () => {
+            placeBrickFromPalette(mockPaletteBrick);
+
+            // With columnStep.x = 0, reset placement to anchor to force overlap avoidance,
+            // and fallback to default step to prevent infinite loop
+            setPlacementPosition(DEFAULT_PLACEMENT_ANCHOR);
+            const next = placeBrickFromPalette(mockPaletteBrick, {
+                columnStep: { x: 0, y: 0 },
+            });
+            expect(next).not.toBeNull();
+            expect(next!.position.x).toBe(DEFAULT_PLACEMENT_ANCHOR.x + DEFAULT_COLUMN_STEP.x);
+        });
+
+        it('advances past occupied columns to find the first free slot', () => {
+            // Seed towers across 5 column positions at y: 20
+            for (let i = 0; i < 5; i++) {
+                placeBrickFromPalette(mockPaletteBrick, {
+                    columnStep: { x: DEFAULT_COLUMN_STEP.x, y: 0 },
+                });
+                setPlacementPosition(DEFAULT_PLACEMENT_ANCHOR);
+            }
+
+            const placed = placeBrickFromPalette(mockPaletteBrick, {
+                columnStep: { x: DEFAULT_COLUMN_STEP.x, y: 0 },
+            });
+            expect(placed).not.toBeNull();
+            expect(placed!.position.x).toBe(DEFAULT_PLACEMENT_ANCHOR.x + 5 * DEFAULT_COLUMN_STEP.x);
+        });
+
+        it('returns null and does not create an overlapping tower when all attempts are exhausted', () => {
+            // Seed towers across all column positions up to MAX_OVERLAP_AVOIDANCE_ATTEMPTS
+            for (let i = 0; i <= MAX_OVERLAP_AVOIDANCE_ATTEMPTS; i++) {
+                placeBrickFromPalette(mockPaletteBrick, {
+                    columnStep: { x: DEFAULT_COLUMN_STEP.x, y: 0 },
+                });
+                setPlacementPosition(DEFAULT_PLACEMENT_ANCHOR);
+            }
+
+            const towersBefore = Object.keys(useWorkspaceStore.getState().towers).length;
+
+            // When every attempt is occupied, fail fast and return null
+            const placed = placeBrickFromPalette(mockPaletteBrick, {
+                columnStep: { x: DEFAULT_COLUMN_STEP.x, y: 0 },
+            });
+            expect(placed).toBeNull();
+
+            // Assert no overlapping tower was added
+            const towersAfter = Object.keys(useWorkspaceStore.getState().towers).length;
+            expect(towersAfter).toBe(towersBefore);
         });
     });
 });

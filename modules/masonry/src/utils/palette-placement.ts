@@ -129,34 +129,38 @@ export function setPlacementPosition(position: Point = DEFAULT_PLACEMENT_ANCHOR)
  *
  * @param config - The palette brick configuration to instantiate.
  * @param options - Optional canvas height or cascade settings.
- * @returns An object containing the created towerId and the placement position coordinates.
+ * @returns An object containing the created towerId and the placement position coordinates, or null if no non-overlapping position could be found.
  */
 export function placeBrickFromPalette(
     config: PaletteBrickConfig,
     options: CascadePlacementOptions = {},
-): { towerId: string; position: Point } {
+): { towerId: string; position: Point } | null {
     let position = getCurrentPlacementPosition();
     const columnStep = options.columnStep ?? DEFAULT_COLUMN_STEP;
     const anchor = options.anchor ?? DEFAULT_PLACEMENT_ANCHOR;
     const towers = useWorkspaceStore.getState().towers;
 
+    const overlapsExistingTower = (candidate: Point): boolean =>
+        Object.values(towers).some(
+            (t) =>
+                Math.abs(t.position.x - candidate.x) < 40 &&
+                Math.abs(t.position.y - candidate.y) < 40,
+        );
+
     // Ensure placement does not overlap directly on an existing tower
     let attempts = 0;
     // Nonpositive configured step would never leave the occupied slot; the default step is a safe positive substitute.
     const stepX = columnStep.x > 0 ? columnStep.x : DEFAULT_COLUMN_STEP.x;
-    while (
-        attempts < MAX_OVERLAP_AVOIDANCE_ATTEMPTS &&
-        Object.values(towers).some(
-            (t) =>
-                Math.abs(t.position.x - position.x) < 40 &&
-                Math.abs(t.position.y - position.y) < 40,
-        )
-    ) {
+    while (attempts < MAX_OVERLAP_AVOIDANCE_ATTEMPTS && overlapsExistingTower(position)) {
         position = {
             x: position.x + stepX,
             y: anchor.y,
         };
         attempts++;
+    }
+
+    if (overlapsExistingTower(position)) {
+        return null;
     }
 
     const scaleLevel = useWorkspaceScaleStore.getState().level;

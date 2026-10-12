@@ -74,7 +74,7 @@ export function BrickSlot({ brick }: BrickSlotProps) {
           : 'grid-rows-[1fr] opacity-100 transition-all duration-500',
       )}
     >
-      <div className="overflow-hidden p-0.5">
+      <div className="overflow-hidden p-0">
         <div
           role="button"
           tabIndex={0}
@@ -88,7 +88,7 @@ export function BrickSlot({ brick }: BrickSlotProps) {
           onPointerDown={() => tooltip.hide()}
           onFocus={(event) => tooltip.show(event.currentTarget, 'focus')}
           onBlur={() => tooltip.hide('focus')}
-          className="palette-brick-slot focus-visible:outline-primary flex min-h-11 w-fit cursor-grab touch-none items-center rounded-md px-1 py-1 transition-colors select-none hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-1 active:cursor-grabbing"
+          className="palette-brick-slot focus-visible:outline-primary flex min-h-11 w-fit cursor-grab touch-none items-center rounded-md px-0.5 py-1 transition-colors select-none hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-1 active:cursor-grabbing"
         >
           <div className="pointer-events-none">
             <BrickView {...viewProps} />

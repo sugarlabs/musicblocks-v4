@@ -142,6 +142,7 @@ export function placeBrickFromPalette(
 
     // Ensure placement does not overlap directly on an existing tower
     let attempts = 0;
+    // Nonpositive configured step would never leave the occupied slot; the default step is a safe positive substitute.
     const stepX = columnStep.x > 0 ? columnStep.x : DEFAULT_COLUMN_STEP.x;
     while (
         attempts < MAX_OVERLAP_AVOIDANCE_ATTEMPTS &&

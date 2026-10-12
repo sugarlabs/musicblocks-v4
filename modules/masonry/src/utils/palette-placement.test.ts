@@ -4,6 +4,7 @@ import type { PaletteBrickConfig } from '@/@types/palette.types';
 import { useWorkspaceScaleStore } from '@/stores/scale';
 import { useWorkspaceStore } from '@/stores/workspace';
 import {
+    DEFAULT_COLUMN_STEP,
     DEFAULT_MAX_CANVAS_HEIGHT,
     DEFAULT_PLACEMENT_ANCHOR,
     getCanvasMaxHeight,
@@ -132,29 +133,31 @@ describe('palette-placement utils', () => {
         it('terminates safely without freezing when columnStep.x is zero', () => {
             placeBrickFromPalette(mockPaletteBrick);
 
-            // With columnStep.x = 0, fallback to default step to prevent infinite loop
+            // With columnStep.x = 0, reset placement to anchor to force overlap avoidance,
+            // and fallback to default step to prevent infinite loop
+            setPlacementPosition(DEFAULT_PLACEMENT_ANCHOR);
             const next = placeBrickFromPalette(mockPaletteBrick, {
                 columnStep: { x: 0, y: 0 },
             });
-            expect(next.position).toBeDefined();
-            expect(Number.isFinite(next.position.x)).toBe(true);
+            expect(next.position.x).toBe(DEFAULT_PLACEMENT_ANCHOR.x + DEFAULT_COLUMN_STEP.x);
         });
 
         it('bounds overlap search iterations by MAX_OVERLAP_AVOIDANCE_ATTEMPTS', () => {
             // Seed towers across many column positions at y: 20
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i <= MAX_OVERLAP_AVOIDANCE_ATTEMPTS; i++) {
                 placeBrickFromPalette(mockPaletteBrick, {
-                    columnStep: { x: 180, y: 0 },
+                    columnStep: { x: DEFAULT_COLUMN_STEP.x, y: 0 },
                 });
-                setPlacementPosition({ x: 20, y: 20 });
+                setPlacementPosition(DEFAULT_PLACEMENT_ANCHOR);
             }
 
             // Should complete quickly and terminate within maximum allowed attempts
             const placed = placeBrickFromPalette(mockPaletteBrick, {
-                columnStep: { x: 180, y: 0 },
+                columnStep: { x: DEFAULT_COLUMN_STEP.x, y: 0 },
             });
-            expect(placed.position).toBeDefined();
-            expect(Number.isFinite(placed.position.x)).toBe(true);
+            expect(placed.position.x).toBe(
+                DEFAULT_PLACEMENT_ANCHOR.x + MAX_OVERLAP_AVOIDANCE_ATTEMPTS * DEFAULT_COLUMN_STEP.x,
+            );
         });
     });
 });

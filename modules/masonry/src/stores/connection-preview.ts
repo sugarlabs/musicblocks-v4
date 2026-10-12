@@ -65,12 +65,17 @@ export const useConnectionPreviewStore = create<ConnectionPreviewStore>()(
         // High-frequency update called on every drag frame.
         // It strictly checks for deep equality before calling `set()` to prevent unnecessary React renders.
         setPreviewTarget: (target, isValid, snapPosition) => {
+            const current = get();
             if (
-                get().activeTarget?.targetTowerId === target?.targetTowerId &&
-                get().activeTarget?.targetBrickId === target?.targetBrickId &&
-                get().isValid === isValid &&
-                get().snapPosition?.x === snapPosition?.x &&
-                get().snapPosition?.y === snapPosition?.y
+                current.activeTarget?.draggedTowerId === target?.draggedTowerId &&
+                current.activeTarget?.targetTowerId === target?.targetTowerId &&
+                current.activeTarget?.targetBrickId === target?.targetBrickId &&
+                current.activeTarget?.type === target?.type &&
+                current.activeTarget?.centroid?.x === target?.centroid?.x &&
+                current.activeTarget?.centroid?.y === target?.centroid?.y &&
+                current.isValid === isValid &&
+                current.snapPosition?.x === snapPosition?.x &&
+                current.snapPosition?.y === snapPosition?.y
             ) {
                 return;
             }

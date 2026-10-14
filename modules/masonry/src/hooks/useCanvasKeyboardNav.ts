@@ -1,8 +1,10 @@
 import { RefObject, useCallback, useEffect } from 'react';
 
+import { useBrickLayoutStore } from '@/stores/brick';
 import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
-import { FAST_PAN_STEP, PAGE_PAN_STEP, PAN_STEP } from '@/utils/constants';
+import { AUTO_PAN_BAND, FAST_PAN_STEP, PAGE_PAN_STEP, PAN_STEP } from '@/utils/constants';
+import { measureTowerExtent } from '@/utils/tower-traversal';
 import { goHome } from '@/utils/workspace-home';
 
 /**
@@ -100,15 +102,32 @@ export function useCanvasKeyboardNav(canvasRef?: RefObject<HTMLElement | null>) 
         if (towerList.length === 0) {
           resetOffset();
         } else {
-          let maxX = 0;
-          let maxY = 0;
+          const { coords } = useBrickLayoutStore.getState();
+          let maxRight = 0;
+          let maxBottom = 0;
           for (const tower of towerList) {
-            maxX = Math.max(maxX, tower.position.x);
-            maxY = Math.max(maxY, tower.position.y);
+            const extent = measureTowerExtent(tower, coords);
+            maxRight = Math.max(maxRight, tower.position.x + extent.w);
+            maxBottom = Math.max(maxBottom, tower.position.y + extent.h);
           }
+
+          const canvas = canvasRef?.current;
+          const rect = canvas ? canvas.getBoundingClientRect() : null;
+          const viewWidth = rect && rect.width > 0 ? rect.width : 0;
+          const viewHeight = rect && rect.height > 0 ? rect.height : 0;
+
+          const targetX =
+            viewWidth > 0
+              ? Math.max(0, maxRight - viewWidth + AUTO_PAN_BAND)
+              : Math.max(0, maxRight - 100);
+          const targetY =
+            viewHeight > 0
+              ? Math.max(0, maxBottom - viewHeight + AUTO_PAN_BAND)
+              : Math.max(0, maxBottom - 100);
+
           setOffset({
-            x: Math.max(0, maxX - 100),
-            y: Math.max(0, maxY - 100),
+            x: targetX,
+            y: targetY,
           });
         }
         break;

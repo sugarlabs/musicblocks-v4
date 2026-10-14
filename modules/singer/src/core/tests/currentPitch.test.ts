@@ -87,6 +87,22 @@ describe('class CurrentPitch', () => {
             cp.setPitch(55);
             expect(Math.round(cp.freq)).toBe(392);
         });
+
+        test("Set pitch to pitch number 12 and expect generic note name 'n0' and octave 1", () => {
+            cp.setPitch(12);
+            expect(cp.genericName).toBe('n0');
+            expect(cp.octave).toBe(1);
+            expect(cp.semitoneIndex).toBe(0);
+            expect(Math.round(cp.freq)).toBe(33);
+        });
+
+        test('Transpose note set by pitch number 12 and expect valid generic note names', () => {
+            cp.setPitch(12);
+            cp.applyScalarTransposition(1);
+            expect(cp.genericName).toBe('n2');
+            cp.applySemitoneTransposition(1);
+            expect(cp.genericName).toBe('n3');
+        });
     });
 
     describe('Test scalar step', () => {

@@ -137,7 +137,7 @@ export default class CurrentPitch implements ICurrentPitch {
                  */
                 if (pitchName > this._t.numberOfNotesInTemperament) {
                     this._defineByFrequency(pitchName);
-                } else if (pitchName > this._t.numberOfSemitonesInOctave) {
+                } else if (pitchName >= this._t.numberOfSemitonesInOctave) {
                     // Assume it is a pitch number.
                     this._number = pitchName;
                     this._freq = this._t.getFreqByIndex(this._number);

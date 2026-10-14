@@ -87,6 +87,40 @@ describe('class CurrentPitch', () => {
             cp.setPitch(55);
             expect(Math.round(cp.freq)).toBe(392);
         });
+
+        test('Set pitch to pitch number 12 (boundary) and expect octave 1, n0, and working transposition', () => {
+            const p = new CurrentPitch();
+            p.setPitch(12);
+            expect(p.genericName).toBe('n0');
+            expect(p.octave).toBe(1);
+            expect(p.semitoneIndex).toBe(0);
+            expect(Math.round(p.freq)).toBe(33);
+
+            // Verify that subsequent transpositions succeed without undefined errors
+            expect(() => {
+                p.applyScalarTransposition(1);
+            }).not.toThrow();
+            expect(p.genericName).toBe('n2');
+
+            expect(() => {
+                p.applySemitoneTransposition(1);
+            }).not.toThrow();
+        });
+
+        test('Set pitch with boundary semitone index 0 and 11 and negative number safely', () => {
+            const p = new CurrentPitch();
+            p.setPitch(0, 4);
+            expect(p.genericName).toBe('n0');
+            expect(p.octave).toBe(4);
+
+            p.setPitch(11, 4);
+            expect(p.genericName).toBe('n11');
+            expect(p.octave).toBe(4);
+
+            p.setPitch(-1);
+            expect(p.genericName).toBeDefined();
+            expect(typeof p.genericName).toBe('string');
+        });
     });
 
     describe('Test scalar step', () => {

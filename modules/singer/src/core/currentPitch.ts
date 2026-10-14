@@ -137,14 +137,14 @@ export default class CurrentPitch implements ICurrentPitch {
                  */
                 if (pitchName > this._t.numberOfNotesInTemperament) {
                     this._defineByFrequency(pitchName);
-                } else if (pitchName > this._t.numberOfSemitonesInOctave) {
+                } else if (pitchName >= this._t.numberOfSemitonesInOctave) {
                     // Assume it is a pitch number.
                     this._number = pitchName;
                     this._freq = this._t.getFreqByIndex(this._number);
                     [this._semitoneIndex, this._octave] =
                         this._t.getModalIndexAndOctaveFromFreqIndex(this._number);
                     this._genericName = this._t.getNoteName(this._semitoneIndex);
-                } else {
+                } else if (pitchName >= 0) {
                     // Assume it is a semitone index.
                     this._semitoneIndex = pitchName;
                     this._octave = octave;
@@ -154,6 +154,8 @@ export default class CurrentPitch implements ICurrentPitch {
                         this._octave,
                     );
                     this._number = this._t.getNearestFreqIndex(this._freq);
+                } else {
+                    this._defineByFrequency(pitchName);
                 }
             }
         } else if (typeof pitchName === 'string') {

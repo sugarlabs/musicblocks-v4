@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { TowerState } from '@/@types/workspace.types';
 import { makeEmptyStatement } from '@/mocks/tower';
+import { useBrickLayoutStore } from '@/stores/brick';
 import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { AUTO_PAN_BAND, FAST_PAN_STEP, PAGE_PAN_STEP, PAN_STEP } from '@/utils/constants';
@@ -56,6 +57,7 @@ describe('useCanvasKeyboardNav', () => {
   beforeEach(() => {
     useWorkspaceViewportStore.setState({ offset: { x: 0, y: 0 } });
     useWorkspaceStore.setState({ towers: {} });
+    useBrickLayoutStore.setState({ coords: {} });
   });
 
   it('pans the canvas with ArrowUp, ArrowDown, ArrowLeft, and ArrowRight', () => {
@@ -283,6 +285,56 @@ describe('useCanvasKeyboardNav', () => {
       // Both extents sit inside the margin the pan leaves, so the target clamps at the origin
       // rather than going negative.
       expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+    });
+
+    it('pans to bottom-right extents considering canvas dimensions and AUTO_PAN_BAND margin', () => {
+      const towers: Record<string, TowerState> = {
+        t1: { id: 't1', position: { x: 1200, y: 900 }, root: makeEmptyStatement('s1', 0, false) },
+      };
+      useWorkspaceStore.setState({ towers });
+
+      const canvas = document.createElement('div');
+      canvas.getBoundingClientRect = () => ({ width: 1000, height: 600 }) as DOMRect;
+      renderHook(() => useCanvasKeyboardNav({ current: canvas }));
+
+      fireEvent.keyDown(window, { key: 'End' });
+
+      // targetX = 1200 - 1000 + AUTO_PAN_BAND
+      // targetY = 900 - 600 + AUTO_PAN_BAND
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({
+        x: 1200 - 1000 + AUTO_PAN_BAND,
+        y: 900 - 600 + AUTO_PAN_BAND,
+      });
+    });
+
+    it('incorporates child brick layout coordinates when computing End extents', () => {
+      const root = makeEmptyStatement('s1', 0, false);
+      const child = makeEmptyStatement('s2', 0, false);
+      root.next = child;
+      child.prev = root;
+
+      const towers: Record<string, TowerState> = {
+        t1: { id: 't1', position: { x: 500, y: 400 }, root },
+      };
+      useWorkspaceStore.setState({ towers });
+
+      child.model.widgetDims = { w: 60, h: 20 };
+      child.model.computeDims();
+
+      useBrickLayoutStore.setState({
+        coords: {
+          s1: { x: 500, y: 400 },
+          s2: { x: 500, y: 550 },
+        },
+      });
+
+      const { getByTestId } = render(<KeyboardTestComponent />);
+      fireEvent.keyDown(getByTestId('canvas-test'), { key: 'End' });
+
+      const expectedExtentH = 150 + child.model.dims.h;
+      expect(useWorkspaceViewportStore.getState().offset.y).toBe(
+        Math.max(0, 400 + expectedExtentH - 100),
+      );
     });
   });
 

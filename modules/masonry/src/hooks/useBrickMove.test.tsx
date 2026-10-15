@@ -7,7 +7,7 @@ import { act, cleanup, render, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useRef } from 'react';
 
-import { makeEmptyStatement } from '@/mocks/tower';
+import { makeEmptyExpression, makeEmptyStatement, makeEmptyValue } from '@/mocks/tower';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { useTrashStore } from '@/stores/trash';
@@ -15,7 +15,7 @@ import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { AUTO_PAN_MAX_STEP, DRAG_CLICK_SUPPRESSION_MS } from '@/utils/constants';
 
-import { useBrickMove } from './useBrickMove';
+import { triggerBrickAnimation, tryConnect, useBrickMove } from './useBrickMove';
 
 const { interactableMock, interactMock } = vi.hoisted(() => {
   const interactableMock = {
@@ -441,5 +441,119 @@ describe('useBrickMove drag-to-click suppression', () => {
     dragBrick();
 
     expect(result.current()).toBe(true);
+  });
+});
+
+describe('triggerBrickAnimation', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('triggers animation on element with data-brick-id and removes class after 400ms', () => {
+    const el = document.createElement('div');
+    el.setAttribute('data-brick-id', 'test-brick-1');
+    document.body.appendChild(el);
+
+    triggerBrickAnimation('test-brick-1', 'brick-snap-pulse');
+    expect(el.classList.contains('brick-snap-pulse')).toBe(true);
+
+    vi.advanceTimersByTime(400);
+    expect(el.classList.contains('brick-snap-pulse')).toBe(false);
+  });
+
+  it('triggers animation on element with data-id as fallback', () => {
+    const el = document.createElement('div');
+    el.setAttribute('data-id', 'test-brick-2');
+    document.body.appendChild(el);
+
+    triggerBrickAnimation('test-brick-2', 'brick-snap-pulse');
+    expect(el.classList.contains('brick-snap-pulse')).toBe(true);
+
+    vi.advanceTimersByTime(400);
+    expect(el.classList.contains('brick-snap-pulse')).toBe(false);
+  });
+
+  it('safely handles non-existent brick IDs', () => {
+    expect(() => {
+      triggerBrickAnimation('non-existent-id', 'brick-snap-pulse');
+    }).not.toThrow();
+  });
+});
+
+describe('tryConnect animation', () => {
+  it('triggers animation on the connected child brick when a statement joins', () => {
+    const hostNode = makeEmptyStatement('host-brick', 0);
+    hostNode.model.setPosition(500, 500);
+    const draggedNode = makeEmptyStatement('dragged-brick', 0);
+
+    const hostTower = { id: 'tower-host', root: hostNode, position: { x: 500, y: 500 } };
+    const tab = hostNode.model.getConnectorCoords().next!;
+    const draggedPrev = draggedNode.model.getConnectorCoords().prev!;
+    const draggedPos = {
+      x: 500 + tab.x - draggedPrev.x,
+      y: 500 + tab.y - draggedPrev.y,
+    };
+    const draggedTower = { id: 'tower-dragged', root: draggedNode, position: draggedPos };
+
+    const store = useWorkspaceStore.getState();
+    store.createTower(hostTower);
+    store.createTower(draggedTower);
+    store.syncStatementConnectors('tower-host', hostNode);
+    store.syncStatementConnectors('tower-dragged', draggedNode);
+
+    const childEl = document.createElement('div');
+    childEl.setAttribute('data-brick-id', 'dragged-brick');
+    document.body.appendChild(childEl);
+
+    const towerEl = document.createElement('div');
+    towerEl.setAttribute('data-brick-id', 'tower-dragged');
+    document.body.appendChild(towerEl);
+
+    const connected = tryConnect('tower-dragged');
+    expect(connected).toBe(true);
+
+    // The animation MUST be applied to the child brick ('dragged-brick'), NOT the tower ID ('tower-dragged')
+    expect(childEl.classList.contains('brick-snap-pulse')).toBe(true);
+    expect(towerEl.classList.contains('brick-snap-pulse')).toBe(false);
+  });
+
+  it('triggers animation on the connected argument brick when an argument joins', () => {
+    const hostNode = makeEmptyExpression('host-expr', 1);
+    hostNode.model.setPosition(500, 500);
+    const draggedNode = makeEmptyValue('dragged-arg');
+
+    const hostTower = { id: 'tower-expr-host', root: hostNode, position: { x: 500, y: 500 } };
+    const input = hostNode.model.getConnectorCoords().inputs[0]!;
+    const output = draggedNode.model.getConnectorCoords().output!;
+    const draggedPos = {
+      x: 500 + input.x - output.x,
+      y: 500 + input.y - output.y,
+    };
+    const draggedTower = { id: 'tower-arg-dragged', root: draggedNode, position: draggedPos };
+
+    const store = useWorkspaceStore.getState();
+    store.createTower(hostTower);
+    store.createTower(draggedTower);
+    store.syncArgumentConnectors('tower-expr-host', hostNode);
+    store.syncArgumentConnectors('tower-arg-dragged', draggedNode);
+
+    const childEl = document.createElement('div');
+    childEl.setAttribute('data-brick-id', 'dragged-arg');
+    document.body.appendChild(childEl);
+
+    const towerEl = document.createElement('div');
+    towerEl.setAttribute('data-brick-id', 'tower-arg-dragged');
+    document.body.appendChild(towerEl);
+
+    const connected = tryConnect('tower-arg-dragged');
+    expect(connected).toBe(true);
+
+    // The animation MUST be applied to the child brick ('dragged-arg'), NOT the tower ID ('tower-arg-dragged')
+    expect(childEl.classList.contains('brick-snap-pulse')).toBe(true);
+    expect(towerEl.classList.contains('brick-snap-pulse')).toBe(false);
   });
 });

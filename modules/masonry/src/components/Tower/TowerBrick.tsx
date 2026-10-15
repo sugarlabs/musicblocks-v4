@@ -131,6 +131,7 @@ export const TowerBrickView = memo(function (props: TowerBrickViewProps) {
     <div
       ref={ref}
       data-id={id}
+      data-brick-id={id}
       data-tower-brick=""
       className="absolute"
       onClick={handleClick}

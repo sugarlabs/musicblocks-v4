@@ -25,7 +25,7 @@ import { listNodes } from '@/utils/tower-traversal';
  * This is used to create visual "pulses" when bricks connect or disconnect.
  */
 export function triggerBrickAnimation(brickId: string, animationClass: string) {
-    const el = document.querySelector(`[data-brick-id="${brickId}"]`);
+    const el = document.querySelector(`[data-brick-id="${brickId}"], [data-id="${brickId}"]`);
     if (el) {
         el.classList.remove(animationClass);
         // Force reflow to restart animation
@@ -70,7 +70,7 @@ export function tryConnect(towerId: string): boolean {
     if (statement !== null && (argument === null || statement.distance < argument.distance)) {
         joinStatement(statement);
         store.absorbTower(statement.absorbedTowerId, statement.hostTowerId);
-        triggerBrickAnimation(towerId, 'brick-snap-pulse');
+        triggerBrickAnimation(statement.child.model.id, 'brick-snap-pulse');
 
         return true;
     }
@@ -78,7 +78,7 @@ export function tryConnect(towerId: string): boolean {
     if (argument !== null) {
         joinArg(argument);
         store.absorbTower(argument.absorbedTowerId, argument.hostTowerId);
-        triggerBrickAnimation(towerId, 'brick-snap-pulse');
+        triggerBrickAnimation(argument.child.model.id, 'brick-snap-pulse');
 
         return true;
     }
@@ -277,6 +277,7 @@ export function useBrickMove(
                         if (newTowerId) {
                             targetTowerId = newTowerId;
                             targetPosition = absPos;
+                            triggerBrickAnimation(id, 'brick-detach-flash');
                         }
                     }
 

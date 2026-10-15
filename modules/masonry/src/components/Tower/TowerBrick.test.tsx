@@ -105,6 +105,16 @@ describe('TowerBrickView', () => {
     expect(wrapper.style.visibility).toBe('visible');
   });
 
+  it('renders data-brick-id matching the brick id for animations and palette parity', () => {
+    seedLayout();
+
+    const { container } = render(<TowerBrickView id={NODE.model.id} node={NODE} />);
+    const wrapper = container.querySelector(`[data-brick-id="${NODE.model.id}"]`);
+
+    expect(wrapper).not.toBeNull();
+    expect(wrapper?.getAttribute('data-brick-id')).toBe(NODE.model.id);
+  });
+
   it('is hidden once areBricksHidden is set, even though it is positioned', () => {
     seedLayout();
     act(() => {

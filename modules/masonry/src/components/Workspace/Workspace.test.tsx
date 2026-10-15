@@ -380,6 +380,13 @@ describe('Workspace', () => {
 
     const restored = useWorkspaceStore.getState().towers['history-nested'];
     expect((restored?.root as TowerStatementNode).nestedNext).not.toBeNull();
+
+    act(() => {
+      useWorkspaceHistoryStore.getState().redo();
+    });
+
+    const redone = useWorkspaceStore.getState().towers['history-nested'];
+    expect((redone?.root as TowerStatementNode).nestedNext).toBeNull();
   });
 
   it('leaves the selection alone while the user types in a brick input', () => {

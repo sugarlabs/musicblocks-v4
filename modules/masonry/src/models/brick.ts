@@ -307,8 +307,8 @@ export class ExpressionBrickModel extends BrickModelBase {
 export class StatementBrickModel extends BrickModelBase {
     readonly kind = 'statement' as const;
 
-    // For variant widgets, the inner value field may be mutated.
-    readonly widget: WidgetDisplay;
+    // For variant and input widgets, the inner value field may be mutated.
+    readonly widget: WidgetDisplay | WidgetInput;
 
     // Param labels are structural and fixed; slot count won't change.
     readonly params: readonly (string | null)[];
@@ -403,7 +403,7 @@ export class StatementBrickModel extends BrickModelBase {
         colorsDefault: { background: string; foreground: string; border: string };
         tooltipText: string;
         scaleLevel?: 1 | 2 | 3;
-        widget: WidgetDisplay;
+        widget: WidgetDisplay | WidgetInput;
         params?: (string | null)[];
         argDims?: (Size | null)[];
         hasNesting?: boolean;

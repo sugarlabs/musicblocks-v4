@@ -272,3 +272,43 @@ export const ValueSelect: Story = {
   ),
 };
 ValueSelect.storyName = 'Value - Select';
+
+// ─── Statement + Input (#893) ───────────────────────────────────────────────
+// Statement bricks accept inline input widgets (e.g. "wait N seconds").
+// Rendered by BrickViewFixed via the shared Widget component.
+
+export const StatementTextbox: Story = {
+  render: () => (
+    <BrickView
+      kind="statement"
+      model={
+        new StatementBrickModel({
+          colorsDefault: { background: '#9b59b6', foreground: '#ffffff', border: '#8e44ad' },
+          tooltipText: '',
+          widget: { type: 'textbox', value: '5' },
+          hasConnectionPrev: true,
+          hasConnectionNext: true,
+        })
+      }
+    />
+  ),
+};
+StatementTextbox.storyName = 'Statement - Textbox (#893)';
+
+export const StatementSlider: Story = {
+  render: () => (
+    <BrickView
+      kind="statement"
+      model={
+        new StatementBrickModel({
+          colorsDefault: { background: '#9b59b6', foreground: '#ffffff', border: '#8e44ad' },
+          tooltipText: '',
+          widget: { type: 'slider', value: 50, min: 0, max: 100, step: 5 },
+          hasConnectionPrev: true,
+          hasConnectionNext: true,
+        })
+      }
+    />
+  ),
+};
+StatementSlider.storyName = 'Statement - Slider (#893)';

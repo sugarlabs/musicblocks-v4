@@ -315,3 +315,90 @@ describe('BrickViewFixed fold toggle', () => {
     expect(container.querySelectorAll(FOLD_TOGGLE_SELECTOR)).toHaveLength(1);
   });
 });
+
+describe('statement brick with input widget (#893)', () => {
+  it('renders a textbox input instead of an empty widget area', () => {
+    const model = new StatementBrickModel({
+      colorsDefault,
+      tooltipText: '',
+      widget: { type: 'textbox', value: '5' },
+      hasConnectionPrev: true,
+      hasConnectionNext: true,
+    });
+    render(<BrickViewFixed kind="statement" model={model} />);
+
+    const input = screen.getByRole('textbox') as HTMLInputElement;
+    expect(input).toBeTruthy();
+    expect(input.value).toBe('5');
+  });
+
+  it('renders a numberbox input and writes edits back to the model', () => {
+    const model = new StatementBrickModel({
+      colorsDefault,
+      tooltipText: '',
+      widget: { type: 'numberbox', value: 10 },
+      hasConnectionPrev: true,
+      hasConnectionNext: true,
+    });
+    render(<BrickViewFixed kind="statement" model={model} />);
+
+    const input = screen.getByRole('spinbutton') as HTMLInputElement;
+    expect(input.value).toBe('10');
+
+    fireEvent.change(input, { target: { value: '42' } });
+    expect((model.widget as { value: number }).value).toBe(42);
+  });
+
+  it('re-measures the widget box when an input resizes it', () => {
+    // Input widgets mutate `widget.value` in place without notifying, so the brick observes
+    // its own widget box (mirroring BrickViewInput) instead of waiting for a re-render.
+    const observed: { el: Element; cb: () => void }[] = [];
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        private cb: () => void;
+        constructor(cb: () => void) {
+          this.cb = cb;
+        }
+        observe(el: Element) {
+          observed.push({ el, cb: this.cb });
+        }
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+
+    try {
+      const model = new StatementBrickModel({
+        colorsDefault,
+        tooltipText: '',
+        widget: { type: 'textbox', value: '5' },
+        hasConnectionPrev: true,
+        hasConnectionNext: true,
+      });
+      render(<BrickViewFixed kind="statement" model={model} />);
+
+      expect(observed.length).toBeGreaterThan(0);
+      const entry = observed[observed.length - 1];
+      // The observed box is the widget container holding the input.
+      expect(entry.el.querySelector('input')).not.toBeNull();
+
+      vi.spyOn(entry.el as HTMLElement, 'getBoundingClientRect').mockReturnValue({
+        width: 120,
+        height: 30,
+        top: 0,
+        left: 0,
+        bottom: 30,
+        right: 120,
+        x: 0,
+        y: 0,
+        toJSON: () => {},
+      } as DOMRect);
+      entry.cb();
+
+      expect(model.widgetDims).toEqual({ w: 120, h: 30 });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});

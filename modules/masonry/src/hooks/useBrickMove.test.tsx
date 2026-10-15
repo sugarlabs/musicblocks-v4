@@ -239,6 +239,58 @@ describe('useBrickMove drag', () => {
     expect(useTrashStore.getState().isHovered).toBe(false);
   });
 
+  it('triggers brick-detach-flash when starting a drag on a non-root brick of a stack', () => {
+    const rootNode = makeEmptyStatement('root-brick', 0);
+    const childNode = makeEmptyStatement('child-brick', 0);
+    rootNode.next = childNode;
+
+    useWorkspaceStore.setState({
+      towers: {
+        'stack-tower': {
+          id: 'stack-tower',
+          root: rootNode,
+          position: { x: 100, y: 100 },
+        },
+      },
+    });
+
+    const childEl = document.createElement('div');
+    childEl.setAttribute('data-id', 'child-brick');
+    document.body.appendChild(childEl);
+
+    renderHook(() => useBrickMove('child-brick', { current: childEl }));
+
+    listeners().start({});
+
+    expect(childEl.classList.contains('brick-detach-flash')).toBe(true);
+  });
+
+  it('does not trigger brick-detach-flash when starting a drag on a root brick', () => {
+    const rootNode = makeEmptyStatement('root-brick', 0);
+    const childNode = makeEmptyStatement('child-brick', 0);
+    rootNode.next = childNode;
+
+    useWorkspaceStore.setState({
+      towers: {
+        'stack-tower': {
+          id: 'stack-tower',
+          root: rootNode,
+          position: { x: 100, y: 100 },
+        },
+      },
+    });
+
+    const rootEl = document.createElement('div');
+    rootEl.setAttribute('data-id', 'root-brick');
+    document.body.appendChild(rootEl);
+
+    renderHook(() => useBrickMove('root-brick', { current: rootEl }));
+
+    listeners().start({});
+
+    expect(rootEl.classList.contains('brick-detach-flash')).toBe(false);
+  });
+
   describe('auto-pan', () => {
     it('does not start panning in the middle of the canvas', () => {
       mountBrickMove();

@@ -14,8 +14,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { Size } from '@/@types/common.types';
 
-import { ExpressionBrickModel, StatementBrickModel } from '@/models/brick';
+import { ExpressionBrickModel, StatementBrickModel, ValueBrickModel } from '@/models/brick';
 import { FOLD_TOGGLE_SELECTOR, SCALE_LEVEL_CONFIG } from '@/utils/constants';
+import { exportWorkspace } from '@/utils/import-export';
 
 import { BrickViewFixed } from './BrickFixed';
 
@@ -313,5 +314,115 @@ describe('BrickViewFixed fold toggle', () => {
     // `useBrickMove` passes this selector as the draggable's `ignoreFrom`; the attribute is what
     // makes the toggle match it.
     expect(container.querySelectorAll(FOLD_TOGGLE_SELECTOR)).toHaveLength(1);
+  });
+});
+
+describe('BrickViewFixed variant widget', () => {
+  it('updates the displayed value when a new variant option is selected', () => {
+    const model = new ExpressionBrickModel({
+      colorsDefault,
+      tooltipText: 'Math Operator',
+      widget: { type: 'variant', options: ['+', '-', '*', '/'], value: '/' },
+      params: ['num1', 'num2'],
+    });
+
+    const { container } = render(<BrickViewFixed kind="expression" model={model} />);
+    expect(container.textContent).toContain('/');
+
+    const trigger = container.querySelector('button[role="combobox"], button');
+    expect(trigger).not.toBeNull();
+    fireEvent.pointerDown(trigger!);
+    fireEvent.click(trigger!);
+
+    const option = screen.getByRole('option', { name: '+' });
+    fireEvent.pointerDown(option);
+    fireEvent.click(option);
+
+    expect(model.widget).toEqual({ type: 'variant', options: ['+', '-', '*', '/'], value: '+' });
+    expect(container.textContent).toContain('+');
+  });
+
+  it('persists the updated variant value when exporting the workspace', () => {
+    const model = new ExpressionBrickModel({
+      colorsDefault,
+      tooltipText: 'Math Operator',
+      widget: { type: 'variant', options: ['+', '-', '*', '/'], value: '/' },
+      params: ['num1', 'num2'],
+    });
+
+    const { container } = render(<BrickViewFixed kind="expression" model={model} />);
+    const trigger = container.querySelector('button[role="combobox"], button');
+    fireEvent.pointerDown(trigger!);
+    fireEvent.click(trigger!);
+
+    const option = screen.getByRole('option', { name: '*' });
+    fireEvent.pointerDown(option);
+    fireEvent.click(option);
+
+    expect(model.widget).toEqual({ type: 'variant', options: ['+', '-', '*', '/'], value: '*' });
+
+    const exported = exportWorkspace({
+      'tower-1': {
+        id: 'tower-1',
+        position: { x: 0, y: 0 },
+        root: {
+          kind: 'expression',
+          parent: null,
+          model,
+          args: [null, null],
+        },
+      },
+    });
+
+    expect(exported.nodes[model.id].modelConfig.widget).toEqual({
+      type: 'variant',
+      options: ['+', '-', '*', '/'],
+      value: '*',
+    });
+  });
+
+  it('updates and exports a value brick backed by ValueBrickModel with a variant widget', () => {
+    const model = new ValueBrickModel({
+      colorsDefault,
+      tooltipText: 'Value Variant',
+      widget: { type: 'variant', options: ['fast', 'normal', 'slow'], value: 'normal' },
+    });
+
+    const { container } = render(<BrickViewFixed kind="value" model={model} />);
+    expect(container.textContent).toContain('normal');
+
+    const trigger = container.querySelector('button[role="combobox"], button');
+    expect(trigger).not.toBeNull();
+    fireEvent.pointerDown(trigger!);
+    fireEvent.click(trigger!);
+
+    const option = screen.getByRole('option', { name: 'fast' });
+    fireEvent.pointerDown(option);
+    fireEvent.click(option);
+
+    expect(model.widget).toEqual({
+      type: 'variant',
+      options: ['fast', 'normal', 'slow'],
+      value: 'fast',
+    });
+    expect(container.textContent).toContain('fast');
+
+    const exported = exportWorkspace({
+      'tower-1': {
+        id: 'tower-1',
+        position: { x: 0, y: 0 },
+        root: {
+          kind: 'value',
+          parent: null,
+          model,
+        },
+      },
+    });
+
+    expect(exported.nodes[model.id].modelConfig.widget).toEqual({
+      type: 'variant',
+      options: ['fast', 'normal', 'slow'],
+      value: 'fast',
+    });
   });
 });

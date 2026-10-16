@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { makeEmptyExpression, makeEmptyStatement, makeEmptyValue } from '@/mocks/tower';
-import { StatementBrickModel } from '@/models/brick';
+import { ExpressionBrickModel, StatementBrickModel, ValueBrickModel } from '@/models/brick';
 import { SCALE_LEVEL_CONFIG, SCALE_LEVELS, type ScaleLevel } from '@/utils/constants';
 
 // -------------------------------------------------------------------------------------------------
@@ -290,5 +290,111 @@ describe('StatementBrickModel nesting fold', () => {
             expect(foldedCoords.next!.y).toBeCloseTo(plainCoords.next!.y, 6);
             expect(foldedCoords.next!.y).toBeLessThan(expandedCoords.next!.y);
         });
+    });
+});
+
+describe('BrickModel setVariantValue', () => {
+    it('updates widget.value and notifies subscribers on ExpressionBrickModel with variant widget', () => {
+        let notified = 0;
+        const model = new ExpressionBrickModel({
+            colorsDefault: { background: '#f6469eff', foreground: '#ffffff', border: '#be185d' },
+            tooltipText: 'Math Operator',
+            widget: { type: 'variant', options: ['+', '-', '*', '/'], value: '/' },
+            params: ['num1', 'num2'],
+        });
+        model.registerUpdateCallback(() => {
+            notified++;
+        });
+
+        model.setVariantValue('+');
+        expect(model.widget).toEqual({
+            type: 'variant',
+            options: ['+', '-', '*', '/'],
+            value: '+',
+        });
+        expect(notified).toBe(1);
+    });
+
+    it('updates widget.value and notifies subscribers on StatementBrickModel with variant widget', () => {
+        let notified = 0;
+        const model = new StatementBrickModel({
+            colorsDefault: { background: '#f6469eff', foreground: '#ffffff', border: '#be185d' },
+            tooltipText: 'Statement Variant',
+            widget: { type: 'variant', options: ['A', 'B'], value: 'A' },
+            params: [],
+        });
+        model.registerUpdateCallback(() => {
+            notified++;
+        });
+
+        model.setVariantValue('B');
+        expect(model.widget).toEqual({ type: 'variant', options: ['A', 'B'], value: 'B' });
+        expect(notified).toBe(1);
+    });
+
+    it('updates widget.value and notifies subscribers on ValueBrickModel with variant widget', () => {
+        let notified = 0;
+        const model = new ValueBrickModel({
+            colorsDefault: { background: '#f6469eff', foreground: '#ffffff', border: '#be185d' },
+            tooltipText: 'Value Variant',
+            widget: { type: 'variant', options: ['X', 'Y'], value: 'X' },
+        });
+        model.registerUpdateCallback(() => {
+            notified++;
+        });
+
+        model.setVariantValue('Y');
+        expect(model.widget).toEqual({ type: 'variant', options: ['X', 'Y'], value: 'Y' });
+        expect(notified).toBe(1);
+    });
+
+    it('is a no-op on non-variant widgets (label / graphic / input)', () => {
+        let notified = 0;
+        const exprModel = new ExpressionBrickModel({
+            colorsDefault: { background: '#f6469eff', foreground: '#ffffff', border: '#be185d' },
+            tooltipText: 'Label Expr',
+            widget: { type: 'label', text: 'Add' },
+            params: ['A'],
+        });
+        exprModel.registerUpdateCallback(() => {
+            notified++;
+        });
+
+        exprModel.setVariantValue('X');
+        expect(exprModel.widget).toEqual({ type: 'label', text: 'Add' });
+        expect(notified).toBe(0);
+
+        const stmtModel = new StatementBrickModel({
+            colorsDefault: { background: '#f6469eff', foreground: '#ffffff', border: '#be185d' },
+            tooltipText: 'Graphic Stmt',
+            widget: { type: 'graphic', src: 'forward.svg' },
+            params: [],
+        });
+        stmtModel.registerUpdateCallback(() => {
+            notified++;
+        });
+
+        stmtModel.setVariantValue('Y');
+        expect(stmtModel.widget).toEqual({ type: 'graphic', src: 'forward.svg' });
+        expect(notified).toBe(0);
+
+        const valModel = new ValueBrickModel({
+            colorsDefault: { background: '#f6469eff', foreground: '#ffffff', border: '#be185d' },
+            tooltipText: 'Number Value',
+            widget: { type: 'numberbox', value: 42, min: 0, max: 100, step: 1 },
+        });
+        valModel.registerUpdateCallback(() => {
+            notified++;
+        });
+
+        valModel.setVariantValue('99');
+        expect(valModel.widget).toEqual({
+            type: 'numberbox',
+            value: 42,
+            min: 0,
+            max: 100,
+            step: 1,
+        });
+        expect(notified).toBe(0);
     });
 });

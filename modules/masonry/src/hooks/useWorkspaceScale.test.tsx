@@ -199,4 +199,23 @@ describe('useWorkspaceScale', () => {
       expect(node.model.scaleLevel).toBe(DEFAULT_SCALE_LEVEL);
     }
   });
+  it("exposes zoomIn, zoomOut, and reset action helpers", () => {
+    const { result } = renderHook(() => useWorkspaceScale());
+
+    act(() => {
+      result.current.zoomIn();
+    });
+    expect(useWorkspaceScaleStore.getState().level).toBe(DEFAULT_SCALE_LEVEL + 1);
+
+    act(() => {
+      result.current.zoomOut();
+    });
+    expect(useWorkspaceScaleStore.getState().level).toBe(DEFAULT_SCALE_LEVEL);
+
+    act(() => {
+      result.current.zoomIn();
+      result.current.reset();
+    });
+    expect(useWorkspaceScaleStore.getState().level).toBe(DEFAULT_SCALE_LEVEL);
+  });
 });

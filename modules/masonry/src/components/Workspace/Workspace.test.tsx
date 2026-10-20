@@ -938,4 +938,50 @@ describe('Workspace', () => {
       expect(useWorkspaceStore.getState().selectedBrickId).toBe('pan-selection-outer');
     });
   });
+  describe("trackpad pinch-to-zoom", () => {
+    it("zooms in when ctrlKey is true and deltaY is negative (pinch out)", () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const canvas = container.querySelector(
+        '[role="region"][aria-label="Workspace Canvas"]',
+      ) as HTMLElement;
+
+      act(() => {
+        useWorkspaceScaleStore.setState({ level: DEFAULT_SCALE_LEVEL });
+      });
+
+      fireEvent.wheel(canvas, { ctrlKey: true, deltaY: -100 });
+
+      expect(useWorkspaceScaleStore.getState().level).toBe(DEFAULT_SCALE_LEVEL + 1);
+    });
+
+    it("zooms out when ctrlKey is true and deltaY is positive (pinch in)", () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const canvas = container.querySelector(
+        '[role="region"][aria-label="Workspace Canvas"]',
+      ) as HTMLElement;
+
+      act(() => {
+        useWorkspaceScaleStore.setState({ level: DEFAULT_SCALE_LEVEL });
+      });
+
+      fireEvent.wheel(canvas, { ctrlKey: true, deltaY: 100 });
+
+      expect(useWorkspaceScaleStore.getState().level).toBe(DEFAULT_SCALE_LEVEL - 1);
+    });
+
+    it("does not zoom when ctrlKey is false (standard mouse scroll)", () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const canvas = container.querySelector(
+        '[role="region"][aria-label="Workspace Canvas"]',
+      ) as HTMLElement;
+
+      act(() => {
+        useWorkspaceScaleStore.setState({ level: DEFAULT_SCALE_LEVEL });
+      });
+
+      fireEvent.wheel(canvas, { ctrlKey: false, deltaY: -100 });
+
+      expect(useWorkspaceScaleStore.getState().level).toBe(DEFAULT_SCALE_LEVEL);
+    });
+  });
 });

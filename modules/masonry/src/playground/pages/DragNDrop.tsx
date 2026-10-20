@@ -126,14 +126,17 @@ function DragNDropContent() {
   }, []);
 
   return (
-    <div className="h-full w-full bg-indigo-100 p-4">
-      <div ref={containerRef} className="relative h-full w-full bg-white">
+    <div className="h-full w-full bg-slate-100 p-4 transition-colors duration-200 dark:bg-slate-950">
+      <div
+        ref={containerRef}
+        className="bg-background border-border relative h-full w-full rounded-lg border shadow-xs"
+      >
         <div
           ref={markerRef}
           className="pointer-events-none absolute top-0 left-0 h-2 w-2 bg-red-500"
           style={{ display: 'none' }}
         >
-          <div className="absolute -top-px -left-px h-1.75 w-1.75 bg-white" />
+          <div className="bg-background absolute -top-px -left-px h-1.75 w-1.75" />
         </div>
         {BOXES.map((box) => (
           <div
@@ -141,8 +144,8 @@ function DragNDropContent() {
             data-id={box.id}
             className={cn(
               'draggable',
-              'absolute grid h-15 w-30 touch-none place-items-center rounded-md select-none',
-              'cursor-grab! bg-indigo-600 text-white active:cursor-grabbing!',
+              'absolute grid h-15 w-30 touch-none place-items-center rounded-md shadow-md select-none',
+              'cursor-grab! bg-blue-600 text-white active:cursor-grabbing! dark:bg-blue-500',
             )}
             style={{
               left: box.x,

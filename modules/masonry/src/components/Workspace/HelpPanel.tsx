@@ -16,6 +16,7 @@ import type { Bounds, Point, Size } from '@/@types/common.types';
 import type { BrickHelp } from '@/utils/brick-help';
 
 import { BrickView } from '@/components/Brick/Brick';
+import { useBrickHeadOnScreen } from '@/hooks/useBrickHeadOnScreen';
 import { useBrickHelpStore } from '@/stores/brickHelp';
 import { useWorkspaceStore } from '@/stores/workspace';
 
@@ -100,8 +101,11 @@ function keepInPanel(event: SyntheticEvent) {
  * The help window the pie menu's help wedge opens, after v3's: dragged by its title bar, and open
  * until it is closed with its button or Escape. It shows the brick's name, a picture of the brick
  * and its help text. It opens beside the brick, with an arrow pointing at it, so it is clear which
- * brick it is about; once dragged away the arrow goes, since it would no longer point at the brick.
- * When the brick could not be found on screen it opens centred instead, without an arrow.
+ * brick it is about, and follows the brick as the canvas pans or zooms or the brick is moved. Once
+ * dragged away the arrow goes, since it would no longer point at the brick, and the panel stays
+ * where it was put. While the brick cannot be pointed at, deleted or panned out of the canvas's
+ * view, the panel keeps its place without an arrow. When the brick could not be found on screen as
+ * it opened, it opens centred instead, without an arrow.
  *
  * Rendered into `document.body`, above the canvas, and non-modal, so the workspace stays usable
  * while it is open.
@@ -137,7 +141,10 @@ function HelpWindow({ help }: { help: BrickHelp }) {
 
   const close = () => useBrickHelpStore.getState().hide();
 
-  const { anchor } = help;
+  // Opened beside its brick, it keeps following it; opened centred, it has no brick to follow.
+  const opensBeside = help.anchor != null;
+  const anchor = useBrickHeadOnScreen(help.brickId, help.anchor ?? null);
+
   const place = useCallback(() => {
     const panel = panelRef.current;
     if (panel === null) return;
@@ -145,10 +152,18 @@ function HelpWindow({ help }: { help: BrickHelp }) {
     const { width, height } = panel.getBoundingClientRect();
     const size = { w: width, h: height };
 
-    if (anchor) {
-      const beside = besideAnchor(anchor, size);
-      setPosition(beside.position);
-      setArrow(beside.arrow);
+    if (opensBeside) {
+      if (anchor !== null) {
+        const beside = besideAnchor(anchor, size);
+        setPosition(beside.position);
+        setArrow(beside.arrow);
+        return;
+      }
+
+      // The brick can't be pointed at for now: deleted, or panned out of view. The panel keeps its
+      // place, still inside the window, and goes back beside the brick if it comes back.
+      setArrow(null);
+      setPosition((current) => (current === null ? current : clampToWindow(current, size)));
       return;
     }
 
@@ -158,13 +173,14 @@ function HelpWindow({ help }: { help: BrickHelp }) {
         size,
       ),
     );
-  }, [anchor]);
+  }, [anchor, opensBeside]);
 
   // Placed once its size is known, before the browser paints, so it never appears elsewhere first.
-  // The brick preview measures itself after mounting and can grow the panel a moment later, so
-  // until the panel is dragged it is placed again on whatever size it settles at.
+  // Until the panel is dragged it is placed again whenever its brick moves, and on whatever size
+  // it settles at, since the brick preview measures itself after mounting and can grow the panel a
+  // moment later.
   useLayoutEffect(() => {
-    place();
+    if (!wasDraggedRef.current) place();
 
     const panel = panelRef.current;
     if (panel === null || typeof ResizeObserver === 'undefined') return;

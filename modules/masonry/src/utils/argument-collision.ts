@@ -7,8 +7,8 @@ import { listVisibleNodes } from './tower-traversal';
 let nextCollisionId = 1;
 
 /**
- * Extracts argument connection points from every visible brick in a tower — `input` grooves (one per
- * argument slot, filled and empty) and `output` tabs. Calculates their absolute positions based
+ * Extracts argument connection points from every visible brick in a tower — fitting `input`
+ * grooves (filled and empty slots) and `output` tabs. Calculates their absolute positions based
  * on the `model.position` which must be up-to-date from the tower layout pass.
  *
  * Bricks hidden inside a folded cavity contribute nothing: they are not drawn, so a snap onto one
@@ -34,9 +34,10 @@ export function extractArgumentConnectors(
 
         const coords = node.model.getConnectorCoords();
 
-        // Input grooves (right edge) — one per argument slot, filled and empty
+        // Input grooves (right edge) — only drawn grooves, retaining their argument-slot indices
         if (node.kind === 'expression' || node.kind === 'statement') {
             coords.inputs.forEach((bounds, slotIndex) => {
+                if (!bounds) return;
                 const id = nextCollisionId++;
                 results.push({
                     object: {

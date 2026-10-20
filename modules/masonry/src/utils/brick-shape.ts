@@ -52,6 +52,13 @@ interface NormalizedInput extends Omit<
     hasOutputNotch: boolean;
 }
 
+/** Vertical span and centre of a right-edge argument groove in SVG units. */
+interface InputNotch {
+    centre: number;
+    top: number;
+    bottom: number;
+}
+
 export class BrickOutlineGenerator {
     // ── Head padding ──
     /** Distance from the top edge of the head to its inner content */
@@ -303,23 +310,45 @@ export class BrickOutlineGenerator {
         ];
     }
 
+    /** A groove must clear the previous drawn groove and both rounded corners. */
+    private static notchFits(top: number, bottom: number, pen: number, edgeEnd: number): boolean {
+        return top >= pen && bottom <= edgeEnd;
+    }
+
+    /**
+     * Shared by outline drawing and connector reporting. Empty slots also need grooves so
+     * they can receive arguments. Null entries retain the indices of slots that cannot fit.
+     */
+    private getInputNotches(): (InputNotch | null)[] {
+        const cornerInset = this.input.strokeWidth / 2 + BrickOutlineGenerator.CORNER_RADIUS;
+        const edgeEnd = this.dimensions.headHeight - cornerInset;
+        const halfWidth = BrickOutlineGenerator.H_NOTCH_WIDTH / 2;
+        let pen = cornerInset;
+        let slotTop = 0;
+
+        return this.input.paramArgDims.map(({ arg }) => {
+            const centre = slotTop + BrickOutlineGenerator.H_NOTCH_OFFSET_Y;
+            const top = centre - halfWidth;
+            const bottom = centre + halfWidth;
+            slotTop += Math.max(arg?.h ?? 0, this.minimums.minArgHeight);
+
+            if (!BrickOutlineGenerator.notchFits(top, bottom, pen, edgeEnd)) {
+                return null;
+            }
+
+            pen = bottom;
+            return { centre, top, bottom };
+        });
+    }
+
     /**
      * Right edge of the head, top → bottom.
-     * Draws one full-size concave groove per arg slot, cutting INWARD into the brick (−x).
+     * Draws each fitting concave groove, cutting INWARD into the brick (−x).
      * Each groove receives one argument brick plugged in from the right.
      */
     private segHeadRight(): string[] {
         const strokeWidth = this.input.strokeWidth;
         const { headHeight } = this.dimensions;
-        const notchCentres: number[] = [];
-        let slotTop = 0;
-        for (const { arg } of this.input.paramArgDims) {
-            const rowH = Math.max(arg?.h ?? 0, this.minimums.minArgHeight);
-            if (arg !== null) {
-                notchCentres.push(slotTop + BrickOutlineGenerator.H_NOTCH_OFFSET_Y);
-            }
-            slotTop += rowH;
-        }
         // The edge runs between the two corners, each inset by strokeWidth/2 + CORNER_RADIUS.
         // below the rounded top-right corner
         const edgeStart = strokeWidth / 2 + BrickOutlineGenerator.CORNER_RADIUS;
@@ -332,11 +361,6 @@ export class BrickOutlineGenerator {
             { x: 0, y: BrickOutlineGenerator.CORNER_RADIUS },
         );
 
-        // No notches — single straight run.
-        if (notchCentres.length === 0) {
-            return [`v ${edgeEnd - edgeStart}`, corner];
-        }
-
         const R = BrickOutlineGenerator.H_NOTCH_RADIUS + strokeWidth;
         // Lip is the remaining depth after the arc radius, keeping lip + R === hNotchDepth.
         const lip = BrickOutlineGenerator.hNotchDepth(strokeWidth) - R;
@@ -346,25 +370,11 @@ export class BrickOutlineGenerator {
         // current y of the pen, travelling downwards
         let pen = edgeStart;
 
-        for (const centre of notchCentres) {
-            // Build the notch span from its centre, one portion above and below:
-            //   centre        — the notch centre
-            //   semicircleTop — one radius above the centre
-            //   notchTop      — one lip arc above the semicircle (where the groove begins)
-            const semicircleTop = centre - middle / 2 - R;
-            const notchTop = semicircleTop - lip;
-            // ...and symmetrically downwards (where the groove ends):
-            const semicircleBottom = centre + middle / 2 + R;
-            const notchBottom = semicircleBottom + lip;
-
-            // Skip a notch that would overlap the previous one or run past the bottom corner,
-            // so the path stays continuous instead of self-crossing.
-            if (notchTop < pen || notchBottom > edgeEnd) {
-                continue;
-            }
+        for (const notch of this.getInputNotches()) {
+            if (!notch) continue;
 
             // 1. flat run down to where the groove begins
-            const flatBefore = notchTop - pen;
+            const flatBefore = notch.top - pen;
             segs.push(`v ${flatBefore}`);
             // 2. lip arc: peel the edge inwards (−x)
             segs.push(this.arc({ x: -lip, y: lip }, { x: 0, y: lip }));
@@ -375,7 +385,7 @@ export class BrickOutlineGenerator {
             // 4. lip arc: bring the edge back out
             segs.push(this.arc({ x: lip, y: lip }, { x: lip, y: 0 }));
 
-            pen = notchBottom;
+            pen = notch.bottom;
         }
 
         // 5. remaining flat run down to the bottom corner
@@ -958,8 +968,8 @@ export class BrickOutlineGenerator {
      * half-depth inside it.
      *
      * Optional connectors (prev/next/nestedNext/output) are present only when their feature is
-     * enabled; `inputs` is always an array with one entry per argument slot (filled and empty),
-     * top-to-bottom.
+     * enabled; `inputs` is always an array indexed by argument slot, with null entries for
+     * grooves that do not fit on the edge.
      *
      * @param input - Same input shape as `generate` / `computeDimensions`.
      * @returns Connector bounds, keyed by connector kind.
@@ -988,21 +998,17 @@ export class BrickOutlineGenerator {
         const hWidth = BrickOutlineGenerator.H_NOTCH_WIDTH;
         const hDepth = BrickOutlineGenerator.hNotchDepth(strokeWidth);
 
-        // Right-edge grooves: one footprint per arg slot (filled and empty), using the same slotTop
-        // accumulation as segHeadRight so the coords line up with the rendered grooves. The array
-        // stays in declaration order, so `inputs[i]` is slot `i`.
-        const inputs: Bounds[] = [];
-        let slotTop = 0;
-        for (const { arg } of this.input.paramArgDims) {
-            const rowH = Math.max(arg?.h ?? 0, this.minimums.minArgHeight);
-            inputs.push({
-                x: width - strokeWidth / 2 - hDepth / 2,
-                y: slotTop + BrickOutlineGenerator.H_NOTCH_OFFSET_Y,
-                w: hDepth,
-                h: hWidth,
-            });
-            slotTop += rowH;
-        }
+        // Use the same fitting grooves as segHeadRight; nulls preserve argument-slot indices.
+        const inputs = this.getInputNotches().map((notch): Bounds | null =>
+            notch
+                ? {
+                      x: width - strokeWidth / 2 - hDepth / 2,
+                      y: notch.centre,
+                      w: hDepth,
+                      h: hWidth,
+                  }
+                : null,
+        );
 
         const coords: BrickConnectorCoords = { inputs };
 

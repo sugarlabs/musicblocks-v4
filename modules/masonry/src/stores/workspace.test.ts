@@ -1154,10 +1154,10 @@ describe('Workspace Store Collision Space', () => {
             const { root, arg, layoutAt } = setupScaledTower();
 
             layoutAt(2);
-            const beforeInput = root.model.getConnectorCoords().inputs[0];
+            const beforeInput = root.model.getConnectorCoords().inputs[0]!;
 
             layoutAt(1);
-            const afterInput = root.model.getConnectorCoords().inputs[0];
+            const afterInput = root.model.getConnectorCoords().inputs[0]!;
             const afterOutput = arg.model.getConnectorCoords().output!;
             const state = useWorkspaceStore.getState();
             const metas = Object.values(state.argumentConnectors);

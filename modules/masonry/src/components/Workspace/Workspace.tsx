@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, type MouseEvent } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type MouseEvent } from 'react';
 
 import type { PaletteBrickConfig } from '@/@types/palette.types';
 import type { WorkspaceViewProps } from '@/@types/workspace.types';
@@ -14,6 +14,7 @@ import { useCanvasPan } from '@/hooks/useCanvasPan';
 import { useDragFromPalette } from '@/hooks/useDragFromPalette';
 import { useTowerLayout } from '@/hooks/useTowerLayout';
 import { useWorkspaceScale } from '@/hooks/useWorkspaceScale';
+import { cn } from '@/lib/utils';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 import { discardTower } from '@/utils/towerDiscard';
@@ -25,6 +26,7 @@ import { DragGhost } from './DragGhost';
 import { FullscreenControl } from './FullscreenControl';
 import { BricksVisibilityControl } from './BricksVisibilityControl';
 import { HomeControl } from './HomeControl';
+import { PaletteControl } from './PaletteControl';
 import { ScaleControl } from './ScaleControl';
 import { SnapHintOverlay } from './SnapHintOverlay';
 import { SnapPreviewView } from './SnapPreviewView';
@@ -37,12 +39,19 @@ function TowerLayoutEngine({ root, origin }: { root: TowerNode; origin: Point })
   return null;
 }
 
+/**
+ * The program builder: the palette on the left and the canvas the towers are built on, with the
+ * controls that act on it.
+ */
 export function Workspace({ config }: WorkspaceViewProps) {
   const { palette } = config;
 
   const towersRecord = useWorkspaceStore((state) => state.towers);
   const clearSelection = useWorkspaceStore((state) => state.clearSelection);
   const areBricksHidden = useWorkspaceStore((state) => state.areBricksHidden);
+  // Folds the palette down to a rail of classification icons, giving the canvas the room back.
+  const [isPaletteCollapsed, setIsPaletteCollapsed] = useState(false);
+  const paletteId = useId();
   const towers = useMemo(() => Object.values(towersRecord), [towersRecord]);
 
   // Initialize history on mount
@@ -231,9 +240,26 @@ export function Workspace({ config }: WorkspaceViewProps) {
 
       {/* Main Workspace Area: Contains the draggable block palette on the left and the interactive canvas on the right */}
       <div ref={rootRef} className="relative flex min-h-0 w-full flex-1">
+        {/* Only the width animates: flex hands the room to the canvas, and the Trash and the drop
+            coordinates already follow the canvas rect, so nothing has to be measured again. */}
         {!areBricksHidden && (
-          <div className="h-full max-w-80 shrink-0">
-            <Palette config={palette} />
+          <div
+            id={paletteId}
+            className={cn(
+              'relative h-full shrink-0 transition-[width] duration-300 ease-out motion-reduce:transition-none',
+              isPaletteCollapsed ? 'w-16' : 'w-80',
+            )}
+          >
+            <Palette
+              config={palette}
+              collapsed={isPaletteCollapsed}
+              onExpand={() => setIsPaletteCollapsed(false)}
+            />
+            <PaletteControl
+              controls={paletteId}
+              collapsed={isPaletteCollapsed}
+              onToggle={() => setIsPaletteCollapsed((collapsed) => !collapsed)}
+            />
           </div>
         )}
 

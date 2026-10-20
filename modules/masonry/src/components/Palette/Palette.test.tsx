@@ -588,4 +588,43 @@ describe('Palette', () => {
       expect(screen.getByRole('heading', { name: 'Rhythm' })).toBeTruthy();
     });
   });
+
+  describe('collapsed', () => {
+    it('shows only the classification icons, as a rail', () => {
+      render(<Palette config={config} collapsed />);
+
+      expect(screen.getAllByRole('button').map((button) => button.title)).toEqual(
+        config.classifications.map((classification) => classification.name),
+      );
+      expect(screen.getByRole('button', { name: 'Music' }).getAttribute('aria-pressed')).toBe(
+        'true',
+      );
+      expect(screen.queryByPlaceholderText('Search bricks')).toBeNull();
+      expect(screen.queryByText('Note')).toBeNull();
+    });
+
+    it('opens on the classification picked from the rail', () => {
+      const onExpand = vi.fn();
+      const { rerender } = render(<Palette config={config} collapsed onExpand={onExpand} />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Logic' }));
+      rerender(<Palette config={config} />);
+
+      expect(onExpand).toHaveBeenCalledTimes(1);
+      expect(screen.getByRole('heading', { name: 'Flow' })).toBeTruthy();
+      // The rail button that had focus is gone, so focus moves to the tab it opened.
+      expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Logic' }));
+    });
+
+    it('keeps the search when the open classification is picked again', () => {
+      const { rerender } = render(<Palette config={config} />);
+      fireEvent.change(screen.getByPlaceholderText('Search bricks'), { target: { value: 'no' } });
+
+      rerender(<Palette config={config} collapsed />);
+      fireEvent.click(screen.getByRole('button', { name: 'Music' }));
+      rerender(<Palette config={config} />);
+
+      expect(screen.getByPlaceholderText<HTMLInputElement>('Search bricks').value).toBe('no');
+    });
+  });
 });

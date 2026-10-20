@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, type MouseEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, type MouseEvent, type WheelEvent } from 'react';
 
 import type { PaletteBrickConfig } from '@/@types/palette.types';
 import type { WorkspaceViewProps } from '@/@types/workspace.types';
@@ -189,7 +189,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
   const shouldSuppressBackgroundClick = useCanvasPan({ canvasRef, viewportRef });
 
   // Resize every brick and re-run the layouts whenever the scale level changes
-  useWorkspaceScale();
+  const { zoomIn, zoomOut } = useWorkspaceScale();
 
   // Escape and a press outside close the action menu; its listeners are on the document
   useActionMenuDismiss();
@@ -225,6 +225,37 @@ export function Workspace({ config }: WorkspaceViewProps) {
     [clearSelection, shouldSuppressBackgroundClick],
   );
 
+  const handleWheel = useCallback(
+    (event: WheelEvent<HTMLDivElement>) => {
+      if (event.ctrlKey) {
+        event.preventDefault();
+        if (event.deltaY < 0) {
+          zoomIn();
+        } else if (event.deltaY > 0) {
+          zoomOut();
+        }
+      }
+    },
+    [zoomIn, zoomOut],
+  );
+
+  // Prevent default browser pinch-to-zoom on the canvas element
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleNativeWheel = (event: globalThis.WheelEvent) => {
+      if (event.ctrlKey) {
+        event.preventDefault();
+      }
+    };
+
+    canvas.addEventListener('wheel', handleNativeWheel, { passive: false });
+    return () => {
+      canvas.removeEventListener('wheel', handleNativeWheel);
+    };
+  }, []);
+
   return (
     <div className="flex h-full w-full flex-col">
       <Navbar />
@@ -245,6 +276,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
           aria-label="Workspace Canvas"
           tabIndex={0}
           onKeyDown={handleKeyDown}
+          onWheel={handleWheel}
           className="bg-background focus:ring-ring focus-visible:ring-ring relative h-full w-full shrink overflow-hidden outline-none select-none focus:ring-2 focus:ring-inset focus-visible:ring-2 focus-visible:ring-inset"
           onClick={handleBackgroundClick}
         >

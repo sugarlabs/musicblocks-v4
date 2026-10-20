@@ -13,20 +13,26 @@ import { listNodes } from '@/utils/tower-traversal';
  * synchronously, and doing that inside a `set` would update React from within a store update.
  */
 export function useWorkspaceScale() {
-    useEffect(() => {
-        return useWorkspaceScaleStore.subscribe(
-            (state) => state.level,
-            (level) => {
-                const { towers, refreshTowerLayouts } = useWorkspaceStore.getState();
+  useEffect(() => {
+    return useWorkspaceScaleStore.subscribe(
+      (state) => state.level,
+      (level) => {
+        const { towers, refreshTowerLayouts } = useWorkspaceStore.getState();
 
-                for (const tower of Object.values(towers)) {
-                    for (const node of listNodes(tower.root)) {
-                        node.model.scaleLevel = level;
-                    }
-                }
+        for (const tower of Object.values(towers)) {
+          for (const node of listNodes(tower.root)) {
+            node.model.scaleLevel = level;
+          }
+        }
 
-                refreshTowerLayouts();
-            },
-        );
-    }, []);
+        refreshTowerLayouts();
+      },
+    );
+  }, []);
+
+  return {
+    zoomIn: useWorkspaceScaleStore.getState().zoomIn,
+    zoomOut: useWorkspaceScaleStore.getState().zoomOut,
+    reset: useWorkspaceScaleStore.getState().reset,
+  };
 }

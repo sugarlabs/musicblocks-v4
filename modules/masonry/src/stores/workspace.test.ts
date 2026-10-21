@@ -5,6 +5,7 @@ import {
     canExtractBrick,
     EXTRACTED_TOWER_MARGIN_X,
     EXTRACTED_TOWER_OFFSET_X,
+    makeTowerId,
     useWorkspaceStore,
 } from './workspace';
 import { useBrickLayoutStore } from './brick';
@@ -2264,6 +2265,24 @@ describe('Workspace Store Collision Space', () => {
                 (useWorkspaceStore.getState().towers[source.id].root as TowerStatementNode).next,
             ).toBe(extracted);
             expect(extracted.prev).toBe(useWorkspaceStore.getState().towers[source.id].root);
+        });
+    });
+
+    describe('makeTowerId', () => {
+        it('generates IDs with tower- prefix and UUID format', () => {
+            const id = makeTowerId();
+            expect(id).toMatch(
+                /^tower-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+            );
+        });
+
+        it('generates unique IDs across rapid successive calls with zero collisions', () => {
+            const ids = new Set<string>();
+            const count = 1000;
+            for (let i = 0; i < count; i++) {
+                ids.add(makeTowerId());
+            }
+            expect(ids.size).toBe(count);
         });
     });
 });

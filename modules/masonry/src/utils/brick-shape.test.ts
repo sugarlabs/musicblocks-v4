@@ -909,6 +909,8 @@ describe('getConnectorCoords', () => {
         const argGrooves = bounds.args!.filter((a): a is NonNullable<typeof a> => a !== null);
 
         inputs.forEach((p, k) => {
+            expect(p).not.toBeNull();
+            if (!p) return;
             const a = argGrooves[k]!;
             expect(p.y).toBe(a.y + BrickOutlineGeneratorTest.H_NOTCH_OFFSET_Y);
             expect(p.x).toBe(a.x - strokeWidth / 2 - hHalfDepth);
@@ -916,6 +918,73 @@ describe('getConnectorCoords', () => {
         // Grooves sit at the right edge (x = width); the connector is inset by half the stroke plus
         // half the notch depth, since the point sits at the groove centroid.
         expect(inputs[0]!.x).toBe(width - strokeWidth / 2 - hHalfDepth);
+    });
+
+    describe('grooves that fit the right edge', () => {
+        const generator = new BrickOutlineGeneratorTest({
+            ...MINIMUMS,
+            minWidgetHeight: 0,
+            minParamHeight: 0,
+            minArgHeight: 8,
+        });
+
+        // With strokeWidth=2, each right-edge groove contains this inward semicircle.
+        // Counting it checks the SVG path itself, rather than argument layout bounds.
+        const countGrooves = (path: string) => (path.match(/a 4 4 0 0 0 -4 4/g) ?? []).length;
+
+        it('skips overlapping grooves without shifting later argument slots', () => {
+            const input = {
+                strokeWidth,
+                widgetDims: { w: 100, h: 64 },
+                paramArgDims: Array.from({ length: 5 }, () => ({
+                    param: null,
+                    arg: { w: 50, h: 8 },
+                })),
+            };
+
+            // Query coordinates first to also cover generation without a cached path.
+            const { inputs } = generator.getConnectorCoords(input);
+            const { path } = generator.generate(input);
+
+            expect(inputs.map((bounds) => bounds?.y ?? null)).toEqual([16, null, 32, null, 48]);
+            expect(countGrooves(path)).toBe(3);
+        });
+
+        it.each([
+            { widgetHeight: 14, expectedGrooves: 0 },
+            { widgetHeight: 15, expectedGrooves: 1 },
+        ])(
+            'draws $expectedGrooves grooves at widget height $widgetHeight',
+            ({ widgetHeight, expectedGrooves }) => {
+                const input = {
+                    strokeWidth,
+                    widgetDims: { w: 100, h: widgetHeight },
+                    paramArgDims: [{ param: null, arg: { w: 50, h: 8 } }],
+                };
+                const { path } = generator.generate(input);
+                const { inputs } = generator.getConnectorCoords(input);
+
+                // The groove ends at y=24: height 14 overlaps the bottom corner,
+                // while height 15 puts it exactly at the edge's end and must be accepted.
+                expect(inputs.map((bounds) => bounds?.y ?? null)).toEqual([
+                    expectedGrooves ? 16 : null,
+                ]);
+                expect(countGrooves(path)).toBe(expectedGrooves);
+            },
+        );
+
+        it('draws a groove for an empty slot that remains a connection target', () => {
+            const input = {
+                strokeWidth,
+                widgetDims: { w: 100, h: 64 },
+                paramArgDims: [{ param: null, arg: null }],
+            };
+            const { path } = generator.generate(input);
+            const { inputs } = generator.getConnectorCoords(input);
+
+            expect(inputs[0]).toMatchObject({ y: 16 });
+            expect(countGrooves(path)).toBe(1);
+        });
     });
 
     it("next connector sits on the brick's bottom edge (height branch)", () => {
@@ -1047,6 +1116,8 @@ describe('getConnectorCoords', () => {
         const pts = [c.prev!, c.next!, c.nestedNext!, c.output!, ...c.inputs];
 
         pts.forEach((p) => {
+            expect(p).not.toBeNull();
+            if (!p) return;
             expect(p.x).toBeGreaterThanOrEqual(-margin);
             expect(p.x).toBeLessThanOrEqual(width + margin);
             expect(p.y).toBeGreaterThanOrEqual(-margin);

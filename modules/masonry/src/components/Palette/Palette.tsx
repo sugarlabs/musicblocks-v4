@@ -36,14 +36,21 @@ const CATEGORY_FLASH_MS = 600;
  * This is the shell only — bricks render as placeholder boxes (no SVG, no brick renderer). Each
  * placeholder receives the whole `PaletteBrickConfig` so a later PR can turn it into a drag source
  * that carries the config as its payload without changing the prop contract.
+ *
+ * `collapsed` folds it down to a thin rail of the classification icons alone. Picking one opens the
+ * palette on that classification through `onExpand`, with focus on its tab.
  */
-export function Palette({ config }: PaletteViewProps) {
+export function Palette({ config, collapsed = false, onExpand }: PaletteViewProps) {
   const [activeClassification, setActiveClassification] = useState(0);
   const [query, setQuery] = useState('');
   const categoryRefs = useRef<Array<HTMLElement | null>>([]);
   const [flashedCategory, setFlashedCategory] = useState<number | null>(null);
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isDragging = usePaletteDragStore((state) => state.dragged !== null);
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  // Set when a rail icon opens the palette, so focus lands on that classification's tab rather than
+  // going with the rail button that had it.
+  const focusTabOnOpen = useRef(false);
 
   const classifications = config.classifications;
 
@@ -103,6 +110,12 @@ export function Palette({ config }: PaletteViewProps) {
     flashTimer.current = setTimeout(() => setFlashedCategory(null), CATEGORY_FLASH_MS);
   };
 
+  useEffect(() => {
+    if (collapsed || !focusTabOnOpen.current) return;
+    focusTabOnOpen.current = false;
+    tabRefs.current[activeIndex]?.focus();
+  }, [collapsed, activeIndex]);
+
   const selectClassification = (index: number) => {
     setActiveClassification(index);
     setQuery('');
@@ -110,6 +123,40 @@ export function Palette({ config }: PaletteViewProps) {
     clearFlashTimer();
     setFlashedCategory(null);
   };
+
+  // Folded, only the classification icons stay, stacked in a thin rail below the PaletteControl the
+  // Workspace pins to this corner. Picking one opens the palette on it; picking the one already
+  // open keeps its search.
+  if (collapsed) {
+    return (
+      <nav
+        aria-label="Palette classifications"
+        className="border-border bg-muted/40 flex h-full w-full flex-col items-center gap-1 overflow-y-auto rounded-lg border px-2 pt-16"
+      >
+        {classifications.map((classification, index) => {
+          const Icon = classification.icon;
+          return (
+            <Button
+              key={classification.name}
+              variant={index === activeIndex ? 'secondary' : 'ghost'}
+              size="icon"
+              aria-pressed={index === activeIndex}
+              title={classification.name}
+              onClick={() => {
+                if (index !== activeIndex) selectClassification(index);
+                focusTabOnOpen.current = true;
+                onExpand?.();
+              }}
+              className="size-9 shrink-0 cursor-pointer"
+            >
+              <Icon className="size-5" />
+              <span className="sr-only">{classification.name}</span>
+            </Button>
+          );
+        })}
+      </nav>
+    );
+  }
 
   return (
     <div className="border-border bg-background text-foreground flex h-full min-h-0 w-full overflow-hidden rounded-lg border">
@@ -146,6 +193,9 @@ export function Palette({ config }: PaletteViewProps) {
                 size="default"
                 aria-pressed={isActive}
                 title={classification.name}
+                ref={(el) => {
+                  tabRefs.current[index] = el;
+                }}
                 onClick={() => selectClassification(index)}
                 className={cn(
                   'h-9 flex-1 cursor-pointer active:not-aria-[haspopup]:translate-y-0',

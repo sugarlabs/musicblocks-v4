@@ -2,12 +2,13 @@ import type { DragEvent } from '@interactjs/types';
 import type { RefObject } from 'react';
 
 import interact from 'interactjs';
-import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
 
 import type { Point } from '@/@types/common.types';
 
+import { useDragClickSuppression } from '@/hooks/useDragClickSuppression';
 import { useWorkspaceViewportStore } from '@/stores/viewport';
-import { DRAG_CLICK_SUPPRESSION_MS, TOWER_BRICK_SELECTOR } from '@/utils/constants';
+import { TOWER_BRICK_SELECTOR } from '@/utils/constants';
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -37,8 +38,9 @@ export interface UseCanvasPanOptions {
  */
 export function useCanvasPan(options: UseCanvasPanOptions) {
     const { canvasRef, viewportRef } = options;
-    // interact.js only starts a drag once the pointer has moved, so `end` marks a real pan.
-    const lastPanEndRef = useRef(0);
+    // Suppresses the click interact.js leaves trailing the pan. interact.js only starts a drag
+    // once the pointer has moved, so `end` always marks a real pan.
+    const { markDragEnd, shouldSuppressClick } = useDragClickSuppression();
 
     useLayoutEffect(() => {
         const viewport = viewportRef.current;
@@ -76,7 +78,7 @@ export function useCanvasPan(options: UseCanvasPanOptions) {
                 // A pan that starts and ends on the empty background leaves a click on the
                 // viewport; stamp its end so `Workspace` can swallow that click.
                 end(_event: DragEvent) {
-                    lastPanEndRef.current = Date.now();
+                    markDragEnd();
                 },
             },
         });
@@ -84,7 +86,7 @@ export function useCanvasPan(options: UseCanvasPanOptions) {
         return () => {
             interactable.unset();
         };
-    }, [canvasRef]);
+    }, [canvasRef, markDragEnd]);
 
-    return useCallback(() => Date.now() - lastPanEndRef.current < DRAG_CLICK_SUPPRESSION_MS, []);
+    return shouldSuppressClick;
 }

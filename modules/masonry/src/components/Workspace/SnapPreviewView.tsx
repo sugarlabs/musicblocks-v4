@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import type { BrickViewProps, BrickViewPropsWithModel } from '@/@types/brick.types';
 import { BrickView } from '@/components/Brick/Brick';
 import { useConnectionPreviewStore } from '@/stores/connection-preview';
+import { useWorkspaceScaleStore } from '@/stores/scale';
 import { createBrickModel } from '@/utils/brick-model-factory';
 
 /**
@@ -16,12 +17,15 @@ export function SnapPreviewView() {
 
   // We generate a dummy model on the fly that mimics the shape (statement vs value)
   // of the brick the user is dragging, but we hardcode the colors to a neutral grey.
+  const targetType = activeTarget?.type;
+  const scaleLevel = useWorkspaceScaleStore((state) => state.level);
+
   const shadowModel = useMemo(() => {
-    if (!activeTarget) return null;
+    if (!targetType) return null;
 
     const colors = { background: '#9ca3af', foreground: 'transparent', border: '#6b7280' };
 
-    if (activeTarget.type === 'statement') {
+    if (targetType === 'statement') {
       const props: BrickViewProps = {
         kind: 'statement',
         widget: { type: 'label', text: '' },
@@ -29,7 +33,7 @@ export function SnapPreviewView() {
         hasConnectionPrev: true,
         hasConnectionNext: true,
         tooltipText: '',
-        scaleLevel: 2,
+        scaleLevel,
       };
       return createBrickModel(props);
     } else {
@@ -38,11 +42,11 @@ export function SnapPreviewView() {
         widget: { type: 'label', text: '' },
         colorsDefault: colors,
         tooltipText: '',
-        scaleLevel: 2,
+        scaleLevel,
       };
       return createBrickModel(props);
     }
-  }, [activeTarget]);
+  }, [targetType, scaleLevel]);
 
   if (!activeTarget || !isValid || !snapPosition || !shadowModel) return null;
 
@@ -54,7 +58,7 @@ export function SnapPreviewView() {
   return (
     <div
       data-testid="snap-preview-view"
-      className="pointer-events-none absolute top-0 left-0 z-30 opacity-60 drop-shadow-[0_0_12px_rgba(34,197,94,0.7)] filter"
+      className="pointer-events-none absolute top-0 left-0 opacity-60 drop-shadow-[0_0_12px_rgba(34,197,94,0.7)] filter"
       style={{
         transform: `translate(${snapPosition.x}px, ${snapPosition.y}px)`,
       }}

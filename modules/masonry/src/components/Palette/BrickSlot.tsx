@@ -19,6 +19,7 @@ interface BrickSlotProps {
    * to this config when a drag starts on the slot.
    */
   brick: PaletteBrickConfig;
+  onActivate?: (brick: PaletteBrickConfig) => void;
 }
 
 /**
@@ -28,7 +29,7 @@ interface BrickSlotProps {
  * Clicking or pressing Enter/Space places a new standalone tower on the workspace canvas, and
  * hovering or focusing the slot reveals the brick's tooltip after a short delay.
  */
-export function BrickSlot({ brick }: BrickSlotProps) {
+export function BrickSlot({ brick, onActivate }: BrickSlotProps) {
   const model = useMemo(() => createBrickModel(brick.brick, brick.id), [brick.brick, brick.id]);
   const isDragging = usePaletteDragStore((state) => state.dragged?.id === brick.id);
 
@@ -55,7 +56,11 @@ export function BrickSlot({ brick }: BrickSlotProps) {
     if (dragged || isTrailingDragClick(lastDragEndTime)) {
       return;
     }
-    placeBrickFromPalette(brick);
+    if (onActivate) {
+      onActivate(brick);
+    } else {
+      placeBrickFromPalette(brick);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -75,8 +80,8 @@ export function BrickSlot({ brick }: BrickSlotProps) {
       )}
     >
       <div className="overflow-hidden p-0.5">
-        <div
-          role="button"
+        <button
+          type="button"
           tabIndex={0}
           aria-label={accessibleName}
           aria-describedby={hasDescription ? descriptionId : undefined}
@@ -93,7 +98,7 @@ export function BrickSlot({ brick }: BrickSlotProps) {
           <div className="pointer-events-none">
             <BrickView {...viewProps} />
           </div>
-        </div>
+        </button>
         {hasDescription && (
           <span id={descriptionId} className="sr-only">
             {tooltipText}

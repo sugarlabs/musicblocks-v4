@@ -77,4 +77,6 @@ export interface PaletteViewProps {
     collapsed?: boolean;
     /** Called when a rail icon is picked, so whatever folded the palette can open it again. */
     onExpand?: () => void;
+    /** Called when a palette brick is activated from the keyboard. */
+    onBrickActivate?: (brick: PaletteBrickConfig) => void;
 }

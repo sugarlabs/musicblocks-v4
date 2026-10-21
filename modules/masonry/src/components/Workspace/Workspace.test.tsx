@@ -713,16 +713,15 @@ describe('Workspace', () => {
       const controls = queryControls(container);
       expect(controls).not.toBeNull();
 
-      const labels = [...controls!.querySelectorAll('button')].map((button) =>
-        button.getAttribute('aria-label'),
-      );
+      const buttons = Array.from(controls!.querySelectorAll('button'));
+      const labels = buttons.map((button) => button.getAttribute('aria-label'));
 
       // Every control the row holds is laid out by the row, in the order it reads left to right.
       // The row is anchored on its right edge, so the reset arriving shifts the fullscreen button
       // and leaves the magnifiers where the pointer left them.
       expect(labels).toEqual(['Home', 'Enter fullscreen', 'Reset zoom', 'Zoom out', 'Zoom in']);
 
-      for (const button of controls!.querySelectorAll('button')) {
+      for (const button of buttons) {
         expect(button.className).not.toContain('absolute');
       }
     });
@@ -931,15 +930,17 @@ describe('Workspace', () => {
       const canvas = container.querySelector(
         '[role="region"][aria-label="Workspace Canvas"]',
       ) as HTMLElement;
-      fireEvent.keyDown(canvas, { key: 'ArrowDown' });
-      fireEvent.keyDown(canvas, { key: 'End' });
+      act(() => {
+        fireEvent.keyDown(canvas, { key: 'ArrowDown' });
+        fireEvent.keyDown(canvas, { key: 'End' });
+      });
 
       expect(useWorkspaceStore.getState().towers['pan-selection']).toBeDefined();
       expect(useWorkspaceStore.getState().selectedBrickId).toBe('pan-selection-outer');
     });
   });
-  describe("trackpad pinch-to-zoom", () => {
-    it("zooms in when ctrlKey is true and deltaY is negative (pinch out)", () => {
+  describe('trackpad pinch-to-zoom', () => {
+    it('zooms in when ctrlKey is true and deltaY is negative (pinch out)', () => {
       const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
       const canvas = container.querySelector(
         '[role="region"][aria-label="Workspace Canvas"]',
@@ -954,7 +955,7 @@ describe('Workspace', () => {
       expect(useWorkspaceScaleStore.getState().level).toBe(DEFAULT_SCALE_LEVEL + 1);
     });
 
-    it("zooms out when ctrlKey is true and deltaY is positive (pinch in)", () => {
+    it('zooms out when ctrlKey is true and deltaY is positive (pinch in)', () => {
       const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
       const canvas = container.querySelector(
         '[role="region"][aria-label="Workspace Canvas"]',
@@ -969,7 +970,7 @@ describe('Workspace', () => {
       expect(useWorkspaceScaleStore.getState().level).toBe(DEFAULT_SCALE_LEVEL - 1);
     });
 
-    it("does not zoom when ctrlKey is false (standard mouse scroll)", () => {
+    it('does not zoom when ctrlKey is false (standard mouse scroll)', () => {
       const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
       const canvas = container.querySelector(
         '[role="region"][aria-label="Workspace Canvas"]',
@@ -982,6 +983,32 @@ describe('Workspace', () => {
       fireEvent.wheel(canvas, { ctrlKey: false, deltaY: -100 });
 
       expect(useWorkspaceScaleStore.getState().level).toBe(DEFAULT_SCALE_LEVEL);
+    });
+
+    it('accumulates small wheel deltas and only moves the scale by one level for a burst of events', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const canvas = container.querySelector(
+        '[role="region"][aria-label="Workspace Canvas"]',
+      ) as HTMLElement;
+
+      act(() => {
+        useWorkspaceScaleStore.setState({ level: DEFAULT_SCALE_LEVEL });
+      });
+
+      // Stream of small deltas below the threshold
+      fireEvent.wheel(canvas, { ctrlKey: true, deltaY: 20 });
+      expect(useWorkspaceScaleStore.getState().level).toBe(DEFAULT_SCALE_LEVEL);
+
+      fireEvent.wheel(canvas, { ctrlKey: true, deltaY: 20 });
+      expect(useWorkspaceScaleStore.getState().level).toBe(DEFAULT_SCALE_LEVEL);
+
+      // Third event crosses the threshold (total 60 >= 50), stepping one level down
+      fireEvent.wheel(canvas, { ctrlKey: true, deltaY: 20 });
+      expect(useWorkspaceScaleStore.getState().level).toBe(DEFAULT_SCALE_LEVEL - 1);
+
+      // Subsequent event does not step again because the accumulator reset
+      fireEvent.wheel(canvas, { ctrlKey: true, deltaY: 20 });
+      expect(useWorkspaceScaleStore.getState().level).toBe(DEFAULT_SCALE_LEVEL - 1);
     });
   });
 });

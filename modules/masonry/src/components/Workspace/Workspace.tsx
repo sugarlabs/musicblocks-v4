@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, type MouseEvent, type WheelEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, type MouseEvent } from 'react';
 
 import type { PaletteBrickConfig } from '@/@types/palette.types';
 import type { WorkspaceViewProps } from '@/@types/workspace.types';
@@ -15,6 +15,7 @@ import { useDragFromPalette } from '@/hooks/useDragFromPalette';
 import { useTowerLayout } from '@/hooks/useTowerLayout';
 import { useWorkspaceScale } from '@/hooks/useWorkspaceScale';
 import { useBrickLayoutStore } from '@/stores/brick';
+import { useWorkspaceScaleStore } from '@/stores/scale';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 import { discardTower } from '@/utils/towerDiscard';
 import { listVisibleNodes } from '@/utils/tower-traversal';
@@ -36,6 +37,8 @@ function TowerLayoutEngine({ root, origin }: { root: TowerNode; origin: Point })
   useTowerLayout(root, origin);
   return null;
 }
+
+const PINCH_ZOOM_THRESHOLD = 50;
 
 export function Workspace({ config }: WorkspaceViewProps) {
   const { palette } = config;
@@ -189,7 +192,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
   const shouldSuppressBackgroundClick = useCanvasPan({ canvasRef, viewportRef });
 
   // Resize every brick and re-run the layouts whenever the scale level changes
-  const { zoomIn, zoomOut } = useWorkspaceScale();
+  useWorkspaceScale();
 
   // Escape and a press outside close the action menu; its listeners are on the document
   useActionMenuDismiss();
@@ -225,28 +228,26 @@ export function Workspace({ config }: WorkspaceViewProps) {
     [clearSelection, shouldSuppressBackgroundClick],
   );
 
-  const handleWheel = useCallback(
-    (event: WheelEvent<HTMLDivElement>) => {
-      if (event.ctrlKey) {
-        event.preventDefault();
-        if (event.deltaY < 0) {
-          zoomIn();
-        } else if (event.deltaY > 0) {
-          zoomOut();
-        }
-      }
-    },
-    [zoomIn, zoomOut],
-  );
+  const accumulatedDelta = useRef(0);
 
-  // Prevent default browser pinch-to-zoom on the canvas element
+  // Prevent default browser pinch-to-zoom on the canvas and accumulate deltas for zoom
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const handleNativeWheel = (event: globalThis.WheelEvent) => {
+    const handleNativeWheel = (event: WheelEvent) => {
       if (event.ctrlKey) {
         event.preventDefault();
+        accumulatedDelta.current += event.deltaY;
+
+        if (Math.abs(accumulatedDelta.current) >= PINCH_ZOOM_THRESHOLD) {
+          if (accumulatedDelta.current < 0) {
+            useWorkspaceScaleStore.getState().zoomIn();
+          } else {
+            useWorkspaceScaleStore.getState().zoomOut();
+          }
+          accumulatedDelta.current = 0;
+        }
       }
     };
 
@@ -276,7 +277,6 @@ export function Workspace({ config }: WorkspaceViewProps) {
           aria-label="Workspace Canvas"
           tabIndex={0}
           onKeyDown={handleKeyDown}
-          onWheel={handleWheel}
           className="bg-background focus:ring-ring focus-visible:ring-ring relative h-full w-full shrink overflow-hidden outline-none select-none focus:ring-2 focus:ring-inset focus-visible:ring-2 focus-visible:ring-inset"
           onClick={handleBackgroundClick}
         >

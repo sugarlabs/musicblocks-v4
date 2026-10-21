@@ -21,6 +21,7 @@ import { usePaletteDragStore } from '@/stores/palette';
 import { useTrashStore } from '@/stores/trash';
 import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
+import { useWorkspaceHistoryStore } from '@/stores/history';
 import { createBrickModel, wrapAsRootNode } from '@/utils/brick-model-factory';
 import { DEFAULT_SCALE_LEVEL, FOLD_TOGGLE_SELECTOR, MAX_SCALE_LEVEL } from '@/utils/constants';
 
@@ -41,6 +42,7 @@ afterEach(() => {
   useWorkspaceViewportStore.setState({ offset: { x: 0, y: 0 } });
   useConnectionPreviewStore.setState({ activeTarget: null, isValid: false, snapPosition: null });
   useWorkspaceScaleStore.setState({ level: DEFAULT_SCALE_LEVEL });
+  useWorkspaceHistoryStore.getState().clear();
 });
 
 // -------------------------------------------------------------------------------------------------
@@ -303,6 +305,102 @@ describe('Workspace', () => {
     expect(remaining).toBeDefined();
     expect((remaining?.root as TowerStatementNode).nestedNext).toBeNull();
     expect(Object.keys(useWorkspaceStore.getState().towers)).toEqual(['keyboard-nested']);
+  });
+
+  it('adds exactly one history entry on keyboard delete so a single undo brings the brick back', async () => {
+    // 1. Drain any pending dynamic imports from previous tests and start fresh
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    useWorkspaceHistoryStore.getState().clear();
+
+    // 2. Add tower to workspace before rendering so Workspace's mount effect initializes it
+    const tower = makeNestingTower('history-test');
+    act(() => {
+      useWorkspaceStore.getState().createTower(tower);
+    });
+
+    const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+    // 3. Wait for Workspace's mount effect to initialize history to length 1
+    await vi.waitFor(() => {
+      expect(useWorkspaceHistoryStore.getState().history).toHaveLength(1);
+    });
+
+    // Select root brick and press Delete
+    const root = container.querySelector('[data-id="history-test-outer"]') as HTMLElement;
+    fireEvent.click(root);
+    fireEvent.keyDown(window, { key: 'Delete' });
+
+    // Verify brick was removed
+    expect(useWorkspaceStore.getState().towers['history-test']).toBeUndefined();
+
+    // Verify exactly one commit occurred (history length 1 -> 2)
+    await vi.waitFor(() => {
+      expect(useWorkspaceHistoryStore.getState().history).toHaveLength(2);
+    });
+
+    // Single undo restores the brick
+    act(() => {
+      useWorkspaceHistoryStore.getState().undo();
+    });
+
+    expect(useWorkspaceStore.getState().towers['history-test']).toBeDefined();
+
+    // Single redo removes it again
+    act(() => {
+      useWorkspaceHistoryStore.getState().redo();
+    });
+
+    expect(useWorkspaceStore.getState().towers['history-test']).toBeUndefined();
+  });
+
+  it('adds exactly one history entry on keyboard backspace for nested brick so a single undo restores it', async () => {
+    // 1. Drain any pending dynamic imports from previous tests and start fresh
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    useWorkspaceHistoryStore.getState().clear();
+
+    // 2. Add tower to workspace before rendering so Workspace's mount effect initializes it
+    const nestedTower = makeNestingTower('history-nested');
+    act(() => {
+      useWorkspaceStore.getState().createTower(nestedTower);
+    });
+
+    const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+
+    // 3. Wait for Workspace's mount effect to initialize history to length 1
+    await vi.waitFor(() => {
+      expect(useWorkspaceHistoryStore.getState().history).toHaveLength(1);
+    });
+
+    // Select nested brick and press Backspace
+    const nested = container.querySelector('[data-id="history-nested-inner"]') as HTMLElement;
+    fireEvent.click(nested);
+    fireEvent.keyDown(window, { key: 'Backspace' });
+
+    // Verify nested brick was removed
+    const remaining = useWorkspaceStore.getState().towers['history-nested'];
+    expect(remaining).toBeDefined();
+    expect((remaining?.root as TowerStatementNode).nestedNext).toBeNull();
+
+    // Verify exactly one commit occurred (history length 1 -> 2)
+    await vi.waitFor(() => {
+      expect(useWorkspaceHistoryStore.getState().history).toHaveLength(2);
+    });
+
+    // Single undo restores the nested brick
+    act(() => {
+      useWorkspaceHistoryStore.getState().undo();
+    });
+
+    const restored = useWorkspaceStore.getState().towers['history-nested'];
+    expect((restored?.root as TowerStatementNode).nestedNext).not.toBeNull();
+
+    // Single redo removes it again
+    act(() => {
+      useWorkspaceHistoryStore.getState().redo();
+    });
+
+    const redone = useWorkspaceStore.getState().towers['history-nested'];
+    expect((redone?.root as TowerStatementNode).nestedNext).toBeNull();
   });
 
   it('leaves the selection alone while the user types in a brick input', () => {

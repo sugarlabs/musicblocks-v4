@@ -138,10 +138,6 @@ export function Workspace({ config }: WorkspaceViewProps) {
       }
 
       store.clearSelection();
-
-      import('@/stores/history').then(({ useWorkspaceHistoryStore }) => {
-        useWorkspaceHistoryStore.getState().commit();
-      });
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -150,6 +146,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
+
   // Only what a fold leaves on screen: a brick inside a folded cavity is never rendered. The
   // memo re-runs off the towers record, which is why `setNestingFold` re-seats the tower it folds:
   // the canvas and the re-layout both follow off that one signal.

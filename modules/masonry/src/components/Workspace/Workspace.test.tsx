@@ -961,7 +961,7 @@ describe('Workspace', () => {
 
       fireEvent.click(paletteToggle(container));
 
-      expect(palette.className).toContain('w-80');
+      expect(palette.className).toContain('w-72');
       expect(palette.querySelector('.palette-brick-slot')).not.toBeNull();
     });
 

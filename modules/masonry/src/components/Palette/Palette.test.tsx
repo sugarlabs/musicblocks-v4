@@ -599,7 +599,7 @@ describe('Palette', () => {
       expect(screen.getByRole('button', { name: 'Music' }).getAttribute('aria-pressed')).toBe(
         'true',
       );
-      expect(screen.queryByPlaceholderText('Search bricks')).toBeNull();
+      expect(screen.queryByPlaceholderText('Search')).toBeNull();
       expect(screen.queryByText('Note')).toBeNull();
     });
 
@@ -618,13 +618,13 @@ describe('Palette', () => {
 
     it('keeps the search when the open classification is picked again', () => {
       const { rerender } = render(<Palette config={config} />);
-      fireEvent.change(screen.getByPlaceholderText('Search bricks'), { target: { value: 'no' } });
+      fireEvent.change(screen.getByPlaceholderText('Search'), { target: { value: 'no' } });
 
       rerender(<Palette config={config} collapsed />);
       fireEvent.click(screen.getByRole('button', { name: 'Music' }));
       rerender(<Palette config={config} />);
 
-      expect(screen.getByPlaceholderText<HTMLInputElement>('Search bricks').value).toBe('no');
+      expect(screen.getByPlaceholderText<HTMLInputElement>('Search').value).toBe('no');
     });
   });
 });

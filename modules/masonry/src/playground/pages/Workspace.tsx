@@ -22,8 +22,8 @@ export default function WorkspaceDemo() {
   }, []);
 
   return (
-    <div className="h-full w-full bg-indigo-100 p-2">
-      <div className="h-full w-full rounded-lg bg-white">
+    <div className="h-full w-full bg-slate-100 p-2 transition-colors duration-200 dark:bg-slate-950">
+      <div className="bg-background border-border h-full w-full overflow-hidden rounded-lg border shadow-xs">
         <Workspace config={{ palette: mockPaletteConfig }} />
       </div>
     </div>

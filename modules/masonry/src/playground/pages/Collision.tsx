@@ -236,9 +236,9 @@ export default function Collision() {
   const comparedIdSet = new Set(comparedIds);
 
   return (
-    <div className="h-full w-full bg-indigo-100 p-2">
-      <div className="flex h-full w-full flex-row rounded-lg bg-white">
-        <div className="flex w-56 flex-none flex-col gap-4 border-r border-slate-200 p-4">
+    <div className="h-full w-full bg-slate-100 p-2 transition-colors duration-200 dark:bg-slate-950">
+      <div className="bg-background border-border flex h-full w-full flex-row overflow-hidden rounded-lg border shadow-xs">
+        <div className="border-border bg-card flex w-56 flex-none flex-col gap-4 border-r p-4">
           <Field label="Object Count">
             <Input
               type="number"
@@ -318,9 +318,9 @@ export default function Collision() {
 
           <Button onClick={handleRefresh}>Refresh</Button>
 
-          <div className="mt-2 flex flex-col gap-1 border-t border-slate-200 pt-3">
-            <span className="text-xs font-medium text-slate-600">Comparisons / move</span>
-            <span className="font-mono text-2xl leading-none font-semibold text-indigo-600">
+          <div className="border-border mt-2 flex flex-col gap-1 border-t pt-3">
+            <span className="text-muted-foreground text-xs font-medium">Comparisons / move</span>
+            <span className="font-mono text-2xl leading-none font-semibold text-blue-600 dark:text-blue-400">
               {cursorPosition ? comparedIds.length : '—'}
             </span>
           </div>
@@ -368,11 +368,15 @@ export default function Collision() {
               <div
                 key={object.id}
                 className={cn(
-                  'absolute top-0 left-0 box-border flex items-center justify-center border-2',
+                  'absolute top-0 left-0 box-border flex items-center justify-center border-2 transition-colors',
                   objectShape === 'circle' && 'rounded-full',
-                  isColliding && 'border-amber-600 bg-amber-500',
-                  isCompared && 'border-orange-400',
-                  !isColliding && !isCompared && 'border-indigo-600',
+                  isColliding &&
+                    'border-amber-500 bg-amber-500/30 text-amber-300 dark:border-amber-400 dark:bg-amber-500/40',
+                  isCompared &&
+                    'border-orange-500 bg-orange-500/20 text-orange-400 dark:border-orange-400 dark:bg-orange-500/30',
+                  !isColliding &&
+                    !isCompared &&
+                    'border-blue-600 bg-blue-50/80 text-blue-700 dark:border-blue-400 dark:bg-blue-950/60 dark:text-blue-200',
                 )}
                 style={{
                   width: object.w,
@@ -384,10 +388,11 @@ export default function Collision() {
               >
                 <span
                   className={cn(
-                    'rounded-sm bg-white px-0.5 text-[8px] leading-none font-medium',
-                    isColliding && 'text-amber-600',
-                    isCompared && 'text-orange-400',
-                    !isColliding && !isCompared && 'text-indigo-600',
+                    'rounded-xs px-0.5 text-[9px] leading-none font-bold select-none',
+                    'bg-white/95 text-slate-900 shadow-2xs dark:bg-slate-900/90 dark:text-white',
+                    isColliding && 'font-extrabold text-amber-700 dark:text-amber-300',
+                    isCompared && 'text-orange-700 dark:text-orange-300',
+                    !isColliding && !isCompared && 'text-blue-700 dark:text-blue-200',
                   )}
                 >
                   {object.id}

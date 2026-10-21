@@ -73,6 +73,10 @@ export interface PaletteConfig {
 export interface PaletteViewProps {
     /** Full Classification → Category → Brick hierarchy the palette renders. */
     config: PaletteConfig;
+    /** Folded down to a thin rail of classification icons. */
+    collapsed?: boolean;
+    /** Called when a rail icon is picked, so whatever folded the palette can open it again. */
+    onExpand?: () => void;
     /** Called when a palette brick is activated from the keyboard. */
     onBrickActivate?: (brick: PaletteBrickConfig) => void;
 }

@@ -33,8 +33,6 @@ const CONNECTOR_COLORS = {
   inputs: '#6c5ce7',
 };
 
-
-
 /**
  * Storybook-only debug harness. Renders the raw SVG path from `BrickOutlineGenerator`
  * with coloured overlays for the widget, param, arg, and nesting bounds regions.
@@ -141,7 +139,7 @@ export function PathBrickView({ input }: { input: BrickOutlineInput }) {
             connectors.next && { kind: 'next', bounds: connectors.next },
             connectors.nestedNext && { kind: 'nestedNext', bounds: connectors.nestedNext },
             connectors.output && { kind: 'output', bounds: connectors.output },
-            ...connectors.inputs.map((bounds) => ({ kind: 'inputs' as const, bounds })),
+            ...connectors.inputs.map((bounds) => bounds && { kind: 'inputs' as const, bounds }),
           ].filter(Boolean) as { kind: keyof typeof CONNECTOR_COLORS; bounds: Bounds }[]
         ).map(({ kind, bounds }, i) => (
           <rect

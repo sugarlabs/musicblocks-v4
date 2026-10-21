@@ -87,7 +87,7 @@ function mountPaletteDrag() {
     }),
   );
 
-  return { slot };
+  return { slot, canvas };
 }
 
 /** Grabs the slot `grabOffset` px in from its top-left and releases at client point `release`. */
@@ -203,6 +203,17 @@ describe('useDragFromPalette drop placement', () => {
     // the collision space the connectors are indexed in, so it will not snap to anything.
     expect(droppedTowers()).toHaveLength(1);
     expect(droppedTowers()[0].position.x).toBe(-150);
+  });
+
+  it('reads the canvas edge at drop time, so a drop after the palette folds lands under the pointer', () => {
+    const { slot, canvas } = mountPaletteDrag();
+    // The palette folds to its rail after mount, and the canvas edge moves 250px left with it.
+    stubRect(canvas, { ...CANVAS_RECT, left: 50 });
+
+    dragSlotTo(slot, { x: 0, y: 0 }, { x: 250, y: 250 });
+
+    expect(droppedTowers()).toHaveLength(1);
+    expect(droppedTowers()[0].position).toEqual({ x: 200, y: 200 });
   });
 
   it('rejects a drop still overhanging the palette on a panned canvas', () => {

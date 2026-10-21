@@ -132,6 +132,30 @@ describe('brickHelpFor', () => {
 
         expect(brickHelpFor('repeat-1')?.anchor).toEqual({ x: 100, y: 52, w: 130, h: 24 });
     });
+
+    it("has no head to point at while the brick's head is outside the canvas's view", () => {
+        const model = repeat();
+        seat(model);
+        withHead(model);
+        // The canvas starts 80px down the page; the head sits above it, scrolled out of view,
+        // as on a tall brick opened from its lower part.
+        const canvas = document.createElement('div');
+        canvas.setAttribute('data-workspace-canvas', '');
+        vi.spyOn(canvas, 'getBoundingClientRect').mockReturnValue({
+            left: 0,
+            top: 80,
+            right: 1000,
+            bottom: 700,
+        } as DOMRect);
+        document.body.appendChild(canvas);
+        drawOnPage(model.id, { left: 100, top: 20, right: 230 });
+
+        const help = brickHelpFor('repeat-1');
+
+        expect(help?.anchor).toBeNull();
+        // The rest is still there to show, centred.
+        expect(help?.text).toBe('Repeats the bricks inside it.');
+    });
 });
 
 /** Gives `model` a head, as its view would once measured. jsdom lays nothing out. */

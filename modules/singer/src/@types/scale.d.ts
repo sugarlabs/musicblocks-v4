@@ -22,4 +22,9 @@ export interface IScale {
      * @throws {InvalidArgumentError}
      */
     getScaleAndOctaveDeltas: (pitchFormat?: string[]) => [string[], number[]];
+    /**
+     * Returns the octave delta for a note in the scale.
+     * @throws {InvalidArgumentError}
+     */
+    getOctaveDelta: (noteIndex: number) => number;
 }

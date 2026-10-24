@@ -107,6 +107,27 @@ describe('createBrickModel', () => {
         expect(createBrickModel(valueProps).scaleLevel).toBe(2);
         expect(createBrickModel({ ...valueProps, scaleLevel: 3 }).scaleLevel).toBe(3);
     });
+
+    it('does not share its widget with the props it was built from', () => {
+        const props = { ...valueProps, widget: { type: 'numberbox' as const, value: 4 } };
+        const a = createBrickModel(props) as ValueBrickModel;
+        const b = createBrickModel(props) as ValueBrickModel;
+
+        (a.widget as { value: number }).value = 9;
+
+        expect((b.widget as { value: number }).value).toBe(4);
+        expect(props.widget.value).toBe(4);
+    });
+
+    it.each([valueProps, expressionProps, statementProps])(
+        'gives a $kind brick its own copy of the widget',
+        (props) => {
+            const model = createBrickModel(props);
+
+            expect((model as ValueBrickModel).widget).toEqual(props.widget);
+            expect((model as ValueBrickModel).widget).not.toBe(props.widget);
+        },
+    );
 });
 
 // -------------------------------------------------------------------------------------------------

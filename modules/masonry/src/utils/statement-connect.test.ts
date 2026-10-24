@@ -49,6 +49,49 @@ function positionNotchAt(root: TowerNode, kind: NotchKind, point: Point): Point 
 }
 
 describe('resolveStatementConnection', () => {
+    describe('snap distance at each zoom level', () => {
+        // The reach is half the probe box (37.5 / 50 / 62.5px) plus half the host's tab, so an
+        // extra 44px falls between levels 1 and 2 and an extra 56px between levels 2 and 3.
+        it.each([
+            [1, 44, false],
+            [2, 44, true],
+            [2, 56, false],
+            [3, 56, true],
+        ] as const)(
+            'at level %i, a tab %ipx past reach-of-level-2 snaps: %s',
+            (level, extra, snaps) => {
+                const host = makeEmptyStatement('host', 0);
+                host.model.setPosition(500, 500);
+                const dragged = makeEmptyStatement('dragged', 0);
+                dragged.model.scaleLevel = level;
+
+                const tab = notchCenter(host, 'next');
+                const halfTab = host.model.getConnectorCoords().next!.w / 2;
+
+                const { space, connectors, towers } = workspace([
+                    { id: 'host-tower', root: host, position: { x: 500, y: 500 } },
+                    {
+                        id: 'dragged-tower',
+                        root: dragged,
+                        position: positionNotchAt(dragged, 'prev', {
+                            x: tab.x + halfTab + extra,
+                            y: tab.y,
+                        }),
+                    },
+                ]);
+
+                const result = resolveStatementConnection({
+                    draggedTowerId: 'dragged-tower',
+                    space,
+                    connectors,
+                    towers,
+                });
+
+                expect(result !== null).toBe(snaps);
+            },
+        );
+    });
+
     describe('dragging a statement under another', () => {
         it('hangs the dragged tower off the tab it was dropped on', () => {
             const host = makeEmptyStatement('host', 0);

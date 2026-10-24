@@ -43,6 +43,19 @@ export function clientToLocalPoint(
     };
 }
 
+/**
+ * Builds a palette brick's model at the current workspace zoom level. The snap probe during a drag
+ * and the brick a drop creates both come from here, so their size and snap distance can't drift
+ * apart. The level is read on each call rather than closed over, since the drag listeners bind
+ * once on mount; the Palette keeps its own size and does not follow it.
+ */
+function createPaletteBrickModel(config: PaletteBrickConfig) {
+    return createBrickModel({
+        ...config.brick,
+        scaleLevel: useWorkspaceScaleStore.getState().level,
+    });
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface UseDragFromPaletteOptions {
@@ -163,11 +176,13 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                             useWorkspaceViewportStore.getState().offset,
                         );
 
-                        // Temporarily mock a tower ID for collision detection
+                        // Temporarily mock a tower ID for collision detection. The probe is built at
+                        // the workspace level, like the drop below, so its snap distance follows the
+                        // zoom too.
                         const mockTowerId = 'temp-palette-drag';
                         useWorkspaceStore.getState().towers[mockTowerId] = {
                             id: mockTowerId,
-                            root: wrapAsRootNode(createBrickModel(drag.config.brick)),
+                            root: wrapAsRootNode(createPaletteBrickModel(drag.config)),
                             position,
                         };
 
@@ -215,12 +230,7 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                     if (!isInsideCanvas) return;
 
                     // A brand-new model instance per drop — never reuse the palette entry's id.
-                    // The level is read here rather than closed over, since these listeners bind
-                    // once on mount; the Palette keeps its own size and does not follow it.
-                    const model = createBrickModel({
-                        ...drag.config.brick,
-                        scaleLevel: useWorkspaceScaleStore.getState().level,
-                    });
+                    const model = createPaletteBrickModel(drag.config);
                     // A tower's position is in unpanned canvas coordinates, like every other
                     // tower's, so the pan comes back out of the drop point too.
                     const position = clientToLocalPoint(

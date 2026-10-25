@@ -277,7 +277,6 @@ describe('ActionMenu', () => {
       fireEvent.click(getByRole('menuitem', { name: 'Act' }));
       expect(runs.act).toHaveBeenCalledWith('b1');
 
-      canvas.remove();
     });
 
     it('clamps the menu within bounds when brick is near the bottom-right boundary', () => {
@@ -308,7 +307,6 @@ describe('ActionMenu', () => {
       fireEvent.click(getByRole('menuitem', { name: 'Act' }));
       expect(runs.act).toHaveBeenCalledWith('b1');
 
-      canvas.remove();
     });
 
     it('adjusts boundary clamping across different scale levels', () => {
@@ -347,7 +345,6 @@ describe('ActionMenu', () => {
         y: 600 - box3,
       });
 
-      canvas.remove();
     });
   });
 

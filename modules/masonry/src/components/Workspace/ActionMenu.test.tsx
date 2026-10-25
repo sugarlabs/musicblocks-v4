@@ -59,6 +59,7 @@ const { ActionMenu } = await import('./ActionMenu');
 
 afterEach(() => {
   cleanup();
+  document.querySelectorAll('[data-workspace-canvas]').forEach((canvas) => canvas.remove());
   vi.clearAllMocks();
   useActionMenuStore.setState({ brickId: null });
   useWorkspaceStore.setState({ towers: {}, selectedBrickId: null });
@@ -248,6 +249,102 @@ describe('ActionMenu', () => {
       const clips = getAllByRole('menuitem').map((wedge) => wedge.style.clipPath);
       expect(clips.every((clip) => clip.startsWith('path('))).toBe(true);
       expect(new Set(clips).size).toBe(clips.length);
+    });
+
+    it('clamps the menu within bounds when brick is near the top-left boundary', () => {
+      const canvas = document.createElement('div');
+      canvas.setAttribute('data-workspace-canvas', '');
+      vi.spyOn(canvas, 'getBoundingClientRect').mockReturnValue({
+        width: 800,
+        height: 600,
+        top: 0,
+        left: 0,
+        right: 800,
+        bottom: 600,
+      } as DOMRect);
+      document.body.appendChild(canvas);
+
+      // Brick placed at (0, 0), which would put unconstrained translation at negative coords
+      placeBrick('b1', 0, 0);
+      const { getByTestId, getByRole } = openOn('b1');
+
+      const translation = translationOf(getByTestId('action-menu'));
+      expect(translation.x).toBeGreaterThanOrEqual(0);
+      expect(translation.y).toBeGreaterThanOrEqual(0);
+      expect(translation).toEqual({ x: 0, y: 0 });
+
+      // Wedges remain clickable
+      fireEvent.click(getByRole('menuitem', { name: 'Act' }));
+      expect(runs.act).toHaveBeenCalledWith('b1');
+
+    });
+
+    it('clamps the menu within bounds when brick is near the bottom-right boundary', () => {
+      const canvas = document.createElement('div');
+      canvas.setAttribute('data-workspace-canvas', '');
+      vi.spyOn(canvas, 'getBoundingClientRect').mockReturnValue({
+        width: 800,
+        height: 600,
+        top: 0,
+        left: 0,
+        right: 800,
+        bottom: 600,
+      } as DOMRect);
+      document.body.appendChild(canvas);
+
+      const ring = ringAtScale(2);
+      const box = ring.outerRadius * 2;
+      // Brick placed near (800, 600)
+      placeBrick('b1', 780, 580);
+      const { getByTestId, getByRole } = openOn('b1');
+
+      const translation = translationOf(getByTestId('action-menu'));
+      expect(translation.x + box).toBeLessThanOrEqual(800);
+      expect(translation.y + box).toBeLessThanOrEqual(600);
+      expect(translation).toEqual({ x: 800 - box, y: 600 - box });
+
+      // Wedges remain clickable
+      fireEvent.click(getByRole('menuitem', { name: 'Act' }));
+      expect(runs.act).toHaveBeenCalledWith('b1');
+
+    });
+
+    it('adjusts boundary clamping across different scale levels', () => {
+      const canvas = document.createElement('div');
+      canvas.setAttribute('data-workspace-canvas', '');
+      vi.spyOn(canvas, 'getBoundingClientRect').mockReturnValue({
+        width: 800,
+        height: 600,
+        top: 0,
+        left: 0,
+        right: 800,
+        bottom: 600,
+      } as DOMRect);
+      document.body.appendChild(canvas);
+
+      placeBrick('b1', 780, 580);
+      const { getByTestId } = openOn('b1');
+
+      // Scale level 1
+      act(() => {
+        useWorkspaceScaleStore.setState({ level: 1 });
+      });
+      const box1 = ringAtScale(1).outerRadius * 2;
+      expect(translationOf(getByTestId('action-menu'))).toEqual({
+        x: 800 - box1,
+        y: 600 - box1,
+      });
+
+      // Scale level 3
+      act(() => {
+        useWorkspaceScaleStore.setState({ level: 3 });
+      });
+      const box3 = ringAtScale(3).outerRadius * 2;
+      expect(translationOf(getByTestId('action-menu'))).toEqual({
+        x: 800 - box3,
+        y: 600 - box3,
+      });
+
     });
   });
 

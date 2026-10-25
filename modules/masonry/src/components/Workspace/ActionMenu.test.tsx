@@ -59,6 +59,7 @@ const { ActionMenu } = await import('./ActionMenu');
 
 afterEach(() => {
   cleanup();
+  document.querySelectorAll('[data-workspace-canvas]').forEach((canvas) => canvas.remove());
   vi.clearAllMocks();
   useActionMenuStore.setState({ brickId: null });
   useWorkspaceStore.setState({ towers: {}, selectedBrickId: null });

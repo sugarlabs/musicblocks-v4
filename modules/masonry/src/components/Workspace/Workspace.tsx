@@ -304,7 +304,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
 
             <SnapHintOverlay />
             {/* Last in the overlay, so the menu draws over the bricks it is opened on */}
-            <ActionMenu />
+            <ActionMenu canvasRef={canvasRef} />
             <HelpPanel />
           </div>
 

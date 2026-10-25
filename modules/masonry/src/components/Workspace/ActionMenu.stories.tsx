@@ -3,6 +3,7 @@ import { Copy, Scissors, Trash2 } from 'lucide-react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { ActionMenuWedge } from '@/@types/action-menu.types';
+import type { Point } from '@/@types/common.types';
 import type { TowerStatementNode } from '@/@types/tower.types';
 
 import { TowerView } from '@/components/Tower/Tower';
@@ -55,6 +56,7 @@ interface StageProps {
   /** Left out to draw the three the workspace itself carries. */
   wedges?: ActionMenuWedge[];
   level: ScaleLevel;
+  origin?: Point;
 }
 
 /**
@@ -63,7 +65,7 @@ interface StageProps {
  * Stands in for the `Workspace`, which would need a palette, a trash and a pan hook to put one
  * brick on screen. The stores are what the menu actually reads, so seeding those is enough.
  */
-function Stage({ wedges, level }: StageProps) {
+function Stage({ wedges, level, origin = ORIGIN }: StageProps) {
   const [root] = useState<TowerStatementNode>(() => makeEmptyStatement('story-brick', 0, false));
 
   useEffect(() => {
@@ -73,18 +75,18 @@ function Stage({ wedges, level }: StageProps) {
 
     useWorkspaceScaleStore.setState({ level });
     useWorkspaceStore.setState({ towers: {}, selectedBrickId: null });
-    useWorkspaceStore.getState().createTower({ id: 'story', root, position: ORIGIN });
+    useWorkspaceStore.getState().createTower({ id: 'story', root, position: origin });
     useActionMenuStore.getState().open(root.model.id);
 
     return () => {
       useActionMenuStore.getState().close();
       useWorkspaceStore.setState({ towers: {}, selectedBrickId: null });
     };
-  }, [root, level]);
+  }, [root, level, origin]);
 
   return (
-    <div className="bg-background relative h-full w-full">
-      <TowerView root={root} origin={ORIGIN} asChild />
+    <div data-workspace-canvas className="bg-background relative h-full w-full overflow-hidden">
+      <TowerView root={root} origin={origin} asChild />
       <ActionMenu wedges={wedges} />
     </div>
   );
@@ -135,3 +137,9 @@ export const LargeScale: Story = {
   args: { wedges: enabledWedges, level: 3 },
 };
 LargeScale.storyName = 'Scale level 3';
+
+/** A brick placed right against the top-left corner: the menu clamps so all wedges stay in view. */
+export const TopLeftEdge: Story = {
+  args: { wedges: enabledWedges, origin: { x: 10, y: 10 } },
+};
+TopLeftEdge.storyName = 'Near top-left corner';

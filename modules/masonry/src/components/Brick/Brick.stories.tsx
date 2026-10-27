@@ -102,6 +102,28 @@ export const StatementSimple: Story = {
   ),
 };
 
+export const StatementSwitchButton: Story = {
+  render: () => (
+    <BrickView
+      kind="statement"
+      model={
+        new StatementBrickModel({
+          colorsDefault: { background: '#9b59b6', foreground: '#ffffff', border: '#8e44ad' },
+          tooltipText: '',
+          widget: { type: 'label', text: 'Repeat' },
+          hasConnectionPrev: true,
+          hasConnectionNext: true,
+        })
+      }
+      switchButton={{
+        label: 'Switch brick type',
+        onSwitch: () => {},
+      }}
+    />
+  ),
+};
+StatementSwitchButton.storyName = 'Statement - Switch Button';
+
 export const StatementNested: Story = {
   render: () => (
     <BrickView

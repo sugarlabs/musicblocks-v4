@@ -904,6 +904,22 @@ describe('Workspace', () => {
       expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
     });
 
+    it('does not pan or prevent default when focus is on the palette brick list', () => {
+      const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+      const paletteList = container.querySelector(
+        '[role="region"][aria-label="Palette bricks"]',
+      ) as HTMLElement;
+      paletteList.focus();
+      const preventDefaultSpy = vi.spyOn(Event.prototype, 'preventDefault');
+
+      fireEvent.keyDown(paletteList, { key: 'ArrowDown' });
+      fireEvent.keyDown(paletteList, { key: 'PageDown' });
+
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+      expect(preventDefaultSpy).not.toHaveBeenCalled();
+      preventDefaultSpy.mockRestore();
+    });
+
     it('takes focus when focused, rather than only carrying the attribute', () => {
       const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
       const canvas = container.querySelector(

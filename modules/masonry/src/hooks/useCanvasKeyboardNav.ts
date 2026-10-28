@@ -12,32 +12,32 @@ import { goHome } from '@/utils/workspace-home';
  * box, selects an option from a dropdown, or searches inside the palette.
  */
 export function isInputFocused(event: React.KeyboardEvent | KeyboardEvent): boolean {
-  const target = event.target as HTMLElement | null;
-  if (!target) return false;
+    const target = event.target as HTMLElement | null;
+    if (!target) return false;
 
-  const tagName = target.tagName ? target.tagName.toLowerCase() : '';
-  if (tagName === 'input' || tagName === 'textarea' || tagName === 'select') {
-    return true;
-  }
+    const tagName = target.tagName ? target.tagName.toLowerCase() : '';
+    if (tagName === 'input' || tagName === 'textarea' || tagName === 'select') {
+        return true;
+    }
 
-  if (
-    target.isContentEditable ||
-    target.contentEditable === 'true' ||
-    target.getAttribute?.('contenteditable') === 'true' ||
-    target.getAttribute?.('contenteditable') === ''
-  ) {
-    return true;
-  }
+    if (
+        target.isContentEditable ||
+        target.contentEditable === 'true' ||
+        target.getAttribute?.('contenteditable') === 'true' ||
+        target.getAttribute?.('contenteditable') === ''
+    ) {
+        return true;
+    }
 
-  if (
-    target.closest?.(
-      'input, textarea, select, [contenteditable="true"], [contenteditable=""], [role="textbox"], [role="searchbox"], [role="combobox"], [data-slot="input"], [data-slot="select-trigger"], [data-brick-input]',
-    )
-  ) {
-    return true;
-  }
+    if (
+        target.closest?.(
+            'input, textarea, select, [contenteditable="true"], [contenteditable=""], [role="textbox"], [role="searchbox"], [role="combobox"], [data-slot="input"], [data-slot="select-trigger"], [data-brick-input]',
+        )
+    ) {
+        return true;
+    }
 
-  return false;
+    return false;
 }
 
 /**
@@ -48,87 +48,110 @@ export function isInputFocused(event: React.KeyboardEvent | KeyboardEvent): bool
  * what the Home button does, laying the towers out inside `canvasRef`.
  */
 export function useCanvasKeyboardNav(canvasRef?: RefObject<HTMLElement | null>) {
-  const handleKeyDown = useCallback((event: React.KeyboardEvent | KeyboardEvent) => {
-    // Something nearer the press has already answered it. The action menu sits inside the canvas
-    // and takes the arrows while it is open, so without this its wedge step would pan the canvas
-    // underneath it too.
-    if (event.defaultPrevented) {
-      return;
-    }
+    const handleKeyDown = useCallback(
+        (event: React.KeyboardEvent | KeyboardEvent) => {
+            // Something nearer the press has already answered it. The action menu sits inside the canvas
+            // and takes the arrows while it is open, so without this its wedge step would pan the canvas
+            // underneath it too.
+            if (event.defaultPrevented) {
+                return;
+            }
 
-    if (isInputFocused(event)) {
-      return;
-    }
+            // Preserve browser and OS shortcut combinations (e.g. Alt+Left for back, Alt+Right for
+            // forward, Ctrl+Right for word jump, Cmd+Arrow on macOS). Only Shift is supported for fast pan.
+            if (event.altKey || event.ctrlKey || event.metaKey) {
+                return;
+            }
 
-    const { panBy, resetOffset, setOffset } = useWorkspaceViewportStore.getState();
-    const towers = useWorkspaceStore.getState().towers;
+            if (isInputFocused(event)) {
+                return;
+            }
 
-    const step = event.shiftKey ? FAST_PAN_STEP : PAN_STEP;
+            // When focus is on an external element outside the canvas (e.g. palette list, category buttons,
+            // navbar), let that control handle its own keyboard scrolling and navigation.
+            const target = event.target as HTMLElement | null;
+            if (
+                canvasRef?.current &&
+                target &&
+                target !== document.body &&
+                target !== document.documentElement &&
+                target instanceof Node &&
+                !canvasRef.current.contains(target)
+            ) {
+                return;
+            }
 
-    switch (event.key) {
-      case 'ArrowUp':
-        event.preventDefault();
-        panBy({ x: 0, y: -step });
-        break;
-      case 'ArrowDown':
-        event.preventDefault();
-        panBy({ x: 0, y: step });
-        break;
-      case 'ArrowLeft':
-        event.preventDefault();
-        panBy({ x: -step, y: 0 });
-        break;
-      case 'ArrowRight':
-        event.preventDefault();
-        panBy({ x: step, y: 0 });
-        break;
-      case 'PageUp':
-        event.preventDefault();
-        panBy({ x: 0, y: -PAGE_PAN_STEP });
-        break;
-      case 'PageDown':
-        event.preventDefault();
-        panBy({ x: 0, y: PAGE_PAN_STEP });
-        break;
-      case 'Home':
-        event.preventDefault();
-        goHome(canvasRef?.current ?? null);
-        break;
-      case 'End': {
-        event.preventDefault();
-        const towerList = Object.values(towers);
-        if (towerList.length === 0) {
-          resetOffset();
-        } else {
-          let maxX = 0;
-          let maxY = 0;
-          for (const tower of towerList) {
-            maxX = Math.max(maxX, tower.position.x);
-            maxY = Math.max(maxY, tower.position.y);
-          }
-          setOffset({
-            x: Math.max(0, maxX - 100),
-            y: Math.max(0, maxY - 100),
-          });
-        }
-        break;
-      }
-      default:
-        break;
-    }
-  }, [canvasRef]);
+            const { panBy, resetOffset, setOffset } = useWorkspaceViewportStore.getState();
+            const towers = useWorkspaceStore.getState().towers;
 
-  useEffect(() => {
-    const onWindowKeyDown = (event: KeyboardEvent) => {
-      if (event.defaultPrevented) return;
-      handleKeyDown(event);
-    };
+            const step = event.shiftKey ? FAST_PAN_STEP : PAN_STEP;
 
-    window.addEventListener('keydown', onWindowKeyDown);
-    return () => {
-      window.removeEventListener('keydown', onWindowKeyDown);
-    };
-  }, [handleKeyDown]);
+            switch (event.key) {
+                case 'ArrowUp':
+                    event.preventDefault();
+                    panBy({ x: 0, y: -step });
+                    break;
+                case 'ArrowDown':
+                    event.preventDefault();
+                    panBy({ x: 0, y: step });
+                    break;
+                case 'ArrowLeft':
+                    event.preventDefault();
+                    panBy({ x: -step, y: 0 });
+                    break;
+                case 'ArrowRight':
+                    event.preventDefault();
+                    panBy({ x: step, y: 0 });
+                    break;
+                case 'PageUp':
+                    event.preventDefault();
+                    panBy({ x: 0, y: -PAGE_PAN_STEP });
+                    break;
+                case 'PageDown':
+                    event.preventDefault();
+                    panBy({ x: 0, y: PAGE_PAN_STEP });
+                    break;
+                case 'Home':
+                    event.preventDefault();
+                    goHome(canvasRef?.current ?? null);
+                    break;
+                case 'End': {
+                    event.preventDefault();
+                    const towerList = Object.values(towers);
+                    if (towerList.length === 0) {
+                        resetOffset();
+                    } else {
+                        let maxX = 0;
+                        let maxY = 0;
+                        for (const tower of towerList) {
+                            maxX = Math.max(maxX, tower.position.x);
+                            maxY = Math.max(maxY, tower.position.y);
+                        }
+                        setOffset({
+                            x: Math.max(0, maxX - 100),
+                            y: Math.max(0, maxY - 100),
+                        });
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+        },
+        [canvasRef],
+    );
 
-  return { handleKeyDown };
+    useEffect(() => {
+        const onWindowKeyDown = (event: KeyboardEvent) => {
+            if (event.defaultPrevented) return;
+            handleKeyDown(event);
+        };
+
+        window.addEventListener('keydown', onWindowKeyDown);
+        return () => {
+            window.removeEventListener('keydown', onWindowKeyDown);
+        };
+    }, [handleKeyDown]);
+
+    return { handleKeyDown };
 }

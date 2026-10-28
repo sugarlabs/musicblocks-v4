@@ -380,4 +380,73 @@ describe('useCanvasKeyboardNav', () => {
       expect(isInputFocused(event)).toBe(false);
     });
   });
+
+  describe('Modifier key combos', () => {
+    it('does not pan or preventDefault when Alt, Ctrl, or Meta is held', () => {
+      const { getByTestId } = render(<KeyboardTestComponent />);
+      const canvas = getByTestId('canvas-test');
+
+      // Alt + ArrowLeft (browser back)
+      const altEvent = new KeyboardEvent('keydown', {
+        key: 'ArrowLeft',
+        altKey: true,
+        bubbles: true,
+        cancelable: true,
+      });
+      const altSpy = vi.spyOn(altEvent, 'preventDefault');
+      canvas.dispatchEvent(altEvent);
+      expect(altSpy).not.toHaveBeenCalled();
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+
+      // Ctrl + ArrowRight (word skip)
+      const ctrlEvent = new KeyboardEvent('keydown', {
+        key: 'ArrowRight',
+        ctrlKey: true,
+        bubbles: true,
+        cancelable: true,
+      });
+      const ctrlSpy = vi.spyOn(ctrlEvent, 'preventDefault');
+      canvas.dispatchEvent(ctrlEvent);
+      expect(ctrlSpy).not.toHaveBeenCalled();
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+
+      // Meta + ArrowDown (macOS shortcut)
+      const metaEvent = new KeyboardEvent('keydown', {
+        key: 'ArrowDown',
+        metaKey: true,
+        bubbles: true,
+        cancelable: true,
+      });
+      const metaSpy = vi.spyOn(metaEvent, 'preventDefault');
+      canvas.dispatchEvent(metaEvent);
+      expect(metaSpy).not.toHaveBeenCalled();
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+    });
+  });
+
+  describe('Focus scoping with canvasRef', () => {
+    it('does not pan or preventDefault when focus is on an element outside canvasRef', () => {
+      const canvas = document.createElement('div');
+      const externalButton = document.createElement('button');
+      document.body.appendChild(canvas);
+      document.body.appendChild(externalButton);
+
+      renderHook(() => useCanvasKeyboardNav({ current: canvas }));
+
+      const event = new KeyboardEvent('keydown', {
+        key: 'ArrowDown',
+        bubbles: true,
+        cancelable: true,
+      });
+      const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+
+      externalButton.dispatchEvent(event);
+
+      expect(preventDefaultSpy).not.toHaveBeenCalled();
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
+
+      document.body.removeChild(canvas);
+      document.body.removeChild(externalButton);
+    });
+  });
 });

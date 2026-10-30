@@ -85,8 +85,8 @@ afterEach(() => {
 
 describe('useBrickMove triggerBrickAnimation', () => {
   beforeEach(() => {
-      vi.useFakeTimers();
-      document.body.innerHTML = '<div data-id="test-element"></div>';
+    vi.useFakeTimers();
+    document.body.innerHTML = '<div data-id="test-element"></div>';
   });
 
   afterEach(() => {
@@ -95,18 +95,17 @@ describe('useBrickMove triggerBrickAnimation', () => {
   });
 
   it('adds the animationClass to the brick and then removes it after 400ms', () => {
-
     const element = document.querySelector<HTMLElement>(`[data-id="test-element"]`);
 
     expect(element).not.toBeNull();
 
-    triggerBrickAnimation("test-element", "test-animation");
+    triggerBrickAnimation('test-element', 'test-animation');
 
-    expect(element?.classList.contains("test-animation")).toBe(true);
+    expect(element?.classList.contains('test-animation')).toBe(true);
 
     vi.advanceTimersByTime(400);
 
-    expect(element?.classList.contains("test-animation")).toBe(false);
+    expect(element?.classList.contains('test-animation')).toBe(false);
   });
 });
 

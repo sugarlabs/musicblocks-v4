@@ -52,10 +52,10 @@ function rectBounds(rect: DOMRect): Bounds {
  */
 
 // Helper function to trigger brick snap-pulse animation on join
-function scheduleSnapPulse(draggedBrickId: string){
-    requestAnimationFrame(()=>{
+function scheduleSnapPulse(draggedBrickId: string) {
+    requestAnimationFrame(() => {
         triggerBrickAnimation(draggedBrickId, 'brick-snap-pulse');
-    })
+    });
 }
 
 export function tryConnect(towerId: string): boolean {

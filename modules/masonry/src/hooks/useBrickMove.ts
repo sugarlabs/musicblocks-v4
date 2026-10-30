@@ -50,6 +50,14 @@ function rectBounds(rect: DOMRect): Bounds {
  * @param towerId - The ID of the tower that was just dropped.
  * @returns Whether a join happened, in which case one of the two towers no longer exists.
  */
+
+// Helper function to trigger brick snap-pulse animation on join
+function scheduleSnapPulse(draggedBrickId: string){
+    requestAnimationFrame(()=>{
+        triggerBrickAnimation(draggedBrickId, 'brick-snap-pulse');
+    })
+}
+
 export function tryConnect(towerId: string): boolean {
     const store = useWorkspaceStore.getState();
     const draggedBrickId = store.towers[towerId]?.root.model.id;
@@ -71,18 +79,14 @@ export function tryConnect(towerId: string): boolean {
     if (statement !== null && (argument === null || statement.distance < argument.distance)) {
         joinStatement(statement);
         store.absorbTower(statement.absorbedTowerId, statement.hostTowerId);
-        requestAnimationFrame(()=>{
-            triggerBrickAnimation(draggedBrickId, 'brick-snap-pulse');
-        })
+        scheduleSnapPulse(draggedBrickId);
         return true;
     }
 
     if (argument !== null) {
         joinArg(argument);
         store.absorbTower(argument.absorbedTowerId, argument.hostTowerId);
-        requestAnimationFrame(()=>{
-            triggerBrickAnimation(draggedBrickId, 'brick-snap-pulse');
-        })
+        scheduleSnapPulse(draggedBrickId);
         return true;
     }
 

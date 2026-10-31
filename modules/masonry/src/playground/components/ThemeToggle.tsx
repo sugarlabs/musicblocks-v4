@@ -2,10 +2,24 @@ import { Monitor, Moon, Sun } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useThemeStore } from '../stores/theme';
 
+/**
+ * Props for the {@link ThemeToggle} component.
+ */
 interface ThemeToggleProps {
+  /** Optional CSS classes to apply to the toggle container. */
   className?: string;
 }
 
+/**
+ * Renders a 3-way theme toggle button group supporting light, dark, and system color preferences.
+ *
+ * Reflects the active preference via `aria-pressed` and styled indicator pills,
+ * updating the global theme store on user selection.
+ *
+ * @param props - Component properties.
+ * @param props.className - Optional CSS classes for custom styling.
+ * @returns The rendered theme toggle button group element.
+ */
 export function ThemeToggle({ className }: ThemeToggleProps) {
   const preference = useThemeStore((state) => state.preference);
   const setPreference = useThemeStore((state) => state.setPreference);

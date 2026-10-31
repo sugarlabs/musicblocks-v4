@@ -196,7 +196,7 @@ export class Scale implements IScale {
      * Thrown if `noteIndex` is not in the range of modeLength.
      */
     public getOctaveDelta(noteIndex: number): number {
-        if (noteIndex < 0 || noteIndex > this._noteNames.length - 1) {
+        if (noteIndex < 0 || noteIndex >= this._octaveDeltas.length) {
             throw new InvalidArgumentError('noteIndex must be in range of scale length.');
         }
         return this._octaveDeltas[noteIndex];

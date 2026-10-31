@@ -54,6 +54,30 @@ describe('class Scale', () => {
             expect(sGMaj.getOctaveDelta(3)).toEqual(1);
         });
 
+        test('Expect getOctaveDelta to throw InvalidArgumentError when noteIndex is negative', () => {
+            expect(() => sGMaj.getOctaveDelta(-1)).toThrowError(
+                'noteIndex must be in range of scale length.',
+            );
+        });
+
+        test('Expect getOctaveDelta to throw InvalidArgumentError when noteIndex is equal to or greater than scale length', () => {
+            expect(() => sGMaj.getOctaveDelta(8)).toThrowError(
+                'noteIndex must be in range of scale length.',
+            );
+            expect(() => sGMaj.getOctaveDelta(10)).toThrowError(
+                'noteIndex must be in range of scale length.',
+            );
+        });
+
+        test('Expect getOctaveDelta to throw InvalidArgumentError on pentatonic scale for out-of-range index below 12', () => {
+            const pentatonic = new Scale([2, 2, 3, 2, 3], 0);
+            expect(pentatonic.getScale().length).toBe(6);
+            expect(pentatonic.getOctaveDelta(5)).toBe(1);
+            expect(() => pentatonic.getOctaveDelta(6)).toThrowError(
+                'noteIndex must be in range of scale length.',
+            );
+        });
+
         const scale = new Scale();
         test('Generate scale when halfstep pattern is not defined and verify it', () => {
             expect(scale.getScale()).toEqual([

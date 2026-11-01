@@ -44,7 +44,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
           'flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-all',
           preference === 'light'
             ? 'bg-blue-100 text-blue-600 shadow-xs dark:bg-blue-600 dark:text-white'
-            : 'text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200',
+            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200',
         )}
       >
         <Sun className="h-4 w-4" />
@@ -76,7 +76,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
           'flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-all',
           preference === 'system'
             ? 'bg-blue-100 text-blue-600 shadow-xs dark:bg-blue-600 dark:text-white'
-            : 'text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200',
+            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200',
         )}
       >
         <Monitor className="h-4 w-4" />

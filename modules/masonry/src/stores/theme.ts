@@ -56,14 +56,16 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
     },
 
     initTheme: () => {
-        let savedPreference: ThemePreference = 'system';
+        // Falls back to the in-memory preference, not 'system': the Workspace re-inits on every
+        // mount, and a selection made while storage is unavailable must survive the round trip.
+        let savedPreference: ThemePreference = get().preference;
         try {
             const stored = localStorage.getItem(THEME_STORAGE_KEY);
             if (stored === 'light' || stored === 'dark' || stored === 'system') {
                 savedPreference = stored;
             }
         } catch {
-            // Fallback to default
+            // Fallback to the current preference
         }
 
         const resolved = savedPreference === 'system' ? getSystemTheme() : savedPreference;

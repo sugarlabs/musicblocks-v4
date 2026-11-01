@@ -130,6 +130,22 @@ describe('useThemeStore', () => {
             expect(() => useThemeStore.getState().initTheme()).not.toThrow();
             expect(useThemeStore.getState().preference).toBe('system');
         });
+
+        it('re-initialization without a stored value keeps the in-memory selection', () => {
+            // A selection made while storage is unavailable must survive a Workspace remount
+            vi.stubGlobal('localStorage', {
+                getItem: () => null,
+                setItem: () => {
+                    throw new Error('Denied');
+                },
+            });
+
+            useThemeStore.getState().setPreference('dark');
+            useThemeStore.getState().initTheme();
+
+            expect(useThemeStore.getState().preference).toBe('dark');
+            expect(useThemeStore.getState().resolvedTheme).toBe('dark');
+        });
     });
 
     describe('Preference changes', () => {

@@ -2,7 +2,6 @@ import { NavLink } from 'react-router-dom';
 
 import { cn } from '@/lib/utils';
 
-import { ThemeToggle } from './ThemeToggle';
 import { pages } from '../pages';
 
 export default function TopBar() {
@@ -45,11 +44,6 @@ export default function TopBar() {
             </NavLink>
           ))}
         </div>
-      </div>
-
-      {/* Right side: Theme toggle */}
-      <div className="flex items-center gap-4">
-        <ThemeToggle />
       </div>
     </nav>
   );

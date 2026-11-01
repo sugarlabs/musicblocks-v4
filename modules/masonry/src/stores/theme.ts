@@ -35,6 +35,10 @@ function applyDomTheme(theme: ResolvedTheme) {
 let activeMediaQuery: MediaQueryList | null = null;
 let activeMediaListener: ((e: MediaQueryListEvent) => void) | null = null;
 
+/**
+ * App-wide theme preference. The `dark` class goes on the document root, so every page follows
+ * it; the control that flips it lives in the Workspace.
+ */
 export const useThemeStore = create<ThemeState>((set, get) => ({
     preference: 'system',
     resolvedTheme: 'light',

@@ -16,6 +16,7 @@ import { useTowerLayout } from '@/hooks/useTowerLayout';
 import { useWorkspaceScale } from '@/hooks/useWorkspaceScale';
 import { cn } from '@/lib/utils';
 import { useBrickLayoutStore } from '@/stores/brick';
+import { useThemeStore } from '@/stores/theme';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 import { discardTower } from '@/utils/towerDiscard';
 import { listVisibleNodes } from '@/utils/tower-traversal';
@@ -29,6 +30,7 @@ import { HomeControl } from './HomeControl';
 import { PaletteControl } from './PaletteControl';
 import { ScaleControl } from './ScaleControl';
 import { SnapHintOverlay } from './SnapHintOverlay';
+import { ThemeControl } from './ThemeControl';
 import { SnapPreviewView } from './SnapPreviewView';
 import { DisconnectShadowView } from './DisconnectShadowView';
 import { Trash } from './Trash';
@@ -59,6 +61,11 @@ export function Workspace({ config }: WorkspaceViewProps) {
     import('@/stores/history').then(({ useWorkspaceHistoryStore }) => {
       useWorkspaceHistoryStore.getState().init();
     });
+  }, []);
+
+  // Pick up the saved theme preference (and follow the system when set to it)
+  useEffect(() => {
+    useThemeStore.getState().initTheme();
   }, []);
 
   // Keyboard deletion of the selected brick. The listener sits on the window rather than the canvas
@@ -322,6 +329,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
           <Trash />
         </div>
 
+        <ThemeControl />
         <BricksVisibilityControl />
 
         <DragGhost ref={ghostRef} />

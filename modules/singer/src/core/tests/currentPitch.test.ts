@@ -87,6 +87,36 @@ describe('class CurrentPitch', () => {
             cp.setPitch(55);
             expect(Math.round(cp.freq)).toBe(392);
         });
+
+        test("Set pitch to semitone index 11 and octave 4 and expect generic note name 'n11' and octave 4", () => {
+            cp.setPitch(11, 4);
+            expect(cp.genericName).toBe('n11');
+            expect(cp.octave).toBe(4);
+            expect(cp.semitoneIndex).toBe(11);
+        });
+
+        test('Set pitch to the first pitch number after the octave boundary', () => {
+            const boundaryPitch = new CurrentPitch();
+            boundaryPitch.setPitch(12);
+
+            expect(boundaryPitch.number).toBe(12);
+            expect(boundaryPitch.semitoneIndex).toBe(0);
+            expect(boundaryPitch.octave).toBe(1);
+            expect(boundaryPitch.genericName).toBe('n0');
+            expect(Math.round(boundaryPitch.freq)).toBe(33);
+        });
+
+        test('Transpose correctly after setting the pitch at the octave boundary', () => {
+            const semitonePitch = new CurrentPitch();
+            semitonePitch.setPitch(12);
+            semitonePitch.applySemitoneTransposition(1);
+            expect(semitonePitch.genericName).toBe('n1');
+
+            const scalarPitch = new CurrentPitch();
+            scalarPitch.setPitch(12);
+            scalarPitch.applyScalarTransposition(1);
+            expect(scalarPitch.genericName).toBe('n2');
+        });
     });
 
     describe('Test scalar step', () => {

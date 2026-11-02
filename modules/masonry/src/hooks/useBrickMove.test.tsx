@@ -7,15 +7,18 @@ import { act, cleanup, render, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useRef } from 'react';
 
-import { makeEmptyStatement } from '@/mocks/tower';
+import { makeEmptyExpression, makeEmptyStatement, makeEmptyValue } from '@/mocks/tower';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { useTrashStore } from '@/stores/trash';
 import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
+import * as argumentConnect from '@/utils/argument-connect';
 import { AUTO_PAN_MAX_STEP, DRAG_CLICK_SUPPRESSION_MS } from '@/utils/constants';
+import * as statementConnect from '@/utils/statement-connect';
 
-import { useBrickMove } from './useBrickMove';
+import { tryConnect, useBrickMove } from './useBrickMove';
+import { traverseTopDown } from '@/utils/tower-traversal';
 
 const { interactableMock, interactMock } = vi.hoisted(() => {
   const interactableMock = {
@@ -441,5 +444,471 @@ describe('useBrickMove drag-to-click suppression', () => {
     dragBrick();
 
     expect(result.current()).toBe(true);
+  });
+});
+
+describe('tryConnect swapping bricks', () => {
+  beforeEach(() => {
+    useWorkspaceStore.setState({
+      towers: {},
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('sends the evicted block to originPosition when originPosition is provided', () => {
+    const host = makeEmptyExpression('host', 1);
+    const tenant = makeEmptyValue('tenant');
+    host.args[0] = tenant;
+    tenant.parent = host;
+
+    const hostTowerId = 'host-tower';
+    const draggedTowerId = 'dragged-tower';
+    const dragged = makeEmptyValue('dragged');
+
+    const store = useWorkspaceStore.getState();
+    act(() => {
+      store.createTower({ id: hostTowerId, root: host, position: { x: 500, y: 500 } });
+      store.createTower({ id: draggedTowerId, root: dragged, position: { x: 100, y: 100 } });
+    });
+
+    const resolveArgSpy = vi.spyOn(argumentConnect, 'resolveArgumentConnection').mockReturnValue({
+      parent: host,
+      child: dragged,
+      slotIndex: 0,
+      hostTowerId,
+      absorbedTowerId: draggedTowerId,
+      distance: 0,
+      residentNode: tenant,
+    });
+    const resolveStmtSpy = vi
+      .spyOn(statementConnect, 'resolveStatementConnection')
+      .mockReturnValue(null);
+    const joinArgSpy = vi.spyOn(argumentConnect, 'joinArg').mockImplementation(() => {});
+
+    const detachSpy = vi
+      .spyOn(useWorkspaceStore.getState(), 'detachBrickToNewTower')
+      .mockReturnValue('new-tower-id');
+
+    const originPosition = { x: 123, y: 456 };
+    act(() => {
+      tryConnect(draggedTowerId, originPosition);
+    });
+
+    expect(detachSpy).toHaveBeenCalledWith(hostTowerId, 'tenant', originPosition);
+
+    detachSpy.mockRestore();
+    resolveArgSpy.mockRestore();
+    resolveStmtSpy.mockRestore();
+    joinArgSpy.mockRestore();
+  });
+
+  it('swaps a resident expression containing an argument into a separate tower and seats incoming brick without stubbing', () => {
+    const host = makeEmptyExpression('host', 1);
+    const residentExpr = makeEmptyExpression('resident-expr', 1);
+    const residentArg = makeEmptyValue('resident-arg');
+    residentExpr.args[0] = residentArg;
+    residentArg.parent = residentExpr;
+    host.args[0] = residentExpr;
+    residentExpr.parent = host;
+
+    const hostTowerId = 'host-tower';
+    const draggedTowerId = 'dragged-tower';
+    const dragged = makeEmptyValue('dragged');
+
+    const store = useWorkspaceStore.getState();
+    act(() => {
+      store.createTower({ id: hostTowerId, root: host, position: { x: 500, y: 500 } });
+      store.createTower({ id: draggedTowerId, root: dragged, position: { x: 100, y: 100 } });
+    });
+
+    const resolveArgSpy = vi.spyOn(argumentConnect, 'resolveArgumentConnection').mockReturnValue({
+      parent: host,
+      child: dragged,
+      slotIndex: 0,
+      hostTowerId,
+      absorbedTowerId: draggedTowerId,
+      distance: 0,
+      residentNode: residentExpr,
+    });
+    const resolveStmtSpy = vi
+      .spyOn(statementConnect, 'resolveStatementConnection')
+      .mockReturnValue(null);
+
+    const originPosition = { x: 123, y: 456 };
+    let connected = false;
+    act(() => {
+      connected = tryConnect(draggedTowerId, originPosition);
+    });
+
+    expect(connected).toBe(true);
+
+    const latestStore = useWorkspaceStore.getState();
+    const currentHost = latestStore.towers[hostTowerId]?.root;
+    // Incoming brick occupies the host slot
+    expect(currentHost).toBeDefined();
+    expect('args' in currentHost! && currentHost.args[0]).toBe(dragged);
+    expect(dragged.parent).toBe(currentHost);
+
+    // Resident subtree becomes a separate tower
+    const newTowers = Object.values(latestStore.towers).filter((t) => t.id !== hostTowerId);
+    expect(newTowers).toHaveLength(1);
+    const residentTower = newTowers[0];
+    expect(residentTower.root).toBe(residentExpr);
+    expect(residentExpr.parent).toBeNull();
+    expect(residentExpr.args[0]).toBe(residentArg);
+    expect(residentArg.parent).toBe(residentExpr);
+
+    resolveArgSpy.mockRestore();
+    resolveStmtSpy.mockRestore();
+  });
+
+  it('exchanges two argument blocks in the same tree when one is dropped onto the other', () => {
+    const host = makeEmptyExpression('host', 2);
+    const childA = makeEmptyValue('child-a');
+    const childB = makeEmptyValue('child-b');
+    // Initially host had childA in slot 0 and childB in slot 1.
+    // When childA was detached during drag start, slot 0 was vacated (null).
+    host.args[0] = null;
+    host.args[1] = childB;
+    childB.parent = host;
+
+    const hostTowerId = 'host-tower';
+    const draggedTowerId = 'dragged-tower-a';
+
+    const store = useWorkspaceStore.getState();
+    act(() => {
+      store.createTower({ id: hostTowerId, root: host, position: { x: 500, y: 500 } });
+      store.createTower({ id: draggedTowerId, root: childA, position: { x: 550, y: 500 } });
+    });
+
+    const resolveArgSpy = vi.spyOn(argumentConnect, 'resolveArgumentConnection').mockReturnValue({
+      parent: host,
+      child: childA,
+      slotIndex: 1,
+      hostTowerId,
+      absorbedTowerId: draggedTowerId,
+      distance: 0,
+      residentNode: childB,
+    });
+    const resolveStmtSpy = vi
+      .spyOn(statementConnect, 'resolveStatementConnection')
+      .mockReturnValue(null);
+
+    const originSlot = {
+      towerId: hostTowerId,
+      parentId: 'host',
+      slotIndex: 0,
+    };
+
+    let connected = false;
+    act(() => {
+      connected = tryConnect(draggedTowerId, { x: 500, y: 500 }, originSlot);
+    });
+
+    expect(connected).toBe(true);
+
+    const latestStore = useWorkspaceStore.getState();
+    const currentHost = latestStore.towers[hostTowerId]?.root;
+    expect(currentHost).toBeDefined();
+
+    // Verify both blocks swapped slots in the same tree!
+    expect('args' in currentHost! && currentHost.args[0]).toBe(childB);
+    expect('args' in currentHost! && currentHost.args[1]).toBe(childA);
+    expect(childB.parent).toBe(currentHost);
+    expect(childA.parent).toBe(currentHost);
+
+    // No orphan towers left behind
+    expect(Object.keys(latestStore.towers)).toEqual([hostTowerId]);
+
+    resolveArgSpy.mockRestore();
+    resolveStmtSpy.mockRestore();
+  });
+
+  it('falls back to safe extracted position when originPosition is not provided (e.g. from palette)', () => {
+    const host = makeEmptyExpression('host', 1);
+    const tenant = makeEmptyValue('tenant');
+    host.args[0] = tenant;
+    tenant.parent = host;
+
+    const hostTowerId = 'host-tower';
+    const draggedTowerId = 'dragged-tower';
+    const dragged = makeEmptyValue('dragged');
+
+    const store = useWorkspaceStore.getState();
+    act(() => {
+      store.createTower({ id: hostTowerId, root: host, position: { x: 500, y: 500 } });
+      store.createTower({ id: draggedTowerId, root: dragged, position: { x: 100, y: 100 } });
+    });
+
+    const resolveArgSpy = vi.spyOn(argumentConnect, 'resolveArgumentConnection').mockReturnValue({
+      parent: host,
+      child: dragged,
+      slotIndex: 0,
+      hostTowerId,
+      absorbedTowerId: draggedTowerId,
+      distance: 0,
+      residentNode: tenant,
+    });
+    const resolveStmtSpy = vi
+      .spyOn(statementConnect, 'resolveStatementConnection')
+      .mockReturnValue(null);
+    const joinArgSpy = vi.spyOn(argumentConnect, 'joinArg').mockImplementation(() => {});
+
+    const detachSpy = vi
+      .spyOn(useWorkspaceStore.getState(), 'detachBrickToNewTower')
+      .mockReturnValue('new-tower-id');
+
+    act(() => {
+      tryConnect(draggedTowerId);
+    });
+
+    expect(detachSpy).toHaveBeenCalledWith(
+      hostTowerId,
+      'tenant',
+      expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) }),
+    );
+
+    detachSpy.mockRestore();
+    resolveArgSpy.mockRestore();
+    resolveStmtSpy.mockRestore();
+    joinArgSpy.mockRestore();
+  });
+
+  it('falls back to creating a new tower rather than creating a cyclic tree when isAcyclic check detects cycle', () => {
+    const p = makeEmptyExpression('p', 1);
+    const r = makeEmptyExpression('r', 1);
+    const c = makeEmptyValue('c');
+
+    r.args[0] = null; // C was dragged out of R
+    p.args[0] = r;
+    r.parent = p;
+
+    const hostTowerId = 'host-tower';
+    const draggedTowerId = 'dragged-tower-c';
+
+    const store = useWorkspaceStore.getState();
+    act(() => {
+      store.createTower({ id: hostTowerId, root: p, position: { x: 500, y: 500 } });
+      store.createTower({ id: draggedTowerId, root: c, position: { x: 550, y: 500 } });
+    });
+
+    const resolveArgSpy = vi.spyOn(argumentConnect, 'resolveArgumentConnection').mockReturnValue({
+      parent: p,
+      child: c,
+      slotIndex: 0,
+      hostTowerId,
+      absorbedTowerId: draggedTowerId,
+      distance: 0,
+      residentNode: r,
+    });
+    const resolveStmtSpy = vi
+      .spyOn(statementConnect, 'resolveStatementConnection')
+      .mockReturnValue(null);
+
+    // Origin slot was R's slot 0, which is on the resident R
+    const originSlot = {
+      towerId: hostTowerId,
+      parentId: 'r',
+      slotIndex: 0,
+    };
+
+    let connected = false;
+    act(() => {
+      connected = tryConnect(draggedTowerId, { x: 500, y: 500 }, originSlot);
+    });
+
+    expect(connected).toBe(true);
+
+    const latestStore = useWorkspaceStore.getState();
+    const currentHost = latestStore.towers[hostTowerId]?.root;
+    expect(currentHost).toBeDefined();
+    expect('args' in currentHost! && currentHost.args[0]).toBe(c);
+    expect(c.parent).toBe(currentHost);
+
+    // R was detached to a new tower rather than creating a cyclic tree
+    const newTowers = Object.values(latestStore.towers).filter((t) => t.id !== hostTowerId);
+    expect(newTowers).toHaveLength(1);
+    expect(newTowers[0].root).toBe(r);
+    expect(r.parent).toBeNull();
+    expect('args' in r && r.args[0]).toBeNull();
+
+    resolveArgSpy.mockRestore();
+    resolveStmtSpy.mockRestore();
+  });
+
+  it('falls back to creating a new tower rather than creating a cyclic tree when dropping child onto slot holding parent in full drag lifecycle', () => {
+    // Exact reviewer scenario:
+    // Create parent brick R with child C in its argument slot
+    const p = makeEmptyExpression('root-p', 1);
+    const r = makeEmptyExpression('parent-r', 1);
+    const c = makeEmptyValue('child-c');
+    r.args[0] = c;
+    c.parent = r;
+    p.args[0] = r;
+    r.parent = p;
+
+    const hostTowerId = 'tower-host';
+    const store = useWorkspaceStore.getState();
+    act(() => {
+      store.createTower({ id: hostTowerId, root: p, position: { x: 500, y: 500 } });
+    });
+
+    traverseTopDown(p, { x: 500, y: 500 });
+    act(() => {
+      store.syncStatementConnectors(hostTowerId, p);
+      store.syncArgumentConnectors(hostTowerId, p);
+    });
+
+    const el = document.createElement('div');
+    document.body.append(el);
+    renderHook(() => useBrickMove('child-c', { current: el }));
+
+    const dListeners = listeners();
+    // 1. Start dragging C out of R
+    act(() => {
+      dListeners.start(pointerAt(500));
+    });
+
+    // 2. Drop C onto the argument slot currently holding R (P's slot 0)
+    const input0 = p.model.getConnectorCoords().inputs[0];
+    const targetSlotX = p.model.position.x + input0.x;
+    const targetSlotY = p.model.position.y + input0.y;
+
+    const cOutput = c.model.getConnectorCoords().output!;
+    const targetTowerX = targetSlotX - cOutput.x;
+    const targetTowerY = targetSlotY - cOutput.y;
+
+    const deltaX = targetTowerX - 500;
+    const deltaY = targetTowerY - 500;
+
+    act(() => {
+      dListeners.move({ dx: deltaX, dy: deltaY, clientX: targetTowerX, clientY: targetTowerY });
+    });
+
+    act(() => {
+      dListeners.end({ clientX: targetTowerX, clientY: targetTowerY });
+    });
+
+    // Verify resulting tree structure and tower state
+    const latestStore = useWorkspaceStore.getState();
+    const finalHost = latestStore.towers[hostTowerId]?.root;
+    expect(finalHost).toBeDefined();
+    // Slot 0 of P now holds C, not R
+    expect('args' in finalHost! && finalHost.args[0]?.model.id).toBe('child-c');
+    expect(c.parent).toBe(finalHost);
+
+    // Cycle prevention fallback creates a new tower holding R rather than a cyclic tree
+    const allTowers = Object.values(latestStore.towers);
+    expect(allTowers).toHaveLength(2);
+
+    const rTower = allTowers.find((t) => t.id !== hostTowerId);
+    expect(rTower).toBeDefined();
+    expect(rTower!.root.model.id).toBe('parent-r');
+    expect(rTower!.root.parent).toBeNull();
+    // R's argument slot 0 is null (vacated when C was dragged out, not self-referential)
+    expect('args' in rTower!.root && rTower!.root.args[0]).toBeNull();
+  });
+
+  it('does not detach any block when the argument slot is empty', () => {
+    const host = makeEmptyExpression('host', 1);
+    const hostTowerId = 'host-tower';
+    const draggedTowerId = 'dragged-tower';
+    const dragged = makeEmptyValue('dragged');
+
+    const store = useWorkspaceStore.getState();
+    act(() => {
+      store.createTower({ id: hostTowerId, root: host, position: { x: 500, y: 500 } });
+      store.createTower({ id: draggedTowerId, root: dragged, position: { x: 100, y: 100 } });
+    });
+
+    const resolveArgSpy = vi.spyOn(argumentConnect, 'resolveArgumentConnection').mockReturnValue({
+      parent: host,
+      child: dragged,
+      slotIndex: 0,
+      hostTowerId,
+      absorbedTowerId: draggedTowerId,
+      distance: 0,
+      residentNode: null,
+    });
+    const resolveStmtSpy = vi
+      .spyOn(statementConnect, 'resolveStatementConnection')
+      .mockReturnValue(null);
+    const joinArgSpy = vi.spyOn(argumentConnect, 'joinArg').mockImplementation(() => {});
+
+    const detachSpy = vi.spyOn(useWorkspaceStore.getState(), 'detachBrickToNewTower');
+
+    act(() => {
+      tryConnect(draggedTowerId, { x: 50, y: 50 });
+    });
+
+    expect(detachSpy).not.toHaveBeenCalled();
+
+    resolveArgSpy.mockRestore();
+    resolveStmtSpy.mockRestore();
+    joinArgSpy.mockRestore();
+  });
+
+  it('performs full drag lifecycle exchanging two arguments in the same tree without mocks', () => {
+    const host = makeEmptyExpression('host', 2);
+    const childA = makeEmptyValue('child-a');
+    const childB = makeEmptyValue('child-b');
+    host.args[0] = childA;
+    childA.parent = host;
+    host.args[1] = childB;
+    childB.parent = host;
+
+    const hostTowerId = 'tower-1';
+    const store = useWorkspaceStore.getState();
+    act(() => {
+      store.createTower({ id: hostTowerId, root: host, position: { x: 500, y: 500 } });
+    });
+
+    // Run layout traversal to establish positions
+    traverseTopDown(host, { x: 500, y: 500 });
+    act(() => {
+      store.syncStatementConnectors(hostTowerId, host);
+      store.syncArgumentConnectors(hostTowerId, host);
+    });
+
+    const el = document.createElement('div');
+    document.body.append(el);
+    renderHook(() => useBrickMove('child-a', { current: el }));
+
+    const dListeners = listeners();
+    // 1. Start drag on child-a
+    act(() => {
+      dListeners.start(pointerAt(500));
+    });
+
+    // Determine target location: slot 1 groove center
+    const input1 = host.model.getConnectorCoords().inputs[1];
+    const targetSlotX = host.model.position.x + input1.x;
+    const targetSlotY = host.model.position.y + input1.y;
+
+    const childAOutput = childA.model.getConnectorCoords().output!;
+    // Move dragged tower so childA's output tab aligns with slot 1
+    const targetTowerX = targetSlotX - childAOutput.x;
+    const targetTowerY = targetSlotY - childAOutput.y;
+
+    const deltaX = targetTowerX - 500;
+    const deltaY = targetTowerY - 500;
+
+    act(() => {
+      dListeners.move({ dx: deltaX, dy: deltaY, clientX: targetTowerX, clientY: targetTowerY });
+    });
+
+    // 2. End drag (drop onto slot 1)
+    act(() => {
+      dListeners.end({ clientX: targetTowerX, clientY: targetTowerY });
+    });
+
+    const latestStore = useWorkspaceStore.getState();
+    const finalHost = latestStore.towers[hostTowerId]?.root;
+    expect(finalHost).toBeDefined();
+    expect('args' in finalHost! && finalHost.args[0]?.model.id).toBe('child-b');
+    expect('args' in finalHost! && finalHost.args[1]?.model.id).toBe('child-a');
   });
 });

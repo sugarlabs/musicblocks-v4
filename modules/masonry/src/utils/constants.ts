@@ -111,3 +111,6 @@ export const AUTO_PAN_MAX_STEP = 12;
 export const HOME_COLUMN_WIDTH = 160;
 /** The space (in pixels) Home leaves between the towers it lays out. */
 export const HOME_GAP = 24;
+
+/** Space (in pixels) reserved for the textbox wrapper and brick outline at every scale. */
+export const TEXTBOX_WIDTH_RESERVE = 64;

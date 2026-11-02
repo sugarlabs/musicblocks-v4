@@ -17,7 +17,7 @@ import { joinStatement, resolveStatementConnection } from '@/utils/statement-con
 import { discardTower } from '@/utils/towerDiscard';
 import type { Bounds, Point } from '@/@types/common.types';
 import type { TowerNode } from '@/@types/tower.types';
-import { listNodes } from '@/utils/tower-traversal';
+import { listNodes, traverseTopDown } from '@/utils/tower-traversal';
 
 /**
  * Triggers a CSS keyframe animation on a specific brick by temporarily removing
@@ -379,12 +379,26 @@ export function useBrickMove(
                     // layout's position fast-path, which never touches `positioned` and so never
                     // triggers the Workspace's sync — hence the refresh here.
                     if (!tryConnect(state.towerId)) {
-                        const rootNode = useWorkspaceStore.getState().towers[state.towerId]?.root;
-                        if (rootNode) {
+                        const tower = useWorkspaceStore.getState().towers[state.towerId];
+                        if (tower) {
+                            const positioned = traverseTopDown(tower.root, tower.position);
+                            if (positioned.length > 0) {
+                                useBrickLayoutStore.getState().setCoords(
+                                    Object.fromEntries(
+                                        positioned.map((node) => [
+                                            node.model.id,
+                                            {
+                                                x: node.model.position.x,
+                                                y: node.model.position.y,
+                                            },
+                                        ]),
+                                    ),
+                                );
+                            }
                             queueMicrotask(() => {
                                 const store = useWorkspaceStore.getState();
-                                store.syncStatementConnectors(state.towerId, rootNode);
-                                store.syncArgumentConnectors(state.towerId, rootNode);
+                                store.syncStatementConnectors(state.towerId, tower.root);
+                                store.syncArgumentConnectors(state.towerId, tower.root);
                             });
                         }
                     }

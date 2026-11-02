@@ -14,13 +14,31 @@ import {
 
 const SPACE_CLASSES: {
     name: string;
-    SpaceClass: new (width: number, height: number) => CollisionSpace;
+    SpaceClass: new (
+        width: number,
+        height: number,
+        originX?: number,
+        originY?: number,
+    ) => CollisionSpace;
 }[] = [
     { name: 'BruteForceCollisionSpace', SpaceClass: BruteForceCollisionSpace },
     { name: 'QuadtreeCollisionSpace', SpaceClass: QuadtreeCollisionSpace },
 ];
 
 describe.each(SPACE_CLASSES)('$name', ({ SpaceClass }) => {
+    it('supports custom origin and retains objects in negative coordinate space', () => {
+        const space = new SpaceClass(1000, 1000, -500, -500);
+        space.setOptions({ shape: 'square', threshold: 0 });
+
+        // Object placed in negative space within [-500, +500]
+        space.createObjects([{ id: 1, x: -100, y: -100, w: 20, h: 20 }]);
+        expect(space.checkCollision({ id: 999, x: -100, y: -100, w: 20, h: 20 })).toEqual([1]);
+
+        // Object placed beyond the negative boundary (less than originX + w / 2 = -490)
+        space.createObjects([{ id: 2, x: -505, y: -100, w: 20, h: 20 }]);
+        expect(space.checkCollision({ id: 999, x: -505, y: -100, w: 20, h: 20 })).toEqual([]);
+    });
+
     it('drops objects placed too close to the edge', () => {
         const space = new SpaceClass(100, 100);
         space.setOptions({ shape: 'square', threshold: 0 });

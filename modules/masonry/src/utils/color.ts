@@ -72,7 +72,7 @@ export function darkenColor(hex: string, amount: number): string {
                     : [c, 0, x];
 
     const toHex = (v: number) =>
-        Math.round((v + m) * 255)
+        Math.min(255, Math.max(0, Math.round((v + m) * 255)))
             .toString(16)
             .padStart(2, '0');
 

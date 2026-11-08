@@ -65,7 +65,6 @@ Note relevant checks not run and why.
 - [ ] I ran `npm run lint`, `npm run check`, and `npm run test` as applicable, and
       noted any checks not run.
 - [ ] I reviewed the changes and addressed prior review feedback, if applicable.
-- [ ] I disclosed any LLM assistance, if used.
 
 ## Additional Notes
 

@@ -17,6 +17,7 @@ import { BinaryOperatorExpression } from '../ast/expression/BinaryOperatorExpres
 import { ArrayExpression } from '../ast/expression/ArrayExpression';
 import { createMusicBlocksProgram } from '../examples/MusicBlocksProgram';
 import { createMusicBlocksProgram2 } from '../examples/MusicBlocksProgram2';
+import { SymDeclareInstruction } from '../../../runtime/src/interpreter/instructions/sym-declare-instruction';
 
 describe('Compiler', () => {
     let compiler: Compiler;
@@ -198,6 +199,52 @@ describe('Compiler', () => {
         expect(irProgram.functions.size).toBe(2);
         expect(irProgram.functions.has('start1')).toBe(true);
         expect(irProgram.functions.has('start2')).toBe(true);
+    });
+
+    it("keeps each thread function's blocks separate", () => {
+        const makeThread = (name: string) =>
+            new ThreadFunctionDeclaration(
+                new Block([
+                    new VariableDeclarationStatement(
+                        new IdentifierExpression(name),
+                        new NumericLiteralExpression(1),
+                    ),
+                ]),
+            );
+        const program = new ProgramDeclaration([makeThread('firstOnly'), makeThread('secondOnly')]);
+
+        const irProgram = compiler.compile(program);
+        const first = irProgram.functions.get('start1')!;
+        const second = irProgram.functions.get('start2')!;
+
+        expect(first.blocks).toHaveLength(1);
+        expect(second.blocks).toHaveLength(1);
+        expect(first.blocks[0].instructions[0]).toMatchObject({ variableName: 'firstOnly' });
+        expect(second.blocks[0].instructions[0]).toMatchObject({ variableName: 'secondOnly' });
+        expect(second.blocks[0].instructions[0]).toBeInstanceOf(SymDeclareInstruction);
+    });
+
+    it('does not carry blocks into a later compile on the same compiler', () => {
+        const makeProgram = (name: string) =>
+            new ProgramDeclaration([
+                new ThreadFunctionDeclaration(
+                    new Block([
+                        new VariableDeclarationStatement(
+                            new IdentifierExpression(name),
+                            new NumericLiteralExpression(1),
+                        ),
+                    ]),
+                ),
+            ]);
+
+        const first = compiler.compile(makeProgram('oldVariable'));
+        const second = compiler.compile(makeProgram('newVariable'));
+
+        expect(first.functions.get('start1')?.blocks).toHaveLength(1);
+        expect(second.functions.get('start1')?.blocks).toHaveLength(1);
+        expect(second.functions.get('start1')?.blocks[0].instructions[0]).toMatchObject({
+            variableName: 'newVariable',
+        });
     });
 
     it('should compile custom functions with proper names', () => {

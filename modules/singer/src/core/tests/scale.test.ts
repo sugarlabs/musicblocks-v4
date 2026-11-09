@@ -73,6 +73,55 @@ describe('class Scale', () => {
             ]);
         });
 
+        test('Generate scale when halfstep pattern is empty array and verify it uses numberOfSemitones', () => {
+            const emptyPatternScale = new Scale([]);
+            expect(emptyPatternScale.numberOfSemitones).toBe(12);
+            expect(emptyPatternScale.getScale()).toEqual([
+                'n0',
+                'n1',
+                'n2',
+                'n3',
+                'n4',
+                'n5',
+                'n6',
+                'n7',
+                'n8',
+                'n9',
+                'n10',
+                'n11',
+                'n0',
+            ]);
+        });
+
+        test('Generate scale when halfstep pattern is empty array and mapped to 21 semitones', () => {
+            const emptyPatternScale21 = new Scale([], 0, 21);
+            expect(emptyPatternScale21.numberOfSemitones).toBe(21);
+            expect(emptyPatternScale21.getScale()).toEqual([
+                'n0',
+                'n1',
+                'n2',
+                'n3',
+                'n4',
+                'n5',
+                'n6',
+                'n7',
+                'n8',
+                'n9',
+                'n10',
+                'n11',
+                'n12',
+                'n13',
+                'n14',
+                'n15',
+                'n16',
+                'n17',
+                'n18',
+                'n19',
+                'n20',
+                'n0',
+            ]);
+        });
+
         const semiTones21 = new Scale([2, 2, 1, 2, 2, 2, 1], 7, 21);
         test('Generate scale for C Major when number of semitones are 21 and verify', () => {
             expect(semiTones21.getScale()).toEqual([

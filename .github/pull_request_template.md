@@ -1,14 +1,8 @@
-# Description
+## Description
+<!-- Explain the issue and your changes in your own words, so we know you understand what you're fixing. -->
 
-<!-- Thank you for contributing to Music Blocks v4! -->
-<!-- Complete relevant sections and remove optional ones. -->
-<!-- Explain the problem this PR solves or the change it introduces. -->
-
-## Related Issue
-
-<!-- Link the issue this PR addresses, if applicable. Use "Fixes #123" or "Closes #123". -->
-
-Closes #
+## Closes
+#
 
 ## Change Type
 
@@ -58,6 +52,9 @@ Note relevant checks not run and why.
 
 ## Checklist
 
+- [ ] Did you use an LLM? If so, which one?
+- [ ] Did you review your code yourself?
+- [ ] Did you add comments where needed?
 - [ ] I tested the changes locally.
 - [ ] I added or updated tests where appropriate.
 - [ ] I updated relevant documentation.

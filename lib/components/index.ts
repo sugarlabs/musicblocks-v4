@@ -1,3 +1,4 @@
+export { default as WCheckbox } from './src/WCheckbox';
 export { default as WToggleSwitch } from './src/WToggleSwitch';
 export { default as WToggleSwitchRounded } from './src/WToggleSwitchRounded';
 export { default as WTextButton } from './src/WTextButton';

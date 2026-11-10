@@ -6,6 +6,7 @@ import { useEffect, useRef } from 'react';
 
 import type { Point } from '@/@types/common.types';
 import type { PaletteBrickConfig } from '@/@types/palette.types';
+import type { TowerNode } from '@/@types/tower.types';
 
 import { usePaletteDragStore } from '@/stores/palette';
 import { useWorkspaceScaleStore } from '@/stores/scale';
@@ -75,8 +76,8 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
     const bricksByIdRef = useRef(bricksById);
     bricksByIdRef.current = bricksById;
 
-    // In-flight drag payload; null whenever no palette drag is active.
-    const dragRef = useRef<{ config: PaletteBrickConfig; grabOffset: Point } | null>(null);
+    //drag payload is null whenever no palette drag is active.
+    const dragRef = useRef<{ config: PaletteBrickConfig; grabOffset: Point; mockRoot: TowerNode; } | null>(null);
     const hasMovedRef = useRef(false);
 
     useEffect(() => {
@@ -105,7 +106,10 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                         x: event.clientX0 - slotRect.left,
                         y: event.clientY0 - slotRect.top,
                     };
-                    dragRef.current = { config, grabOffset };
+
+                    // Instantiate the collision probe root once per drag instead of on every move frame.
+                    const mockRoot = wrapAsRootNode(createBrickModel(config.brick));
+                    dragRef.current = { config, grabOffset, mockRoot };
 
                     // Place the ghost exactly over the slot, in root-local coordinates.
                     const start = clientToLocalPoint(
@@ -163,11 +167,11 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                             useWorkspaceViewportStore.getState().offset,
                         );
 
-                        // Temporarily mock a tower ID for collision detection
+                        // Temporarily mock a tower ID for collision detection using the pre-created root node
                         const mockTowerId = 'temp-palette-drag';
                         useWorkspaceStore.getState().towers[mockTowerId] = {
                             id: mockTowerId,
-                            root: wrapAsRootNode(createBrickModel(drag.config.brick)),
+                            root: drag.mockRoot,
                             position,
                         };
 

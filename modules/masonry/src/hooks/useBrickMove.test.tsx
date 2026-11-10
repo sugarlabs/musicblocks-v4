@@ -7,7 +7,7 @@ import { act, cleanup, render, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useRef } from 'react';
 
-import { makeEmptyStatement } from '@/mocks/tower';
+import { makeEmptyExpression, makeEmptyStatement, makeEmptyValue } from '@/mocks/tower';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { useTrashStore } from '@/stores/trash';
@@ -15,7 +15,7 @@ import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { AUTO_PAN_MAX_STEP, DRAG_CLICK_SUPPRESSION_MS } from '@/utils/constants';
 
-import { useBrickMove } from './useBrickMove';
+import { triggerBrickAnimation, useBrickMove, tryConnect } from './useBrickMove';
 
 const { interactableMock, interactMock } = vi.hoisted(() => {
   const interactableMock = {
@@ -81,6 +81,32 @@ afterEach(() => {
   });
   useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
   useTrashStore.setState({ bounds: null, isHovered: false });
+});
+
+describe('useBrickMove triggerBrickAnimation', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    document.body.innerHTML = '<div data-id="test-element"></div>';
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    document.body.innerHTML = '';
+  });
+
+  it('adds the animationClass to the brick and then removes it after 400ms', () => {
+    const element = document.querySelector<HTMLElement>(`[data-id="test-element"]`);
+
+    expect(element).not.toBeNull();
+
+    triggerBrickAnimation('test-element', 'test-animation');
+
+    expect(element?.classList.contains('test-animation')).toBe(true);
+
+    vi.advanceTimersByTime(400);
+
+    expect(element?.classList.contains('test-animation')).toBe(false);
+  });
 });
 
 describe('useBrickMove visibility', () => {
@@ -298,6 +324,103 @@ describe('useBrickMove drag', () => {
       unmount();
 
       expect(frames.size).toBe(0);
+    });
+
+    it('pulses the dragged root after a statement join', () => {
+      const host = makeEmptyStatement('host-root', 0);
+      host.model.setPosition(500, 500);
+
+      const hostNext = host.model.getConnectorCoords().next;
+      if (!hostNext) throw new Error('Host statement has no next connector');
+
+      const dragged = makeEmptyStatement('dragged-root', 0);
+      const draggedPrev = dragged.model.getConnectorCoords().prev;
+      if (!draggedPrev) throw new Error('Dragged statement has no previous connector');
+
+      // Place the dragged brick so its previous connector overlaps the host's next connector.
+      const draggedPosition = {
+        x: host.model.position.x + hostNext.x - draggedPrev.x,
+        y: host.model.position.y + hostNext.y - draggedPrev.y,
+      };
+      dragged.model.setPosition(draggedPosition.x, draggedPosition.y);
+
+      act(() => {
+        const store = useWorkspaceStore.getState();
+        store.createTower({
+          id: 'host-tower',
+          root: host,
+          position: { x: 500, y: 500 },
+        });
+        store.createTower({
+          // Deliberately keep this different from the dragged root's brick ID.
+          id: 'dragged-tower',
+          root: dragged,
+          position: draggedPosition,
+        });
+        store.syncStatementConnectors('host-tower', host);
+        store.syncStatementConnectors('dragged-tower', dragged);
+      });
+
+      const draggedElement = document.createElement('div');
+      draggedElement.dataset.id = 'dragged-root';
+      document.body.append(draggedElement);
+
+      expect(tryConnect('dragged-tower')).toBe(true);
+      expect(draggedElement.classList.contains('brick-snap-pulse')).toBe(false);
+
+      // tryConnect schedules the animation inside requestAnimationFrame.
+      act(() => runFrames(1));
+
+      // The animation must target the dragged root's data-id, not the tower ID.
+      expect(draggedElement.classList.contains('brick-snap-pulse')).toBe(true);
+    });
+
+    it('pulses the dragged root after an argument join', () => {
+      const host = makeEmptyExpression('host-root', 1);
+      host.model.setPosition(500, 500);
+
+      const hostInput = host.model.getConnectorCoords().inputs[0];
+      if (!hostInput) throw new Error('Host expression has no argument connector');
+
+      const dragged = makeEmptyValue('dragged-root');
+      const draggedOutput = dragged.model.getConnectorCoords().output;
+      if (!draggedOutput) throw new Error('Dragged value has no output connector');
+
+      // Place the dragged value so its output overlaps the host's empty argument slot.
+      const draggedPosition = {
+        x: host.model.position.x + hostInput.x - draggedOutput.x,
+        y: host.model.position.y + hostInput.y - draggedOutput.y,
+      };
+      dragged.model.setPosition(draggedPosition.x, draggedPosition.y);
+
+      act(() => {
+        const store = useWorkspaceStore.getState();
+        store.createTower({
+          id: 'host-tower',
+          root: host,
+          position: { x: 500, y: 500 },
+        });
+        store.createTower({
+          // Deliberately keep this different from the dragged root's brick ID.
+          id: 'dragged-tower',
+          root: dragged,
+          position: draggedPosition,
+        });
+        store.syncArgumentConnectors('host-tower', host);
+        store.syncArgumentConnectors('dragged-tower', dragged);
+      });
+
+      const draggedElement = document.createElement('div');
+      draggedElement.dataset.id = 'dragged-root';
+      document.body.append(draggedElement);
+
+      expect(tryConnect('dragged-tower')).toBe(true);
+      expect(draggedElement.classList.contains('brick-snap-pulse')).toBe(false);
+
+      // The argument-join branch also defers the pulse until the next frame.
+      act(() => runFrames(1));
+
+      expect(draggedElement.classList.contains('brick-snap-pulse')).toBe(true);
     });
 
     it('restarts panning on the next move after the effect re-runs mid-drag', () => {

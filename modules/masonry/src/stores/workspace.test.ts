@@ -138,6 +138,50 @@ describe('Workspace Store Collision Space', () => {
         }
     });
 
+    it('automatically updates model positions and re-indexes connectors when a moved tower is synced', () => {
+        const root = statementTreeNoNesting;
+
+        act(() => {
+            useWorkspaceStore.getState().createTower({
+                id: 'tower-moved',
+                root: root,
+                position: { x: 100, y: 100 },
+            });
+            useWorkspaceStore.getState().syncStatementConnectors('tower-moved', root);
+        });
+
+        // Verify initial connector position in collision space
+        let state = useWorkspaceStore.getState();
+        const initialIds = Object.keys(state.statementConnectors).map(Number);
+        const initialItem = (
+            state.statementCollisionSpace as unknown as {
+                _itemsById: Map<number, { x: number; y: number }>;
+            }
+        )._itemsById.get(initialIds[0]);
+        expect(initialItem).toBeDefined();
+        const initialX = initialItem!.x;
+        const initialY = initialItem!.y;
+
+        // Move the tower
+        act(() => {
+            useWorkspaceStore.getState().updateTowerPosition('tower-moved', { x: 500, y: 600 });
+            useWorkspaceStore.getState().syncStatementConnectors('tower-moved', root);
+        });
+
+        state = useWorkspaceStore.getState();
+        const newIds = Object.keys(state.statementConnectors).map(Number);
+        const newItem = (
+            state.statementCollisionSpace as unknown as {
+                _itemsById: Map<number, { x: number; y: number }>;
+            }
+        )._itemsById.get(newIds[0]);
+        expect(newItem).toBeDefined();
+        // Connector coordinates should reflect the +400, +500 delta of the moved tower
+        expect(newItem!.x - initialX).toBe(400);
+        expect(newItem!.y - initialY).toBe(500);
+        expect(root.model.position).toEqual({ x: 500, y: 600 });
+    });
+
     it('cleans up collision points when a tower is removed', () => {
         const root = statementTreeNoNesting;
 
@@ -2264,6 +2308,53 @@ describe('Workspace Store Collision Space', () => {
                 (useWorkspaceStore.getState().towers[source.id].root as TowerStatementNode).next,
             ).toBe(extracted);
             expect(extracted.prev).toBe(useWorkspaceStore.getState().towers[source.id].root);
+        });
+
+        it('supports snapping when towers are positioned at negative coordinates (after panning top/left)', () => {
+            const rootA = makeEmptyStatement('neg-a', 0);
+            const rootB = makeEmptyStatement('neg-b', 0);
+
+            const posA = { x: -300, y: -200 };
+            useWorkspaceStore
+                .getState()
+                .createTower({ id: 'tower-neg-a', root: rootA, position: posA });
+            traverseTopDown(rootA, posA);
+            useWorkspaceStore.getState().syncStatementConnectors('tower-neg-a', rootA);
+
+            const spaceItems = (
+                useWorkspaceStore.getState().statementCollisionSpace as unknown as {
+                    _itemsById: Map<number, unknown>;
+                }
+            )._itemsById;
+            expect(spaceItems.size).toBeGreaterThan(0);
+
+            const hostNext = rootA.model.getConnectorCoords().next!;
+            const childPrev = rootB.model.getConnectorCoords().prev!;
+            const posB = {
+                x: rootA.model.position.x + hostNext.x - childPrev.x,
+                y: rootA.model.position.y + hostNext.y - childPrev.y,
+            };
+
+            useWorkspaceStore
+                .getState()
+                .createTower({ id: 'tower-neg-b', root: rootB, position: posB });
+            traverseTopDown(rootB, posB);
+            useWorkspaceStore.getState().syncStatementConnectors('tower-neg-b', rootB);
+
+            const connection = resolveStatementConnection({
+                draggedTowerId: 'tower-neg-b',
+                space: useWorkspaceStore.getState().statementCollisionSpace,
+                connectors: useWorkspaceStore.getState().statementConnectors,
+                towers: useWorkspaceStore.getState().towers,
+            });
+
+            expect(connection).toMatchObject({
+                parent: rootA,
+                child: rootB,
+                socket: 'next',
+                hostTowerId: 'tower-neg-a',
+                absorbedTowerId: 'tower-neg-b',
+            });
         });
     });
 });

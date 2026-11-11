@@ -9,6 +9,7 @@ export default mergeConfig(
     mergeConfig(rootConfig as UserConfig, baseConfig as UserConfig),
     defineConfig({
         test: {
+            setupFiles: ['./vitest.setup.dom.ts'],
             projects: [
                 {
                     extends: true,
@@ -17,6 +18,7 @@ export default mergeConfig(
                         include: ['src/**/*.spec.ts', 'src/**/*.test.ts'],
                         exclude: ['src/**/*.spec.tsx', 'src/**/*.test.tsx'],
                         environment: 'node',
+                        setupFiles: ['./vitest.setup.dom.ts'],
                     },
                 },
                 {

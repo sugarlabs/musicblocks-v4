@@ -30,9 +30,8 @@ if (typeof ResizeObserver === 'undefined') {
     });
 }
 
-// In Node environments or when browser storage is not configured/stubbed,
-// localStorage and sessionStorage may be undefined or dysfunctional.
-// Provide a robust in-memory Storage implementation compatible with Storage.prototype spies.
+// Simple in-memory fallback for environments where localStorage isn't available
+// (like Node 25+ without a storage file, or plain Node test runs).
 class MemoryStorage implements Storage {
     private store = new Map<string, string>();
 
@@ -63,21 +62,39 @@ class MemoryStorage implements Storage {
     }
 }
 
-if (
-    typeof globalThis.Storage === 'undefined' ||
-    !(function () {
+function resolveStorage(
+    prop: 'localStorage' | 'sessionStorage',
+    fallbackFactory: () => Storage,
+): { instance: Storage; isNative: boolean } {
+    const targets = [
+        globalThis,
+        typeof window !== 'undefined' && window !== globalThis ? window : null,
+    ].filter(Boolean);
+
+    for (const target of targets) {
         try {
-            new (globalThis.Storage as any)();
-            return false;
-        } catch (e: any) {
-            return !e?.message?.includes('Illegal constructor');
+            // Wrap in try/catch because touching localStorage directly in Node 25+ throws SecurityError.
+            const storage = (target as any)[prop];
+            if (
+                storage &&
+                typeof storage.clear === 'function' &&
+                typeof storage.getItem === 'function' &&
+                typeof storage.setItem === 'function' &&
+                typeof storage.removeItem === 'function'
+            ) {
+                storage.setItem('__test_probe__', '1');
+                const val = storage.getItem('__test_probe__');
+                storage.removeItem('__test_probe__');
+                if (val === '1') {
+                    return { instance: storage, isNative: true };
+                }
+            }
+        } catch {
+            // Getter threw (or storage is broken), so move on to fallback.
         }
-    })()
-) {
-    globalThis.Storage = MemoryStorage as unknown as typeof Storage;
-    if (typeof window !== 'undefined') {
-        window.Storage = MemoryStorage as unknown as typeof Storage;
     }
+
+    return { instance: fallbackFactory(), isNative: false };
 }
 
 function ensureStorageGlobal(
@@ -102,37 +119,23 @@ function ensureStorageGlobal(
     }
 }
 
-const isStorageFunctional = (storage: any): boolean => {
-    try {
-        if (
-            !storage ||
-            typeof storage.clear !== 'function' ||
-            typeof storage.getItem !== 'function' ||
-            typeof storage.setItem !== 'function'
-        ) {
-            return false;
-        }
-        storage.setItem('__test_probe__', '1');
-        const val = storage.getItem('__test_probe__');
-        storage.removeItem('__test_probe__');
-        return val === '1';
-    } catch {
-        return false;
+const resolvedLocalStorage = resolveStorage('localStorage', () => new MemoryStorage());
+const resolvedSessionStorage = resolveStorage('sessionStorage', () => new MemoryStorage());
+
+// If native storage works, keep native Storage so we don't break native prototypes.
+// If we use MemoryStorage, expose MemoryStorage as Storage so vi.spyOn(Storage.prototype, ...)
+// in theme.test.ts continues to intercept calls properly.
+if (!resolvedLocalStorage.isNative) {
+    globalThis.Storage = MemoryStorage as unknown as typeof Storage;
+    if (typeof window !== 'undefined') {
+        window.Storage = MemoryStorage as unknown as typeof Storage;
     }
-};
+}
 
-const localStorageInstance = isStorageFunctional(globalThis.localStorage)
-    ? globalThis.localStorage
-    : new MemoryStorage();
-
-const sessionStorageInstance = isStorageFunctional(globalThis.sessionStorage)
-    ? globalThis.sessionStorage
-    : new MemoryStorage();
-
-ensureStorageGlobal(globalThis, 'localStorage', localStorageInstance);
-ensureStorageGlobal(globalThis, 'sessionStorage', sessionStorageInstance);
+ensureStorageGlobal(globalThis, 'localStorage', resolvedLocalStorage.instance);
+ensureStorageGlobal(globalThis, 'sessionStorage', resolvedSessionStorage.instance);
 
 if (typeof window !== 'undefined') {
-    ensureStorageGlobal(window, 'localStorage', localStorageInstance);
-    ensureStorageGlobal(window, 'sessionStorage', sessionStorageInstance);
+    ensureStorageGlobal(window, 'localStorage', resolvedLocalStorage.instance);
+    ensureStorageGlobal(window, 'sessionStorage', resolvedSessionStorage.instance);
 }

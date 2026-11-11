@@ -18,7 +18,6 @@ export default mergeConfig(
                         include: ['src/**/*.spec.ts', 'src/**/*.test.ts'],
                         exclude: ['src/**/*.spec.tsx', 'src/**/*.test.tsx'],
                         environment: 'node',
-                        setupFiles: ['./vitest.setup.dom.ts'],
                     },
                 },
                 {
@@ -28,7 +27,6 @@ export default mergeConfig(
                         include: ['src/**/*.spec.tsx', 'src/**/*.test.tsx'],
                         exclude: ['src/**/*.spec.ts', 'src/**/*.test.ts'],
                         environment: 'jsdom',
-                        setupFiles: ['./vitest.setup.dom.ts'],
                     },
                 },
             ],

@@ -61,7 +61,7 @@ export class Scale implements IScale {
         preferSharps = true,
     ) {
         // Calculate the number of semitones by summing up the half steps.
-        if (halfStepsPattern === null) {
+        if (halfStepsPattern === null || halfStepsPattern.length === 0) {
             this._numberOfSemitones = numberOfSemitones;
             halfStepsPattern = [];
             for (let i = 0; i < this._numberOfSemitones; i++) {

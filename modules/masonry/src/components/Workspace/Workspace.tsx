@@ -247,7 +247,7 @@ export function Workspace({ config }: WorkspaceViewProps) {
             id={paletteId}
             className={cn(
               'relative h-full shrink-0 transition-[width] duration-300 ease-out motion-reduce:transition-none',
-              isPaletteCollapsed ? 'w-16' : 'w-80',
+              isPaletteCollapsed ? 'w-16' : 'w-72',
             )}
           >
             <Palette

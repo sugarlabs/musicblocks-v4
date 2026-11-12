@@ -112,7 +112,7 @@ const configSingle: PaletteConfig = {
 
 /** Types into the search input. */
 const search = (value: string) =>
-  fireEvent.change(screen.getByPlaceholderText('Search bricks'), { target: { value } });
+  fireEvent.change(screen.getByPlaceholderText('Search'), { target: { value } });
 
 /**
  * Reads the flash marker off a category's header row. The heading is the queryable node;
@@ -145,10 +145,10 @@ describe('Palette', () => {
       expect(within(musicTab).getByTestId('stub-icon')).toBeTruthy();
     });
 
-    it('renders the search input with placeholder "Search bricks"', () => {
+    it('renders the search input with placeholder "Search"', () => {
       render(<Palette config={config} />);
 
-      const input = screen.getByPlaceholderText('Search bricks');
+      const input = screen.getByPlaceholderText('Search');
       expect(input.nodeName).toBe('INPUT');
       expect((input as HTMLInputElement).value).toBe('');
     });
@@ -424,10 +424,10 @@ describe('Palette', () => {
 
       search('note');
       fireEvent.click(screen.getByRole('button', { name: 'Logic' }));
-      expect((screen.getByPlaceholderText('Search bricks') as HTMLInputElement).value).toBe('');
+      expect((screen.getByPlaceholderText('Search') as HTMLInputElement).value).toBe('');
 
       fireEvent.click(screen.getByRole('button', { name: 'Music' }));
-      expect((screen.getByPlaceholderText('Search bricks') as HTMLInputElement).value).toBe('');
+      expect((screen.getByPlaceholderText('Search') as HTMLInputElement).value).toBe('');
       // The query was reset, not just the view: all Music bricks are back.
       expect(screen.getByText('Note')).toBeTruthy();
       expect(screen.getByText('Rest')).toBeTruthy();
@@ -500,7 +500,7 @@ describe('Palette', () => {
     it('exposes the search field as a textbox reachable by its placeholder', () => {
       render(<Palette config={config} />);
 
-      const byPlaceholder = screen.getByPlaceholderText('Search bricks');
+      const byPlaceholder = screen.getByPlaceholderText('Search');
       expect(screen.getByRole('textbox')).toBe(byPlaceholder);
     });
 
@@ -599,7 +599,7 @@ describe('Palette', () => {
       expect(screen.getByRole('button', { name: 'Music' }).getAttribute('aria-pressed')).toBe(
         'true',
       );
-      expect(screen.queryByPlaceholderText('Search bricks')).toBeNull();
+      expect(screen.queryByPlaceholderText('Search')).toBeNull();
       expect(screen.queryByText('Note')).toBeNull();
     });
 
@@ -618,13 +618,13 @@ describe('Palette', () => {
 
     it('keeps the search when the open classification is picked again', () => {
       const { rerender } = render(<Palette config={config} />);
-      fireEvent.change(screen.getByPlaceholderText('Search bricks'), { target: { value: 'no' } });
+      fireEvent.change(screen.getByPlaceholderText('Search'), { target: { value: 'no' } });
 
       rerender(<Palette config={config} collapsed />);
       fireEvent.click(screen.getByRole('button', { name: 'Music' }));
       rerender(<Palette config={config} />);
 
-      expect(screen.getByPlaceholderText<HTMLInputElement>('Search bricks').value).toBe('no');
+      expect(screen.getByPlaceholderText<HTMLInputElement>('Search').value).toBe('no');
     });
   });
 });

@@ -58,7 +58,7 @@ function resolveOutputIntoSlot(
 
     let best: ArgumentConnection | null = null;
 
-    for (const hitId of querySnap(space, probe)) {
+    for (const hitId of querySnap(space, probe, dragged.root.model.scaleLevel)) {
         const meta = connectors[hitId];
         if (!meta || meta.type !== 'input' || meta.slotIndex === undefined) continue;
 

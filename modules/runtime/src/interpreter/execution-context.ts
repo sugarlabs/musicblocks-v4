@@ -6,6 +6,7 @@ import {
     IExternalFunctionRegistry,
     MockFunctionRegistry,
 } from '../execution/external-function-registry';
+import { MusicContext, defaultMusicContext } from '../music/context';
 
 /**
  * ExecutionContext holds the full state of the interpreter at any moment.
@@ -21,6 +22,7 @@ export class ExecutionContext {
     public valueStore: SimpleValueStore = new SimpleValueStore();
     public globalSymbolTable: SymbolTable = new SymbolTable();
     public externalFunctions: IExternalFunctionRegistry;
+    public music: MusicContext = defaultMusicContext();
 
     constructor(
         public program: IRProgram,

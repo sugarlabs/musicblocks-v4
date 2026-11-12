@@ -55,8 +55,11 @@ export class CallInstruction extends IRInstruction {
             }
         }
 
-        // Execute external function (mock for now)
-        context.externalFunctions.executeFunction(this.functionName, parameterValues);
+        context.externalFunctions.executeFunction(
+            this.functionName,
+            parameterValues,
+            context.music,
+        );
         context.instructionPointer.instructionIndex++;
     }
 

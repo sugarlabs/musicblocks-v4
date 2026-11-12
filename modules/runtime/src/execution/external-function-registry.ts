@@ -1,3 +1,5 @@
+import { MusicContext, defaultMusicContext } from '../music/context';
+
 /**
  * Interface for external function registry that handles functions not defined in the program.
  */
@@ -9,9 +11,9 @@ export interface IExternalFunctionRegistry {
 
     /**
      * Execute an external function with the given arguments.
-     * For mock implementations, this should just log the call.
+     * The music context is the state the call may read or mutate.
      */
-    executeFunction(name: string, args: unknown[]): void;
+    executeFunction(name: string, args: unknown[], music: MusicContext): void;
 }
 
 /**
@@ -78,7 +80,119 @@ export class MockFunctionRegistry implements IExternalFunctionRegistry {
         );
     }
 
-    executeFunction(name: string, args: unknown[]): void {
+    executeFunction(name: string, args: unknown[], _music: MusicContext): void {
         console.log(`Call: ${name} with args: ${JSON.stringify(args)}`);
+    }
+}
+
+/**
+ * Maps a context parameter name (the suffix of a `setContext_*` call) to a field of MusicContext.
+ */
+const CONTEXT_FIELD: Record<string, keyof MusicContext> = {
+    key: 'key',
+    mode: 'mode',
+    movableDo: 'movableDo',
+    temperament: 'temperament',
+    octave: 'octave',
+    volume: 'volume',
+    instrument: 'instrument',
+};
+
+/**
+ * Real registry that routes music calls into the music context.
+ *
+ * `setContext_<name>` saves the current value then sets the new one. `resetContext_<name>` restores
+ * the saved value, falling back to the default when nothing was saved. `declareContext_<name>` sets
+ * the value without saving (it persists past the body, as the compiler emits no reset for it).
+ *
+ * `playNote` is not resolved yet; that is wired to singer in the next step.
+ */
+export class SingerFunctionRegistry implements IExternalFunctionRegistry {
+    private _saved = new WeakMap<MusicContext, Map<string, unknown[]>>();
+
+    hasFunction(name: string): boolean {
+        return (
+            name === 'playNote' ||
+            name.startsWith('setContext_') ||
+            name.startsWith('resetContext_') ||
+            name.startsWith('declareContext_')
+        );
+    }
+
+    executeFunction(name: string, args: unknown[], music: MusicContext): void {
+        if (name.startsWith('setContext_')) {
+            this._setField(name.slice('setContext_'.length), args[0], music, true);
+        } else if (name.startsWith('declareContext_')) {
+            this._setField(name.slice('declareContext_'.length), args[0], music, false);
+        } else if (name.startsWith('resetContext_')) {
+            this._resetField(name.slice('resetContext_'.length), music);
+        } else if (name === 'playNote') {
+            // Wired to singer in the next step.
+        }
+    }
+
+    private _setField(param: string, value: unknown, music: MusicContext, save: boolean): void {
+        const field = this._fieldFor(param);
+        if (field === undefined) {
+            console.warn(`unknown context parameter: ${param}`);
+            return;
+        }
+        if (save) {
+            const saved = this._savedFor(music);
+            const stack = saved.get(param) ?? [];
+            stack.push(music[field]);
+            saved.set(param, stack);
+        }
+        this._assign(music, field, value);
+    }
+
+    private _resetField(param: string, music: MusicContext): void {
+        const field = this._fieldFor(param);
+        if (field === undefined) {
+            console.warn(`unknown context parameter: ${param}`);
+            return;
+        }
+        const stack = this._savedFor(music).get(param);
+        if (stack !== undefined && stack.length > 0) {
+            this._assign(music, field, stack.pop());
+        } else {
+            this._assign(music, field, defaultMusicContext()[field]);
+        }
+    }
+
+    /**
+     * Maps a context parameter to its field, ignoring inherited object properties.
+     */
+    private _fieldFor(param: string): keyof MusicContext | undefined {
+        return Object.prototype.hasOwnProperty.call(CONTEXT_FIELD, param)
+            ? CONTEXT_FIELD[param]
+            : undefined;
+    }
+
+    /**
+     * Returns the saved-value stacks for one music context.
+     */
+    private _savedFor(music: MusicContext): Map<string, unknown[]> {
+        let saved = this._saved.get(music);
+        if (saved === undefined) {
+            saved = new Map<string, unknown[]>();
+            this._saved.set(music, saved);
+        }
+        return saved;
+    }
+
+    /**
+     * Assigns a value to a context field, coercing it to the field's type.
+     */
+    private _assign(music: MusicContext, field: keyof MusicContext, value: unknown): void {
+        const sample = defaultMusicContext()[field];
+        const record = music as unknown as Record<string, unknown>;
+        if (typeof sample === 'number') {
+            record[field] = Number(value);
+        } else if (typeof sample === 'boolean') {
+            record[field] = Boolean(value);
+        } else {
+            record[field] = String(value);
+        }
     }
 }

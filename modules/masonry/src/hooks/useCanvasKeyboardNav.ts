@@ -98,12 +98,13 @@ export function useCanvasKeyboardNav(canvasRef?: RefObject<HTMLElement | null>) 
         break;
       case 'End': {
         event.preventDefault();
+        const rect = canvasRef?.current?.getBoundingClientRect();
+        if (!rect) break;
         const towerList = Object.values(towers);
         if (towerList.length === 0) {
           resetOffset();
         } else {
           const { coords } = useBrickLayoutStore.getState();
-          const rect = canvasRef?.current?.getBoundingClientRect();
           let maxX = 0;
           let maxY = 0;
           for (const tower of towerList) {
@@ -112,8 +113,8 @@ export function useCanvasKeyboardNav(canvasRef?: RefObject<HTMLElement | null>) 
             maxY = Math.max(maxY, tower.position.y + extent.h);
           }
           setOffset({
-            x: Math.max(0, maxX - (rect?.width ?? 0)),
-            y: Math.max(0, maxY - (rect?.height ?? 0)),
+            x: Math.max(0, maxX - rect.width),
+            y: Math.max(0, maxY - rect.height),
           });
         }
         break;

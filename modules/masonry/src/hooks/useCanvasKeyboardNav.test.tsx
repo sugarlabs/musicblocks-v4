@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { TowerState } from '@/@types/workspace.types';
 import { makeEmptyStatement } from '@/mocks/tower';
+import { useBrickLayoutStore } from '@/stores/brick';
 import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { AUTO_PAN_BAND, FAST_PAN_STEP, PAGE_PAN_STEP, PAN_STEP } from '@/utils/constants';
@@ -56,6 +57,7 @@ describe('useCanvasKeyboardNav', () => {
   beforeEach(() => {
     useWorkspaceViewportStore.setState({ offset: { x: 0, y: 0 } });
     useWorkspaceStore.setState({ towers: {} });
+    useBrickLayoutStore.setState({ coords: {} });
   });
 
   it('pans the canvas with ArrowUp, ArrowDown, ArrowLeft, and ArrowRight', () => {
@@ -229,6 +231,11 @@ describe('useCanvasKeyboardNav', () => {
     it('brings the furthest tower edges into the visible canvas', () => {
       const root1 = makeEmptyStatement('s1', 0, false);
       const root2 = makeEmptyStatement('s2', 0, false);
+      const child = makeEmptyStatement('child', 0, false);
+      root1.next = child;
+      child.prev = root1;
+      vi.spyOn(child.model, 'dims', 'get').mockReturnValue({ w: 500, h: 80 });
+      useBrickLayoutStore.setState({ coords: { child: { x: 900, y: 130 } } });
       vi.spyOn(root1.model, 'dims', 'get').mockReturnValue({ w: 300, h: 80 });
       vi.spyOn(root2.model, 'dims', 'get').mockReturnValue({ w: 100, h: 400 });
       useWorkspaceStore.setState({ towers: {
@@ -240,14 +247,26 @@ describe('useCanvasKeyboardNav', () => {
       renderHook(() => useCanvasKeyboardNav({ current: canvas }));
 
       fireEvent.keyDown(window, { key: 'End' });
-      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 600, y: 600 });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 800, y: 600 });
+    });
+
+    it.each([undefined, { current: null }])('leaves the offset unchanged without a measurable canvas', (ref) => {
+      useWorkspaceStore.setState({ towers: {
+        t1: { id: 't1', position: { x: 900, y: 700 }, root: makeEmptyStatement('s1', 0, false) },
+      } });
+      useWorkspaceViewportStore.setState({ offset: { x: 120, y: 180 } });
+      renderHook(() => useCanvasKeyboardNav(ref));
+
+      fireEvent.keyDown(window, { key: 'End' });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 120, y: 180 });
     });
 
     it('returns to the origin when the canvas holds no towers', () => {
       useWorkspaceViewportStore.setState({ offset: { x: 400, y: 400 } });
 
-      const { getByTestId } = render(<KeyboardTestComponent />);
-      fireEvent.keyDown(getByTestId('canvas-test'), { key: 'End' });
+      const canvas = document.createElement('div');
+      renderHook(() => useCanvasKeyboardNav({ current: canvas }));
+      fireEvent.keyDown(window, { key: 'End' });
 
       expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 0, y: 0 });
     });

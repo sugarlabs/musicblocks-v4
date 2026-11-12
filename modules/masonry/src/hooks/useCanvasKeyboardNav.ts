@@ -1,8 +1,10 @@
 import { RefObject, useCallback, useEffect } from 'react';
 
+import { useBrickLayoutStore } from '@/stores/brick';
 import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { FAST_PAN_STEP, PAGE_PAN_STEP, PAN_STEP } from '@/utils/constants';
+import { measureTowerExtent } from '@/utils/tower-traversal';
 import { goHome } from '@/utils/workspace-home';
 
 /**
@@ -100,15 +102,18 @@ export function useCanvasKeyboardNav(canvasRef?: RefObject<HTMLElement | null>) 
         if (towerList.length === 0) {
           resetOffset();
         } else {
+          const { coords } = useBrickLayoutStore.getState();
+          const rect = canvasRef?.current?.getBoundingClientRect();
           let maxX = 0;
           let maxY = 0;
           for (const tower of towerList) {
-            maxX = Math.max(maxX, tower.position.x);
-            maxY = Math.max(maxY, tower.position.y);
+            const extent = measureTowerExtent(tower, coords);
+            maxX = Math.max(maxX, tower.position.x + extent.w);
+            maxY = Math.max(maxY, tower.position.y + extent.h);
           }
           setOffset({
-            x: Math.max(0, maxX - 100),
-            y: Math.max(0, maxY - 100),
+            x: Math.max(0, maxX - (rect?.width ?? 0)),
+            y: Math.max(0, maxY - (rect?.height ?? 0)),
           });
         }
         break;

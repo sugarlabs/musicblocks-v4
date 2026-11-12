@@ -125,26 +125,6 @@ describe('useCanvasKeyboardNav', () => {
     });
   });
 
-  it('pans to active tower extents on End', () => {
-    const towers: Record<string, TowerState> = {
-      t1: {
-        id: 't1',
-        position: { x: 500, y: 400 },
-        root: makeEmptyStatement('s1', 0, false),
-      },
-    };
-    useWorkspaceStore.setState({ towers });
-
-    const { getByTestId } = render(<KeyboardTestComponent />);
-    const canvas = getByTestId('canvas-test');
-
-    fireEvent.keyDown(canvas, { key: 'End' });
-    expect(useWorkspaceViewportStore.getState().offset).toEqual({
-      x: 500 - 100,
-      y: 400 - 100,
-    });
-  });
-
   it('calls preventDefault for handled navigation keys and ignores unhandled keys', () => {
     const { getByTestId } = render(<KeyboardTestComponent />);
     const canvas = getByTestId('canvas-test');
@@ -246,19 +226,21 @@ describe('useCanvasKeyboardNav', () => {
   });
 
   describe('End', () => {
-    it('follows the furthest extent on each axis on its own', () => {
-      const towers: Record<string, TowerState> = {
-        t1: { id: 't1', position: { x: 900, y: 50 }, root: makeEmptyStatement('s1', 0, false) },
-        t2: { id: 't2', position: { x: 100, y: 700 }, root: makeEmptyStatement('s2', 0, false) },
-      };
-      useWorkspaceStore.setState({ towers });
+    it('brings the furthest tower edges into the visible canvas', () => {
+      const root1 = makeEmptyStatement('s1', 0, false);
+      const root2 = makeEmptyStatement('s2', 0, false);
+      vi.spyOn(root1.model, 'dims', 'get').mockReturnValue({ w: 300, h: 80 });
+      vi.spyOn(root2.model, 'dims', 'get').mockReturnValue({ w: 100, h: 400 });
+      useWorkspaceStore.setState({ towers: {
+        t1: { id: 't1', position: { x: 900, y: 50 }, root: root1 },
+        t2: { id: 't2', position: { x: 100, y: 700 }, root: root2 },
+      } });
+      const canvas = document.createElement('div');
+      canvas.getBoundingClientRect = () => ({ width: 600, height: 500 }) as DOMRect;
+      renderHook(() => useCanvasKeyboardNav({ current: canvas }));
 
-      const { getByTestId } = render(<KeyboardTestComponent />);
-      fireEvent.keyDown(getByTestId('canvas-test'), { key: 'End' });
-
-      // x comes off t1 and y off t2, so reading one tower rather than one extent per axis would
-      // land somewhere else entirely.
-      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 800, y: 600 });
+      fireEvent.keyDown(window, { key: 'End' });
+      expect(useWorkspaceViewportStore.getState().offset).toEqual({ x: 600, y: 600 });
     });
 
     it('returns to the origin when the canvas holds no towers', () => {
@@ -277,8 +259,10 @@ describe('useCanvasKeyboardNav', () => {
       useWorkspaceStore.setState({ towers });
       useWorkspaceViewportStore.setState({ offset: { x: 300, y: 300 } });
 
-      const { getByTestId } = render(<KeyboardTestComponent />);
-      fireEvent.keyDown(getByTestId('canvas-test'), { key: 'End' });
+      const canvas = document.createElement('div');
+      canvas.getBoundingClientRect = () => ({ width: 1000, height: 600 }) as DOMRect;
+      renderHook(() => useCanvasKeyboardNav({ current: canvas }));
+      fireEvent.keyDown(window, { key: 'End' });
 
       // Both extents sit inside the margin the pan leaves, so the target clamps at the origin
       // rather than going negative.

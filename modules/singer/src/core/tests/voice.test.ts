@@ -11,6 +11,20 @@ describe('class Voice', () => {
     describe('Validate voice initialization', () => {
         const myVoice = new Voice('myvoice', null);
 
+        test.each(['c#4', 'd#4', 'f#3', 'bb3', 'bb4', 'cx4', 'bb0'])(
+            'voice play accidental pitch %s',
+            (pitch) => {
+                const triggeredPitches: (string | number)[][] = [];
+                const synthUtils = {
+                    trigger: (pitches: (string | number)[]) => triggeredPitches.push(pitches),
+                };
+                const voice = new Voice('accidental', synthUtils);
+                expect(() => voice.playNotes([pitch], 1 / 4, 'piano', 0, true)).not.toThrow();
+                expect(voice.numberOfNotesPlayed()).toEqual(1);
+                expect(triggeredPitches).toEqual([[pitch]]);
+            },
+        );
+
         test('voice expect beats per minute to be 90 ', () => {
             expect(myVoice.beatsPerMinute).toEqual(90);
         });

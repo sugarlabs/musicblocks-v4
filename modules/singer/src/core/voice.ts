@@ -5,9 +5,9 @@
  * Licensed under the AGPL-3.0 License.
  */
 
+import type { ISynthUtils } from '../@types/synthUtils';
 import type { IVoice, NoteTuple } from '../@types/voice';
 
-import SynthUtils from './synthUtils';
 import { validatePitch } from './musicUtils';
 import { InvalidArgumentError } from './errors';
 
@@ -29,7 +29,7 @@ export class Voice implements IVoice {
     private _volume: number;
     private _notesPlayed: NoteTuple[];
     private _temporalOffset: number;
-    private _synthUtils: SynthUtils | null;
+    private _synthUtils: Pick<ISynthUtils, 'trigger'> | null;
     private _pickup: number;
     private _pickupInMeter: number;
     private _beatsPerMeasure: number;
@@ -61,7 +61,7 @@ export class Voice implements IVoice {
      * name is the unique name of the voice; used when constructing event names.
      * synthUtils is the common instance of synthUtils used by all voices.
      */
-    constructor(name: string, synthUtils: SynthUtils | null) {
+    constructor(name: string, synthUtils: Pick<ISynthUtils, 'trigger'> | null) {
         /**
          * @remarks
          * The constructor registers the voice with SynthUtils.
@@ -480,4 +480,3 @@ export class Voice implements IVoice {
         this.playNotes([pitch], noteValue, instrumentName, 0, true);
     }
 }
-

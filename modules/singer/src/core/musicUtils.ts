@@ -500,15 +500,15 @@ export function validatePitch(pitchName: string | number) {
         // Must be of the form letter[accidental]ocatve, e.g., f#4.
         if (['c', 'd', 'e', 'f', 'g', 'a', 'b'].indexOf(pitchName.charAt(0)) !== -1) {
             const octave = pitchName.charAt(pitchName.length - 1);
-            if (!isNaN(Number(octave)) && Number(octave) > 0) {
-                // Octave must be a positive int.
+            if (/^\d$/.test(octave)) {
+                // Octaves are single digits from 0 through 9.
                 if (pitchName.length === 2) {
                     return;
                 }
                 if (pitchName.length === 3) {
                     // There could be an accidental.
                     const accidental = pitchName.charAt(1);
-                    if (['#b'].indexOf(accidental) !== -1) {
+                    if (['#', 'b', 'x'].includes(accidental)) {
                         return;
                     }
                 }

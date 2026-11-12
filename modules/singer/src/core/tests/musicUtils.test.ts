@@ -176,6 +176,10 @@ describe('Music utilities', () => {
             expect(isAFlat('Db')).toBe(true);
             expect(isAFlat('C')).toBe(true);
         });
+
+        test('Normalizes a double flat written as two flat signs', () => {
+            expect(isAFlat('d♭♭')).toBe(true);
+        });
     });
 
     describe('Validate findFlatIndex', () => {
@@ -201,6 +205,10 @@ describe('Music utilities', () => {
             expect(findFlatIndex('d♭')).toBe(1);
             expect(findFlatIndex('Db')).toBe(1);
             expect(findFlatIndex('d𝄫')).toBe(0);
+        });
+
+        test('Normalizes a double flat written as two flat signs', () => {
+            expect(findFlatIndex('d♭♭')).toBe(0);
         });
     });
 

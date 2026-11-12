@@ -371,7 +371,7 @@ export function normalizePitch(pitch: string): string {
     pitch = pitch.toLowerCase();
     pitch = pitch.replace(SHARP, '#');
     pitch = pitch.replace(DOUBLESHARP, 'x');
-    pitch = pitch.replace(FLAT, 'b');
+    pitch = pitch.split(FLAT).join('b');
     pitch = pitch.replace(DOUBLEFLAT, 'bb');
     pitch = pitch.replace(NATURAL, '');
     return pitch;

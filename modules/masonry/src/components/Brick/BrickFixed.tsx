@@ -358,7 +358,15 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
                 </>
               )}
               {isVariantWidget && (
-                <Select value={variantValue} onValueChange={() => {}}>
+                <Select
+                  value={variantValue}
+                  onValueChange={(val) => {
+                    if (val != null && widget.type === 'variant') {
+                      widget.value = val;
+                      setTick((t) => t + 1);
+                    }
+                  }}
+                >
                   <SelectTrigger
                     data-brick-control=""
                     className={cn(

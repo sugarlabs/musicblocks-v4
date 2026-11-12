@@ -315,3 +315,39 @@ describe('BrickViewFixed fold toggle', () => {
     expect(container.querySelectorAll(FOLD_TOGGLE_SELECTOR)).toHaveLength(1);
   });
 });
+
+// ─── Variant widget ───────────────────────────────────────────────────────────
+
+describe('BrickViewFixed variant widget', () => {
+  function renderVariantBrick(options: string[], initial: string) {
+    const model = new ExpressionBrickModel({
+      colorsDefault,
+      tooltipText: '',
+      widget: { type: 'variant', options, value: initial },
+      params: ['A'],
+      argDims: [{ w: 40, h: 20 }],
+    });
+    render(<BrickViewFixed kind="expression" model={model} />);
+    return model;
+  }
+
+  it('updates the displayed value after the user picks a new option', async () => {
+    renderVariantBrick(['+', '-', '*', '/'], '+');
+
+    // Open the dropdown and pick '*'
+    fireEvent.click(screen.getByRole('combobox'));
+    fireEvent.click(await screen.findByRole('option', { name: '*' }));
+
+    // The trigger should now show the new selection
+    expect(screen.getByRole('combobox').textContent).toContain('*');
+  });
+
+  it('writes the chosen value back to model.widget.value', async () => {
+    const model = renderVariantBrick(['+', '-', '*', '/'], '+');
+
+    fireEvent.click(screen.getByRole('combobox'));
+    fireEvent.click(await screen.findByRole('option', { name: '-' }));
+
+    expect((model.widget as { value: string }).value).toBe('-');
+  });
+});

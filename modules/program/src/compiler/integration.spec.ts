@@ -287,8 +287,9 @@ describe('Compiler Integration Tests', () => {
 
         // Verify successful compilation
         expect(irProgram.functions.size).toBe(5);
-        expect(totalBlocks).toBeGreaterThan(30);
-        expect(totalInstructions).toBeGreaterThan(100);
+        // Count each function's own blocks and instructions, without blocks from earlier functions.
+        expect(totalBlocks).toBe(19);
+        expect(totalInstructions).toBe(45);
         expect(instructionTypes.size).toBeGreaterThan(4);
     });
 });

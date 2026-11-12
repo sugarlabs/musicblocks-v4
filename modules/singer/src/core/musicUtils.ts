@@ -414,6 +414,7 @@ export function displayPitch(pitch: string): string {
  * @returns Whether the pitch is sharp or flat.
  */
 export function isASharp(pitchName: string): boolean {
+    pitchName = normalizePitch(pitchName);
     return pitchName.endsWith('#') || PITCH_LETTERS.includes(pitchName);
 }
 
@@ -427,6 +428,7 @@ export function isASharp(pitchName: string): boolean {
  * Thrown if pitchName isn't in chromatic scale.
  */
 export function findSharpIndex(pitchName: string): number {
+    pitchName = normalizePitch(pitchName);
     if (CHROMATIC_NOTES_SHARP.includes(pitchName)) {
         return CHROMATIC_NOTES_SHARP.indexOf(pitchName);
     }
@@ -448,6 +450,7 @@ export function findSharpIndex(pitchName: string): number {
  * @returns Whether the pitch is flat or sharp.
  */
 export function isAFlat(pitchName: string): boolean {
+    pitchName = normalizePitch(pitchName);
     return pitchName.endsWith('b') || PITCH_LETTERS.includes(pitchName);
 }
 
@@ -461,6 +464,7 @@ export function isAFlat(pitchName: string): boolean {
  * Thrown if pitchName isn't in chromatic scale.
  */
 export function findFlatIndex(pitchName: string): number {
+    pitchName = normalizePitch(pitchName);
     if (CHROMATIC_NOTES_FLAT.includes(pitchName)) {
         return CHROMATIC_NOTES_FLAT.indexOf(pitchName);
     }

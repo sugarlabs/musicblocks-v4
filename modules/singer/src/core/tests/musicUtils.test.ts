@@ -119,6 +119,12 @@ describe('Music utilities', () => {
         test('Test bb and expect it to not be a sharp pitch', () => {
             expect(isASharp('bb')).toBe(false);
         });
+
+        test('Normalizes unicode, natural, and uppercase input', () => {
+            expect(isASharp('c♯')).toBe(true);
+            expect(isASharp('C#')).toBe(true);
+            expect(isASharp('c♮')).toBe(true);
+        });
     });
 
     describe('Validate findSharpIndex', () => {
@@ -139,6 +145,13 @@ describe('Music utilities', () => {
                 findSharpIndex('db');
             }).toThrowError('Could not find sharp index for db');
         });
+
+        test('Normalizes unicode, natural, and uppercase input', () => {
+            expect(findSharpIndex('c♯')).toBe(1);
+            expect(findSharpIndex('C#')).toBe(1);
+            expect(findSharpIndex('c♮')).toBe(0);
+            expect(findSharpIndex('c𝄪')).toBe(2);
+        });
     });
 
     describe('Validate isAFlat', () => {
@@ -156,6 +169,12 @@ describe('Music utilities', () => {
 
         test('Test a# and expect it to not be a flat pitch', () => {
             expect(isAFlat('a#')).toBe(false);
+        });
+
+        test('Normalizes unicode, natural, and uppercase input', () => {
+            expect(isAFlat('d♭')).toBe(true);
+            expect(isAFlat('Db')).toBe(true);
+            expect(isAFlat('C')).toBe(true);
         });
     });
 
@@ -176,6 +195,12 @@ describe('Music utilities', () => {
             expect(() => {
                 findFlatIndex('c#');
             }).toThrowError('Could not find flat index for c#');
+        });
+
+        test('Normalizes unicode, natural, and uppercase input', () => {
+            expect(findFlatIndex('d♭')).toBe(1);
+            expect(findFlatIndex('Db')).toBe(1);
+            expect(findFlatIndex('d𝄫')).toBe(0);
         });
     });
 

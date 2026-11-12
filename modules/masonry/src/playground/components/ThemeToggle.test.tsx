@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useThemeStore } from '../stores/theme';
@@ -64,6 +64,10 @@ describe('ThemeToggle', () => {
     expect(systemButton.getAttribute('aria-pressed')).toBe('true');
     expect(lightButton.getAttribute('aria-pressed')).toBe('false');
     expect(darkButton.getAttribute('aria-pressed')).toBe('false');
+
+    expect(systemButton.classList.contains('bg-blue-100')).toBe(true);
+    expect(lightButton.classList.contains('text-slate-500')).toBe(true);
+    expect(darkButton.classList.contains('text-slate-500')).toBe(true);
   });
 
   it('switches to light mode when light button is clicked', () => {
@@ -79,6 +83,10 @@ describe('ThemeToggle', () => {
     expect(lightButton.getAttribute('aria-pressed')).toBe('true');
     expect(darkButton.getAttribute('aria-pressed')).toBe('false');
     expect(systemButton.getAttribute('aria-pressed')).toBe('false');
+
+    expect(lightButton.classList.contains('bg-blue-100')).toBe(true);
+    expect(darkButton.classList.contains('text-slate-500')).toBe(true);
+    expect(systemButton.classList.contains('text-slate-500')).toBe(true);
   });
 
   it('switches to dark mode when dark button is clicked', () => {
@@ -94,6 +102,10 @@ describe('ThemeToggle', () => {
     expect(darkButton.getAttribute('aria-pressed')).toBe('true');
     expect(lightButton.getAttribute('aria-pressed')).toBe('false');
     expect(systemButton.getAttribute('aria-pressed')).toBe('false');
+
+    expect(darkButton.classList.contains('bg-blue-600')).toBe(true);
+    expect(lightButton.classList.contains('text-slate-500')).toBe(true);
+    expect(systemButton.classList.contains('text-slate-500')).toBe(true);
   });
 
   it('switches back to system mode when system button is clicked', () => {
@@ -109,14 +121,61 @@ describe('ThemeToggle', () => {
     const systemButton = screen.getByRole('button', { name: /switch to system mode/i });
 
     expect(darkButton.getAttribute('aria-pressed')).toBe('true');
+    expect(darkButton.classList.contains('bg-blue-600')).toBe(true);
     expect(systemButton.getAttribute('aria-pressed')).toBe('false');
+    expect(systemButton.classList.contains('text-slate-500')).toBe(true);
 
     fireEvent.click(systemButton);
 
     expect(useThemeStore.getState().preference).toBe('system');
     expect(systemButton.getAttribute('aria-pressed')).toBe('true');
+    expect(systemButton.classList.contains('bg-blue-100')).toBe(true);
     expect(lightButton.getAttribute('aria-pressed')).toBe('false');
+    expect(lightButton.classList.contains('text-slate-500')).toBe(true);
     expect(darkButton.getAttribute('aria-pressed')).toBe('false');
+    expect(darkButton.classList.contains('text-slate-500')).toBe(true);
+  });
+
+  it('applies the selected classes for all three theme options', () => {
+    // 1. System option selected
+    useThemeStore.setState({ preference: 'system' });
+    const { rerender } = render(<ThemeToggle />);
+
+    let lightButton = screen.getByRole('button', { name: /switch to light mode/i });
+    let darkButton = screen.getByRole('button', { name: /switch to dark mode/i });
+    let systemButton = screen.getByRole('button', { name: /switch to system mode/i });
+
+    expect(systemButton.classList.contains('bg-blue-100')).toBe(true);
+    expect(lightButton.classList.contains('text-slate-500')).toBe(true);
+    expect(darkButton.classList.contains('text-slate-500')).toBe(true);
+
+    // 2. Light option selected
+    act(() => {
+      useThemeStore.setState({ preference: 'light' });
+    });
+    rerender(<ThemeToggle />);
+
+    lightButton = screen.getByRole('button', { name: /switch to light mode/i });
+    darkButton = screen.getByRole('button', { name: /switch to dark mode/i });
+    systemButton = screen.getByRole('button', { name: /switch to system mode/i });
+
+    expect(lightButton.classList.contains('bg-blue-100')).toBe(true);
+    expect(darkButton.classList.contains('text-slate-500')).toBe(true);
+    expect(systemButton.classList.contains('text-slate-500')).toBe(true);
+
+    // 3. Dark option selected
+    act(() => {
+      useThemeStore.setState({ preference: 'dark' });
+    });
+    rerender(<ThemeToggle />);
+
+    lightButton = screen.getByRole('button', { name: /switch to light mode/i });
+    darkButton = screen.getByRole('button', { name: /switch to dark mode/i });
+    systemButton = screen.getByRole('button', { name: /switch to system mode/i });
+
+    expect(darkButton.classList.contains('bg-blue-600')).toBe(true);
+    expect(lightButton.classList.contains('text-slate-500')).toBe(true);
+    expect(systemButton.classList.contains('text-slate-500')).toBe(true);
   });
 
   it('applies custom className to the container', () => {

@@ -18,6 +18,7 @@ import { ExpressionBrickModel, StatementBrickModel } from '@/models/brick';
 import { FOLD_TOGGLE_SELECTOR, SCALE_LEVEL_CONFIG } from '@/utils/constants';
 
 import { BrickViewFixed } from './BrickFixed';
+import { exportWorkspace } from '@/utils/import-export';
 
 afterEach(cleanup);
 
@@ -349,5 +350,34 @@ describe('BrickViewFixed variant widget', () => {
     fireEvent.click(await screen.findByRole('option', { name: '-' }));
 
     expect((model.widget as { value: string }).value).toBe('-');
+  });
+
+  it('includes the chosen variant value in the exportWorkspace payload', async () => {
+    const model = renderVariantBrick(['+', '-', '*', '/'], '+');
+
+    // Select a new option from the dropdown
+    fireEvent.click(screen.getByRole('combobox'));
+    fireEvent.click(await screen.findByRole('option', { name: '*' }));
+
+    // Export the workspace containing this brick
+    const payload = exportWorkspace({
+      'tower-1': {
+        id: 'tower-1',
+        root: {
+          kind: 'expression',
+          model,
+          parent: null,
+          args: [null],
+        },
+        position: { x: 0, y: 0 },
+      },
+    });
+
+    // Assert that the exported payload contains the chosen value
+    expect(payload.nodes[model.id].modelConfig.widget).toEqual({
+      type: 'variant',
+      options: ['+', '-', '*', '/'],
+      value: '*',
+    });
   });
 });

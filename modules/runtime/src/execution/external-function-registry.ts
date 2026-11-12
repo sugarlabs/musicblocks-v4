@@ -108,7 +108,7 @@ const CONTEXT_FIELD: Record<string, keyof MusicContext> = {
  * `playNote` is not resolved yet; that is wired to singer in the next step.
  */
 export class SingerFunctionRegistry implements IExternalFunctionRegistry {
-    private _saved = new Map<string, unknown[]>();
+    private _saved = new WeakMap<MusicContext, Map<string, unknown[]>>();
 
     hasFunction(name: string): boolean {
         return (
@@ -132,31 +132,53 @@ export class SingerFunctionRegistry implements IExternalFunctionRegistry {
     }
 
     private _setField(param: string, value: unknown, music: MusicContext, save: boolean): void {
-        const field = CONTEXT_FIELD[param];
+        const field = this._fieldFor(param);
         if (field === undefined) {
             console.warn(`unknown context parameter: ${param}`);
             return;
         }
         if (save) {
-            const stack = this._saved.get(param) ?? [];
+            const saved = this._savedFor(music);
+            const stack = saved.get(param) ?? [];
             stack.push(music[field]);
-            this._saved.set(param, stack);
+            saved.set(param, stack);
         }
         this._assign(music, field, value);
     }
 
     private _resetField(param: string, music: MusicContext): void {
-        const field = CONTEXT_FIELD[param];
+        const field = this._fieldFor(param);
         if (field === undefined) {
             console.warn(`unknown context parameter: ${param}`);
             return;
         }
-        const stack = this._saved.get(param);
+        const stack = this._savedFor(music).get(param);
         if (stack !== undefined && stack.length > 0) {
             this._assign(music, field, stack.pop());
         } else {
             this._assign(music, field, defaultMusicContext()[field]);
         }
+    }
+
+    /**
+     * Maps a context parameter to its field, ignoring inherited object properties.
+     */
+    private _fieldFor(param: string): keyof MusicContext | undefined {
+        return Object.prototype.hasOwnProperty.call(CONTEXT_FIELD, param)
+            ? CONTEXT_FIELD[param]
+            : undefined;
+    }
+
+    /**
+     * Returns the saved-value stacks for one music context.
+     */
+    private _savedFor(music: MusicContext): Map<string, unknown[]> {
+        let saved = this._saved.get(music);
+        if (saved === undefined) {
+            saved = new Map<string, unknown[]>();
+            this._saved.set(music, saved);
+        }
+        return saved;
     }
 
     /**

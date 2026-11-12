@@ -60,6 +60,30 @@ describe('SingerFunctionRegistry', () => {
         expect(music.movableDo).toBe(true);
     });
 
+    it('keeps saved values separate per music context', () => {
+        const r = new SingerFunctionRegistry();
+        const a = defaultMusicContext();
+        const b = defaultMusicContext();
+        b.volume = 80;
+        r.executeFunction('setContext_volume', [30], a);
+        r.executeFunction('setContext_volume', [10], b);
+        r.executeFunction('resetContext_volume', [], a);
+        r.executeFunction('resetContext_volume', [], b);
+        expect(a.volume).toBe(50);
+        expect(b.volume).toBe(80);
+    });
+
+    it('treats an inherited object key as an unknown parameter', () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const r = new SingerFunctionRegistry();
+        const music = defaultMusicContext();
+        r.executeFunction('setContext_constructor', ['x'], music);
+        expect(music).toEqual(defaultMusicContext());
+        expect(Object.prototype.hasOwnProperty.call(music, 'constructor')).toBe(false);
+        expect(warn).toHaveBeenCalled();
+        warn.mockRestore();
+    });
+
     it('warns and ignores an unknown context parameter', () => {
         const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
         const r = new SingerFunctionRegistry();

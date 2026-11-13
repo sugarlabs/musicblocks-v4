@@ -8,7 +8,7 @@
 
 <!-- Select all categories that apply. -->
 
-- [ ] Bug fix
+- [ ] Bugfix
 - [ ] Feature
 - [ ] UI/UX
 - [ ] Performance

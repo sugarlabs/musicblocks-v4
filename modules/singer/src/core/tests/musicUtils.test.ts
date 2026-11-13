@@ -14,9 +14,23 @@ import {
     isAFlat,
     findFlatIndex,
     getPitchType,
+    validatePitch,
 } from '../musicUtils';
 
 describe('Music utilities', () => {
+    describe('Validate validatePitch', () => {
+        test.each(['c#4', 'd#4', 'f#3', 'bb3', 'bb4', 'cx4', 'bb0'])(
+            'Accept valid accidental pitch %s',
+            (pitch) => {
+                expect(() => validatePitch(pitch)).not.toThrow();
+            },
+        );
+
+        test.each(['c ', 'c# ', 'c10'])('Reject invalid octave in pitch %s', (pitch) => {
+            expect(() => validatePitch(pitch)).toThrow('bad pitch value');
+        });
+    });
+
     describe('Validate stripAccidental', () => {
         test('Strip accidental on pitch c and expect pitch c with 0 change in half steps', () => {
             expect(stripAccidental('c')).toEqual(['c', 0]);

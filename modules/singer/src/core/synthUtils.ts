@@ -125,7 +125,7 @@ export default class SynthUtils implements ISynthUtils {
      * @throws {InvalidArgumentError}
      */
     public getBuiltinSynth(instrumentName: string): Tone.PolySynth | undefined {
-        if (instrumentName in this.builtinSynths) {
+        if (this.builtinSynths.has(instrumentName)) {
             return this.builtinSynths.get(instrumentName);
         }
         throw new InvalidArgumentError('cannot find builtin synth');
@@ -139,7 +139,7 @@ export default class SynthUtils implements ISynthUtils {
      * @throws {InvalidArgumentError}
      */
     public getSamplerSynth(instrumentName: string): Tone.Sampler | undefined {
-        if (instrumentName in this.samplerSynths) {
+        if (this.samplerSynths.has(instrumentName)) {
             return this.samplerSynths.get(instrumentName);
         }
         throw new InvalidArgumentError('cannot find sampler');
@@ -153,7 +153,7 @@ export default class SynthUtils implements ISynthUtils {
      * @throws {InvalidArgumentError}
      */
     public getPlayerSynth(instrumentName: string): Tone.Player | undefined {
-        if (instrumentName in this.playerSynths) {
+        if (this.playerSynths.has(instrumentName)) {
             return this.playerSynths.get(instrumentName);
         }
         throw new InvalidArgumentError('cannot find player');
@@ -183,17 +183,17 @@ export default class SynthUtils implements ISynthUtils {
         // Convert volume to decibals
         const db = Tone.gainToDb(nv / 100);
         // Find the synth and set the volume.
-        if (instrumentName in this.builtinSynths) {
+        if (this.builtinSynths.has(instrumentName)) {
             const synth = this.builtinSynths.get(instrumentName);
             if (synth !== undefined) {
                 synth.volume.value = db;
             }
-        } else if (instrumentName in this.samplerSynths) {
+        } else if (this.samplerSynths.has(instrumentName)) {
             const synth = this.samplerSynths.get(instrumentName);
             if (synth !== undefined) {
                 synth.volume.value = db;
             }
-        } else if (instrumentName in this.playerSynths) {
+        } else if (this.playerSynths.has(instrumentName)) {
             const synth = this.playerSynths.get(instrumentName);
             if (synth !== undefined) {
                 synth.volume.value = db;

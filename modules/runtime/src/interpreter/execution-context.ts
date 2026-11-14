@@ -7,6 +7,7 @@ import {
     MockFunctionRegistry,
 } from '../execution/external-function-registry';
 import { MusicContext, defaultMusicContext } from '../music/context';
+import { NoteEvent } from '../music/note-event';
 
 /**
  * ExecutionContext holds the full state of the interpreter at any moment.
@@ -23,6 +24,7 @@ export class ExecutionContext {
     public globalSymbolTable: SymbolTable = new SymbolTable();
     public externalFunctions: IExternalFunctionRegistry;
     public music: MusicContext = defaultMusicContext();
+    public events: NoteEvent[] = [];
 
     constructor(
         public program: IRProgram,

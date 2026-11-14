@@ -1,4 +1,7 @@
+import { CurrentPitch, KeySignature, Temperament } from '@sugarlabs/mb4-module-singer/core';
+
 import { MusicContext, defaultMusicContext } from '../music/context';
+import { NoteEvent } from '../music/note-event';
 
 /**
  * Interface for external function registry that handles functions not defined in the program.
@@ -13,7 +16,7 @@ export interface IExternalFunctionRegistry {
      * Execute an external function with the given arguments.
      * The music context is the state the call may read or mutate.
      */
-    executeFunction(name: string, args: unknown[], music: MusicContext): void;
+    executeFunction(name: string, args: unknown[], music: MusicContext, events?: NoteEvent[]): void;
 }
 
 /**
@@ -80,7 +83,12 @@ export class MockFunctionRegistry implements IExternalFunctionRegistry {
         );
     }
 
-    executeFunction(name: string, args: unknown[], _music: MusicContext): void {
+    executeFunction(
+        name: string,
+        args: unknown[],
+        _music: MusicContext,
+        _events?: NoteEvent[],
+    ): void {
         console.log(`Call: ${name} with args: ${JSON.stringify(args)}`);
     }
 }
@@ -119,7 +127,12 @@ export class SingerFunctionRegistry implements IExternalFunctionRegistry {
         );
     }
 
-    executeFunction(name: string, args: unknown[], music: MusicContext): void {
+    executeFunction(
+        name: string,
+        args: unknown[],
+        music: MusicContext,
+        events?: NoteEvent[],
+    ): void {
         if (name.startsWith('setContext_')) {
             this._setField(name.slice('setContext_'.length), args[0], music, true);
         } else if (name.startsWith('declareContext_')) {
@@ -127,8 +140,34 @@ export class SingerFunctionRegistry implements IExternalFunctionRegistry {
         } else if (name.startsWith('resetContext_')) {
             this._resetField(name.slice('resetContext_'.length), music);
         } else if (name === 'playNote') {
-            // Wired to singer in the next step.
+            this._playNote(args, music, events);
         }
+    }
+
+    /**
+     * Resolves a written pitch through the music context and appends a note event.
+     */
+    private _playNote(args: unknown[], music: MusicContext, events?: NoteEvent[]): void {
+        if (events === undefined) {
+            return;
+        }
+        const pitchName = String(args[0]);
+        const durationBeats = Number(args[1]);
+
+        const keySignature = new KeySignature(music.mode, music.key);
+        const temperament = new Temperament(music.temperament);
+        const current = new CurrentPitch(keySignature, temperament);
+        current.setPitch(pitchName, music.octave);
+
+        events.push({
+            hz: current.freq,
+            name: current.genericName,
+            octave: current.octave,
+            cents: 0,
+            durationBeats,
+            instrument: music.instrument,
+            volume: music.volume,
+        });
     }
 
     private _setField(param: string, value: unknown, music: MusicContext, save: boolean): void {

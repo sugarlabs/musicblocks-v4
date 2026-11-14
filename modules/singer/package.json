@@ -4,6 +4,10 @@
   "description": "Handles music generation",
   "private": "true",
   "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./core": "./src/core/index.ts"
+  },
   "scripts": {
     "playground": "vite playground --host --port 5601",
     "test": "vitest",

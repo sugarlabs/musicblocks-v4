@@ -59,6 +59,7 @@ export class CallInstruction extends IRInstruction {
             this.functionName,
             parameterValues,
             context.music,
+            context.events,
         );
         context.instructionPointer.instructionIndex++;
     }

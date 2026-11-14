@@ -1,0 +1,97 @@
+name: Assign issue on command
+
+# Lets anyone claim an issue by commenting `/assign` (self) or `/assign @username`.
+# Guards: the target must have no open PR and must not already be assigned to another
+# open issue, and an issue that is already claimed is not reassigned.
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+  pull-requests: read
+
+# Serialize every run so two concurrent /assign commands cannot both pass the guards.
+concurrency:
+  group: assign-issue-command
+  cancel-in-progress: false
+
+jobs:
+  assign:
+    name: Assign issue
+    # Only on issues (not pull request comments) and only for the /assign command.
+    if: ${{ !github.event.issue.pull_request && startsWith(github.event.comment.body, '/assign') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const issueNumber = context.issue.number;
+            const body = context.payload.comment.body.trim();
+            const commenter = context.payload.comment.user.login;
+
+            const reply = (text) =>
+              github.rest.issues.createComment({ owner, repo, issue_number: issueNumber, body: text });
+
+            // Must be the command itself, not something like "/assigned".
+            if (!/^\/assign(\s|$)/.test(body)) {
+              return;
+            }
+
+            // Optional "@username" after the command; otherwise assign the commenter.
+            const rest = body.replace(/^\/assign\s*/, '').trim();
+            const named = rest.match(/^@?([A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)/);
+            const target = named ? named[1] : commenter;
+
+            // Do not overwrite an existing claim.
+            const issue = await github.rest.issues.get({ owner, repo, issue_number: issueNumber });
+            if (issue.data.assignees && issue.data.assignees.length > 0) {
+              const who = issue.data.assignees.map((a) => `@${a.login}`).join(', ');
+              await reply(`This issue is already assigned to ${who}.`);
+              return;
+            }
+
+            // An open PR means they already have work in flight.
+            const openPrs = await github.rest.search.issuesAndPullRequests({
+              q: `repo:${owner}/${repo} is:pr is:open author:${target}`,
+            });
+            if (openPrs.data.incomplete_results) {
+              await reply(`Could not check @${target}'s open pull requests right now. Please run the command again.`);
+              return;
+            }
+            if (openPrs.data.total_count > 0) {
+              await reply(
+                `@${target} has an open pull request. Please get it merged or closed before taking an issue.`,
+              );
+              return;
+            }
+
+            // One issue at a time.
+            const openIssues = await github.rest.search.issuesAndPullRequests({
+              q: `repo:${owner}/${repo} is:issue is:open assignee:${target}`,
+            });
+            if (openIssues.data.incomplete_results) {
+              await reply(`Could not check @${target}'s current issues right now. Please run the command again.`);
+              return;
+            }
+            if (openIssues.data.total_count > 0) {
+              await reply(`@${target} is already assigned to another issue. Only one at a time.`);
+              return;
+            }
+
+            const result = await github.rest.issues.addAssignees({
+              owner,
+              repo,
+              issue_number: issueNumber,
+              assignees: [target],
+            });
+            const assigned = (result.data.assignees || []).some(
+              (a) => a.login.toLowerCase() === target.toLowerCase(),
+            );
+            await reply(
+              assigned
+                ? `Assigned to @${target}.`
+                : `Could not assign @${target}. They may need to comment on the repository first, or they lack access.`,
+            );

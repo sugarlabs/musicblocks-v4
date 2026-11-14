@@ -319,7 +319,7 @@ export const UNKNOWN_PITCH_NAME = 'unknown';
  * @returns the octave delta.
  */
 export function octaveDeltaForPitch(pitchName: string): number {
-    const [letter, change] = stripAccidental(pitchName);
+    const [letter, change] = stripAccidental(normalizePitch(pitchName));
     const natural = CHROMATIC_NOTES_SHARP.indexOf(letter);
     if (natural === -1) {
         return 0;

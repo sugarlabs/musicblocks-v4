@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { SingerFunctionRegistry } from './external-function-registry';
 import { defaultMusicContext } from '../music/context';
+import { NoteEvent } from '../music/note-event';
 
 describe('SingerFunctionRegistry', () => {
     it('claims music functions and nothing else', () => {
@@ -94,10 +95,37 @@ describe('SingerFunctionRegistry', () => {
         warn.mockRestore();
     });
 
-    it('playNote does not change the context yet', () => {
+    it('playNote resolves a pitch through the context and appends an event', () => {
         const r = new SingerFunctionRegistry();
         const music = defaultMusicContext();
-        r.executeFunction('playNote', ['sol', 0.25], music);
+        const events: NoteEvent[] = [];
+        r.executeFunction('playNote', ['a', 0.25], music, events);
+        expect(events).toHaveLength(1);
+        const note = events[0];
+        expect(Math.round(note.hz)).toBe(440);
+        expect(note.name).toBe('n9');
+        expect(note.octave).toBe(4);
+        expect(note.cents).toBe(0);
+        expect(note.durationBeats).toBe(0.25);
+        expect(note.instrument).toBe('electronic synth');
+        expect(note.volume).toBe(50);
+    });
+
+    it('playNote reflects context changes in the event', () => {
+        const r = new SingerFunctionRegistry();
+        const music = defaultMusicContext();
+        const events: NoteEvent[] = [];
+        r.executeFunction('declareContext_instrument', ['guitar'], music);
+        r.executeFunction('setContext_volume', [20], music);
+        r.executeFunction('playNote', ['a', 1], music, events);
+        expect(events[0].instrument).toBe('guitar');
+        expect(events[0].volume).toBe(20);
+    });
+
+    it('playNote without an events sink is a no-op', () => {
+        const r = new SingerFunctionRegistry();
+        const music = defaultMusicContext();
+        expect(() => r.executeFunction('playNote', ['a', 0.25], music)).not.toThrow();
         expect(music).toEqual(defaultMusicContext());
     });
 });

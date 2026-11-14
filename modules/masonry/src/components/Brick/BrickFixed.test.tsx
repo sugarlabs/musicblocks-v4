@@ -194,6 +194,32 @@ describe('BrickViewFixed nesting fold', () => {
   });
 });
 
+describe('BrickViewFixed switch button', () => {
+  it('renders an accessible switch control and invokes it without starting a drag', () => {
+    const onSwitch = vi.fn();
+    const model = new StatementBrickModel({
+      colorsDefault,
+      tooltipText: '',
+      widget: { type: 'label', text: 'repeat' },
+    });
+    const { container } = render(
+      <BrickViewFixed
+        kind="statement"
+        model={model}
+        switchButton={{ label: 'Switch to while', onSwitch }}
+      />,
+    );
+
+    const button = container.querySelector<HTMLButtonElement>('[data-switch-button]');
+    expect(button).not.toBeNull();
+    expect(button?.getAttribute('aria-label')).toBe('Switch to while');
+
+    fireEvent.pointerDown(button!);
+    fireEvent.click(button!);
+    expect(onSwitch).toHaveBeenCalledOnce();
+  });
+});
+
 describe('BrickViewFixed fold toggle', () => {
   it('is there on a nesting brick and nowhere else', () => {
     const { container } = renderFoldableBrick();

@@ -100,9 +100,9 @@ export interface BrickOutlineOutput {
  *   next       — hasNextNotch
  *   nestedNext — hasNesting (cavity-roof tab)
  *   output     — hasOutputNotch
- * `inputs` is always present, ordered by declaration so array index === slot index.
- * Each filled or empty argument slot has Bounds only when its groove fits on the edge;
- * otherwise its entry is null. Bricks without argument slots have an empty array.
+ * `inputs` is always present: one Bounds per argument slot (filled and empty),
+ * ordered top-to-bottom by declaration order, so array index === slot index;
+ * an empty array when the brick has no arg slots.
  */
 export interface BrickConnectorCoords {
     /** Sequence-in connector bounds (top-edge groove). */
@@ -113,8 +113,8 @@ export interface BrickConnectorCoords {
     nestedNext?: Bounds;
     /** Output connector bounds (left-edge tab). */
     output?: Bounds;
-    /** Right-edge groove bounds, indexed by argument slot; null when the groove is not drawn. */
-    inputs: (Bounds | null)[];
+    /** Argument-slot connector bounds (right-edge grooves), one per slot (filled and empty). */
+    inputs: Bounds[];
 }
 
 export interface BrickMinimums {
@@ -162,21 +162,31 @@ export interface ParamArgPair {
     argDims: Size | null;
 }
 
+export interface BrickColors {
+    background: string;
+    foreground: string;
+    border: string;
+}
+
+export interface BrickShadow {
+    offset: { x: number; y: number };
+    blur: number;
+    color: string;
+}
+
 /** Props shared by every brick kind. */
 interface BrickViewPropsBase {
     /** Colors used in the default (non-highlighted, non-selected) render state. */
-    colorsDefault: {
-        background: string;
-        foreground: string;
-        border: string;
-    };
+    colorsDefault: BrickColors;
+    /** Colors to use when the brick is in highlighted state. */
+    colorsHighlight?: BrickColors;
     /** Tooltip text displayed on hover. */
     tooltipText: string;
     /** Controls brick size and font scaling; defaults to 2. */
     scaleLevel?: 1 | 2 | 3;
 
-    // TODO: colorsHighlight — colors to use when the brick is in highlighted state (mirrors colorsDefault shape)
-    // TODO: shadow — brick drop-shadow spec (e.g. offset, blur, color)
+    /** Optional drop-shadow specification. */
+    shadow?: BrickShadow;
 }
 
 /** A terminal value brick — literal, variable, constant, or input widget. */
@@ -214,7 +224,8 @@ export interface StatementBrickViewProps extends BrickViewPropsBase {
     /** Whether this brick connects to the following brick in a sequence. */
     hasConnectionNext?: boolean;
 
-    // TODO: hasSwitchButton — renders a button to swap to an alternate brick type
+    /** Whether to render the alternate-brick switch control. */
+    hasSwitchButton?: boolean;
 }
 
 /** Discriminated union over all brick kinds; narrow via `kind`. */
@@ -258,6 +269,13 @@ export interface StatementBrickViewPropsWithModel {
         isCavityEmpty: boolean;
         /** Flips the model's `isNestingFolded`, through whoever owns the brick's tower. */
         onToggle: () => void;
+    };
+    /** Optional control for replacing this brick with an alternate brick type. */
+    switchButton?: {
+        /** Called when the switch control is activated. */
+        onSwitch: () => void;
+        /** Accessible label and tooltip for the control. */
+        label?: string;
     };
 }
 

@@ -12,8 +12,14 @@ permissions:
   issues: write
   pull-requests: read
 
+# Serialize every run so two concurrent /assign commands cannot both pass the guards.
+concurrency:
+  group: assign-issue-command
+  cancel-in-progress: false
+
 jobs:
   assign:
+    name: Assign issue
     # Only on issues (not pull request comments) and only for the /assign command.
     if: ${{ !github.event.issue.pull_request && startsWith(github.event.comment.body, '/assign') }}
     runs-on: ubuntu-latest
@@ -51,6 +57,10 @@ jobs:
             const openPrs = await github.rest.search.issuesAndPullRequests({
               q: `repo:${owner}/${repo} is:pr is:open author:${target}`,
             });
+            if (openPrs.data.incomplete_results) {
+              await reply(`Could not check @${target}'s open pull requests right now. Please run the command again.`);
+              return;
+            }
             if (openPrs.data.total_count > 0) {
               await reply(
                 `@${target} has an open pull request. Please get it merged or closed before taking an issue.`,
@@ -62,6 +72,10 @@ jobs:
             const openIssues = await github.rest.search.issuesAndPullRequests({
               q: `repo:${owner}/${repo} is:issue is:open assignee:${target}`,
             });
+            if (openIssues.data.incomplete_results) {
+              await reply(`Could not check @${target}'s current issues right now. Please run the command again.`);
+              return;
+            }
             if (openIssues.data.total_count > 0) {
               await reply(`@${target} is already assigned to another issue. Only one at a time.`);
               return;

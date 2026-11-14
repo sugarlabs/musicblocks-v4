@@ -18,6 +18,7 @@ import { ExpressionBrickModel, StatementBrickModel } from '@/models/brick';
 import { FOLD_TOGGLE_SELECTOR, SCALE_LEVEL_CONFIG } from '@/utils/constants';
 
 import { BrickViewFixed } from './BrickFixed';
+import { exportWorkspace } from '@/utils/import-export';
 
 afterEach(cleanup);
 
@@ -313,5 +314,70 @@ describe('BrickViewFixed fold toggle', () => {
     // `useBrickMove` passes this selector as the draggable's `ignoreFrom`; the attribute is what
     // makes the toggle match it.
     expect(container.querySelectorAll(FOLD_TOGGLE_SELECTOR)).toHaveLength(1);
+  });
+});
+
+// ─── Variant widget ───────────────────────────────────────────────────────────
+
+describe('BrickViewFixed variant widget', () => {
+  function renderVariantBrick(options: string[], initial: string) {
+    const model = new ExpressionBrickModel({
+      colorsDefault,
+      tooltipText: '',
+      widget: { type: 'variant', options, value: initial },
+      params: ['A'],
+      argDims: [{ w: 40, h: 20 }],
+    });
+    render(<BrickViewFixed kind="expression" model={model} />);
+    return model;
+  }
+
+  it('updates the displayed value after the user picks a new option', async () => {
+    renderVariantBrick(['+', '-', '*', '/'], '+');
+
+    // Open the dropdown and pick '*'
+    fireEvent.click(screen.getByRole('combobox'));
+    fireEvent.click(await screen.findByRole('option', { name: '*' }));
+
+    // The trigger should now show the new selection
+    expect(screen.getByRole('combobox').textContent).toContain('*');
+  });
+
+  it('writes the chosen value back to model.widget.value', async () => {
+    const model = renderVariantBrick(['+', '-', '*', '/'], '+');
+
+    fireEvent.click(screen.getByRole('combobox'));
+    fireEvent.click(await screen.findByRole('option', { name: '-' }));
+
+    expect((model.widget as { value: string }).value).toBe('-');
+  });
+
+  it('includes the chosen variant value in the exportWorkspace payload', async () => {
+    const model = renderVariantBrick(['+', '-', '*', '/'], '+');
+
+    // Select a new option from the dropdown
+    fireEvent.click(screen.getByRole('combobox'));
+    fireEvent.click(await screen.findByRole('option', { name: '*' }));
+
+    // Export the workspace containing this brick
+    const payload = exportWorkspace({
+      'tower-1': {
+        id: 'tower-1',
+        root: {
+          kind: 'expression',
+          model,
+          parent: null,
+          args: [null],
+        },
+        position: { x: 0, y: 0 },
+      },
+    });
+
+    // Assert that the exported payload contains the chosen value
+    expect(payload.nodes[model.id].modelConfig.widget).toEqual({
+      type: 'variant',
+      options: ['+', '-', '*', '/'],
+      value: '*',
+    });
   });
 });

@@ -10,6 +10,7 @@ import { ICurrentPitch } from '../@types/currentPitch';
 import Temperament from './temperament';
 import KeySignature from './keySignature';
 import { ItemNotFoundDefaultError } from './errors';
+import { octaveDeltaForPitch } from './musicUtils';
 
 /**
  * Defines an object that manages pitch state.
@@ -164,7 +165,10 @@ export default class CurrentPitch implements ICurrentPitch {
                 this._genericName = (err as ItemNotFoundDefaultError<string>).defaultValue;
             }
             this._semitoneIndex = this._t.getModalIndex(this._genericName);
-            this._octave = octave;
+            this._octave =
+                this._t.numberOfSemitonesInOctave === 12
+                    ? octave + octaveDeltaForPitch(pitchName)
+                    : octave;
             this._freq = this._t.getFreqByModalIndexAndOctave(this._semitoneIndex, this._octave);
             this._number = this._t.getNearestFreqIndex(this._freq);
         }

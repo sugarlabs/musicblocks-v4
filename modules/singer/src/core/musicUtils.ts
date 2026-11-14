@@ -310,6 +310,23 @@ export const UNKNOWN_PITCH_NAME = 'unknown';
  * @returns An array (2-tuple) of the normalized pitch name and the change in half steps represented
  * by the removed accidental.
  */
+/**
+ * Returns how many octaves a pitch name crosses because of its accidental. A boundary accidental
+ * such as `b#` (which sounds as c in the next octave) returns 1, and `cb` returns -1. Names that are
+ * not a plain letter with an accidental return 0. Only meaningful for 12-semitone temperaments.
+ *
+ * @param pitchName - pitch name, e.g. `b#` or `cb`.
+ * @returns the octave delta.
+ */
+export function octaveDeltaForPitch(pitchName: string): number {
+    const [letter, change] = stripAccidental(pitchName);
+    const natural = CHROMATIC_NOTES_SHARP.indexOf(letter);
+    if (natural === -1) {
+        return 0;
+    }
+    return Math.floor((natural + change) / 12);
+}
+
 export function stripAccidental(pitch: string): [string, number] {
     if (pitch.length === 1) {
         return [pitch, 0];

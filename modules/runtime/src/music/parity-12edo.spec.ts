@@ -28,6 +28,9 @@ describe('playNote parity with v3 (12-EDO, C major, equal)', () => {
         ['a', 4, 'n9', 440],
         ['b', 4, 'n11', 494],
         ['c', 5, 'n0', 523],
+        // Boundary accidentals cross the octave: b#4 sounds as c5, cb4 as b3.
+        ['b#', 4, 'n0', 523],
+        ['cb', 4, 'n11', 247],
     ];
 
     it.each(cases)('%s%d resolves to %s at %d Hz', (name, octave, generic, hz) => {

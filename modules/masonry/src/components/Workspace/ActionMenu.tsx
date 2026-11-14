@@ -1,14 +1,22 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 
 import type { ActionMenuWedge } from '@/@types/action-menu.types';
-import type { Point } from '@/@types/common.types';
+import type { Point, Size } from '@/@types/common.types';
 
 import { useActionMenuStore } from '@/stores/actionMenu';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { useWorkspaceScaleStore } from '@/stores/scale';
+import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { findNodeAndTower } from '@/stores/workspace';
 import { ACTION_MENU_RING, SCALE_LEVEL_CONFIG } from '@/utils/constants';
-import { ringAtScale, wedgeAngles, wedgeCentre, wedgePath, type PieRing } from '@/utils/pie-menu';
+import {
+  clampMenuPosition,
+  ringAtScale,
+  wedgeAngles,
+  wedgeCentre,
+  wedgePath,
+  type PieRing,
+} from '@/utils/pie-menu';
 
 import { ACTION_MENU_WEDGES } from './actionMenuWedges';
 
@@ -109,12 +117,26 @@ function stepFor(key: string): number | null {
   return null;
 }
 
+/** Resolves the size of the canvas element, or null if unmeasurable. */
+function getCanvasSize(canvas: HTMLElement | null): Size | null {
+  if (!canvas) return null;
+  const rect = canvas.getBoundingClientRect();
+  const width = canvas.clientWidth || rect.width;
+  const height = canvas.clientHeight || rect.height;
+  if (width <= 0 || height <= 0) return null;
+  return { w: width, h: height };
+}
+
 export interface ActionMenuProps {
   /**
    * The wedges to ring the brick with; the ones the workspace ships with by default. Only a story
    * passes its own, to show a ring the workspace cannot put on screen yet.
    */
   wedges?: ActionMenuWedge[];
+  /**
+   * The canvas the workspace renders into; used to keep the ring inside visible bounds.
+   */
+  canvasRef?: RefObject<HTMLElement | null>;
 }
 
 /**
@@ -129,17 +151,61 @@ export interface ActionMenuProps {
  * Placed off the brick's `coords` entry and sized off `SCALE_LEVEL_CONFIG`, so it follows a move, a
  * fold above it or a change of scale level without holding a position of its own.
  */
-export function ActionMenu({ wedges = ACTION_MENU_WEDGES }: ActionMenuProps = {}) {
+export function ActionMenu({ wedges = ACTION_MENU_WEDGES, canvasRef }: ActionMenuProps = {}) {
   const brickId = useActionMenuStore((state) => state.brickId);
   const coords = useBrickLayoutStore((state) =>
     brickId === null ? undefined : state.coords[brickId],
   );
   const level = useWorkspaceScaleStore((state) => state.level);
+  const offset = useWorkspaceViewportStore((state) => state.offset);
 
   // The wedge the ring's one tab stop rests on. Kept here rather than read off `document` so the
   // ring has a tab stop before anything in it is focused, which is what lets Tab reach it at all.
   const [activeIndex, setActiveIndex] = useState(0);
   const wedgeRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const resolveCanvas = useCallback((): HTMLElement | null => {
+    if (canvasRef?.current) return canvasRef.current;
+    if (menuRef.current) {
+      const closest = menuRef.current.closest<HTMLElement>('[data-workspace-canvas]');
+      if (closest) return closest;
+    }
+    if (typeof document !== 'undefined') {
+      return document.querySelector<HTMLElement>('[data-workspace-canvas]');
+    }
+    return null;
+  }, [canvasRef]);
+
+  const [canvasSize, setCanvasSize] = useState<Size | null>(() => getCanvasSize(resolveCanvas()));
+
+  useEffect(() => {
+    const canvas = resolveCanvas();
+    if (!canvas) return;
+
+    const updateSize = () => {
+      const size = getCanvasSize(canvas);
+      setCanvasSize((prev) => {
+        if (!prev && !size) return prev;
+        if (prev && size && prev.w === size.w && prev.h === size.h) return prev;
+        return size;
+      });
+    };
+
+    updateSize();
+
+    let observer: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      observer = new ResizeObserver(updateSize);
+      observer.observe(canvas);
+    }
+    window.addEventListener('resize', updateSize);
+
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener('resize', updateSize);
+    };
+  }, [resolveCanvas]);
 
   // A right-click leaves the focus wherever it was, so the menu takes it: opened from the pointer
   // or not, the keyboard should be in the menu while the menu is the thing on screen. The ring
@@ -172,6 +238,14 @@ export function ActionMenu({ wedges = ACTION_MENU_WEDGES }: ActionMenuProps = {}
 
   const ring = ringAtScale(level);
   const box = ring.outerRadius * 2;
+  const currentCanvasSize = canvasSize ?? getCanvasSize(resolveCanvas());
+  const position = clampMenuPosition(
+    { x: centre.x - ring.outerRadius, y: centre.y - ring.outerRadius },
+    ring.outerRadius,
+    currentCanvasSize,
+    offset,
+  );
+
   // Only the wedges that belong on this brick; the ring divides itself among however many that is.
   const shown = wedges.filter((wedge) => wedge.isVisible?.(brickId) ?? true);
   const count = shown.length;
@@ -186,6 +260,7 @@ export function ActionMenu({ wedges = ACTION_MENU_WEDGES }: ActionMenuProps = {}
 
   return (
     <div
+      ref={menuRef}
       data-action-menu
       data-testid="action-menu"
       role="menu"
@@ -196,7 +271,7 @@ export function ActionMenu({ wedges = ACTION_MENU_WEDGES }: ActionMenuProps = {}
       style={{
         width: box,
         height: box,
-        transform: `translate(${centre.x - ring.outerRadius}px, ${centre.y - ring.outerRadius}px)`,
+        transform: `translate(${position.x}px, ${position.y}px)`,
       }}
       onKeyDown={(event) => {
         const step = stepFor(event.key);

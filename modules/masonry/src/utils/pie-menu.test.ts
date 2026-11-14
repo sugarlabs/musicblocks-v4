@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { ACTION_MENU_RING, SCALE_LEVEL_CONFIG } from './constants';
-import { ringAtScale, wedgeAngles, wedgeCentre, wedgePath } from './pie-menu';
+import { clampMenuPosition, ringAtScale, wedgeAngles, wedgeCentre, wedgePath } from './pie-menu';
 
 // -------------------------------------------------------------------------------------------------
 
@@ -151,5 +151,107 @@ describe('wedgeCentre', () => {
         expect(right.x).toBeGreaterThan(0);
         expect(left.y).toBeGreaterThan(0);
         expect(left.x).toBeLessThan(0);
+    });
+});
+
+describe('clampMenuPosition', () => {
+    const canvas = { w: 800, h: 600 };
+    const defaultRing = ringAtScale(2); // outerRadius: 68, box: 136
+
+    it('returns unconstrained position when canvas size is null or non-positive', () => {
+        const unconstrained = { x: -50, y: -50 };
+        expect(clampMenuPosition(unconstrained, defaultRing.outerRadius, null)).toEqual(
+            unconstrained,
+        );
+        expect(clampMenuPosition(unconstrained, defaultRing.outerRadius, { w: 0, h: 600 })).toEqual(
+            unconstrained,
+        );
+        expect(
+            clampMenuPosition(unconstrained, defaultRing.outerRadius, { w: 800, h: -10 }),
+        ).toEqual(unconstrained);
+    });
+
+    it('leaves position untouched when the ring is well within the canvas', () => {
+        const unconstrained = { x: 200, y: 150 };
+        expect(clampMenuPosition(unconstrained, defaultRing.outerRadius, canvas)).toEqual({
+            x: 200,
+            y: 150,
+        });
+    });
+
+    it('clamps the top-left boundary so the menu stays inside the canvas', () => {
+        const unconstrained = { x: -30, y: -40 };
+        expect(clampMenuPosition(unconstrained, defaultRing.outerRadius, canvas)).toEqual({
+            x: 0,
+            y: 0,
+        });
+    });
+
+    it('clamps the bottom-right boundary so the menu stays inside the canvas', () => {
+        const unconstrained = { x: 750, y: 550 };
+        // canvas.w (800) - box (136) = 664, canvas.h (600) - box (136) = 464
+        expect(clampMenuPosition(unconstrained, defaultRing.outerRadius, canvas)).toEqual({
+            x: 664,
+            y: 464,
+        });
+    });
+
+    it('clamps individual edges independently', () => {
+        // top-right corner: x clipped on right, y clipped on top
+        expect(clampMenuPosition({ x: 750, y: -20 }, defaultRing.outerRadius, canvas)).toEqual({
+            x: 664,
+            y: 0,
+        });
+        // bottom-left corner: x clipped on left, y clipped on bottom
+        expect(clampMenuPosition({ x: -10, y: 550 }, defaultRing.outerRadius, canvas)).toEqual({
+            x: 0,
+            y: 464,
+        });
+    });
+
+    it('accounts for viewport offset during pan', () => {
+        const unconstrained = { x: -80, y: 100 };
+        const offset = { x: 100, y: 0 };
+        // canvasX = -80 + 100 = 20, within [0, 664]
+        // result.x = 20 - 100 = -80
+        expect(clampMenuPosition(unconstrained, defaultRing.outerRadius, canvas, offset)).toEqual({
+            x: -80,
+            y: 100,
+        });
+
+        // When pan pushes it past right edge:
+        const unconstrainedRight = { x: 600, y: 100 };
+        // canvasX = 600 + 100 = 700 > 664
+        // clampedCanvasX = 664
+        // result.x = 664 - 100 = 564
+        expect(
+            clampMenuPosition(unconstrainedRight, defaultRing.outerRadius, canvas, offset),
+        ).toEqual({ x: 564, y: 100 });
+    });
+
+    it('works across different scale levels', () => {
+        const ringLevel1 = ringAtScale(1); // outerRadius: 51, box: 102
+        const unconstrained = { x: 750, y: 550 };
+        // 800 - 102 = 698, 600 - 102 = 498
+        expect(clampMenuPosition(unconstrained, ringLevel1.outerRadius, canvas)).toEqual({
+            x: 698,
+            y: 498,
+        });
+
+        const ringLevel3 = ringAtScale(3); // outerRadius: 85, box: 170
+        // 800 - 170 = 630, 600 - 170 = 430
+        expect(clampMenuPosition(unconstrained, ringLevel3.outerRadius, canvas)).toEqual({
+            x: 630,
+            y: 430,
+        });
+    });
+
+    it('safely handles a canvas smaller than the ring box', () => {
+        const tinyCanvas = { w: 100, h: 100 };
+        // defaultRing box is 136 > 100; should fallback to 0
+        expect(clampMenuPosition({ x: 50, y: 50 }, defaultRing.outerRadius, tinyCanvas)).toEqual({
+            x: 0,
+            y: 0,
+        });
     });
 });

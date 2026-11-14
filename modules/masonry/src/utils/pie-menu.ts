@@ -1,4 +1,4 @@
-import type { Point } from '@/@types/common.types';
+import type { Point, Size } from '@/@types/common.types';
 
 import { ACTION_MENU_RING, SCALE_LEVEL_CONFIG, type ScaleLevel } from './constants';
 
@@ -100,4 +100,40 @@ export function wedgeCentre(angles: WedgeAngles, ring: PieRing): Point {
     const point = polar(radius, (angles.start + angles.end) / 2);
 
     return { x: round(point.x), y: round(point.y) };
+}
+
+/**
+ * Calculates the top-left position of the action menu in viewport coordinates,
+ * clamped so that the entire ring stays within the visible canvas boundary.
+ *
+ * @param unconstrained - The ideal top-left position in viewport coordinates (centre - outerRadius)
+ * @param ringRadius - The outer radius of the pie menu ring
+ * @param canvasSize - The width and height of the visible canvas, or null if unconstrained
+ * @param viewportOffset - How far the canvas is panned (viewport offset)
+ * @returns The clamped top-left position in viewport coordinates
+ */
+export function clampMenuPosition(
+    unconstrained: Point,
+    ringRadius: number,
+    canvasSize: Size | null,
+    viewportOffset: Point = { x: 0, y: 0 },
+): Point {
+    if (!canvasSize || canvasSize.w <= 0 || canvasSize.h <= 0) {
+        return unconstrained;
+    }
+
+    const box = ringRadius * 2;
+    const canvasX = unconstrained.x + viewportOffset.x;
+    const canvasY = unconstrained.y + viewportOffset.y;
+
+    const clampedCanvasX =
+        canvasSize.w >= box ? Math.max(0, Math.min(canvasX, canvasSize.w - box)) : 0;
+
+    const clampedCanvasY =
+        canvasSize.h >= box ? Math.max(0, Math.min(canvasY, canvasSize.h - box)) : 0;
+
+    return {
+        x: round(clampedCanvasX - viewportOffset.x),
+        y: round(clampedCanvasY - viewportOffset.y),
+    };
 }

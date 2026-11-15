@@ -111,3 +111,11 @@ export const AUTO_PAN_MAX_STEP = 12;
 export const HOME_COLUMN_WIDTH = 160;
 /** The space (in pixels) Home leaves between the towers it lays out. */
 export const HOME_GAP = 24;
+
+/**
+ * The total width/height and origin for the collision spaces tracking connectors across the workspace.
+ * Centers the collision space around the canvas origin so bricks can be panned into negative coordinates
+ * or placed far across the canvas without exceeding bounds or dropping connectors.
+ */
+export const COLLISION_SPACE_SIZE = 100000;
+export const COLLISION_SPACE_ORIGIN = -50000;

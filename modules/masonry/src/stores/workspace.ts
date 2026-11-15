@@ -9,6 +9,7 @@ import type {
 } from '@/@types/workspace.types';
 import type { TowerNode, TowerStatementNode } from '@/@types/tower.types';
 import { QuadtreeCollisionSpace } from '@/utils/collision';
+import { COLLISION_SPACE_ORIGIN, COLLISION_SPACE_SIZE } from '@/utils/constants';
 import { extractArgumentConnectors } from '@/utils/argument-collision';
 import { extractStatementConnectors } from '@/utils/statement-collision';
 import {
@@ -282,9 +283,19 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         towers: {},
         selectedBrickId: null,
         areBricksHidden: false,
-        statementCollisionSpace: new QuadtreeCollisionSpace(4000, 4000),
+        statementCollisionSpace: new QuadtreeCollisionSpace(
+            COLLISION_SPACE_SIZE,
+            COLLISION_SPACE_SIZE,
+            COLLISION_SPACE_ORIGIN,
+            COLLISION_SPACE_ORIGIN,
+        ),
         statementConnectors: {},
-        argumentCollisionSpace: new QuadtreeCollisionSpace(4000, 4000),
+        argumentCollisionSpace: new QuadtreeCollisionSpace(
+            COLLISION_SPACE_SIZE,
+            COLLISION_SPACE_SIZE,
+            COLLISION_SPACE_ORIGIN,
+            COLLISION_SPACE_ORIGIN,
+        ),
         argumentConnectors: {},
 
         createTower: (tower) => {
@@ -357,6 +368,11 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
         syncStatementConnectors: (towerId, root) => {
             set((state) => {
+                const tower = state.towers[towerId];
+                if (tower) {
+                    traverseTopDown(root, tower.position);
+                }
+
                 // Remove old connectors for this tower first
                 const oldIds = Object.values(state.statementConnectors)
                     .filter((meta) => meta.towerId === towerId)
@@ -395,6 +411,11 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
         syncArgumentConnectors: (towerId, root) => {
             set((state) => {
+                const tower = state.towers[towerId];
+                if (tower) {
+                    traverseTopDown(root, tower.position);
+                }
+
                 // Remove old connectors for this tower first
                 const oldIds = Object.values(state.argumentConnectors)
                     .filter((meta) => meta.towerId === towerId)

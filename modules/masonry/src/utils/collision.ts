@@ -22,12 +22,16 @@ export interface CollisionSpaceOptions {
 export abstract class CollisionSpace {
     protected _width: number;
     protected _height: number;
+    protected _originX: number;
+    protected _originY: number;
     protected _shape: CollisionObjectShape = 'circle';
     protected _threshold = 0.5;
 
-    constructor(width: number, height: number) {
+    constructor(width: number, height: number, originX = 0, originY = 0) {
         this._width = width;
         this._height = height;
+        this._originX = originX;
+        this._originY = originY;
     }
 
     public setOptions(options: Partial<CollisionSpaceOptions>): void {
@@ -94,10 +98,10 @@ export class BruteForceCollisionSpace extends CollisionSpace {
     public createObjects(objects: CollisionObject[]): void {
         for (const object of objects) {
             const inBounds =
-                object.x > object.w / 2 &&
-                object.x < this._width - object.w / 2 &&
-                object.y > object.h / 2 &&
-                object.y < this._height - object.h / 2;
+                object.x > this._originX + object.w / 2 &&
+                object.x < this._originX + this._width - object.w / 2 &&
+                object.y > this._originY + object.h / 2 &&
+                object.y < this._originY + this._height - object.h / 2;
 
             if (inBounds) this._objects.push(object);
         }
@@ -143,9 +147,11 @@ export class QuadtreeCollisionSpace extends CollisionSpace {
     private _tree: Quadtree<QuadtreeItem>;
     private _itemsById = new Map<number, QuadtreeItem>();
 
-    constructor(width: number, height: number) {
-        super(width, height);
+    constructor(width: number, height: number, originX = 0, originY = 0) {
+        super(width, height, originX, originY);
         this._tree = new Quadtree<QuadtreeItem>({
+            x: originX,
+            y: originY,
             width,
             height,
             maxElements: QUADTREE_MAX_ELEMENTS,
@@ -155,10 +161,10 @@ export class QuadtreeCollisionSpace extends CollisionSpace {
     public createObjects(objects: CollisionObject[]): void {
         for (const object of objects) {
             const inBounds =
-                object.x > object.w / 2 &&
-                object.x < this._width - object.w / 2 &&
-                object.y > object.h / 2 &&
-                object.y < this._height - object.h / 2;
+                object.x > this._originX + object.w / 2 &&
+                object.x < this._originX + this._width - object.w / 2 &&
+                object.y > this._originY + object.h / 2 &&
+                object.y < this._originY + this._height - object.h / 2;
 
             if (!inBounds) continue;
 

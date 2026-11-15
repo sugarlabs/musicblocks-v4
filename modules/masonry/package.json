@@ -40,6 +40,7 @@
     "@types/react-dom": "^19.1.6",
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^5.2.0",
+    "fake-indexeddb": "^6.2.8",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

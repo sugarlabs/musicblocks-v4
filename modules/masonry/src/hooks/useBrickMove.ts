@@ -136,7 +136,11 @@ export function useBrickMove(
 
         /** Points the snap preview at whatever the dragged tower would join if dropped now. */
         const updatePreview = (towerId: string) => {
-            const candidate = resolveCandidateConnection(towerId, useWorkspaceStore.getState());
+            const store = useWorkspaceStore.getState();
+            const tower = store.towers[towerId];
+            if (!tower) return;
+
+            const candidate = resolveCandidateConnection(tower, store);
             if (candidate) {
                 useConnectionPreviewStore
                     .getState()

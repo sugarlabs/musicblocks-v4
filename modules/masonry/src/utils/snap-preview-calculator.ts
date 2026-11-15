@@ -1,4 +1,5 @@
 import type { Point } from '@/@types/common.types';
+import type { TowerState } from '@/@types/workspace.types';
 
 import type { ArgumentConnection } from '@/utils/argument-connect';
 import type { StatementConnection } from '@/utils/statement-connect';
@@ -91,6 +92,9 @@ export function computeArgumentPreview(
 /**
  * Analyzes the workspace to find the closest valid connection point for a dragged tower.
  *
+ * The dragged tower is passed in rather than looked up by id: a caller may be testing a
+ * throwaway probe tower (the palette drag) that is deliberately not part of workspace state.
+ *
  * 1. Queries the collision engine for the closest statement and argument connections.
  * 2. Compares the two to find the absolute closest candidate.
  * 3. Calculates the geometric centroid (for the hint overlay) and the snap position (for the ghost block).
@@ -98,25 +102,30 @@ export function computeArgumentPreview(
  * @returns Metadata about the target connection, or null if nothing is close enough.
  */
 export function resolveCandidateConnection(
-    draggedTowerId: string,
+    draggedTower: TowerState,
     store: ReturnType<typeof useWorkspaceStore.getState>,
 ): {
     target: ActiveTargetMeta;
     isValid: boolean;
     snapPosition: Point;
 } | null {
+    const draggedTowerId = draggedTower.id;
+    // A local view that includes the dragged tower without writing it into the store: the palette
+    // drag resolves against a probe that must never leak into workspace state.
+    const towers = { ...store.towers, [draggedTowerId]: draggedTower };
+
     const argument = resolveArgumentConnection({
         draggedTowerId,
         space: store.argumentCollisionSpace,
         connectors: store.argumentConnectors,
-        towers: store.towers,
+        towers,
     });
 
     const statement = resolveStatementConnection({
         draggedTowerId,
         space: store.statementCollisionSpace,
         connectors: store.statementConnectors,
-        towers: store.towers,
+        towers,
     });
 
     if (statement !== null && (argument === null || statement.distance < argument.distance)) {

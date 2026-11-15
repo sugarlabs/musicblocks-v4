@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
+import type { TowerState } from '@/@types/workspace.types';
 import {
     computeStatementPreview,
     computeArgumentPreview,
@@ -28,6 +29,10 @@ vi.mock('@/utils/statement-connect', () => ({
 vi.mock('@/utils/argument-connect', () => ({
     resolveArgumentConnection: vi.fn(),
 }));
+
+// The dragged tower is passed to the resolver directly; its root is never inspected here because
+// the connection resolvers are mocked.
+const draggedTower = { id: 'dragged1', root: {}, position: { x: 0, y: 0 } } as TowerState;
 
 // Dummy model factory to mock brick models
 const createMockModel = (scaleLevel: number, connectorCoords: Record<string, unknown>) => ({
@@ -119,7 +124,7 @@ describe('snap-preview-calculator', () => {
         (statementConnect.resolveStatementConnection as Mock).mockReturnValue(null);
         (argumentConnect.resolveArgumentConnection as Mock).mockReturnValue(null);
 
-        const result = resolveCandidateConnection('dragged1', useWorkspaceStore.getState());
+        const result = resolveCandidateConnection(draggedTower, useWorkspaceStore.getState());
         expect(result).toBeNull();
     });
 
@@ -142,7 +147,7 @@ describe('snap-preview-calculator', () => {
         (statementConnect.resolveStatementConnection as Mock).mockReturnValue(statementConn);
         (argumentConnect.resolveArgumentConnection as Mock).mockReturnValue(argConn);
 
-        const result = resolveCandidateConnection('dragged1', useWorkspaceStore.getState());
+        const result = resolveCandidateConnection(draggedTower, useWorkspaceStore.getState());
 
         expect(result).not.toBeNull();
         expect(result!.target.type).toBe('statement');
@@ -168,7 +173,7 @@ describe('snap-preview-calculator', () => {
         (statementConnect.resolveStatementConnection as Mock).mockReturnValue(statementConn);
         (argumentConnect.resolveArgumentConnection as Mock).mockReturnValue(argConn);
 
-        const result = resolveCandidateConnection('dragged1', useWorkspaceStore.getState());
+        const result = resolveCandidateConnection(draggedTower, useWorkspaceStore.getState());
 
         expect(result).not.toBeNull();
         expect(result!.target.type).toBe('argument');

@@ -163,16 +163,17 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                             useWorkspaceViewportStore.getState().offset,
                         );
 
-                        // Temporarily mock a tower ID for collision detection
-                        const mockTowerId = 'temp-palette-drag';
-                        useWorkspaceStore.getState().towers[mockTowerId] = {
-                            id: mockTowerId,
+                        // The probe tower is passed to the resolver directly rather than staged in
+                        // workspace state: a throw between a write and its matching delete would
+                        // otherwise leave the fake tower behind.
+                        const probeTower = {
+                            id: 'temp-palette-drag',
                             root: wrapAsRootNode(createBrickModel(drag.config.brick)),
                             position,
                         };
 
                         const candidate = resolveCandidateConnection(
-                            mockTowerId,
+                            probeTower,
                             useWorkspaceStore.getState(),
                         );
                         if (candidate) {
@@ -186,8 +187,6 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
                         } else {
                             useConnectionPreviewStore.getState().clearPreviewTarget();
                         }
-
-                        delete useWorkspaceStore.getState().towers[mockTowerId];
                     } else {
                         useConnectionPreviewStore.getState().clearPreviewTarget();
                     }

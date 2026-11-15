@@ -17,7 +17,14 @@ import { clientToLocalPoint, useDragFromPalette } from './useDragFromPalette';
 
 // -------------------------------------------------------------------------------------------------
 
-const { draggable } = vi.hoisted(() => ({ draggable: vi.fn() }));
+const { draggable, resolveCandidateConnectionMock } = vi.hoisted(() => ({
+  draggable: vi.fn(),
+  resolveCandidateConnectionMock: vi.fn(),
+}));
+
+vi.mock('@/utils/snap-preview-calculator', () => ({
+  resolveCandidateConnection: resolveCandidateConnectionMock,
+}));
 
 vi.mock('interactjs', () => ({
   default: vi.fn(() => ({
@@ -110,6 +117,7 @@ afterEach(() => {
   cleanup();
   document.body.innerHTML = '';
   draggable.mockClear();
+  resolveCandidateConnectionMock.mockReset();
   useWorkspaceStore.setState({ towers: {} });
   useWorkspaceViewportStore.setState({ offset: { x: 0, y: 0 } });
 });
@@ -225,5 +233,52 @@ describe('useDragFromPalette drop placement', () => {
     dragSlotTo(slot, { x: 40, y: 0 }, { x: 320, y: 250 });
 
     expect(droppedTowers()).toHaveLength(0);
+  });
+});
+
+// -------------------------------------------------------------------------------------------------
+
+// The palette drag assembles a throwaway probe tower so the snap resolver has something to test
+// against. That probe must stay out of workspace state: a resolver that throws between a write and
+// its matching delete would otherwise leave the fake tower in the workspace.
+describe('useDragFromPalette probe tower', () => {
+  function grab(slot: HTMLElement) {
+    dragListeners().start({
+      target: slot,
+      clientX0: SLOT_RECT.left,
+      clientY0: SLOT_RECT.top,
+    });
+  }
+
+  function moveTo(client: Point) {
+    dragListeners().move({ dx: 5, dy: 5, clientX: client.x, clientY: client.y });
+  }
+
+  it('keeps the probe out of workspace state while the resolver runs', () => {
+    const { slot } = mountPaletteDrag();
+    const towerKeysSeenByResolver: string[][] = [];
+    resolveCandidateConnectionMock.mockImplementation((_tower, store) => {
+      towerKeysSeenByResolver.push(Object.keys(store.towers));
+
+      return null;
+    });
+
+    grab(slot);
+    moveTo({ x: 500, y: 250 });
+
+    expect(towerKeysSeenByResolver).toEqual([[]]);
+    expect(useWorkspaceStore.getState().towers['temp-palette-drag']).toBeUndefined();
+  });
+
+  it('leaves no probe tower behind when the resolver throws', () => {
+    const { slot } = mountPaletteDrag();
+    resolveCandidateConnectionMock.mockImplementation(() => {
+      throw new Error('resolve failed');
+    });
+
+    grab(slot);
+    expect(() => moveTo({ x: 500, y: 250 })).toThrow('resolve failed');
+
+    expect(useWorkspaceStore.getState().towers['temp-palette-drag']).toBeUndefined();
   });
 });

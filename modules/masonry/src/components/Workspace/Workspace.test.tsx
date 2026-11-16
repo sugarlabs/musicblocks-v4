@@ -1,13 +1,14 @@
-// Component smoke test for the Workspace's palette drag wiring. Renders into jsdom via React
-// Testing Library. interact.js pointer choreography (real pointerdown/move/up sequences) is not
-// reproducible reliably under jsdom, so drag start/move/end behavior itself is covered by the
-// pure-function tests in useDragFromPalette.test.tsx and exercised manually via the playground;
-// this file verifies the pieces mount and react to the drag store correctly.
+// Component integration and smoke tests for the Workspace. Renders into jsdom via React Testing
+// Library. Covers mounting, controls, selection, accessibility, and integration tests driving
+// palette drag start/move/end and snap-to-join behavior through interact.js into the canvas (tower
+// creation, snap-to-join, and connector synchronization), rather than only through pure-function
+// tests in useDragFromPalette.test.tsx.
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import interact from 'interactjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { Point } from '@/@types/common.types';
 import type { PaletteConfig } from '@/@types/palette.types';
 import type { TowerStatementNode } from '@/@types/tower.types';
 import type { TowerState } from '@/@types/workspace.types';
@@ -32,9 +33,14 @@ afterEach(() => {
   vi.restoreAllMocks();
   usePaletteDragStore.setState({ dragged: null });
   useActionMenuStore.setState({ brickId: null });
+  const store = useWorkspaceStore.getState();
+  store.statementCollisionSpace.reset();
+  store.argumentCollisionSpace.reset();
   useWorkspaceStore.setState({
     towers: {},
     selectedBrickId: null,
+    statementConnectors: {},
+    argumentConnectors: {},
   });
   useTrashStore.setState({ bounds: null, isHovered: false });
   useBrickLayoutStore.setState({ coords: {}, mounted: {}, positioned: {} });
@@ -76,6 +82,8 @@ const paletteConfig: PaletteConfig = {
                   border: '#00000033',
                 },
                 tooltipText: 'play a note',
+                hasConnectionPrev: true,
+                hasConnectionNext: true,
               },
             },
           ],
@@ -86,10 +94,10 @@ const paletteConfig: PaletteConfig = {
 };
 
 /** Builds a one-brick tower the same way a palette drop does, so the canvas holds something. */
-function makeTower(id: string): TowerState {
+function makeTower(id: string, position: Point = { x: 0, y: 0 }): TowerState {
   const entry = paletteConfig.classifications[0].categories[0].bricks[0];
 
-  return { id, root: wrapAsRootNode(createBrickModel(entry.brick)), position: { x: 0, y: 0 } };
+  return { id, root: wrapAsRootNode(createBrickModel(entry.brick)), position };
 }
 
 /**
@@ -162,6 +170,51 @@ function queryControls(container: HTMLElement) {
   return container.querySelector<HTMLElement>('[data-testid="workspace-controls"]');
 }
 
+/** jsdom reports every rect as zero, so the few the drag measurements need are stubbed. */
+function stubRect(
+  el: HTMLElement,
+  rect: { left: number; top: number; right: number; bottom: number },
+) {
+  el.getBoundingClientRect = () =>
+    ({
+      ...rect,
+      width: rect.right - rect.left,
+      height: rect.bottom - rect.top,
+      x: rect.left,
+      y: rect.top,
+      toJSON: () => ({}),
+    }) as DOMRect;
+}
+
+/** Drives a palette drag through interact.js from the slot to a canvas release point. */
+function dragPaletteSlot(container: HTMLElement, from: Point, to: Point) {
+  const canvas = container.querySelector('[data-testid="workspace-canvas"]') as HTMLElement;
+  const root = canvas.parentElement as HTMLElement;
+  const slot = container.querySelector('.palette-brick-slot') as HTMLElement;
+  const interactable = interact('.palette-brick-slot', { context: root });
+
+  act(() => {
+    interactable.fire({
+      type: 'dragstart',
+      target: slot,
+      clientX0: from.x,
+      clientY0: from.y,
+    });
+    interactable.fire({
+      type: 'dragmove',
+      dx: to.x - from.x,
+      dy: to.y - from.y,
+      clientX: to.x,
+      clientY: to.y,
+    });
+    interactable.fire({
+      type: 'dragend',
+      clientX: to.x,
+      clientY: to.y,
+    });
+  });
+}
+
 // -------------------------------------------------------------------------------------------------
 
 describe('Workspace', () => {
@@ -215,6 +268,85 @@ describe('Workspace', () => {
     unmount();
 
     expect(usePaletteDragStore.getState().dragged).toBeNull();
+  });
+
+  it('creates a tower at the drop point when a palette brick is dragged into the canvas', () => {
+    const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+    const canvas = container.querySelector('[data-testid="workspace-canvas"]') as HTMLElement;
+    const root = canvas.parentElement as HTMLElement;
+    const slot = container.querySelector('.palette-brick-slot') as HTMLElement;
+
+    stubRect(root, { left: 0, top: 0, right: 1000, bottom: 800 });
+    stubRect(canvas, { left: 300, top: 0, right: 1000, bottom: 800 });
+    stubRect(slot, { left: 10, top: 10, right: 90, bottom: 50 });
+
+    dragPaletteSlot(container, { x: 10, y: 10 }, { x: 400, y: 200 });
+
+    const towers = Object.values(useWorkspaceStore.getState().towers);
+    expect(towers).toHaveLength(1);
+    expect(towers[0].position).toEqual({ x: 100, y: 200 });
+    expect(towers[0].root.kind).toBe('statement');
+    expect((towers[0].root as TowerStatementNode).model.widget).toEqual({
+      type: 'label',
+      text: 'Note',
+    });
+  });
+
+  it('joins an existing tower when dropped within snap distance, removing the absorbed tower and re-syncing connectors', async () => {
+    const { container } = render(<Workspace config={{ palette: paletteConfig }} />);
+    const canvas = container.querySelector('[data-testid="workspace-canvas"]') as HTMLElement;
+    const root = canvas.parentElement as HTMLElement;
+    const slot = container.querySelector('.palette-brick-slot') as HTMLElement;
+
+    stubRect(root, { left: 0, top: 0, right: 1000, bottom: 800 });
+    stubRect(canvas, { left: 300, top: 0, right: 1000, bottom: 800 });
+    stubRect(slot, { left: 10, top: 10, right: 90, bottom: 50 });
+
+    const existingTower = makeTower('existing', { x: 100, y: 100 });
+    act(() => {
+      useWorkspaceStore.getState().createTower(existingTower);
+    });
+
+    // Allow the layout pass and microtask to sync the existing tower's connectors
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    expect(Object.keys(useWorkspaceStore.getState().statementConnectors).length).toBeGreaterThan(0);
+
+    // Dropping at client point (400, 130) places the new brick at canvas-local (100, 130),
+    // putting its prev notch within snap tolerance of the existing tower's next notch.
+    dragPaletteSlot(container, { x: 10, y: 10 }, { x: 400, y: 130 });
+
+    // Allow the join, subsequent layout pass, and connector re-sync to settle
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    const store = useWorkspaceStore.getState();
+    const towers = store.towers;
+
+    // 1. Assert the join: the existing root now connects to the dropped brick as its next node
+    const existingRoot = towers['existing']?.root as TowerStatementNode;
+    expect(existingRoot).toBeDefined();
+    expect(existingRoot.next).not.toBeNull();
+    expect(existingRoot.next?.prev).toBe(existingRoot);
+
+    // 2. Assert the absorbed tower's removal: the temporary dropped tower is removed
+    expect(Object.keys(towers)).toEqual(['existing']);
+
+    // 3. Assert connector re-sync: collision space connectors now reference both bricks
+    const syncedBrickIds = new Set(
+      Object.values(store.statementConnectors).map((meta) => meta.brickId),
+    );
+    expect(syncedBrickIds.size).toBe(2);
+    expect(syncedBrickIds.has(existingRoot.model.id)).toBe(true);
+    expect(syncedBrickIds.has(existingRoot.next!.model.id)).toBe(true);
+
+    const syncedTowerIds = new Set(
+      Object.values(store.statementConnectors).map((meta) => meta.towerId),
+    );
+    expect(syncedTowerIds).toEqual(new Set(['existing']));
   });
 
   it('selects a brick, clears it from the background, and clears it with Escape', () => {

@@ -94,7 +94,7 @@ export default class KeySignature implements IKeySignature {
         'spanish gypsy': [1, 3, 1, 2, 1, 2, 2],
         // 6 notes in an octave.
         'minor blues': [3, 2, 1, 1, 3, 2],
-        'major blues': [2, 1, 1, 3, 2, 2],
+        'major blues': [2, 1, 1, 3, 2, 3],
         'whole tone': [2, 2, 2, 2, 2, 2],
         // 5 notes in an octave.
         'major pentatonic': [2, 2, 3, 2, 3],

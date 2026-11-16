@@ -565,4 +565,17 @@ describe('Key Signature', () => {
             }
         }
     });
+
+    test('bebop mode steps match Music Blocks v3', () => {
+        // The bebop (dominant) scale is an 8-note scale whose semitone pattern
+        // matches the v3 reference: 2,2,1,2,2,1,1,1. The steps must sum to 12
+        // so the scale spans a full octave.
+        const bebopSteps = KeySignature.MUSICAL_MODES['bebop'];
+        expect(bebopSteps).toEqual([2, 2, 1, 2, 2, 1, 1, 1]);
+        expect(bebopSteps.reduce((sum, step) => sum + step, 0)).toBe(12);
+
+        const ks = new KeySignature('bebop', 'c');
+        expect(ks.modeLength).toBe(8);
+        expect(ks.numberOfSemitones).toBe(12);
+    });
 });

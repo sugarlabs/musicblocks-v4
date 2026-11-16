@@ -65,7 +65,7 @@ export default class KeySignature implements IKeySignature {
         'diminished': [2, 1, 2, 1, 2, 1, 2, 1],
         'spanish': [1, 2, 1, 1, 1, 2, 2, 2],
         'octatonic': [1, 2, 1, 2, 1, 2, 1, 2],
-        'bebop': [1, 1, 1, 2, 2, 1, 2, 2],
+        'bebop': [2, 2, 1, 2, 2, 1, 1, 1],
         // 7 notes in an octave.
         'major': [2, 2, 1, 2, 2, 2, 1],
         'harmonic major': [2, 2, 1, 2, 1, 3, 1],

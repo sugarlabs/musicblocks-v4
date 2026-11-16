@@ -28,7 +28,10 @@ export interface ProjectStorage {
     delete(id: string): Promise<void>;
 }
 
-/** `unavailable`: no storage at all (private mode, blocked, unsupported). `quota`: storage full. */
+/**
+ * `unavailable`: storage cannot be used (private mode, unsupported, older build than the database).
+ * A lost connection is also reported once as `unavailable`; the next call reopens. `quota`: full.
+ */
 export type StorageFailure = 'unavailable' | 'quota';
 
 /** Storage could not be used; callers fall back to manual export. */

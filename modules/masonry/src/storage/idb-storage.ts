@@ -112,7 +112,8 @@ export class IdbProjectStorage implements ProjectStorage {
             };
             request.onsuccess = () => {
                 const db = request.result;
-                // Another tab upgrading the schema: step aside, reopen on next use.
+                // Another tab is upgrading: close so we don't block it. This older build then
+                // reports unavailable, since it cannot open the newer database.
                 db.onversionchange = () => {
                     db.close();
                     this.db = null;
@@ -126,10 +127,11 @@ export class IdbProjectStorage implements ProjectStorage {
             request.onerror = () => reject(request.error);
         }).catch((error: unknown) => {
             this.db = null; // let the next call retry instead of caching the failure
-            // Any failure to open (private mode, older build than the database) means storage
-            // cannot be used here.
-            throw error instanceof StorageError
-                ? error
+            // A full disk is quota; any other failure to open (private mode, older build than the
+            // database) means storage cannot be used here.
+            const failure = quotaOr(error);
+            throw failure instanceof StorageError
+                ? failure
                 : new StorageError('unavailable', 'Browser storage is not usable', {
                       cause: error,
                   });

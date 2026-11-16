@@ -178,6 +178,13 @@ describe('exportWorkspace', () => {
 
             expect(() => exportWorkspace(towers)).toThrow(/duplicate brick id "dup"/);
         });
+
+        it('exports a brick whose id is also an Object.prototype key', () => {
+            // A plain `{}` would report `toString` as already present and throw a false duplicate.
+            const project = exportWorkspace(workspaceOf(makeEmptyStatement('toString', 0)));
+
+            expect(Object.keys(project.nodes)).toContain('toString');
+        });
     });
 
     describe('structural pointers', () => {
@@ -372,6 +379,12 @@ describe('exportSubtree', () => {
         root.args[0] = makeEmptyValue('same');
 
         expect(() => exportSubtree(root)).toThrow(/duplicate brick id "same"/);
+    });
+
+    it('exports a brick whose id is also an Object.prototype key', () => {
+        const project = exportSubtree(makeEmptyStatement('constructor', 0));
+
+        expect(Object.keys(project.nodes)).toContain('constructor');
     });
 });
 
@@ -654,6 +667,17 @@ describe('importProject', () => {
                 match: /points at missing node "ghost"/,
             },
             {
+                rule: 'an argument pointer at a key the nodes dictionary only inherits',
+                breakIt: (p) => {
+                    // Drop the brick the slot held, so only the inherited key can reject it.
+                    Reflect.deleteProperty(p.nodes, 'Statement 5.113');
+                    Object.assign(p.nodes['Statement 5'], {
+                        args: ['toString', 'Statement 5.114'],
+                    });
+                },
+                match: /points at missing node "toString"/,
+            },
+            {
                 rule: 'a statement in an argument slot',
                 breakIt: (p) => Object.assign(p.nodes['Statement 2'], { args: ['Statement 3'] }),
                 match: /statement brick in args\[0\], which only holds values/,
@@ -718,6 +742,16 @@ describe('importProject', () => {
                 breakIt: (p) => Object.assign(p.towers[0], { rootNodeId: 'ghost' }),
                 match: /rooted at missing node "ghost"/,
             },
+            {
+                // An empty nodes dictionary, so no orphan check can reject it for another reason.
+                rule: 'a tower rooted at a key the nodes dictionary only inherits',
+                breakIt: (p) =>
+                    Object.assign(p, {
+                        nodes: {},
+                        towers: [{ ...p.towers[0], rootNodeId: 'toString' }],
+                    }),
+                match: /rooted at missing node "toString"/,
+            },
         ];
 
         for (const { rule, breakIt, match } of cases) {
@@ -737,6 +771,20 @@ describe('importProject', () => {
 
         it('accepts the untouched payload, so each rejection is down to its own breakage', () => {
             expect(() => importProject(payloadOf(statementTreeWithNesting))).not.toThrow();
+        });
+
+        it('accepts a brick whose id is "__proto__" as an ordinary node', () => {
+            // Renamed in the text, so JSON.parse makes `__proto__` an own key, as a file would.
+            const payload = JSON.parse(
+                JSON.stringify(payloadOf(statementTreeWithNesting)).replaceAll(
+                    '"Statement 1"',
+                    '"__proto__"',
+                ),
+            );
+
+            const [tower] = Object.values(importProject(payload));
+
+            expect(listNodes(tower.root)).toHaveLength(Object.keys(payload.nodes).length);
         });
     });
 });

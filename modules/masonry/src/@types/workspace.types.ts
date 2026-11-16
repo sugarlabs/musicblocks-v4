@@ -36,6 +36,19 @@ export interface TowerState {
 }
 
 /**
+ * Options for the workspace store's `cleanWorkspace` action, which lays every tower out in a
+ * column that wraps into further columns to the right.
+ */
+export interface CleanWorkspaceOptions {
+    /**
+     * Height of the area the towers are laid out in, in pixels, which is the canvas height. A tower
+     * whose bottom edge would cross it (less the auto pan band) starts a new column. Omitted, the
+     * column never wraps.
+     */
+    maxColumnHeight?: number;
+}
+
+/**
  * Metadata for a statement connector point in the collision space.
  * Allows querying the corresponding Brick and Tower instance from a collision hit.
  */

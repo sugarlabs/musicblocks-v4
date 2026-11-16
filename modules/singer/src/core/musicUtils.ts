@@ -198,7 +198,7 @@ export const SCALAR_NAMES_FLAT: string[] = [
     '3b',
     '3',
     '4',
-    '4b',
+    '5b',
     '5',
     '6b',
     '6',

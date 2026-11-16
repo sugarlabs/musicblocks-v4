@@ -35,6 +35,10 @@ function applyDomTheme(theme: ResolvedTheme) {
 let activeMediaQuery: MediaQueryList | null = null;
 let activeMediaListener: ((e: MediaQueryListEvent) => void) | null = null;
 
+/**
+ * App-wide theme preference. The `dark` class goes on the document root, so every page follows
+ * it; the control that flips it lives in the Workspace.
+ */
 export const useThemeStore = create<ThemeState>((set, get) => ({
     preference: 'system',
     resolvedTheme: 'light',
@@ -52,14 +56,16 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
     },
 
     initTheme: () => {
-        let savedPreference: ThemePreference = 'system';
+        // Falls back to the in-memory preference, not 'system': the Workspace re-inits on every
+        // mount, and a selection made while storage is unavailable must survive the round trip.
+        let savedPreference: ThemePreference = get().preference;
         try {
             const stored = localStorage.getItem(THEME_STORAGE_KEY);
             if (stored === 'light' || stored === 'dark' || stored === 'system') {
                 savedPreference = stored;
             }
         } catch {
-            // Fallback to default
+            // Fallback to the current preference
         }
 
         const resolved = savedPreference === 'system' ? getSystemTheme() : savedPreference;

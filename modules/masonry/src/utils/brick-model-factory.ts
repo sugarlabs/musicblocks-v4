@@ -29,7 +29,7 @@ export function createBrickModel(props: BrickViewProps, id?: string): BrickModel
                 colorsDefault: props.colorsDefault,
                 tooltipText: props.tooltipText,
                 scaleLevel: props.scaleLevel,
-                widget: props.widget,
+                widget: structuredClone(props.widget),
             });
         case 'expression':
             return new ExpressionBrickModel({
@@ -37,7 +37,7 @@ export function createBrickModel(props: BrickViewProps, id?: string): BrickModel
                 colorsDefault: props.colorsDefault,
                 tooltipText: props.tooltipText,
                 scaleLevel: props.scaleLevel,
-                widget: props.widget,
+                widget: structuredClone(props.widget),
                 params: props.paramArgs.map((p) => p.param ?? null) as [
                     string | null,
                     ...(string | null)[],
@@ -50,7 +50,7 @@ export function createBrickModel(props: BrickViewProps, id?: string): BrickModel
                 colorsDefault: props.colorsDefault,
                 tooltipText: props.tooltipText,
                 scaleLevel: props.scaleLevel,
-                widget: props.widget,
+                widget: structuredClone(props.widget),
                 params: props.paramArgs?.map((p) => p.param ?? null),
                 argDims: props.paramArgs?.map((p) => p.argDims),
                 hasNesting: props.nesting !== undefined,

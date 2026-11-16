@@ -404,6 +404,54 @@ export function validateProject(payload: unknown): ExportedProject {
     return { version: EXPORT_SCHEMA_VERSION, towers, nodes };
 }
 
+// ── Import: migration ────────────────────────────────────────────────────────
+
+type Payload = Record<string, unknown>;
+
+/** Upgrades a payload by exactly one schema version. */
+export type Migration = (payload: Readonly<Payload>) => Payload;
+
+/**
+ * `MIGRATIONS[n]` turns a version-`n` payload into version `n + 1`. Empty while v1 is the only
+ * schema; bumping `EXPORT_SCHEMA_VERSION` must add the step from the previous version here.
+ */
+export const MIGRATIONS: Readonly<Record<number, Migration>> = {};
+
+/** A payload from a newer build. It is valid data this build cannot read: never delete it. */
+export class NewerSchemaError extends Error {
+    constructor(readonly version: number) {
+        super(
+            `importWorkspace: unsupported schema version ${version}, newer than this build's ` +
+                `${EXPORT_SCHEMA_VERSION}`,
+        );
+        this.name = 'NewerSchemaError';
+    }
+}
+
+/**
+ * Brings an untrusted payload up to the current schema, then validates it.
+ *
+ * Throws {@link NewerSchemaError} for a payload from a newer build, and a plain `Error` when a
+ * step is missing or the result is invalid.
+ */
+export function migrateProject(
+    payload: unknown,
+    migrations: Readonly<Record<number, Migration>> = MIGRATIONS,
+): ExportedProject {
+    // A non-integer version is corrupt, not newer: let the validator refuse it.
+    if (!isRecord(payload) || !Number.isInteger(payload.version)) return validateProject(payload);
+    const from = payload.version as number;
+    if (from > EXPORT_SCHEMA_VERSION) throw new NewerSchemaError(from);
+
+    let current: Payload = payload;
+    for (let version = from; version < EXPORT_SCHEMA_VERSION; version++) {
+        const step = migrations[version];
+        if (!step) reject(`no migration from schema version ${version}`);
+        current = step(current);
+    }
+    return validateProject(current);
+}
+
 // ── Import: id resolution ────────────────────────────────────────────────────
 
 /**
@@ -549,7 +597,8 @@ export function reconstructTowers(
 }
 
 /**
- * Turns an untrusted payload into workspace-ready towers: validate, resolve ids, rebuild.
+ * Turns an untrusted payload into workspace-ready towers: migrate and validate, resolve ids,
+ * rebuild.
  *
  * Pure — it reads no store and writes none, so every way an import can fail happens here, before
  * the caller has given anything up. Installing the result is a separate step.
@@ -562,6 +611,6 @@ export function importProject(
     payload: unknown,
     strategy: ImportIdStrategy = 'remint',
 ): Record<string, TowerState> {
-    const project = validateProject(payload);
+    const project = migrateProject(payload);
     return reconstructTowers(project, resolveIds(project, strategy));
 }

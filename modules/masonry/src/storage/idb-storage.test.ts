@@ -126,6 +126,21 @@ describe('IdbProjectStorage', () => {
         expect(open).toHaveBeenCalledTimes(2);
     });
 
+    it('reports quota when opening hits a full disk, and retries on the next call', async () => {
+        const factory = new IDBFactory();
+        const open = vi.spyOn(factory, 'open').mockImplementationOnce(() => {
+            throw new DOMException('full', 'QuotaExceededError');
+        });
+        const storage = new IdbProjectStorage(factory);
+
+        await expect(storage.list()).rejects.toMatchObject({
+            name: 'StorageError',
+            reason: 'quota',
+        });
+        expect(await storage.list()).toEqual([]);
+        expect(open).toHaveBeenCalledTimes(2);
+    });
+
     it('reports quota when put throws it', async () => {
         vi.spyOn(IDBObjectStore.prototype, 'put').mockImplementation(() => {
             throw new DOMException('full', 'QuotaExceededError');
@@ -192,8 +207,7 @@ describe('IdbProjectStorage', () => {
         await storage.save('a', 'A', project());
 
         const db: IDBDatabase = open.mock.results[0].value.result;
-        db.onclose = null; // as if the browser never told us
-        db.close();
+        db.close(); // a script-initiated close fires no close event, like a silent loss
 
         await expect(storage.save('b', 'B', project())).rejects.toMatchObject({
             name: 'StorageError',

@@ -29,6 +29,20 @@ describe('Key Signature', () => {
         expect(ks.numberOfSemitones).toBe(12);
     });
 
+    test('instantiation with uppercase and unicode key names', () => {
+        const ksUpper = new KeySignature('major', 'G');
+        expect(ksUpper.key).toBe('g');
+        expect(ksUpper.scale).toEqual(['g', 'a', 'b', 'c', 'd', 'e', 'f#']);
+
+        const ksUnicode = new KeySignature('major', 'f♯');
+        expect(ksUnicode.key).toBe('f#');
+        expect(ksUnicode.scale).toEqual(['f#', 'g#', 'a#', 'b', 'c#', 'd#', 'e#']);
+
+        const ksUnicodeFlat = new KeySignature('major', 'b♭');
+        expect(ksUnicodeFlat.key).toBe('bb');
+        expect(ksUnicodeFlat.scale).toEqual(['bb', 'c', 'd', 'eb', 'f', 'g', 'a']);
+    });
+
     test('closest note tests', () => {
         const ks: KeySignature = new KeySignature('major', 'c');
         expect(ks.closestNote('c')[0]).toBe('c');

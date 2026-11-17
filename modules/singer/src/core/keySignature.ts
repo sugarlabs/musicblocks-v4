@@ -279,10 +279,9 @@ export default class KeySignature implements IKeySignature {
             this._halfSteps = modeArg;
         }
 
-        this._key = key;
+        this._key = typeof key === 'string' ? normalizePitch(key) : key;
         let i = 0;
         if (typeof this._key === 'string') {
-            key = normalizePitch(key);
             preferSharps = this._preferSharps(this._key, this._mode) || this._key.includes('#');
             // console.debug(key, preferSharps);
             if (preferSharps) {

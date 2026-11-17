@@ -282,4 +282,32 @@ describe('class Temperament', () => {
             expect(tuple).toStrictEqual([2, 0]);
         });
     });
+
+    describe('numberOfOctaves setter', () => {
+        test('setting to 8 leaves the value at 8', () => {
+            // The setter used to cap the value at 1 via Math.min, so this
+            // assertion failed on develop; it is the direct reproduction of
+            // sugarlabs/musicblocks-v4#1052.
+            const t = new Temperament();
+            t.numberOfOctaves = 8;
+            expect(t.numberOfOctaves).toBe(8);
+        });
+
+        test('a negative input is treated as its absolute value', () => {
+            const t = new Temperament();
+            t.numberOfOctaves = -3;
+            expect(t.numberOfOctaves).toBe(3);
+        });
+
+        test('values below 1 are clamped to 1', () => {
+            // The setter uses Math.max(1, |num|), so a fractional or zero
+            // request still yields a usable single-octave temperament
+            // rather than a zero-length one.
+            const t = new Temperament();
+            t.numberOfOctaves = 0.5;
+            expect(t.numberOfOctaves).toBe(1);
+            t.numberOfOctaves = 0;
+            expect(t.numberOfOctaves).toBe(1);
+        });
+    });
 });

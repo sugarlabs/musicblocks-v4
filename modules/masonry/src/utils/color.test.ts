@@ -25,4 +25,15 @@ describe('darkenColor', () => {
         expect(darkenColor('#00000033', 0.5)).toBe('#00000033');
         expect(darkenColor('rebeccapurple', 0.5)).toBe('rebeccapurple');
     });
+
+    it('clamps channels within [0, 255] and always produces a valid 7-character hex color', () => {
+        const highlySaturated = darkenColor('#ff0000', 0.99);
+        expect(highlySaturated).toMatch(/^#[0-9a-f]{6}$/i);
+
+        const nearWhite = darkenColor('#fefefe', 0.001);
+        expect(nearWhite).toMatch(/^#[0-9a-f]{6}$/i);
+
+        const vibrantCyan = darkenColor('#00ffff', 0.95);
+        expect(vibrantCyan).toMatch(/^#[0-9a-f]{6}$/i);
+    });
 });

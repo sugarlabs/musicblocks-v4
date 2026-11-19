@@ -1,7 +1,7 @@
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-import type { BrickViewPropsWithModel } from '@/@types/brick.types';
+import type { BrickViewPropsWithModel, WidgetInput } from '@/@types/brick.types';
 import type { Bounds, Size } from '@/@types/common.types';
 
 import type { ExpressionBrickModel, StatementBrickModel } from '@/models/brick';
@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BrickOutlineGenerator } from '@/utils/brick-shape';
 import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
 
+import { Widget } from './BrickWidget';
+
 const STROKE_WIDTH = 2;
 const DEFAULT_SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
 // Param labels render smaller than the main label so the brick's identity
@@ -18,9 +20,10 @@ const DEFAULT_SCALE_LEVEL: keyof typeof SCALE_LEVEL_CONFIG = 2;
 const PARAM_FONT_SCALE = 0.8;
 
 /**
- * Renders a brick whose widget is fixed — no free user input. The variant widget is the sole
- * exception, using a select UI, but it remains semantically fixed: the brick represents a
- * predetermined concept, and the select only switches between its predefined forms.
+ * Renders a brick whose widget is fixed or an inline input (statement bricks with textbox,
+ * numberbox, toggle, slider or select widgets). The variant widget uses a select UI but remains
+ * semantically fixed: the brick represents a predetermined concept, and the select only switches
+ * between its predefined forms. Input widgets edit the model's widget value in place.
  *
  * The model is the single source of truth for all rendering data. The component:
  *  1. Reads configuration (colors, widget, params, argDims, nesting) from `model`.
@@ -99,6 +102,12 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
   const isLabelWidget = widget.type === 'label';
   const isVariantWidget = widget.type === 'variant';
   const isGraphicWidget = widget.type === 'graphic';
+  const isInputWidget =
+    widget.type === 'textbox' ||
+    widget.type === 'numberbox' ||
+    widget.type === 'toggle' ||
+    widget.type === 'slider' ||
+    widget.type === 'select';
 
   const labelText = widget.type === 'label' ? widget.text : '';
   const labelGlyph = widget.type === 'label' ? widget.glyph : undefined;
@@ -115,7 +124,9 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
         ? widget.value
         : widget.type === 'graphic'
           ? widget.src
-          : '';
+          : isInputWidget
+            ? JSON.stringify(widget)
+            : '';
 
   const generateOutline = useMemo(
     () =>
@@ -203,6 +214,30 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
       });
     }
   }, [widgetContent, paramArgsString, fontSize, lineHeight, model]);
+
+  // Layout Effect 1b: Re-measures the widget box as it resizes after mount. Input widgets
+  // mutate `widget.value` in place without notifying the model (e.g. a textbox grows as text
+  // is typed), so the one-shot measure above would leave the brick at stale bounds. Mirrors
+  // BrickViewInput: observes the rendered box and writes dims back to `model.widgetDims`,
+  // which intentionally does not notify, so this cannot loop. The setLabelDims guard makes
+  // no-change observations a no-op.
+  useLayoutEffect(() => {
+    if (!isInputWidget) return;
+    const el = labelRef.current;
+    if (!el) return;
+
+    const measure = () => {
+      const { width, height } = el.getBoundingClientRect();
+      setLabelDims((prev) =>
+        width !== prev.w || height !== prev.h ? { w: width, h: height } : prev,
+      );
+      model.widgetDims = { w: width, h: height };
+    };
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [isInputWidget, model, widgetContent]);
 
   // Layout Effect 2: Converts measured DOM dimensions to SVG units and generates the
   // brick outline path. argDims and nestingDims come from outside — this component only
@@ -314,7 +349,7 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
       />
 
       {/* Main Widget */}
-      {(isLabelWidget || isVariantWidget || isGraphicWidget) && (
+      {(isLabelWidget || isVariantWidget || isGraphicWidget || isInputWidget) && (
         <foreignObject
           x={labelBounds.x}
           y={labelBounds.y}
@@ -328,7 +363,7 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
               height: labelBounds.h || undefined,
             }}
           >
-            <div ref={labelRef} className="flex w-max items-center gap-1">
+            <div ref={labelRef} className="flex w-max shrink-0 items-center gap-1">
               {isLabelWidget && (
                 <>
                   <p
@@ -411,6 +446,16 @@ export function BrickViewFixed(props: BrickViewPropsWithModel) {
               )}
               {isGraphicWidget && graphicSrc && (
                 <img src={graphicSrc} alt="graphic widget" className="shrink-0 object-contain" />
+              )}
+              {isInputWidget && (
+                <Widget
+                  widget={widget as WidgetInput}
+                  fontSize={fontSize}
+                  lineHeight={lineHeight}
+                  color={colorsDefault.foreground}
+                  borderColor={colorsDefault.border}
+                  backgroundColor={colorsDefault.background}
+                />
               )}
             </div>
           </div>

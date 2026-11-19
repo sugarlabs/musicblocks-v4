@@ -68,9 +68,9 @@ export interface ExportedExpressionConfig extends ExportedBrickConfigBase {
     params: (string | null)[];
 }
 
-/** Config of a statement brick. */
+/** Config of a statement brick; its widget may be an inline input, so it carries entered values. */
 export interface ExportedStatementConfig extends ExportedBrickConfigBase {
-    widget: WidgetDisplay;
+    widget: WidgetDisplay | WidgetInput;
     /** Param labels, one per argument slot in declaration order. */
     params: (string | null)[];
     /** Whether the brick structurally has a nesting cavity. */

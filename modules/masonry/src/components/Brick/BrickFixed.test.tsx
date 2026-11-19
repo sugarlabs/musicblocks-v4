@@ -315,3 +315,161 @@ describe('BrickViewFixed fold toggle', () => {
     expect(container.querySelectorAll(FOLD_TOGGLE_SELECTOR)).toHaveLength(1);
   });
 });
+
+describe('statement brick with input widget (#893)', () => {
+  it('renders a textbox input instead of an empty widget area', () => {
+    const model = new StatementBrickModel({
+      colorsDefault,
+      tooltipText: '',
+      widget: { type: 'textbox', value: '5' },
+      hasConnectionPrev: true,
+      hasConnectionNext: true,
+    });
+    render(<BrickViewFixed kind="statement" model={model} />);
+
+    const input = screen.getByRole('textbox') as HTMLInputElement;
+    expect(input).toBeTruthy();
+    expect(input.value).toBe('5');
+  });
+
+  it('renders a numberbox input and writes edits back to the model', () => {
+    const model = new StatementBrickModel({
+      colorsDefault,
+      tooltipText: '',
+      widget: { type: 'numberbox', value: 10 },
+      hasConnectionPrev: true,
+      hasConnectionNext: true,
+    });
+    render(<BrickViewFixed kind="statement" model={model} />);
+
+    const input = screen.getByRole('spinbutton') as HTMLInputElement;
+    expect(input.value).toBe('10');
+
+    fireEvent.change(input, { target: { value: '42' } });
+    expect((model.widget as { value: number }).value).toBe(42);
+  });
+
+  it('re-measures the widget box when an input resizes it', () => {
+    // Input widgets mutate `widget.value` in place without notifying, so the brick observes
+    // its own widget box (mirroring BrickViewInput) instead of waiting for a re-render.
+    const observed: { el: Element; cb: () => void }[] = [];
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        private cb: () => void;
+        constructor(cb: () => void) {
+          this.cb = cb;
+        }
+        observe(el: Element) {
+          observed.push({ el, cb: this.cb });
+        }
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+
+    try {
+      const model = new StatementBrickModel({
+        colorsDefault,
+        tooltipText: '',
+        widget: { type: 'textbox', value: '5' },
+        hasConnectionPrev: true,
+        hasConnectionNext: true,
+      });
+      render(<BrickViewFixed kind="statement" model={model} />);
+
+      expect(observed.length).toBeGreaterThan(0);
+      const entry = observed[observed.length - 1];
+      // The observed box is the widget container holding the input.
+      expect(entry.el.querySelector('input')).not.toBeNull();
+
+      vi.spyOn(entry.el as HTMLElement, 'getBoundingClientRect').mockReturnValue({
+        width: 120,
+        height: 30,
+        top: 0,
+        left: 0,
+        bottom: 30,
+        right: 120,
+        x: 0,
+        y: 0,
+        toJSON: () => {},
+      } as DOMRect);
+      entry.cb();
+
+      expect(model.widgetDims).toEqual({ w: 120, h: 30 });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('renders a toggle input', () => {
+    const model = new StatementBrickModel({
+      colorsDefault,
+      tooltipText: '',
+      widget: { type: 'toggle', value: true },
+      hasConnectionPrev: true,
+      hasConnectionNext: true,
+    });
+    render(<BrickViewFixed kind="statement" model={model} />);
+
+    const toggle = screen.getByRole('checkbox') as HTMLInputElement;
+    expect(toggle.checked).toBe(true);
+  });
+
+  it('renders a slider input', () => {
+    const model = new StatementBrickModel({
+      colorsDefault,
+      tooltipText: '',
+      widget: { type: 'slider', value: 50, min: 0, max: 100, step: 5 },
+      hasConnectionPrev: true,
+      hasConnectionNext: true,
+    });
+    const { container } = render(<BrickViewFixed kind="statement" model={model} />);
+
+    expect(container.querySelector('[data-slot="slider"]')).not.toBeNull();
+    expect(container.querySelectorAll('[data-slot="slider-thumb"]')).toHaveLength(1);
+  });
+
+  it('renders a select input', () => {
+    const model = new StatementBrickModel({
+      colorsDefault,
+      tooltipText: '',
+      widget: { type: 'select', options: ['a', 'b'], value: 'a' },
+      hasConnectionPrev: true,
+      hasConnectionNext: true,
+    });
+    const { container } = render(<BrickViewFixed kind="statement" model={model} />);
+
+    expect(container.querySelector('[data-slot="select-trigger"]')).not.toBeNull();
+  });
+
+  it('does not observe a plain label statement brick', () => {
+    // The observer exists to catch inline inputs resizing themselves as they are edited. A plain
+    // label never resizes that way, so it must not register one. A stray observer also hijacks the
+    // workspace resize test, which drives whichever observer it saw constructed last.
+    const observeSpy = vi.fn();
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        observe = observeSpy;
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+
+    try {
+      const model = new StatementBrickModel({
+        colorsDefault,
+        tooltipText: '',
+        widget: { type: 'label', text: 'repeat' },
+        hasConnectionPrev: true,
+        hasConnectionNext: true,
+      });
+      render(<BrickViewFixed kind="statement" model={model} />);
+
+      expect(observeSpy).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});

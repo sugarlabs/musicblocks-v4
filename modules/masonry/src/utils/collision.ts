@@ -135,8 +135,26 @@ export class BruteForceCollisionSpace extends CollisionSpace {
 // Leaves further split once they hold more than this many elements.
 const QUADTREE_MAX_ELEMENTS = 4;
 
-// quadtree-lib expects `width`/`height` (not our `w`/`h`) for its own bounding-box partitioning.
-type QuadtreeItem = CollisionObject & { width: number; height: number };
+// quadtree-lib expects `x`/`y` as top-left corner and `width`/`height` for its bounding-box partitioning.
+type QuadtreeItem = {
+    id: number;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    raw: CollisionObject;
+};
+
+function toQuadtreeItem(object: CollisionObject): QuadtreeItem {
+    return {
+        id: object.id,
+        x: object.x - object.w / 2,
+        y: object.y - object.h / 2,
+        width: object.w,
+        height: object.h,
+        raw: object,
+    };
+}
 
 /** Collision space that partitions objects into a quadtree to narrow down collision checks. */
 export class QuadtreeCollisionSpace extends CollisionSpace {
@@ -162,7 +180,7 @@ export class QuadtreeCollisionSpace extends CollisionSpace {
 
             if (!inBounds) continue;
 
-            const item: QuadtreeItem = { ...object, width: object.w, height: object.h };
+            const item = toQuadtreeItem(object);
             this._itemsById.set(item.id, item);
             this._tree.push(item);
         }
@@ -176,8 +194,12 @@ export class QuadtreeCollisionSpace extends CollisionSpace {
             // The tree indexes by position at insertion time, so a moved item must be removed
             // and re-pushed rather than mutated in place.
             this._tree.remove(item);
-            item.x = object.x;
-            item.y = object.y;
+            const updated = toQuadtreeItem(object);
+            item.x = updated.x;
+            item.y = updated.y;
+            item.width = updated.width;
+            item.height = updated.height;
+            item.raw = object;
             this._tree.push(item);
         }
     }
@@ -193,11 +215,11 @@ export class QuadtreeCollisionSpace extends CollisionSpace {
     }
 
     public checkCollision(object: CollisionObject): number[] {
-        const probe: QuadtreeItem = { ...object, width: object.w, height: object.h };
+        const probe = toQuadtreeItem(object);
 
         // Excludes a same-id match, in case `object` is itself already tracked by the space.
         return this._tree
-            .colliding(probe, (a, b) => a.id !== b.id && this._collides(a, b))
+            .colliding(probe, (a, b) => a.id !== b.id && this._collides(a.raw, b.raw))
             .map((item) => item.id);
     }
 

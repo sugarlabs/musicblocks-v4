@@ -17,23 +17,7 @@ import { joinStatement, resolveStatementConnection } from '@/utils/statement-con
 import { discardTower } from '@/utils/towerDiscard';
 import type { Bounds, Point } from '@/@types/common.types';
 import type { TowerNode } from '@/@types/tower.types';
-import { listNodes } from '@/utils/tower-traversal';
-
-/**
- * Triggers a CSS keyframe animation on a specific brick by temporarily removing
- * and re-adding the animation class, forcing a DOM reflow in between.
- * This is used to create visual "pulses" when bricks connect or disconnect.
- */
-export function triggerBrickAnimation(brickId: string, animationClass: string) {
-    const el = document.querySelector(`[data-brick-id="${brickId}"]`);
-    if (el) {
-        el.classList.remove(animationClass);
-        // Force reflow to restart animation
-        void (el as HTMLElement).offsetWidth;
-        el.classList.add(animationClass);
-        setTimeout(() => el.classList.remove(animationClass), 400);
-    }
-}
+import { listNodes, traverseTopDown } from '@/utils/tower-traversal';
 
 /** Converts a DOMRect to the `Bounds` shape the geometry helpers take. */
 function rectBounds(rect: DOMRect): Bounds {
@@ -70,7 +54,6 @@ export function tryConnect(towerId: string): boolean {
     if (statement !== null && (argument === null || statement.distance < argument.distance)) {
         joinStatement(statement);
         store.absorbTower(statement.absorbedTowerId, statement.hostTowerId);
-        triggerBrickAnimation(towerId, 'brick-snap-pulse');
 
         return true;
     }
@@ -78,7 +61,6 @@ export function tryConnect(towerId: string): boolean {
     if (argument !== null) {
         joinArg(argument);
         store.absorbTower(argument.absorbedTowerId, argument.hostTowerId);
-        triggerBrickAnimation(towerId, 'brick-snap-pulse');
 
         return true;
     }
@@ -277,6 +259,27 @@ export function useBrickMove(
                         if (newTowerId) {
                             targetTowerId = newTowerId;
                             targetPosition = absPos;
+
+                            // Sync descendant brick coordinates immediately so child blocks
+                            // and arguments don't flash at their old positions while the
+                            // asynchronous tower layout pass finishes.
+                            const newTower = useWorkspaceStore.getState().towers[newTowerId];
+                            if (newTower) {
+                                const positioned = traverseTopDown(newTower.root, absPos);
+                                if (positioned.length > 0) {
+                                    useBrickLayoutStore.getState().setCoords(
+                                        Object.fromEntries(
+                                            positioned.map((n) => [
+                                                n.model.id,
+                                                {
+                                                    x: n.model.position.x,
+                                                    y: n.model.position.y,
+                                                },
+                                            ]),
+                                        ),
+                                    );
+                                }
+                            }
                         }
                     }
 
@@ -300,6 +303,24 @@ export function useBrickMove(
                     useWorkspaceStore
                         .getState()
                         .updateTowerPosition(state.towerId, { x: nextX, y: nextY });
+
+                    // Update descendant brick coordinates in real time so child arguments
+                    // move with the dragged parent without waiting on async layout renders.
+                    const tower = useWorkspaceStore.getState().towers[state.towerId];
+                    if (tower) {
+                        const layoutStore = useBrickLayoutStore.getState();
+                        const nodes = traverseTopDown(tower.root, { x: nextX, y: nextY });
+                        if (nodes.length > 0) {
+                            layoutStore.setCoords(
+                                Object.fromEntries(
+                                    nodes.map((n) => [
+                                        n.model.id,
+                                        { x: n.model.position.x, y: n.model.position.y },
+                                    ]),
+                                ),
+                            );
+                        }
+                    }
 
                     // interact.js has pointer capture for the whole drag, so the Trash can never
                     // see a hover of its own — the pointer is tested against its published rect

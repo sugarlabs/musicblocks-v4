@@ -2,8 +2,8 @@ import type { TowerExpressionNode, TowerStatementNode, TowerValueNode } from '@/
 import type { ArgumentConnectorMeta, TowerState } from '@/@types/workspace.types';
 
 import type { CollisionSpace } from './collision';
-import { querySnap } from './snap-config';
-import { findNode } from './tower-traversal';
+import { querySnap, SNAP_DISTANCE } from './snap-config';
+import { findNode, listVisibleNodes } from './tower-traversal';
 
 /** A node that owns argument slots, and can therefore receive an argument. */
 export type ArgumentParentNode = TowerExpressionNode | TowerStatementNode;
@@ -91,6 +91,43 @@ function resolveOutputIntoSlot(
                 absorbedTowerId: dragged.id,
                 distance,
             };
+        }
+    }
+
+    // Fallback: evaluate empty argument slots directly on live towers if the
+    // spatial index missed or has not settled after a recent detach.
+    if (best === null) {
+        for (const host of Object.values(towers)) {
+            if (host.id === dragged.id) continue;
+
+            const nodes = listVisibleNodes(host.root);
+            for (const parent of nodes) {
+                if (parent.kind !== 'expression' && parent.kind !== 'statement') continue;
+
+                const inputs = parent.model.getConnectorCoords().inputs;
+                for (let slotIndex = 0; slotIndex < parent.args.length; slotIndex++) {
+                    if (parent.args[slotIndex] !== null) continue;
+
+                    const input = inputs[slotIndex];
+                    if (!input) continue;
+
+                    const distance = Math.hypot(
+                        parent.model.position.x + input.x - probe.x,
+                        parent.model.position.y + input.y - probe.y,
+                    );
+
+                    if (distance <= SNAP_DISTANCE && (best === null || distance < best.distance)) {
+                        best = {
+                            parent,
+                            child,
+                            slotIndex,
+                            hostTowerId: host.id,
+                            absorbedTowerId: dragged.id,
+                            distance,
+                        };
+                    }
+                }
+            }
         }
     }
 

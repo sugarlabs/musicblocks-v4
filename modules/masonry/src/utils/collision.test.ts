@@ -169,4 +169,65 @@ describe('cross-engine parity', () => {
             expect(quadtreeIds).toEqual(bruteForceIds);
         }
     });
+
+    it('brute-force and quadtree report the same collisions when probing from all directions across split boundaries', () => {
+        const width = 4000;
+        const height = 4000;
+        const brute = new BruteForceCollisionSpace(width, height);
+        const quad = new QuadtreeCollisionSpace(width, height);
+
+        brute.setOptions({ shape: 'square', threshold: 0 });
+        quad.setOptions({ shape: 'square', threshold: 0 });
+
+        const socketTarget: CollisionObject = {
+            id: 1,
+            x: 400,
+            y: 200,
+            w: 16,
+            h: 10,
+        };
+
+        // Populate with > 4 objects so quadtree splits
+        const objects: CollisionObject[] = [socketTarget];
+        for (let i = 2; i <= 25; i++) {
+            objects.push({
+                id: i,
+                x: 300 + i * 25,
+                y: 100 + i * 20,
+                w: 16,
+                h: 16,
+            });
+        }
+
+        brute.createObjects(objects);
+        quad.createObjects(objects);
+
+        const offsets = [10, 30, 60];
+        const directions = ['up', 'down', 'left', 'right'] as const;
+
+        for (const dir of directions) {
+            for (const offset of offsets) {
+                let px = socketTarget.x;
+                let py = socketTarget.y;
+
+                if (dir === 'up') py -= offset;
+                if (dir === 'down') py += offset;
+                if (dir === 'left') px -= offset;
+                if (dir === 'right') px += offset;
+
+                const probe: CollisionObject = {
+                    id: 9999,
+                    x: px,
+                    y: py,
+                    w: 100,
+                    h: 100,
+                };
+
+                const bruteHits = brute.checkCollision(probe).sort((a, b) => a - b);
+                const quadHits = quad.checkCollision(probe).sort((a, b) => a - b);
+
+                expect(quadHits).toEqual(bruteHits);
+            }
+        }
+    });
 });

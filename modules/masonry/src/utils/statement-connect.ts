@@ -2,8 +2,8 @@ import type { TowerStatementNode } from '@/@types/tower.types';
 import type { StatementConnectorMeta, TowerState } from '@/@types/workspace.types';
 
 import type { CollisionSpace } from './collision';
-import { querySnap } from './snap-config';
-import { findNode, findTail, hidesCavity } from './tower-traversal';
+import { querySnap, SNAP_DISTANCE } from './snap-config';
+import { findNode, findTail, hidesCavity, listVisibleNodes } from './tower-traversal';
 
 /** The two tabs a statement can carry the sequence onward through; both mate with a `prev` groove. */
 export type StatementSocket = 'next' | 'nestedNext';
@@ -123,6 +123,43 @@ function resolvePrevOntoTab(
                 absorbedTowerId: dragged.id,
                 distance,
             };
+        }
+    }
+
+    // Fallback: evaluate open statement sockets directly on live towers if the
+    // spatial index missed or has not settled after a recent detach.
+    if (best === null) {
+        for (const host of Object.values(towers)) {
+            if (host.id === dragged.id) continue;
+
+            const nodes = listVisibleNodes(host.root);
+            for (const parent of nodes) {
+                if (parent.kind !== 'statement') continue;
+
+                const sockets: StatementSocket[] = ['next', 'nestedNext'];
+                for (const socket of sockets) {
+                    if (!canTakeChild(parent, socket, child)) continue;
+
+                    const tab = parent.model.getConnectorCoords()[socket];
+                    if (!tab) continue;
+
+                    const distance = Math.hypot(
+                        parent.model.position.x + tab.x - probe.x,
+                        parent.model.position.y + tab.y - probe.y,
+                    );
+
+                    if (distance <= SNAP_DISTANCE && (best === null || distance < best.distance)) {
+                        best = {
+                            parent,
+                            child,
+                            socket,
+                            hostTowerId: host.id,
+                            absorbedTowerId: dragged.id,
+                            distance,
+                        };
+                    }
+                }
+            }
         }
     }
 

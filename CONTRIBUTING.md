@@ -9,21 +9,24 @@ a seasoned developer. This guide walks you through everything you need to get st
   for beginner-friendly starting points.
 - Check the [**project board**](https://github.com/orgs/sugarlabs/projects/9) for a broader
   view of ongoing work.
-- No permission is needed. Unassigned issues are free to pick up. If an issue has an assignee,
-  leave a comment to check whether work is still in progress before starting.
+- Wait for an issue to be assigned to you before starting work. Comment on the issue to request
+  it, and wait for a maintainer to assign it. This keeps two people from building the same thing
+  twice. If an issue has an inactive assignee, leave a comment to check whether work is still in
+  progress before requesting it.
 - If anything about an issue is unclear, leave a comment asking for clarification before you
   start — it's always better to ask upfront than to head in the wrong direction.
 
 ## Workflow
 
-1. **Pick an issue** and confirm no open PR is already addressing it.
+1. **Request an issue** by commenting on it, wait for maintainer assignment, and confirm no open PR
+   is already addressing it.
 2. **Create a branch** prefixed with the issue number — e.g. `#100-patch-foobar`.
 3. **Make your changes**, keeping each commit focused on one concept.
 4. **Test thoroughly** before opening a PR. Run through the checklist below.
 5. **Open a pull request** against the `develop` branch.
-   - The title should describe what the PR does, not the issue.
-   - Reference the issue with `fixes #N` or `closes #N` in the PR body.
-   - If the PR is not ready for review, open it as a draft.
+    - The title should describe what the PR does, not the issue.
+    - Reference the issue with `fixes #N` or `closes #N` in the PR body.
+    - If the PR is not ready for review, open it as a draft.
 6. **Respond to review feedback** promptly and keep the discussion focused.
 
 ## Before You Submit

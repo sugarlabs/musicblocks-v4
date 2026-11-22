@@ -4,6 +4,7 @@ import type { BrickViewPropsWithModel } from '@/@types/brick.types';
 
 import { BrickView } from '@/components/Brick/Brick';
 import { usePaletteDragStore } from '@/stores/palette';
+import { useWorkspaceScaleStore } from '@/stores/scale';
 import { createBrickModel } from '@/utils/brick-model-factory';
 
 // -------------------------------------------------------------------------------------------------
@@ -25,9 +26,16 @@ interface DragGhostProps {
  */
 export function DragGhost({ ref }: DragGhostProps) {
   const dragged = usePaletteDragStore((state) => state.dragged);
+  // Workspace scale — read reactively so the ghost resizes when the user zooms, matching the
+  // size the brick will actually land at (the `end` handler of `useDragFromPalette` reads the
+  // same level when it creates the dropped model).
+  const level = useWorkspaceScaleStore((state) => state.level);
 
   // Generated id, so the ghost can't collide with the palette preview keyed by the entry's id.
-  const model = useMemo(() => (dragged ? createBrickModel(dragged.brick) : null), [dragged]);
+  const model = useMemo(
+    () => (dragged ? createBrickModel({ ...dragged.brick, scaleLevel: level }) : null),
+    [dragged, level],
+  );
 
   // Use a type assertion because the view expects BrickViewPropsWithModel, but BrickModel
   // guarantees the model fields match the expected discriminated kind.

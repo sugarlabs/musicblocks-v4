@@ -11,6 +11,7 @@ import { usePaletteDragStore } from '@/stores/palette';
 import { useWorkspaceScaleStore } from '@/stores/scale';
 import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
+import { SCALE_LEVEL_CONFIG } from '@/utils/constants';
 import { createBrickModel, wrapAsRootNode } from '@/utils/brick-model-factory';
 import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { resolveCandidateConnection } from '@/utils/snap-preview-calculator';
@@ -101,9 +102,15 @@ export function useDragFromPalette(options: UseDragFromPaletteOptions) {
 
                     // Where inside the slot the pointer grabbed, so the ghost (and the eventual
                     // drop) tracks the grab point instead of snapping its corner to the cursor.
+                    // The palette renders bricks at the model's default scale, but the ghost and
+                    // the dropped tower render at the workspace's current scale — multiply the
+                    // raw grab point by that scale so the grab point stays under the pointer
+                    // once the ghost (and the eventual tower) are drawn at the workspace zoom.
+                    const brickScale =
+                        SCALE_LEVEL_CONFIG[useWorkspaceScaleStore.getState().level].brickScale;
                     const grabOffset: Point = {
-                        x: event.clientX0 - slotRect.left,
-                        y: event.clientY0 - slotRect.top,
+                        x: (event.clientX0 - slotRect.left) * brickScale,
+                        y: (event.clientY0 - slotRect.top) * brickScale,
                     };
                     dragRef.current = { config, grabOffset };
 

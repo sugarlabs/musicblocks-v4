@@ -29,6 +29,13 @@ describe('Key Signature', () => {
         expect(ks.numberOfSemitones).toBe(12);
     });
 
+    test('alt pentatonic mode has a complete octave', () => {
+        const steps = KeySignature.MUSICAL_MODES['alt pentatonic'];
+
+        expect(steps).toBeDefined();
+        expect(steps.reduce((sum, step) => sum + step, 0)).toBe(12);
+    });
+
     test('closest note tests', () => {
         const ks: KeySignature = new KeySignature('major', 'c');
         expect(ks.closestNote('c')[0]).toBe('c');

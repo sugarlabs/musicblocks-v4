@@ -128,6 +128,32 @@ describe('snap-preview-calculator', () => {
         expect(result).toBeNull();
     });
 
+    it('resolveCandidateConnection resolves against a tower map that includes the probe without mutating the store', () => {
+        (statementConnect.resolveStatementConnection as Mock).mockReturnValue(null);
+        (argumentConnect.resolveArgumentConnection as Mock).mockReturnValue(null);
+
+        const store = useWorkspaceStore.getState();
+        const storeTowers = store.towers;
+        const towersBefore = { ...storeTowers };
+
+        resolveCandidateConnection(draggedTower, store);
+
+        for (const resolver of [
+            statementConnect.resolveStatementConnection as Mock,
+            argumentConnect.resolveArgumentConnection as Mock,
+        ]) {
+            expect(resolver).toHaveBeenCalledTimes(1);
+            const { draggedTowerId, towers } = resolver.mock.calls[0][0];
+            expect(draggedTowerId).toBe(draggedTower.id);
+            expect(towers[draggedTower.id]).toBe(draggedTower);
+            expect(towers.tower1).toBe(storeTowers.tower1);
+        }
+
+        expect(store.towers).toBe(storeTowers);
+        expect(store.towers).toEqual(towersBefore);
+        expect(draggedTower.id in store.towers).toBe(false);
+    });
+
     it('resolveCandidateConnection prefers statement over argument if distance is smaller', () => {
         const parentModel = createMockModel(2, { next: { x: 10, y: 20 } });
         parentModel.id = 'parent-id';

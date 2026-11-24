@@ -7,17 +7,25 @@ on:
   push:
     branches: [develop]
 
+# No job gets any access unless it asks for it below.
+permissions: {}
+
 jobs:
   deploy:
     name: Build and Deploy app to GitHub Pages
 
     runs-on: ubuntu-latest
 
+    # Pushing the built site to the gh-pages branch is the only write this job needs.
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout the code base
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup Node.js and install dependencies
         uses: ./.github/actions/setup

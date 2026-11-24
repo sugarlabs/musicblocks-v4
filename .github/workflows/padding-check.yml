@@ -1,0 +1,30 @@
+---
+# Documentation: https://help.github.com/en/articles/workflow-syntax-for-github-actions
+
+name: Padding Check
+
+on:
+  pull_request:
+
+# The job only reads the repository.
+permissions:
+  contents: read
+
+jobs:
+  padding:
+    name: Check for code hidden after whitespace
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the code base
+        uses: actions/checkout@v4
+        with:
+          # The script diffs against the base commit, so it needs the full history.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check added lines
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: bash .github/scripts/check-padding.sh "$BASE_SHA"

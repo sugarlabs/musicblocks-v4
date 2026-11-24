@@ -35,6 +35,7 @@ a seasoned developer. This guide walks you through everything you need to get st
 - [ ] New functions, methods, classes, and types have [TSDoc](https://tsdoc.org/) documentation
 - [ ] Tests are added or updated to cover your changes
 - [ ] Each commit addresses exactly one concept
+- [ ] Every commit is signed and shows as Verified on GitHub
 
 ## Code Standards
 
@@ -54,6 +55,33 @@ specification. Include the component in the scope:
 
 Add a commit description when the one-line summary is not enough. If a branch gets messy,
 use `git rebase -i` to squash or reword before opening a PR.
+
+### Signed commits
+
+Every commit in your PR must be signed and show as **Verified** on GitHub. The "Signed
+commits" check fails otherwise, and unsigned PRs will not be merged.
+
+- **Set up signing once** with SSH. If `~/.ssh/id_ed25519.pub` does not exist yet, create
+  the key first, or point `user.signingkey` at the public key you already use:
+
+  ```sh
+  ls ~/.ssh/id_ed25519.pub || ssh-keygen -t ed25519 -C "you@example.com"
+  git config --global gpg.format ssh
+  git config --global user.signingkey ~/.ssh/id_ed25519.pub
+  git config --global commit.gpgsign true
+  ```
+
+- **Add the same public key on GitHub** under Settings > SSH and GPG keys > New SSH key, and
+  set the key type to **Signing Key**. An authentication key alone shows as unverified.
+- **Already have unsigned commits?** If your branch has no merge commits, re-sign them and
+  force-push. If it has merges, rebase would drop their manual fixes, so ask in the PR first:
+
+  ```sh
+  git remote add upstream https://github.com/sugarlabs/musicblocks-v4.git
+  git fetch upstream develop
+  git rebase upstream/develop --exec 'git commit --amend --no-edit -S'
+  git push --force-with-lease
+  ```
 
 ### Pull requests
 

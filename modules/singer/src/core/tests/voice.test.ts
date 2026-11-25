@@ -43,6 +43,23 @@ describe('class Voice', () => {
                 expect(1).toEqual(1);
             }
         });
+        test('voice play non-finite or empty pitch to throw InvalidArgumentError before synth dispatch', () => {
+            const triggeredPitches: (string | number)[][] = [];
+            const synthUtils = {
+                trigger: (pitches: (string | number)[]) => triggeredPitches.push(pitches),
+            };
+            const voice = new Voice('invalidPitchVoice', synthUtils);
+
+            expect(() => voice.playNotes([Infinity], 1 / 4, 'piano', 0, true)).toThrow(
+                'bad pitch value',
+            );
+            expect(() => voice.playNotes(['Infinity'], 1 / 4, 'piano', 0, true)).toThrow(
+                'bad pitch value',
+            );
+            expect(() => voice.playNotes([''], 1 / 4, 'piano', 0, true)).toThrow('bad pitch value');
+            expect(() => voice.playNotes([0], 1 / 4, 'piano', 0, true)).toThrow('bad pitch value');
+            expect(triggeredPitches).toHaveLength(0);
+        });
 
         test('voice expect number of notes played in seconds to be 2.67', () => {
             expect(Number(myVoice.numberOfNotesPlayedInSeconds.toFixed(2))).toEqual(2.67);

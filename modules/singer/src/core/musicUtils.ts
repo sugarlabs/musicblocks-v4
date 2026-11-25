@@ -505,15 +505,20 @@ export function validatePitch(pitchName: string | number) {
     // Only letter names and hertz -- no solfege or generic names
     // since it feeds the synth code.
     if (typeof pitchName === 'number') {
-        if (pitchName > 0) {
+        if (Number.isFinite(pitchName) && pitchName > 0) {
             return;
         }
-    } else if (!isNaN(Number(pitchName))) {
-        pitchName = Number(pitchName); // pitch in Hertz
-        if (pitchName >= 0) {
-            return;
+    } else if (typeof pitchName === 'string') {
+        const trimmed = pitchName.trim();
+        if (trimmed !== '') {
+            const num = Number(trimmed);
+            if (!Number.isNaN(num)) {
+                if (Number.isFinite(num) && num > 0) {
+                    return;
+                }
+                throw new InvalidArgumentError('bad pitch value');
+            }
         }
-    } else {
         // Must be of the form letter[accidental]ocatve, e.g., f#4.
         if (['c', 'd', 'e', 'f', 'g', 'a', 'b'].indexOf(pitchName.charAt(0)) !== -1) {
             const octave = pitchName.charAt(pitchName.length - 1);

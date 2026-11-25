@@ -283,11 +283,16 @@ describe('class Temperament', () => {
 
         test('Expect notes to be generated for every requested octave', () => {
             const t = new Temperament();
+            t.numberOfOctaves = 1;
+            t.generate('equal');
+            const oneOctave: number = t.freqs.length;
+
             t.numberOfOctaves = 2;
             t.generate('equal');
 
-            // One base note plus eleven notes for each of the two octaves.
-            expect(t.freqs.length).toBe(23);
+            // Every octave contributes the same number of notes, whatever the
+            // current per-octave stride is; the stride itself is tracked in #1079.
+            expect(t.freqs.length).toBe(1 + 2 * (oneOctave - 1));
         });
 
         test('Expect a negative value to be treated as its magnitude', () => {

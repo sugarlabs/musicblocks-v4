@@ -280,9 +280,15 @@ export default class Temperament implements ITemperament {
      *
      * @param num - The number of octaves in the temperament. (8 octaves in equal temperament would
      * span 96 notes).
+     *
+     * @throws {InvalidArgumentError}
+     * Thrown if `num` is not a positive integer.
      */
     public set numberOfOctaves(num: number) {
-        this._numberOfOctaves = Math.min(1, Number(Math.abs(num)));
+        if (!Number.isInteger(num) || num < 1) {
+            throw new InvalidArgumentError('numberOfOctaves must be a positive integer.');
+        }
+        this._numberOfOctaves = num;
     }
 
     /**

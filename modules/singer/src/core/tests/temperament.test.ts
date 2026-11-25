@@ -24,6 +24,41 @@ describe('class Temperament', () => {
             expect(t.noteNames.length).toBe(12);
         });
 
+        test('Set numberOfOctaves and verify generation of octaves', () => {
+            const t = new Temperament();
+            t.numberOfOctaves = 4;
+            expect(t.numberOfOctaves).toBe(4);
+            t.generate('equal');
+            expect(t.freqs.length).toBe(45);
+
+            t.numberOfOctaves = 2;
+            expect(t.numberOfOctaves).toBe(2);
+            t.generate('equal');
+            expect(t.freqs.length).toBe(23);
+        });
+
+        test('Expect numberOfOctaves setter to throw InvalidArgumentError for non-positive or non-integer values', () => {
+            const t = new Temperament();
+            expect(() => {
+                t.numberOfOctaves = 0;
+            }).toThrowError('numberOfOctaves must be a positive integer.');
+            expect(() => {
+                t.numberOfOctaves = -1;
+            }).toThrowError('numberOfOctaves must be a positive integer.');
+            expect(() => {
+                t.numberOfOctaves = 1.5;
+            }).toThrowError('numberOfOctaves must be a positive integer.');
+            expect(() => {
+                t.numberOfOctaves = NaN;
+            }).toThrowError('numberOfOctaves must be a positive integer.');
+            expect(() => {
+                t.numberOfOctaves = Infinity;
+            }).toThrowError('numberOfOctaves must be a positive integer.');
+            expect(() => {
+                t.numberOfOctaves = -Infinity;
+            }).toThrowError('numberOfOctaves must be a positive integer.');
+        });
+
         test("Generate 'equal 1' temperament instance when negative number of octaves is provided, and verify the numbers", () => {
             const t = new Temperament();
             t.generateEqualTemperament(-2);

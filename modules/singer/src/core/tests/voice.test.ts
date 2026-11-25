@@ -44,6 +44,21 @@ describe('class Voice', () => {
             }
         });
 
+        test('voice play non-finite or empty pitch to throw InvalidArgumentError', () => {
+            expect(() => myVoice.playNotes([Infinity], 1 / 4, 'piano', 0, true)).toThrow(
+                'bad pitch value',
+            );
+            expect(() => myVoice.playNotes(['Infinity'], 1 / 4, 'piano', 0, true)).toThrow(
+                'bad pitch value',
+            );
+            expect(() => myVoice.playNotes([''], 1 / 4, 'piano', 0, true)).toThrow(
+                'bad pitch value',
+            );
+            expect(() => myVoice.playNotes([0], 1 / 4, 'piano', 0, true)).toThrow(
+                'bad pitch value',
+            );
+        });
+
         test('voice expect number of notes played in seconds to be 2.67', () => {
             expect(Number(myVoice.numberOfNotesPlayedInSeconds.toFixed(2))).toEqual(2.67);
         });

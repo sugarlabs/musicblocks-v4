@@ -29,6 +29,27 @@ describe('Music utilities', () => {
         test.each(['c ', 'c# ', 'c10'])('Reject invalid octave in pitch %s', (pitch) => {
             expect(() => validatePitch(pitch)).toThrow('bad pitch value');
         });
+
+        test.each([440, '440', 261.63, '261.63'])(
+            'Accept valid positive finite Hertz pitch %s',
+            (pitch) => {
+                expect(() => validatePitch(pitch)).not.toThrow();
+            },
+        );
+
+        test.each([0, '0', -100, '-100', '', '   '])(
+            'Reject zero, negative numbers, and empty or whitespace strings %s',
+            (pitch) => {
+                expect(() => validatePitch(pitch)).toThrow('bad pitch value');
+            },
+        );
+
+        test.each([Infinity, -Infinity, NaN, 'Infinity', '-Infinity', 'NaN'])(
+            'Reject non-finite numbers and strings %s',
+            (pitch) => {
+                expect(() => validatePitch(pitch)).toThrow('bad pitch value');
+            },
+        );
     });
 
     describe('Validate stripAccidental', () => {

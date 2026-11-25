@@ -55,7 +55,7 @@ describe('class Temperament', () => {
         test("Generate 'quarter comma meantone' temperament instance and verify frequencies", () => {
             const t = new Temperament('quarter comma meantone');
             const f: number[] = t.freqs;
-            expect(Number(f[36].toFixed(2))).toBe(55.45); // A1
+            expect(Number(f[36].toFixed(2))).toBe(54.51); // A1
             expect(t.noteNames.length).toBe(21);
         });
 
@@ -197,9 +197,9 @@ describe('class Temperament', () => {
             expect(Math.round(num * 100) / 100).toBe(16.35);
         });
 
-        test('Expect frequency ~ 2637.02 Hz when modal index is 20 and octave is 100', () => {
+        test('Expect frequency ~ 4186.01 Hz (C8) when modal index is 20 and octave is 100', () => {
             const num: number = t.getFreqByModalIndexAndOctave(20, 100);
-            expect(Math.round(num * 100) / 100).toBe(2637.02);
+            expect(Math.round(num * 100) / 100).toBe(4186.01);
         });
     });
 
@@ -238,14 +238,14 @@ describe('class Temperament', () => {
         });
 
         const jit = new Temperament('just intonation');
-        test("Expect frequency 426 Hz when pitch is ['n9', 4, 0] ", () => {
+        test("Expect frequency 436 Hz when pitch is ['n9', 4, 0] ", () => {
             const num: number = jit.getFreqByGenericPitchNameOctaveCents(['n9', 4, 0]);
-            expect(num.toFixed(0)).toBe('426');
+            expect(num.toFixed(0)).toBe('436');
         });
 
-        test("Expect frequency 429 Hz when pitch is ['n9', 4, 10] ", () => {
+        test("Expect frequency 439 Hz when pitch is ['n9', 4, 10] ", () => {
             const num: number = jit.getFreqByGenericPitchNameOctaveCents(['n9', 4, 10]);
-            expect(num.toFixed(0)).toBe('429');
+            expect(num.toFixed(0)).toBe('439');
         });
     });
 
@@ -262,9 +262,9 @@ describe('class Temperament', () => {
             expect(num).toBe(0);
         });
 
-        test("Expect frequency index 88 when generic note name is 'n10' octave is 100", () => {
+        test("Expect frequency index 96 when generic note name is 'n10' octave is 100", () => {
             const num: number = t.getFreqIndexByGenericNoteNameAndOctave('n10', 100);
-            expect(num).toBe(88);
+            expect(num).toBe(96);
         });
 
         test("Get error when generic note name is 'a' and octave is 2 (invalid)", () => {
@@ -281,5 +281,33 @@ describe('class Temperament', () => {
             const tuple: [number, number] = t.getModalIndexAndOctaveFromFreqIndex(2);
             expect(tuple).toStrictEqual([2, 0]);
         });
+    });
+
+    describe('Octave range', () => {
+        test('the table runs from C0 to C8 with every note of every octave', () => {
+            const t = new Temperament();
+            expect(t.numberOfNotesInTemperament).toBe(8 * 12 + 1);
+            expect(Number(t.freqs[0].toFixed(2))).toBe(16.35); // C0
+            expect(Number(t.freqs[t.freqs.length - 1].toFixed(2))).toBe(4186.01); // C8
+        });
+
+        test('a note above E7 resolves to its own frequency instead of E7', () => {
+            const t = new Temperament();
+            const e7: number = t.getFreqByGenericNoteNameAndOctave('n4', 7);
+            const c8: number = t.getFreqByGenericNoteNameAndOctave('n0', 8);
+            expect(Number(e7.toFixed(2))).toBe(2637.02);
+            expect(Number(c8.toFixed(2))).toBe(4186.01);
+        });
+
+        test.each(['equal', 'just intonation', 'pythagorean', 'quarter comma meantone'])(
+            'every octave of %s is built from its own root',
+            (name) => {
+                const t = new Temperament(name);
+                const n = t.numberOfSemitonesInOctave;
+                for (let i = n; i < t.freqs.length; i++) {
+                    expect(t.freqs[i] / t.freqs[i - n]).toBeCloseTo(2, 9);
+                }
+            },
+        );
     });
 });

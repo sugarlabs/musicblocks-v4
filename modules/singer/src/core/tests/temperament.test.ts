@@ -274,6 +274,49 @@ describe('class Temperament', () => {
         });
     });
 
+    describe('NumberOfOctaves', () => {
+        test('Expect the setter to accept more than one octave', () => {
+            const t = new Temperament();
+            t.numberOfOctaves = 8;
+            expect(t.numberOfOctaves).toBe(8);
+        });
+
+        test('Expect notes to be generated for every requested octave', () => {
+            const t = new Temperament();
+            t.numberOfOctaves = 2;
+            t.generate('equal');
+
+            // One base note plus eleven notes for each of the two octaves.
+            expect(t.freqs.length).toBe(23);
+        });
+
+        test('Expect a negative value to be treated as its magnitude', () => {
+            const t = new Temperament();
+            t.numberOfOctaves = -3;
+            expect(t.numberOfOctaves).toBe(3);
+        });
+
+        test('Expect a value below one to be clamped to one', () => {
+            const t = new Temperament();
+            t.numberOfOctaves = 0.5;
+            expect(t.numberOfOctaves).toBe(1);
+        });
+
+        test('Expect non-finite values to keep the current value', () => {
+            const t = new Temperament();
+            t.numberOfOctaves = 4;
+
+            t.numberOfOctaves = Infinity;
+            expect(t.numberOfOctaves).toBe(4);
+
+            t.numberOfOctaves = -Infinity;
+            expect(t.numberOfOctaves).toBe(4);
+
+            t.numberOfOctaves = NaN;
+            expect(t.numberOfOctaves).toBe(4);
+        });
+    });
+
     describe('Modal Index and Octave from Frequency Index', () => {
         const t = new Temperament();
 

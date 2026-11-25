@@ -24,6 +24,14 @@ describe('class Temperament', () => {
             expect(t.noteNames.length).toBe(12);
         });
 
+        test('Three octaves contain 36 semitone steps plus the final C', () => {
+            const t = new Temperament();
+            t.numberOfOctaves = 3;
+            t.generate('equal');
+
+            expect(t.freqs).toHaveLength(3 * 12 + 1);
+        });
+
         test("Generate 'equal 1' temperament instance when negative number of octaves is provided, and verify the numbers", () => {
             const t = new Temperament();
             t.generateEqualTemperament(-2);
@@ -187,6 +195,10 @@ describe('class Temperament', () => {
 
     describe('Frequency from Modal Index and Octave', () => {
         const t = new Temperament();
+
+        test('A7 resolves to 3520 Hz', () => {
+            expect(t.getFreqByModalIndexAndOctave(9, 7)).toBeCloseTo(3520, 2);
+        });
 
         test('Expect frequency ~ 73.42 Hz when modal index is 2 and octave is 2', () => {
             const num: number = t.getFreqByModalIndexAndOctave(2, 2);

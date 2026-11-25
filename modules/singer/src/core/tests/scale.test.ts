@@ -93,6 +93,30 @@ describe('class Scale', () => {
             );
         });
 
+        test('Expect Scale constructor to throw InvalidArgumentError when startingIndex is negative', () => {
+            expect(() => new Scale([2, 2, 1, 2, 2, 2, 1], -1)).toThrowError(
+                'startingIndex must be a non-negative integer.',
+            );
+            expect(() => new Scale(null, -5)).toThrowError(
+                'startingIndex must be a non-negative integer.',
+            );
+        });
+
+        test('Expect Scale constructor to throw InvalidArgumentError when startingIndex is not an integer (NaN, fractional, Infinity)', () => {
+            expect(() => new Scale([2, 2, 1, 2, 2, 2, 1], NaN)).toThrowError(
+                'startingIndex must be a non-negative integer.',
+            );
+            expect(() => new Scale([2, 2, 1, 2, 2, 2, 1], 1.5)).toThrowError(
+                'startingIndex must be a non-negative integer.',
+            );
+            expect(() => new Scale([2, 2, 1, 2, 2, 2, 1], Infinity)).toThrowError(
+                'startingIndex must be a non-negative integer.',
+            );
+            expect(() => new Scale([2, 2, 1, 2, 2, 2, 1], -Infinity)).toThrowError(
+                'startingIndex must be a non-negative integer.',
+            );
+        });
+
         const scale = new Scale();
         test('Generate scale when halfstep pattern is not defined and verify it', () => {
             expect(scale.getScale()).toEqual([

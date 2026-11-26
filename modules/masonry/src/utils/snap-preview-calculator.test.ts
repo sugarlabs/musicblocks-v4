@@ -115,6 +115,33 @@ describe('snap-preview-calculator', () => {
         expect(typeof result.snapPosition.y).toBe('number');
     });
 
+    it('computes snap positions and hint centroids correctly at non-unit scale', () => {
+        // scaleLevel 3: brickScale = 1.25, strokeWidthOffset = 2 * 1.25 = 2.5
+        const parentModel = createMockModel(3, { next: { x: 40, y: 80 } });
+        parentModel.id = 'parent-id';
+        const childModel = createMockModel(3, { prev: { x: 10, y: 5 } });
+        childModel.id = 'child-id';
+
+        const statementConn = {
+            hostTowerId: 'tower1',
+            parent: { model: parentModel },
+            child: { model: childModel },
+            socket: 'next',
+            distance: 12,
+        };
+
+        (statementConnect.resolveStatementConnection as Mock).mockReturnValue(statementConn);
+        (argumentConnect.resolveArgumentConnection as Mock).mockReturnValue(null);
+
+        const result = resolveCandidateConnection('dragged1', useWorkspaceStore.getState());
+        expect(result).not.toBeNull();
+        // parentCoords (100, 100) + hostBounds (40, 80) = (140, 180)
+        expect(result!.target.centroid).toEqual({ x: 140, y: 180 });
+        // snapX: 100 + 40 - 10 = 130
+        // snapY: 100 + 80 - 5 + 2.5 = 177.5
+        expect(result!.snapPosition).toEqual({ x: 130, y: 177.5 });
+    });
+
     it('resolveCandidateConnection returns null if no connections found', () => {
         (statementConnect.resolveStatementConnection as Mock).mockReturnValue(null);
         (argumentConnect.resolveArgumentConnection as Mock).mockReturnValue(null);

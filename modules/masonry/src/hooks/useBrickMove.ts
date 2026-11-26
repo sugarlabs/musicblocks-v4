@@ -5,12 +5,12 @@ import { RefObject, useEffect, useRef } from 'react';
 import { useDragClickSuppression } from '@/hooks/useDragClickSuppression';
 import { useActionMenuStore } from '@/stores/actionMenu';
 import { useBrickLayoutStore } from '@/stores/brick';
-import { useConnectionPreviewStore } from '@/stores/connection-preview';
+import { type ActiveTargetMeta, useConnectionPreviewStore } from '@/stores/connection-preview';
 import { useTrashStore } from '@/stores/trash';
 import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 import { joinArg, resolveArgumentConnection } from '@/utils/argument-connect';
-import { FOLD_TOGGLE_SELECTOR } from '@/utils/constants';
+import { FOLD_TOGGLE_SELECTOR, SNAP_RESOLUTION_THRESHOLD_PX } from '@/utils/constants';
 import { edgePanStep, isPointInsideBounds } from '@/utils/geometry';
 import { resolveCandidateConnection } from '@/utils/snap-preview-calculator';
 import { joinStatement, resolveStatementConnection } from '@/utils/statement-connect';
@@ -48,9 +48,10 @@ function rectBounds(rect: DOMRect): Bounds {
  * notches, so one drop can be in range of both, and the closer connector is the intended one.
  *
  * @param towerId - The ID of the tower that was just dropped.
+ * @param preferredTarget - Optional active preview target to prioritize when connecting.
  * @returns Whether a join happened, in which case one of the two towers no longer exists.
  */
-export function tryConnect(towerId: string): boolean {
+export function tryConnect(towerId: string, preferredTarget?: ActiveTargetMeta | null): boolean {
     const store = useWorkspaceStore.getState();
 
     const argument = resolveArgumentConnection({
@@ -66,6 +67,32 @@ export function tryConnect(towerId: string): boolean {
         connectors: store.statementConnectors,
         towers: store.towers,
     });
+
+    if (preferredTarget) {
+        if (
+            preferredTarget.type === 'statement' &&
+            statement !== null &&
+            statement.parent.model.id === preferredTarget.targetBrickId
+        ) {
+            joinStatement(statement);
+            store.absorbTower(statement.absorbedTowerId, statement.hostTowerId);
+            triggerBrickAnimation(towerId, 'brick-snap-pulse');
+
+            return true;
+        }
+
+        if (
+            preferredTarget.type === 'argument' &&
+            argument !== null &&
+            argument.parent.model.id === preferredTarget.targetBrickId
+        ) {
+            joinArg(argument);
+            store.absorbTower(argument.absorbedTowerId, argument.hostTowerId);
+            triggerBrickAnimation(towerId, 'brick-snap-pulse');
+
+            return true;
+        }
+    }
 
     if (statement !== null && (argument === null || statement.distance < argument.distance)) {
         joinStatement(statement);
@@ -109,6 +136,9 @@ export function useBrickMove(
         frame: null,
         step: { x: 0, y: 0 },
     });
+    // Tracks the tower position at which connection resolution last ran, so sub-threshold
+    // pointer movements can skip the expensive resolver call.
+    const lastResolvedPosRef = useRef<{ x: number; y: number } | null>(null);
     const dragStateRef = useRef<{
         node: TowerNode;
         towerId: string;
@@ -135,7 +165,16 @@ export function useBrickMove(
         };
 
         /** Points the snap preview at whatever the dragged tower would join if dropped now. */
-        const updatePreview = (towerId: string) => {
+        const updatePreview = (towerId: string, pos: { x: number; y: number }) => {
+            const lastPos = lastResolvedPosRef.current;
+            if (
+                lastPos &&
+                Math.hypot(pos.x - lastPos.x, pos.y - lastPos.y) < SNAP_RESOLUTION_THRESHOLD_PX
+            ) {
+                return;
+            }
+            lastResolvedPosRef.current = { x: pos.x, y: pos.y };
+
             const candidate = resolveCandidateConnection(towerId, useWorkspaceStore.getState());
             if (candidate) {
                 useConnectionPreviewStore
@@ -174,13 +213,15 @@ export function useBrickMove(
             state.towerPosition.x -= applied.x;
             state.towerPosition.y -= applied.y;
 
-            useWorkspaceStore.getState().updateTowerPosition(state.towerId, {
+            const nextPos = {
                 x: state.towerPosition.x + dragPosRef.current.x,
                 y: state.towerPosition.y + dragPosRef.current.y,
-            });
+            };
+            useWorkspaceStore.getState().updateTowerPosition(state.towerId, nextPos);
 
             // The pointer hasn't moved, so no `move` will update the preview for the new position.
-            updatePreview(state.towerId);
+            // Pass the new position explicitly so the threshold is evaluated correctly.
+            updatePreview(state.towerId, nextPos);
 
             autoPanRef.current.frame = requestAnimationFrame(stepAutoPan);
         };
@@ -281,6 +322,7 @@ export function useBrickMove(
                     }
 
                     dragPosRef.current = { x: 0, y: 0 };
+                    lastResolvedPosRef.current = null;
                     dragStateRef.current = {
                         node,
                         towerId: targetTowerId,
@@ -332,12 +374,13 @@ export function useBrickMove(
                     // A drop on the Trash discards, so a snap preview here would promise a
                     // connection `end` will never make.
                     if (overTrash) {
+                        lastResolvedPosRef.current = null;
                         useConnectionPreviewStore.getState().clearPreviewTarget();
 
                         return;
                     }
 
-                    updatePreview(state.towerId);
+                    updatePreview(state.towerId, { x: nextX, y: nextY });
                 },
                 end(event: DragEvent) {
                     // Recorded before the early returns so the trailing click is suppressed even
@@ -357,6 +400,13 @@ export function useBrickMove(
                     // the interactable alive past unmount.
                     dragStateRef.current = null;
 
+                    // Capture current preview target and snap position before clearing them.
+                    // If move skipped the final few frames (pointer moved < threshold), the preview
+                    // may be behind the actual drop position. Snapping the tower to the previewed
+                    // position avoids dropping at a position inconsistent with the displayed preview.
+                    const { activeTarget: previewTarget, snapPosition: previewSnapPosition } =
+                        useConnectionPreviewStore.getState();
+
                     // Ahead of the discard return too, so neither overlay outlives the drag that
                     // drew it.
                     useConnectionPreviewStore.getState().clearPreviewTarget();
@@ -374,11 +424,18 @@ export function useBrickMove(
                         return;
                     }
 
+                    // Snap to the preview position so the drop lands where previewed.
+                    if (previewSnapPosition && previewTarget) {
+                        useWorkspaceStore
+                            .getState()
+                            .updateTowerPosition(state.towerId, previewSnapPosition);
+                    }
+
                     // A successful join merges two towers into one, and the host's re-layout re-syncs
                     // both connector spaces for the whole merged graph. A plain move only runs the
                     // layout's position fast-path, which never touches `positioned` and so never
                     // triggers the Workspace's sync — hence the refresh here.
-                    if (!tryConnect(state.towerId)) {
+                    if (!tryConnect(state.towerId, previewTarget)) {
                         const rootNode = useWorkspaceStore.getState().towers[state.towerId]?.root;
                         if (rootNode) {
                             queueMicrotask(() => {

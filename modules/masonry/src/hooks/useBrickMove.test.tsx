@@ -7,13 +7,22 @@ import { act, cleanup, render, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useRef } from 'react';
 
+import type { TowerState } from '@/@types/workspace.types';
 import { makeEmptyStatement } from '@/mocks/tower';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { useConnectionPreviewStore } from '@/stores/connection-preview';
 import { useTrashStore } from '@/stores/trash';
 import { useWorkspaceViewportStore } from '@/stores/viewport';
 import { useWorkspaceStore } from '@/stores/workspace';
-import { AUTO_PAN_MAX_STEP, DRAG_CLICK_SUPPRESSION_MS } from '@/utils/constants';
+import * as argumentConnect from '@/utils/argument-connect';
+import { createBrickModel, wrapAsRootNode } from '@/utils/brick-model-factory';
+import {
+  AUTO_PAN_MAX_STEP,
+  DRAG_CLICK_SUPPRESSION_MS,
+  SNAP_RESOLUTION_THRESHOLD_PX,
+} from '@/utils/constants';
+import * as snapCalc from '@/utils/snap-preview-calculator';
+import * as statementConnect from '@/utils/statement-connect';
 
 import { useBrickMove } from './useBrickMove';
 
@@ -441,5 +450,266 @@ describe('useBrickMove drag-to-click suppression', () => {
     dragBrick();
 
     expect(result.current()).toBe(true);
+  });
+});
+
+/** Builds a workspace with `count` statement towers and registers connectors. */
+function setupWorkspace(count = 1) {
+  useWorkspaceStore.setState({
+    towers: {},
+    selectedBrickId: null,
+    statementConnectors: {},
+    argumentConnectors: {},
+  });
+  const towers: Record<string, TowerState> = {};
+  for (let i = 0; i < count; i++) {
+    const id = `b-${i}`;
+    const tid = `t-${i}`;
+    const model = createBrickModel(
+      {
+        kind: 'statement',
+        widget: { type: 'label', text: id },
+        colorsDefault: { background: '#123', foreground: '#fff', border: '#000' },
+        tooltipText: id,
+        hasConnectionPrev: true,
+        hasConnectionNext: true,
+      },
+      id,
+    );
+    const node = wrapAsRootNode(model);
+    const pos = { x: (i % 6) * 150, y: Math.floor(i / 6) * 100 };
+    model.setPosition(pos.x, pos.y);
+    towers[tid] = { id: tid, root: node, position: pos };
+    useBrickLayoutStore.getState().setCoords(id, pos);
+    useBrickLayoutStore.getState().setMounted({ [id]: true });
+    useBrickLayoutStore.getState().setPositioned({ [id]: true });
+  }
+  useWorkspaceStore.setState({ towers });
+  for (const tid of Object.keys(towers)) {
+    useWorkspaceStore.getState().syncStatementConnectors(tid, towers[tid].root);
+    useWorkspaceStore.getState().syncArgumentConnectors(tid, towers[tid].root);
+  }
+  return { id: 'b-0', towerId: 't-0' };
+}
+
+describe('useBrickMove connection resolution optimization', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useConnectionPreviewStore.getState().clearPreviewTarget();
+    useTrashStore.getState().setHovered(false);
+  });
+
+  it('resolves on first move, skips below threshold, triggers when accumulated >= 3px', () => {
+    expect(SNAP_RESOLUTION_THRESHOLD_PX).toBe(3);
+    const { id } = setupWorkspace(1);
+    const el = document.createElement('div');
+    renderHook(() => useBrickMove(id, { current: el }));
+    const l = dragListeners();
+    const spy = vi.spyOn(snapCalc, 'resolveCandidateConnection');
+
+    l.start({ target: el, clientX: 100, clientY: 100 });
+    l.move({ dx: 1, dy: 1, clientX: 101, clientY: 101 });
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    l.move({ dx: 0.5, dy: 0.5, clientX: 101.5, clientY: 101.5 });
+    expect(spy).toHaveBeenCalledTimes(1);
+    // Tower position still updated even when resolution is skipped.
+    expect(useWorkspaceStore.getState().towers['t-0'].position).toEqual({ x: 1.5, y: 1.5 });
+
+    l.move({ dx: 3, dy: 0, clientX: 104.5, clientY: 101.5 });
+    expect(spy).toHaveBeenCalledTimes(2);
+  });
+
+  it('updates and clears preview target, handling trash boundary properly', () => {
+    const { id } = setupWorkspace(1);
+    const el = document.createElement('div');
+    renderHook(() => useBrickMove(id, { current: el }));
+    useTrashStore.getState().setBounds({ x: 500, y: 500, w: 100, h: 100 });
+    const l = dragListeners();
+    const spy = vi.spyOn(snapCalc, 'resolveCandidateConnection');
+
+    l.start({ target: el, clientX: 100, clientY: 100 });
+    l.move({ dx: 10, dy: 10, clientX: 110, clientY: 110 });
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    l.move({ dx: 400, dy: 400, clientX: 550, clientY: 550 });
+    expect(useTrashStore.getState().isHovered).toBe(true);
+    expect(useConnectionPreviewStore.getState().activeTarget).toBeNull();
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    l.move({ dx: -400, dy: -400, clientX: 110, clientY: 110 });
+    expect(useTrashStore.getState().isHovered).toBe(false);
+    expect(spy).toHaveBeenCalledTimes(2);
+  });
+
+  it('synchronizes final drop position with preview snap position on drag end', () => {
+    const { id } = setupWorkspace(1);
+    const el = document.createElement('div');
+    renderHook(() => useBrickMove(id, { current: el }));
+    const l = dragListeners();
+    const snapPos = { x: 205, y: 220 };
+    const mockSpy = vi.spyOn(snapCalc, 'resolveCandidateConnection').mockReturnValue({
+      target: {
+        draggedTowerId: 't-0',
+        targetTowerId: 't-h',
+        targetBrickId: 'b-h',
+        type: 'statement',
+        distance: 8,
+        centroid: { x: 200, y: 200 },
+      },
+      isValid: true,
+      snapPosition: snapPos,
+    });
+
+    l.start({ target: el, clientX: 100, clientY: 100 });
+    l.move({ dx: 10, dy: 10, clientX: 110, clientY: 110 });
+    expect(useConnectionPreviewStore.getState().snapPosition).toEqual(snapPos);
+
+    l.end({ clientX: 110, clientY: 110 });
+    expect(useConnectionPreviewStore.getState().activeTarget).toBeNull();
+    // Tower snapped to the previewed position, not the raw drag-end position.
+    expect(useWorkspaceStore.getState().towers['t-0'].position).toEqual(snapPos);
+    mockSpy.mockRestore();
+  });
+
+  it('joins the previewed target when multiple connectors compete', () => {
+    const { id } = setupWorkspace(1);
+    const el = document.createElement('div');
+    renderHook(() => useBrickMove(id, { current: el }));
+    const l = dragListeners();
+
+    const targetA = {
+      draggedTowerId: 't-0',
+      targetTowerId: 'tower-a',
+      targetBrickId: 'brick-a',
+      type: 'statement' as const,
+      distance: 12,
+      centroid: { x: 100, y: 100 },
+    };
+
+    useConnectionPreviewStore.getState().setPreviewTarget(targetA, true, { x: 100, y: 100 });
+
+    const stmtConnA = {
+      parent: { model: { id: 'brick-a' } },
+      child: { model: { id: 'b-0' } },
+      socket: 'next' as const,
+      hostTowerId: 'tower-a',
+      absorbedTowerId: 't-0',
+      distance: 15,
+    };
+    const argConnB = {
+      parent: { model: { id: 'brick-b' } },
+      child: { model: { id: 'b-0' } },
+      slotIndex: 0,
+      hostTowerId: 'tower-b',
+      absorbedTowerId: 't-0',
+      distance: 5,
+    };
+
+    const stmtSpy = vi
+      .spyOn(statementConnect, 'resolveStatementConnection')
+      .mockReturnValue(stmtConnA as never);
+    const argSpy = vi
+      .spyOn(argumentConnect, 'resolveArgumentConnection')
+      .mockReturnValue(argConnB as never);
+    const joinStmtSpy = vi.spyOn(statementConnect, 'joinStatement').mockImplementation(() => {});
+    const joinArgSpy = vi.spyOn(argumentConnect, 'joinArg').mockImplementation(() => {});
+    const absorbSpy = vi
+      .spyOn(useWorkspaceStore.getState(), 'absorbTower')
+      .mockImplementation(() => {});
+
+    l.start({ target: el, clientX: 100, clientY: 100 });
+    l.end({ clientX: 100, clientY: 100 });
+
+    expect(joinStmtSpy).toHaveBeenCalledWith(stmtConnA);
+    expect(joinArgSpy).not.toHaveBeenCalled();
+    joinStmtSpy.mockRestore();
+    joinArgSpy.mockRestore();
+    absorbSpy.mockRestore();
+    stmtSpy.mockRestore();
+    argSpy.mockRestore();
+  });
+
+  it('joins the previewed statement target when competing same-type connectors exist', () => {
+    setupWorkspace(2);
+
+    const draggedModel = createBrickModel(
+      {
+        kind: 'statement',
+        widget: { type: 'label', text: 'b-2' },
+        colorsDefault: { background: '#123', foreground: '#fff', border: '#000' },
+        tooltipText: 'b-2',
+        hasConnectionPrev: true,
+        hasConnectionNext: true,
+      },
+      'b-2',
+    );
+    const draggedNode = wrapAsRootNode(draggedModel);
+    const draggedPos = { x: 0, y: 35 };
+    draggedModel.setPosition(draggedPos.x, draggedPos.y);
+
+    useWorkspaceStore.setState({
+      towers: {
+        ...useWorkspaceStore.getState().towers,
+        't-2': { id: 't-2', root: draggedNode, position: draggedPos },
+      },
+    });
+    useBrickLayoutStore.getState().setCoords('b-2', draggedPos);
+    useBrickLayoutStore.getState().setMounted({ 'b-2': true });
+    useBrickLayoutStore.getState().setPositioned({ 'b-2': true });
+
+    const el = document.createElement('div');
+    renderHook(() => useBrickMove('b-2', { current: el }));
+    const l = dragListeners();
+
+    const previewTarget = {
+      draggedTowerId: 't-2',
+      targetTowerId: 't-0',
+      targetBrickId: 'b-0',
+      type: 'statement' as const,
+      distance: 5,
+      centroid: { x: 0, y: 30 },
+    };
+    useConnectionPreviewStore.getState().setPreviewTarget(previewTarget, true, { x: 0, y: 30 });
+
+    l.start({ target: el, clientX: 0, clientY: 35 });
+    l.end({ clientX: 0, clientY: 35 });
+
+    const store = useWorkspaceStore.getState();
+    const tower0Root = store.towers['t-0'].root;
+    const tower1Root = store.towers['t-1'].root;
+    expect(tower0Root.kind).toBe('statement');
+    expect(tower1Root.kind).toBe('statement');
+    if (tower0Root.kind === 'statement') {
+      expect(tower0Root.next?.model.id).toBe('b-2');
+    }
+    if (tower1Root.kind === 'statement') {
+      expect(tower1Root.next).toBeNull();
+    }
+    expect(store.towers['t-2']).toBeUndefined();
+  });
+
+  it('reduces connection resolution calls for sub-threshold moves across 24 towers', () => {
+    setupWorkspace(24);
+    const el = document.createElement('div');
+    renderHook(() => useBrickMove('b-0', { current: el }));
+    const l = dragListeners();
+    const spy = vi.spyOn(snapCalc, 'resolveCandidateConnection');
+    const stmtSpy = vi.spyOn(statementConnect, 'resolveStatementConnection');
+    const argSpy = vi.spyOn(argumentConnect, 'resolveArgumentConnection');
+
+    l.start({ target: el, clientX: 0, clientY: 0 });
+    for (let i = 0; i < 100; i++) {
+      l.move({
+        dx: i % 2 === 0 ? 0.5 : 10,
+        dy: i % 2 === 0 ? 0.5 : 10,
+        clientX: 100 + i,
+        clientY: 100 + i,
+      });
+    }
+    expect(spy.mock.calls.length).toBe(51);
+    expect(stmtSpy.mock.calls.length).toBe(51);
+    expect(argSpy.mock.calls.length).toBe(51);
+    l.end({ clientX: 100, clientY: 100 });
   });
 });

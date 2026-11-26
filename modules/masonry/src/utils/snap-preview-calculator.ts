@@ -28,16 +28,15 @@ export function computeStatementPreview(
         y: 0,
     };
 
-    const hostScale = SCALE_LEVEL_CONFIG[connection.parent.model.scaleLevel].brickScale;
     const hostBounds = connection.parent.model.getConnectorCoords()[connection.socket];
-    const hx = hostCoords.x + (hostBounds ? hostBounds.x * hostScale : 0);
-    const hy = hostCoords.y + (hostBounds ? hostBounds.y * hostScale : 0);
+    const hx = hostCoords.x + (hostBounds ? hostBounds.x : 0);
+    const hy = hostCoords.y + (hostBounds ? hostBounds.y : 0);
 
-    const draggedScale = SCALE_LEVEL_CONFIG[connection.child.model.scaleLevel].brickScale;
     const draggedBounds = connection.child.model.getConnectorCoords().prev;
-    const dx = draggedBounds ? draggedBounds.x * draggedScale : 0;
-    const dy = draggedBounds ? draggedBounds.y * draggedScale : 0;
+    const dx = draggedBounds ? draggedBounds.x : 0;
+    const dy = draggedBounds ? draggedBounds.y : 0;
 
+    const hostScale = SCALE_LEVEL_CONFIG[connection.parent.model.scaleLevel].brickScale;
     const strokeWidthOffset = 2 * hostScale; // STROKE_WIDTH = 2
     const snapX = hx - dx;
     // The layout engine makes strokes abut rather than overlap, which introduces a gap
@@ -67,16 +66,15 @@ export function computeArgumentPreview(
         y: 0,
     };
 
-    const hostScale = SCALE_LEVEL_CONFIG[connection.parent.model.scaleLevel].brickScale;
     const hostBounds = connection.parent.model.getConnectorCoords().inputs[connection.slotIndex];
-    const hx = hostCoords.x + (hostBounds ? hostBounds.x * hostScale : 0);
-    const hy = hostCoords.y + (hostBounds ? hostBounds.y * hostScale : 0);
+    const hx = hostCoords.x + (hostBounds ? hostBounds.x : 0);
+    const hy = hostCoords.y + (hostBounds ? hostBounds.y : 0);
 
-    const draggedScale = SCALE_LEVEL_CONFIG[connection.child.model.scaleLevel].brickScale;
     const draggedBounds = connection.child.model.getConnectorCoords().output;
-    const dx = draggedBounds ? draggedBounds.x * draggedScale : 0;
-    const dy = draggedBounds ? draggedBounds.y * draggedScale : 0;
+    const dx = draggedBounds ? draggedBounds.x : 0;
+    const dy = draggedBounds ? draggedBounds.y : 0;
 
+    const hostScale = SCALE_LEVEL_CONFIG[connection.parent.model.scaleLevel].brickScale;
     const strokeWidthOffset = 2 * hostScale; // STROKE_WIDTH = 2
     // Abut strokes horizontally
     const snapX = hx - dx + strokeWidthOffset;
@@ -127,9 +125,8 @@ export function resolveCandidateConnection(
         };
         const bounds = statement.parent.model.getConnectorCoords()[statement.socket];
 
-        const hostScale = SCALE_LEVEL_CONFIG[statement.parent.model.scaleLevel].brickScale;
-        const cx = parentCoords.x + (bounds ? bounds.x * hostScale : 0);
-        const cy = parentCoords.y + (bounds ? bounds.y * hostScale : 0);
+        const cx = parentCoords.x + (bounds ? bounds.x : 0);
+        const cy = parentCoords.y + (bounds ? bounds.y : 0);
 
         return {
             target: {
@@ -152,9 +149,8 @@ export function resolveCandidateConnection(
         };
         const bounds = argument.parent.model.getConnectorCoords().inputs[argument.slotIndex];
 
-        const hostScale = SCALE_LEVEL_CONFIG[argument.parent.model.scaleLevel].brickScale;
-        const cx = parentCoords.x + (bounds ? bounds.x * hostScale : 0);
-        const cy = parentCoords.y + (bounds ? bounds.y * hostScale : 0);
+        const cx = parentCoords.x + (bounds ? bounds.x : 0);
+        const cy = parentCoords.y + (bounds ? bounds.y : 0);
 
         return {
             target: {

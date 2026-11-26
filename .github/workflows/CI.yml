@@ -6,6 +6,10 @@ name: Continuous Integration
 on:
   pull_request:
 
+# These jobs only build and test, so the token can only read the repository.
+permissions:
+  contents: read
+
 jobs:
   type-check:
     name: Verify TypeScript types
@@ -17,6 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup Node.js and install dependencies
         uses: ./.github/actions/setup
@@ -34,6 +39,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup Node.js and install dependencies
         uses: ./.github/actions/setup
@@ -51,6 +57,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       # - name: Install Cypress dependencies
       #   run: sudo apt update && sudo apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb

@@ -7,10 +7,7 @@ runs:
     - uses: actions/setup-node@v4
       with:
         node-version: '24'
-        registry-url: 'https://npm.pkg.github.com'
         cache: 'npm'
 
     - run: npm ci
       shell: bash
-      env:
-        NODE_AUTH_TOKEN: ${{ github.token }}

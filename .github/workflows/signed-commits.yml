@@ -1,0 +1,46 @@
+name: Signed commits
+
+on:
+  pull_request:
+    branches: [develop]
+    # edited fires when the base branch is changed to develop
+    types: [opened, synchronize, reopened, edited]
+
+# the token can only read PR data, nothing else
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  verify:
+    name: Verify commit signatures
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Require verified signatures
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          COMMITS: ${{ github.event.pull_request.commits }}
+        run: |
+          # the commits endpoint returns at most 250, so a bigger PR cannot be fully checked
+          if [ "$COMMITS" -gt 250 ]; then
+            echo "This PR has $COMMITS commits. Split it into smaller PRs."
+            exit 1
+          fi
+
+          unverified=$(gh api --paginate "repos/$REPO/pulls/$PR/commits" \
+            --jq '.[] | select(.commit.verification.verified != true)
+                  | "\(.sha[0:7]) \(.commit.verification.reason)"')
+
+          if [ -n "$unverified" ]; then
+            echo "These commits are not verified:"
+            echo "$unverified"
+            echo
+            echo "Sign your commits and force-push. See CONTRIBUTING.md."
+            exit 1
+          fi
+
+          echo "All commits are verified."

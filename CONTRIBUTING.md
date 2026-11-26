@@ -44,6 +44,12 @@ Use TypeScript conventions throughout: `camelCase` for filenames and identifiers
 `PascalCase` for classes and class files, `UPPER_CASE` for constants. ESLint and Prettier
 are configured strictly — the build will surface violations.
 
+### Dependencies
+
+Only declare dependencies in a package that are actively imported in its source code. Avoid
+introducing unused or phantom dependencies, and audit `package.json` against `src/` imports
+when refactoring.
+
 ### Commits
 
 Follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0-beta.2/)

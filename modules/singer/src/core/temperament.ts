@@ -278,11 +278,11 @@ export default class Temperament implements ITemperament {
      * @remarks
      * How many octaves are defined for the temperament?
      *
-     * @param num - The number of octaves in the temperament. (8 octaves in equal temperament would
-     * span 96 notes).
+     * @param num - The number of octaves. The absolute value is rounded down to a whole octave,
+     * with a minimum of one. Non-finite values keep the current count.
      */
     public set numberOfOctaves(num: number) {
-        const magnitude = Number(Math.abs(num));
+        const magnitude = Math.floor(Math.abs(num));
         // Reject NaN / ±Infinity so generate()'s loops cannot hang or exhaust
         // memory iterating an unbounded range; fall back to the current value.
         this._numberOfOctaves = Number.isFinite(magnitude)

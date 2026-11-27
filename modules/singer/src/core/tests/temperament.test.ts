@@ -311,6 +311,16 @@ describe('class Temperament', () => {
             expect(t.numberOfOctaves).toBe(3);
         });
 
+        test.each([2.5, -2.5])('%s generates two complete octaves ending at C2', (value) => {
+            const t = new Temperament();
+            t.numberOfOctaves = value;
+            t.generate('equal');
+
+            expect(t.numberOfOctaves).toBe(2);
+            expect(t.freqs).toHaveLength(25);
+            expect(t.getFreqByModalIndexAndOctave(0, 2)).toBe(t.baseFrequency * 4);
+        });
+
         test('values below 1 are clamped to 1', () => {
             // The setter uses Math.max(1, |num|), so a fractional or zero
             // request still yields a usable single-octave temperament

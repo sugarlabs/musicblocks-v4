@@ -213,10 +213,16 @@ export default class Temperament implements ITemperament {
     ];
 
     /**
-     * Base frequency in Hertz.
-     * @remarks By default, we use C in Octave 0 as our base frequency.
+     * Frequency of C in Octave 0 in Hertz in equal temperament.
+     * @remarks Other temperaments get their own C0 from `A0`.
      */
     public static readonly C0: number = 16.3516;
+
+    /**
+     * Frequency of A in Octave 0 in Hertz.
+     * @remarks Every temperament is tuned so that A4 is 440 Hz, as in v3.
+     */
+    public static readonly A0: number = 27.5;
 
     /** The name of the temperament. */
     private _name: string;
@@ -538,7 +544,7 @@ export default class Temperament implements ITemperament {
      * A rule might be to use a series of ratios between steps, as in the Pythagorean temperament,
      * or to use a fixed ratio, such as the twelth root of two when calculating equal temperament.
      *
-     * - The base frequency used when applying the rules is defined in `this._baseFrequency`.
+     * - The base frequency (C0) is set from `Temperament.A0` so that A4 is 440 Hz.
      * - The number of times to apply the rules is determined by `this._numberOfOctaves`.
      * - The resultant frequencies are stored in `this._freqs`.
      * - The resultant number of notes per octave is stored in `this._octaveLength`.
@@ -572,18 +578,27 @@ export default class Temperament implements ITemperament {
 
         this._ratios = ratios;
         this._intervals = intervals;
-        this._octaveLength = intervals.length - 1;
-        this._freqs = [this._baseFrequency];
+        // Anchor on A so that A4 is 440 Hz; C0 is whatever the temperament gives it.
+        this._baseFrequency = Temperament.A0 / ratios['major 6'];
+        this._buildFreqs();
+    }
 
+    /**
+     * Fills the frequency table from the current base frequency, ratios and intervals.
+     */
+    private _buildFreqs(): void {
+        this._octaveLength = this._intervals.length - 1;
+        this._freqs = [];
+
+        // Build every octave from its own root so each one holds all of its notes and the ratios
+        // are applied to the right base, then close the table with the root of the next octave.
         for (let octave = 0; octave < this.numberOfOctaves; octave++) {
-            const c = this._freqs[this._freqs.length - 1];
+            const root = this._baseFrequency * Math.pow(2, octave);
             for (let i = 0; i < this._octaveLength; i++) {
-                if (i === 0) {
-                    continue;
-                }
-                this._freqs.push(c * ratios[intervals[i]]);
+                this._freqs.push(root * this._ratios[this._intervals[i]]);
             }
         }
+        this._freqs.push(this._baseFrequency * Math.pow(2, this.numberOfOctaves));
 
         this._generateGenericNoteNames();
     }
@@ -603,6 +618,9 @@ export default class Temperament implements ITemperament {
         }
         this._name = `equal_${nsteps}`; // By convention, start the name with 'equal'.
         this._octaveLength = nsteps;
+        // A is the step closest to 9/12 of the octave, as in v3's note names.
+        const aStep = Math.round((nsteps * 9) / 12);
+        this._baseFrequency = Temperament.A0 / Math.pow(2, aStep / nsteps);
         this._freqs = [this._baseFrequency];
 
         // nth root of 2
@@ -677,7 +695,7 @@ export default class Temperament implements ITemperament {
 
         if (Object.keys(this._ratios).length && this._intervals.length !== 0) {
             this._baseFrequency = frequency / 2 ** octave / this._ratios[this._intervals[i]];
-            this.generate(this._name);
+            this._buildFreqs();
         }
         return this._baseFrequency;
     }

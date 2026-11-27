@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
+import type { TowerState } from '@/@types/workspace.types';
 import {
     computeStatementPreview,
     computeArgumentPreview,
@@ -28,6 +29,10 @@ vi.mock('@/utils/statement-connect', () => ({
 vi.mock('@/utils/argument-connect', () => ({
     resolveArgumentConnection: vi.fn(),
 }));
+
+// The dragged tower is passed to the resolver directly; its root is never inspected here because
+// the connection resolvers are mocked.
+const draggedTower = { id: 'dragged1', root: {}, position: { x: 0, y: 0 } } as TowerState;
 
 // Dummy model factory to mock brick models
 const createMockModel = (scaleLevel: number, connectorCoords: Record<string, unknown>) => ({
@@ -119,8 +124,34 @@ describe('snap-preview-calculator', () => {
         (statementConnect.resolveStatementConnection as Mock).mockReturnValue(null);
         (argumentConnect.resolveArgumentConnection as Mock).mockReturnValue(null);
 
-        const result = resolveCandidateConnection('dragged1', useWorkspaceStore.getState());
+        const result = resolveCandidateConnection(draggedTower, useWorkspaceStore.getState());
         expect(result).toBeNull();
+    });
+
+    it('resolveCandidateConnection resolves against a tower map that includes the probe without mutating the store', () => {
+        (statementConnect.resolveStatementConnection as Mock).mockReturnValue(null);
+        (argumentConnect.resolveArgumentConnection as Mock).mockReturnValue(null);
+
+        const store = useWorkspaceStore.getState();
+        const storeTowers = store.towers;
+        const towersBefore = { ...storeTowers };
+
+        resolveCandidateConnection(draggedTower, store);
+
+        for (const resolver of [
+            statementConnect.resolveStatementConnection as Mock,
+            argumentConnect.resolveArgumentConnection as Mock,
+        ]) {
+            expect(resolver).toHaveBeenCalledTimes(1);
+            const { draggedTowerId, towers } = resolver.mock.calls[0][0];
+            expect(draggedTowerId).toBe(draggedTower.id);
+            expect(towers[draggedTower.id]).toBe(draggedTower);
+            expect(towers.tower1).toBe(storeTowers.tower1);
+        }
+
+        expect(store.towers).toBe(storeTowers);
+        expect(store.towers).toEqual(towersBefore);
+        expect(draggedTower.id in store.towers).toBe(false);
     });
 
     it('resolveCandidateConnection prefers statement over argument if distance is smaller', () => {
@@ -142,7 +173,7 @@ describe('snap-preview-calculator', () => {
         (statementConnect.resolveStatementConnection as Mock).mockReturnValue(statementConn);
         (argumentConnect.resolveArgumentConnection as Mock).mockReturnValue(argConn);
 
-        const result = resolveCandidateConnection('dragged1', useWorkspaceStore.getState());
+        const result = resolveCandidateConnection(draggedTower, useWorkspaceStore.getState());
 
         expect(result).not.toBeNull();
         expect(result!.target.type).toBe('statement');
@@ -168,7 +199,7 @@ describe('snap-preview-calculator', () => {
         (statementConnect.resolveStatementConnection as Mock).mockReturnValue(statementConn);
         (argumentConnect.resolveArgumentConnection as Mock).mockReturnValue(argConn);
 
-        const result = resolveCandidateConnection('dragged1', useWorkspaceStore.getState());
+        const result = resolveCandidateConnection(draggedTower, useWorkspaceStore.getState());
 
         expect(result).not.toBeNull();
         expect(result!.target.type).toBe('argument');

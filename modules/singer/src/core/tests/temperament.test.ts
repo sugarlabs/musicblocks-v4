@@ -55,8 +55,48 @@ describe('class Temperament', () => {
         test("Generate 'quarter comma meantone' temperament instance and verify frequencies", () => {
             const t = new Temperament('quarter comma meantone');
             const f: number[] = t.freqs;
-            expect(Number(f[36].toFixed(2))).toBe(55.45); // A1
+            expect(Number(f[36].toFixed(2))).toBe(55.79); // A1
             expect(t.noteNames.length).toBe(21);
+        });
+
+        test("Four fifths make a pure major third in 'quarter comma meantone'", () => {
+            const t = new Temperament('quarter comma meantone');
+            const f: number[] = t.freqs;
+            const fifth = f[12] / f[0];
+            expect(fifth ** 4 / 4).toBeCloseTo(5 / 4, 5);
+            expect(f[6] / f[0]).toBeCloseTo(5 / 4, 6);
+        });
+
+        test("'quarter comma meantone' ratios match v3", () => {
+            const t = new Temperament('quarter comma meantone');
+            const f: number[] = t.freqs;
+            // From "1/4 comma meantone" in js/utils/musicutils-temperament.js (v3)
+            const v3Ratios = [
+                1,
+                1.044907,
+                1.069984,
+                1.118034,
+                1.168241,
+                1.196279,
+                5 / 4,
+                32 / 25,
+                1.306133,
+                1.337481,
+                1.397542,
+                1.431084,
+                1.495349,
+                25 / 16,
+                8 / 5,
+                1.671851,
+                1.746928,
+                1.788854,
+                1.869186,
+                1.914046,
+                125 / 64,
+            ];
+            v3Ratios.forEach((ratio, i) => {
+                expect(f[i] / f[0]).toBeCloseTo(ratio, 6);
+            });
         });
 
         test("Generate 'equal 24' temperament instance and verify frequencies", () => {

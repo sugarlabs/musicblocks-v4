@@ -185,6 +185,22 @@ describe('Key Signature', () => {
         expect(ks.toString()).toEqual('C BEBOP [c d e f g a bb b c]');
     });
 
+    test('major bebop mode', () => {
+        expect(KeySignature.MUSICAL_MODES['major bebop']).toEqual([2, 2, 1, 2, 1, 1, 2, 1]);
+        const ks = new KeySignature('major bebop', 'c');
+        expect(ks.modeLength).toBe(8);
+        expect(ks.numberOfSemitones).toBe(12);
+        expect(ks.toString()).toEqual('C MAJOR BEBOP [c d e f g ab a b c]');
+    });
+
+    test('minor bebop mode', () => {
+        expect(KeySignature.MUSICAL_MODES['minor bebop']).toEqual([2, 1, 1, 1, 2, 2, 1, 2]);
+        const ks = new KeySignature('minor bebop', 'c');
+        expect(ks.modeLength).toBe(8);
+        expect(ks.numberOfSemitones).toBe(12);
+        expect(ks.toString()).toEqual('C MINOR BEBOP [c d eb e f g a bb c]');
+    });
+
     test('Mode equivalents', () => {
         let ks = new KeySignature('major', 'e');
         const source = ks.normalizeScale(ks.scale).sort();

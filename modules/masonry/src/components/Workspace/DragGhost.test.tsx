@@ -9,13 +9,15 @@ import type { PaletteBrickConfig } from '@/@types/palette.types';
 import type { StatementBrickViewProps } from '@/@types/brick.types';
 
 import { usePaletteDragStore } from '@/stores/palette';
-import { FOLD_TOGGLE_SELECTOR } from '@/utils/constants';
+import { useWorkspaceScaleStore } from '@/stores/scale';
+import { DEFAULT_SCALE_LEVEL, FOLD_TOGGLE_SELECTOR } from '@/utils/constants';
 
 import { DragGhost } from './DragGhost';
 
 afterEach(() => {
   cleanup();
   usePaletteDragStore.setState({ dragged: null });
+  useWorkspaceScaleStore.setState({ level: DEFAULT_SCALE_LEVEL });
 });
 
 const colorsDefault = { background: '#4f46e5', foreground: '#ffffff', border: '#4338ca' };
@@ -87,5 +89,20 @@ describe('DragGhost', () => {
 
     expect(toggle).not.toBeNull();
     expect(toggle!.disabled).toBe(true);
+  });
+
+  it('draws at the workspace scale so the ghost matches the brick that will land', () => {
+    // The palette renders at the model's default scale, but the ghost has to match where the
+    // drop lands — which `useDragFromPalette.end` builds at the workspace's live scale. A
+    // non-default level has to push the ghost to a different size, otherwise the ghost and the
+    // landed brick disagree the way #880 describes.
+    const entry = nestingEntry(undefined);
+
+    const defaultHeight = ghostOutlineHeight(entry);
+
+    useWorkspaceScaleStore.setState({ level: 3 });
+    const zoomedHeight = ghostOutlineHeight(entry);
+
+    expect(zoomedHeight).toBeGreaterThan(defaultHeight);
   });
 });

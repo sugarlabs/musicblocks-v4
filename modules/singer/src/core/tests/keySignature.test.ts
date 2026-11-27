@@ -163,6 +163,14 @@ describe('Key Signature', () => {
         expect(ks2.closestNote('n10#')[0]).toBe('n11');
     });
 
+    test('bebop mode', () => {
+        expect(KeySignature.MUSICAL_MODES['bebop']).toEqual([2, 2, 1, 2, 2, 1, 1, 1]);
+        const ks = new KeySignature('bebop', 'c');
+        expect(ks.modeLength).toBe(8);
+        expect(ks.numberOfSemitones).toBe(12);
+        expect(ks.toString()).toEqual('C BEBOP [c d e f g a bb b c]');
+    });
+
     test('Mode equivalents', () => {
         let ks = new KeySignature('major', 'e');
         const source = ks.normalizeScale(ks.scale).sort();

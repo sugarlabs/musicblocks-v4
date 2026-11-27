@@ -48,8 +48,21 @@ describe('class Temperament', () => {
         test("Generate 'just intonation' temperament instance and verify frequencies", () => {
             const t = new Temperament('just intonation');
             const f: number[] = t.freqs;
-            expect(Number(f[21].toFixed(2))).toBe(54.51); // A1
+            expect(Number(f[9].toFixed(2))).toBe(27.25); // A0
             expect(t.noteNames.length).toBe(12);
+        });
+
+        test("Use 5-limit ratios for the 'just intonation' tritone and minor 7th", () => {
+            const ratios: { [key: string]: number } = Temperament['JUST_INTONATION_RATIOS'];
+            expect(ratios['augmented 4']).toBe(45 / 32);
+            expect(ratios['diminished 5']).toBe(45 / 32);
+            expect(ratios['augmented 6']).toBe(9 / 5);
+            expect(ratios['minor 7']).toBe(9 / 5);
+
+            const t = new Temperament('just intonation');
+            const f: number[] = t.freqs;
+            expect(f[6] / f[0]).toBeCloseTo(45 / 32, 10); // diminished 5
+            expect(f[10] / f[0]).toBeCloseTo(9 / 5, 10); // minor 7
         });
 
         test("Generate 'quarter comma meantone' temperament instance and verify frequencies", () => {

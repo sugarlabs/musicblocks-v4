@@ -66,7 +66,7 @@ function exportNode(node: TowerNode): ExportedNode {
  */
 export function exportWorkspace(towers: Record<string, TowerState>): ExportedProject {
     const exportedTowers: ExportedTower[] = [];
-    const nodes: Record<string, ExportedNode> = {};
+    const nodes: Record<string, ExportedNode> = Object.create(null);
 
     for (const tower of Object.values(towers)) {
         exportedTowers.push({
@@ -108,7 +108,7 @@ export function exportWorkspace(towers: Record<string, TowerState>): ExportedPro
  * @returns An `ExportedProject` describing exactly that sub-tree as one tower.
  */
 export function exportSubtree(node: TowerNode): ExportedProject {
-    const nodes: Record<string, ExportedNode> = {};
+    const nodes: Record<string, ExportedNode> = Object.create(null);
 
     for (const child of listNodes(node)) {
         // Brick ids are unique across the whole workspace, so a clash means the graph is corrupt;
@@ -368,7 +368,8 @@ export function validateProject(payload: unknown): ExportedProject {
     }
 
     if (!isRecord(payload.nodes)) reject('payload has no nodes object');
-    const nodes: Record<string, ExportedNode> = {};
+    // No prototype: lookups on untrusted ids must not find inherited keys like `toString`.
+    const nodes: Record<string, ExportedNode> = Object.create(null);
     for (const [id, value] of Object.entries(payload.nodes)) {
         nodes[id] = assertNode(id, value);
     }

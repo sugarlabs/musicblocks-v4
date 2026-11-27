@@ -15,6 +15,8 @@ import {
     exportSubtree,
     exportWorkspace,
     importProject,
+    migrateProject,
+    NewerSchemaError,
 } from './import-export';
 
 /** Wraps roots as a towers record, positioned along a diagonal so each placement is distinct. */
@@ -738,5 +740,68 @@ describe('importProject', () => {
         it('accepts the untouched payload, so each rejection is down to its own breakage', () => {
             expect(() => importProject(payloadOf(statementTreeWithNesting))).not.toThrow();
         });
+    });
+});
+
+describe('migrateProject', () => {
+    it('passes a current-version payload through validation unchanged', () => {
+        const project = payloadOf(statementTreeWithNesting);
+        expect(migrateProject(project)).toEqual(project);
+    });
+
+    it('runs every step, oldest first, up to the current version', () => {
+        const project = payloadOf(statementTreeWithNesting);
+        const from = EXPORT_SCHEMA_VERSION - 2;
+        const seen: number[] = [];
+        const bump = (payload: Record<string, unknown>) => {
+            seen.push(payload.version as number);
+            return { ...payload, version: (payload.version as number) + 1 };
+        };
+
+        const migrated = migrateProject(
+            { ...project, version: from },
+            {
+                [from]: bump,
+                [from + 1]: bump,
+            },
+        );
+
+        expect(seen).toEqual([from, from + 1]);
+        expect(migrated).toEqual(project);
+    });
+
+    it('refuses a payload with no path to the current version', () => {
+        const old = { ...payloadOf(statementTreeWithNesting), version: EXPORT_SCHEMA_VERSION - 1 };
+        expect(() => migrateProject(old)).toThrow(/no migration from schema version/);
+    });
+
+    it('treats a non-integer version as corrupt, not as a newer build', () => {
+        const odd = {
+            ...payloadOf(statementTreeWithNesting),
+            version: EXPORT_SCHEMA_VERSION + 0.5,
+        };
+
+        expect(() => migrateProject(odd)).toThrow(/unsupported schema version/);
+        expect(() => migrateProject(odd)).not.toThrow(NewerSchemaError);
+    });
+
+    it('flags a payload from a newer build with its version', () => {
+        const newer = {
+            ...payloadOf(statementTreeWithNesting),
+            version: EXPORT_SCHEMA_VERSION + 1,
+        };
+
+        expect(() => migrateProject(newer)).toThrow(NewerSchemaError);
+        expect(() => migrateProject(newer)).toThrow(
+            expect.objectContaining({ version: EXPORT_SCHEMA_VERSION + 1 }),
+        );
+    });
+
+    it('is the path importProject takes, so files get the same upgrades', () => {
+        const newer = {
+            ...payloadOf(statementTreeWithNesting),
+            version: EXPORT_SCHEMA_VERSION + 1,
+        };
+        expect(() => importProject(newer)).toThrow(NewerSchemaError);
     });
 });

@@ -282,4 +282,47 @@ describe('class Temperament', () => {
             expect(tuple).toStrictEqual([2, 0]);
         });
     });
+
+    describe('numberOfOctaves setter', () => {
+        test('setting to 8 leaves the value at 8', () => {
+            const t = new Temperament();
+            t.numberOfOctaves = 8;
+            expect(t.numberOfOctaves).toBe(8);
+        });
+
+        test('a negative input is treated as its absolute value', () => {
+            const t = new Temperament();
+            t.numberOfOctaves = -3;
+            expect(t.numberOfOctaves).toBe(3);
+        });
+
+        test('setting to 2.5 floors to 2', () => {
+            const t = new Temperament();
+            t.numberOfOctaves = 2.5;
+            expect(t.numberOfOctaves).toBe(2);
+        });
+
+        test('values below 1 are clamped to 1', () => {
+            const t = new Temperament();
+            t.numberOfOctaves = 0.5;
+            expect(t.numberOfOctaves).toBe(1);
+            t.numberOfOctaves = 0;
+            expect(t.numberOfOctaves).toBe(1);
+        });
+
+        test('non-finite inputs do not replace the current value', () => {
+            const t = new Temperament();
+            t.numberOfOctaves = 5;
+            expect(t.numberOfOctaves).toBe(5);
+
+            t.numberOfOctaves = Infinity;
+            expect(t.numberOfOctaves).toBe(5);
+
+            t.numberOfOctaves = -Infinity;
+            expect(t.numberOfOctaves).toBe(5);
+
+            t.numberOfOctaves = NaN;
+            expect(t.numberOfOctaves).toBe(5);
+        });
+    });
 });

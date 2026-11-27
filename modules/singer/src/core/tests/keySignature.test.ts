@@ -255,6 +255,7 @@ describe('Key Signature', () => {
         expect(ks.convertToGenericNoteName('g#')).toBe('n8');
         expect(ks.convertToGenericNoteName('sol#')).toBe('n8');
         expect(ks.convertToGenericNoteName('5#')).toBe('n8');
+        expect(ks.convertToGenericNoteName('5b')).toBe('n6');
         expect(ks.convertToGenericNoteName('pa#')).toBe('n8');
 
         ks.customNoteNames = ['charlie', 'delta', 'echo', 'foxtrot', 'golf', 'alfa', 'bravo'];

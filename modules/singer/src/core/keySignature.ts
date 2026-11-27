@@ -99,6 +99,7 @@ export default class KeySignature implements IKeySignature {
         // 5 notes in an octave.
         'major pentatonic': [2, 2, 3, 2, 3],
         'minor pentatonic': [3, 2, 2, 3, 2],
+        'alt pentatonic': [2, 3, 2, 2, 3],
         'chinese': [4, 2, 1, 4, 1],
         'egyptian': [2, 3, 2, 3, 2],
         'hirajoshi': [1, 4, 1, 4, 2],

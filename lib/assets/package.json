@@ -6,6 +6,7 @@
   "main": "index.ts",
   "scripts": {
     "check": "tsc",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "test": "vitest run --config ../../vitest.config.ts"
   }
 }

@@ -43,10 +43,7 @@ export function getAssets(identifiers: string[]): { [identifier: string]: TAsset
  * @param manifest asset details
  */
 export async function importAsset(identifier: string, manifest: TAssetManifest): Promise<void> {
-    let { path, meta } = manifest;
-    path = import.meta.env.PROD
-        ? path.replace(new RegExp(`${import.meta.env.BASE_URL}`), '')
-        : path;
+    const { path, meta } = manifest;
 
     const data = await fetch(path)
         .then((response) => response.blob())

@@ -282,7 +282,12 @@ export default class Temperament implements ITemperament {
      * span 96 notes).
      */
     public set numberOfOctaves(num: number) {
-        this._numberOfOctaves = Math.min(1, Number(Math.abs(num)));
+        const magnitude = Number(Math.abs(num));
+        // Reject NaN / ±Infinity so generate()'s loops cannot hang or exhaust
+        // memory iterating an unbounded range; fall back to the current value.
+        this._numberOfOctaves = Number.isFinite(magnitude)
+            ? Math.max(1, magnitude)
+            : this._numberOfOctaves;
     }
 
     /**
@@ -573,17 +578,17 @@ export default class Temperament implements ITemperament {
         this._ratios = ratios;
         this._intervals = intervals;
         this._octaveLength = intervals.length - 1;
-        this._freqs = [this._baseFrequency];
+        this._freqs = [];
 
+        // Build every octave from its own root so each one holds all of its notes and the ratios
+        // are applied to the right base, then close the table with the root of the next octave.
         for (let octave = 0; octave < this.numberOfOctaves; octave++) {
-            const c = this._freqs[this._freqs.length - 1];
+            const root = this._baseFrequency * Math.pow(2, octave);
             for (let i = 0; i < this._octaveLength; i++) {
-                if (i === 0) {
-                    continue;
-                }
-                this._freqs.push(c * ratios[intervals[i]]);
+                this._freqs.push(root * ratios[intervals[i]]);
             }
         }
+        this._freqs.push(this._baseFrequency * Math.pow(2, this.numberOfOctaves));
 
         this._generateGenericNoteNames();
     }

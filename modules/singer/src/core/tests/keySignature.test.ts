@@ -226,10 +226,14 @@ describe('Key Signature', () => {
     test('solfege mapper', () => {
         let ks = new KeySignature('major', 'c');
         expect(ks.solfegeNotes.length).toBe(8);
+        expect(ks.solfegeNotes).toContain('mi');
+        expect(
+            ks.genericNoteNameConvertToType(ks.convertToGenericNoteName('mi'), LETTER_NAME),
+        ).toBe('e');
 
         ks = new KeySignature('major pentatonic', 'c');
         expect(ks.solfegeNotes.length).toBe(6);
-        expect(ks.solfegeNotes[2]).toBe('me');
+        expect(ks.solfegeNotes[2]).toBe('mi');
         expect(ks.solfegeNotes[3]).toBe('sol');
 
         ks = new KeySignature('minor pentatonic', 'c');
@@ -239,13 +243,13 @@ describe('Key Signature', () => {
 
         ks = new KeySignature('whole tone', 'c');
         expect(ks.solfegeNotes.length).toBe(7);
-        expect(ks.solfegeNotes[2]).toBe('me');
+        expect(ks.solfegeNotes[2]).toBe('mi');
         expect(ks.solfegeNotes[4]).toBe('sol');
 
         ks = new KeySignature('chromatic', 'c');
         expect(ks.solfegeNotes.length).toBe(13);
         expect(ks.solfegeNotes[2]).toBe('re');
-        expect(ks.solfegeNotes[3]).toBe('meb');
+        expect(ks.solfegeNotes[3]).toBe('mib');
 
         ks = new KeySignature();
         expect(ks.convertToGenericNoteName('g')).toBe('n7');
@@ -293,6 +297,8 @@ describe('Key Signature', () => {
         expect(ks.pitchNameType('n7b')).toBe(GENERIC_NOTE_NAME);
         expect(ks.pitchNameType('sol')).toBe(SOLFEGE_NAME);
         expect(ks.pitchNameType('sol#')).toBe(SOLFEGE_NAME);
+        expect(ks.pitchNameType('mi')).toBe(SOLFEGE_NAME);
+        expect(ks.pitchNameType('me')).toBe(UNKNOWN_PITCH_NAME);
         expect(ks.pitchNameType('pa')).toBe(EAST_INDIAN_SOLFEGE_NAME);
         expect(ks.pitchNameType('5')).toBe(SCALAR_MODE_NUMBER);
         expect(ks.pitchNameType('golf')).toBe(CUSTOM_NAME);

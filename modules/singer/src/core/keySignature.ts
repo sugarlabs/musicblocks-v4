@@ -214,10 +214,10 @@ export default class KeySignature implements IKeySignature {
      * Solfege notes in mode.
      *
      * @example
-     * Major: ['do', 're', 'me', 'fa', 'sol', 'la', 'ti', 'do']
-     * Major Pentatonic: ['do', 're', 'me', 'sol', 'la', 'do']
-     * Minor Pentatonic: ['do', 'me', 'fa', 'sol', 'ti', 'do']
-     * Whole Tone: ['do', 're', 'me', 'sol', 'la', 'ti', 'do']
+     * Major: ['do', 're', 'mi', 'fa', 'sol', 'la', 'ti', 'do']
+     * Major Pentatonic: ['do', 're', 'mi', 'sol', 'la', 'do']
+     * Minor Pentatonic: ['do', 'mi', 'fa', 'sol', 'ti', 'do']
+     * Whole Tone: ['do', 're', 'mi', 'sol', 'la', 'ti', 'do']
      *
      * @remarks
      * Solfege assignment only works for temperaments of 12 semitones.

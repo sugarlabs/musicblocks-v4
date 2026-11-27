@@ -53,6 +53,9 @@ export class Scale implements IScale {
      * of semitones instead. (Or trigger a mapping from 12 to 21.) Defaults to `12`.
      * @param preferSharps - If we are mapping from 12 to 21 semitones, we need to know whether or
      * not to prefer sharps or flats. Defaults to `true`.
+     *
+     * @throws {InvalidArgumentError}
+     * Thrown if `startingIndex` is not a non-negative integer.
      */
     constructor(
         halfStepsPattern: number[] | null = null,
@@ -60,6 +63,10 @@ export class Scale implements IScale {
         numberOfSemitones = 12,
         preferSharps = true,
     ) {
+        if (!Number.isInteger(startingIndex) || startingIndex < 0) {
+            throw new InvalidArgumentError('startingIndex must be a non-negative integer.');
+        }
+
         // Calculate the number of semitones by summing up the half steps.
         if (halfStepsPattern === null || halfStepsPattern.length === 0) {
             this._numberOfSemitones = numberOfSemitones;

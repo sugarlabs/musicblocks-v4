@@ -573,4 +573,18 @@ describe('Key Signature', () => {
             }
         }
     });
+
+    test('major blues spans a full octave', () => {
+        const steps = KeySignature.MUSICAL_MODES['major blues'];
+        expect(steps.reduce((sum, step) => sum + step, 0)).toBe(12);
+
+        const ks = new KeySignature('major blues', 'c');
+        expect(ks.numberOfSemitones).toBe(12);
+        for (const note of ['c', 'd', 'eb', 'e', 'g', 'a']) {
+            expect(ks.noteInScale(note)).toBe(true);
+        }
+        for (const note of ['f', 'b']) {
+            expect(ks.noteInScale(note)).toBe(false);
+        }
+    });
 });

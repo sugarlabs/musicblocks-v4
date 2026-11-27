@@ -225,8 +225,11 @@ export function Palette({ config, collapsed = false, onExpand }: PaletteViewProp
           </div>
         ) : (
           <div
+            tabIndex={0}
+            role="region"
+            aria-label="Palette bricks"
             className={cn(
-              'flex-1 overflow-y-auto p-4 transition-[padding-bottom] duration-500',
+              'focus-visible:ring-ring flex-1 overflow-y-auto p-4 transition-[padding-bottom] duration-500 outline-none focus-visible:ring-1',
               isDragging && 'pb-32',
             )}
           >

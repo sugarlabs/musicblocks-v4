@@ -394,7 +394,8 @@ public tune: (pitchName: string, octave: number, frequency: number) => number
 ### Description
 
 By default, the Temperament object creates an equal temperament based on 2<sup>1/12</sup>, with a
-starting frequency of C0 = 16.3516 Hz. 9 octaves of 12 semitones are generated. Many other
+starting frequency of C0 = 16.3516 Hz. Every temperament is tuned so that A4 is 440 Hz, so C0
+depends on the temperament. 9 octaves of 12 semitones are generated. Many other
 predefined temperaments are available and equal temperament can also be generated for other powers
 of 2. For example, 2^^(1/24) would produce quarter steps. Also, the temperament can be tuned to a
 different base pitch.

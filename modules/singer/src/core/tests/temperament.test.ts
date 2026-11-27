@@ -34,28 +34,28 @@ describe('class Temperament', () => {
         test("Generate 'third comma meantone' temperament instance and verify frequencies", () => {
             const t = new Temperament('third comma meantone');
             const f: number[] = t.freqs;
-            expect(Number(f[21].toFixed(2))).toBe(35.18);
+            expect(Number(f[21].toFixed(2))).toBe(35.5);
             expect(t.noteNames.length).toBe(19);
         });
 
         test("Generate 'pythagorean' temperament instance and verify frequencies", () => {
             const t = new Temperament('pythagorean');
             const f: number[] = t.freqs;
-            expect(Number(f[21].toFixed(2))).toBe(55.19); // A1
+            expect(Number(f[21].toFixed(2))).toBe(55.0); // A1
             expect(t.noteNames.length).toBe(12);
         });
 
         test("Generate 'just intonation' temperament instance and verify frequencies", () => {
             const t = new Temperament('just intonation');
             const f: number[] = t.freqs;
-            expect(Number(f[21].toFixed(2))).toBe(54.51); // A1
+            expect(Number(f[21].toFixed(2))).toBe(55.0); // A1
             expect(t.noteNames.length).toBe(12);
         });
 
         test("Generate 'quarter comma meantone' temperament instance and verify frequencies", () => {
             const t = new Temperament('quarter comma meantone');
             const f: number[] = t.freqs;
-            expect(Number(f[36].toFixed(2))).toBe(54.51); // A1
+            expect(Number(f[36].toFixed(2))).toBe(55.0); // A1
             expect(t.noteNames.length).toBe(21);
         });
 
@@ -176,12 +176,12 @@ describe('class Temperament', () => {
 
         test('Expect frequency of index 0 into the frequency list to be 16.3516', () => {
             const num: number = t.getFreqByIndex(0);
-            expect(num).toBe(16.3516);
+            expect(num).toBeCloseTo(16.3516, 4);
         });
 
-        test('Expect frequency of index 20 into the frequency list to be 51.91309408272643', () => {
+        test('Expect frequency of index 20 into the frequency list to be 51.91308719749314', () => {
             const num: number = t.getFreqByIndex(20);
-            expect(num).toBeCloseTo(51.91309408272643, 10);
+            expect(num).toBeCloseTo(51.91308719749314, 10);
         });
     });
 
@@ -217,7 +217,7 @@ describe('class Temperament', () => {
 
         test("Expect frequency 16.3516 Hz when generic note name is 'n0' and octave is 0", () => {
             const num: number = t.getFreqByGenericNoteNameAndOctave('n0', 0);
-            expect(num).toBe(16.3516);
+            expect(num).toBeCloseTo(16.3516, 4);
         });
 
         test("Expect error when generic note name is 'a' (invalid)", () => {
@@ -238,14 +238,14 @@ describe('class Temperament', () => {
         });
 
         const jit = new Temperament('just intonation');
-        test("Expect frequency 436 Hz when pitch is ['n9', 4, 0] ", () => {
+        test("Expect frequency 440 Hz when pitch is ['n9', 4, 0] ", () => {
             const num: number = jit.getFreqByGenericPitchNameOctaveCents(['n9', 4, 0]);
-            expect(num.toFixed(0)).toBe('436');
+            expect(num.toFixed(0)).toBe('440');
         });
 
-        test("Expect frequency 439 Hz when pitch is ['n9', 4, 10] ", () => {
+        test("Expect frequency 443 Hz when pitch is ['n9', 4, 10] ", () => {
             const num: number = jit.getFreqByGenericPitchNameOctaveCents(['n9', 4, 10]);
-            expect(num.toFixed(0)).toBe('439');
+            expect(num.toFixed(0)).toBe('443');
         });
     });
 
@@ -309,5 +309,30 @@ describe('class Temperament', () => {
                 }
             },
         );
+    });
+
+    describe('A4 = 440 Hz', () => {
+        // [temperament, generic name of A]
+        test.each([
+            ['equal', 'n9'],
+            ['just intonation', 'n9'],
+            ['pythagorean', 'n9'],
+            ['third comma meantone', 'n14'],
+            ['quarter comma meantone', 'n15'],
+        ])('A4 is 440 Hz in %s', (name, a) => {
+            const t = new Temperament(name);
+            expect(t.getFreqByGenericNoteNameAndOctave(a, 4)).toBeCloseTo(440, 6);
+        });
+
+        test('A4 is 440 Hz in 19 step equal temperament', () => {
+            const t = new Temperament();
+            t.generateEqualTemperament(19);
+            expect(t.getFreqByGenericNoteNameAndOctave('n14', 4)).toBeCloseTo(440, 6);
+        });
+
+        test('C4 is 264 Hz in just intonation', () => {
+            const t = new Temperament('just intonation');
+            expect(t.getFreqByGenericNoteNameAndOctave('n0', 4)).toBeCloseTo(264, 6);
+        });
     });
 });

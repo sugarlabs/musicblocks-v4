@@ -15,6 +15,7 @@ import { useDragFromPalette } from '@/hooks/useDragFromPalette';
 import { useTowerLayout } from '@/hooks/useTowerLayout';
 import { useWorkspaceScale } from '@/hooks/useWorkspaceScale';
 import { cn } from '@/lib/utils';
+import { startAutosave } from '@/storage/autosave';
 import { useBrickLayoutStore } from '@/stores/brick';
 import { findNodeAndTower, useWorkspaceStore } from '@/stores/workspace';
 import { discardTower } from '@/utils/towerDiscard';
@@ -60,6 +61,8 @@ export function Workspace({ config }: WorkspaceViewProps) {
       useWorkspaceHistoryStore.getState().init();
     });
   }, []);
+
+  useEffect(() => startAutosave(), []);
 
   // Keyboard deletion of the selected brick. The listener sits on the window rather than the canvas
   // because the canvas never holds focus: nothing in it is focusable, so a press after a click on a

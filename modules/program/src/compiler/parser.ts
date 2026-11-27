@@ -113,6 +113,7 @@ export class Parser {
     }
 
     public compileFunction(functionNode: FunctionDeclaration): IRFunction {
+        this.blockManager = new BasicBlockManager();
         const threadContext = new CompilationThreadContext();
         this.context = {
             currentFunction: 'main',

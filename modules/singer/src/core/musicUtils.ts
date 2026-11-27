@@ -78,7 +78,7 @@ export const ALL_NOTES: string[] = [
 
 export const SCALAR_MODE_NUMBERS: string[] = ['1', '2', '3', '4', '5', '6', '7'];
 
-export const SOLFEGE_NAMES: string[] = ['do', 're', 'me', 'fa', 'sol', 'la', 'ti'];
+export const SOLFEGE_NAMES: string[] = ['do', 're', 'mi', 'fa', 'sol', 'la', 'ti'];
 
 export const EAST_INDIAN_NAMES: string[] = ['sa', 're', 'ga', 'ma', 'pa', 'dha', 'ni'];
 
@@ -121,7 +121,7 @@ export const SOLFEGE_SHARP: string[] = [
     'do#',
     're',
     're#',
-    'me',
+    'mi',
     'fa',
     'fa#',
     'sol',
@@ -135,8 +135,8 @@ export const SOLFEGE_FLAT: string[] = [
     'do',
     'reb',
     're',
-    'meb',
-    'me',
+    'mib',
+    'mi',
     'fa',
     'solb',
     'sol',

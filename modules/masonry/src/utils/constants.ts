@@ -95,6 +95,15 @@ export const ACTION_MENU_RING = {
     gapDegrees: 4,
 } as const;
 
+/**
+ * Minimum distance (in canvas pixels) the dragged brick/tower must travel before
+ * re-evaluating candidate connection snapping during dragging.
+ *
+ * Prevents redundant collision-space and connection-resolution traversals on every
+ * intermediate sub-pixel/jitter move event while maintaining crisp snap preview responsiveness.
+ */
+export const SNAP_RESOLUTION_THRESHOLD_PX = 3;
+
 /** How far (in pixels) the canvas pans per arrow-key press. */
 export const PAN_STEP = 50;
 /** How far (in pixels) the canvas pans per accelerated arrow-key press (Shift held). */

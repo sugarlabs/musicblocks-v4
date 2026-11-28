@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { CurrentPitch, KeySignature, Temperament } from '@sugarlabs/mb4-module-singer/core';
 import { SingerFunctionRegistry } from './external-function-registry';
 import { defaultMusicContext } from '../music/context';
 import { NoteEvent } from '../music/note-event';
@@ -127,5 +128,132 @@ describe('SingerFunctionRegistry', () => {
         const music = defaultMusicContext();
         expect(() => r.executeFunction('playNote', ['a', 0.25], music)).not.toThrow();
         expect(music).toEqual(defaultMusicContext());
+    });
+
+    const expectedCurrentPitch = (pitch: number | string, music = defaultMusicContext()) => {
+        const ks = new KeySignature(music.mode, music.key);
+        const t = new Temperament(music.temperament);
+        const cp = new CurrentPitch(ks, t);
+        cp.setPitch(pitch, music.octave);
+        return cp;
+    };
+
+    it('resolves numeric frequency 440 to match CurrentPitch', () => {
+        const r = new SingerFunctionRegistry();
+        const music = defaultMusicContext();
+        const events: NoteEvent[] = [];
+        r.executeFunction('playNote', [440, 0.25], music, events);
+        expect(events).toHaveLength(1);
+        const expected = expectedCurrentPitch(440, music);
+        expect(events[0].hz).toBeCloseTo(expected.freq);
+        expect(events[0].name).toBe(expected.genericName);
+        expect(events[0].octave).toBe(expected.octave);
+        expect(Math.round(events[0].hz)).toBe(440);
+        expect(events[0].name).toBe('n9');
+    });
+
+    it('resolves numeric frequency 261.63 according to temperament resolution', () => {
+        const r = new SingerFunctionRegistry();
+        const music = defaultMusicContext();
+        const events: NoteEvent[] = [];
+        r.executeFunction('playNote', [261.63, 0.25], music, events);
+        expect(events).toHaveLength(1);
+        const expected = expectedCurrentPitch(261.63, music);
+        expect(events[0].hz).toBeCloseTo(expected.freq);
+        expect(events[0].name).toBe(expected.genericName);
+        expect(events[0].octave).toBe(expected.octave);
+        expect(Math.round(events[0].hz)).toBe(262);
+        expect(events[0].name).toBe('n0');
+    });
+
+    it('resolves valid integer semitone index (9 for A4) to match CurrentPitch', () => {
+        const r = new SingerFunctionRegistry();
+        const music = defaultMusicContext();
+        const events: NoteEvent[] = [];
+        r.executeFunction('playNote', [9, 0.5], music, events);
+        expect(events).toHaveLength(1);
+        const expected = expectedCurrentPitch(9, music);
+        expect(events[0].hz).toBeCloseTo(expected.freq);
+        expect(events[0].name).toBe(expected.genericName);
+        expect(events[0].octave).toBe(expected.octave);
+        expect(Math.round(events[0].hz)).toBe(440);
+        expect(events[0].name).toBe('n9');
+    });
+
+    it("resolves written note name 'a' to match CurrentPitch", () => {
+        const r = new SingerFunctionRegistry();
+        const music = defaultMusicContext();
+        const events: NoteEvent[] = [];
+        r.executeFunction('playNote', ['a', 0.25], music, events);
+        expect(events).toHaveLength(1);
+        const expected = expectedCurrentPitch('a', music);
+        expect(events[0].hz).toBeCloseTo(expected.freq);
+        expect(events[0].name).toBe(expected.genericName);
+        expect(events[0].octave).toBe(expected.octave);
+        expect(Math.round(events[0].hz)).toBe(440);
+        expect(events[0].name).toBe('n9');
+    });
+
+    it("handles written note name 'c4' matching CurrentPitch interpretation", () => {
+        const r = new SingerFunctionRegistry();
+        const music = defaultMusicContext();
+        const events: NoteEvent[] = [];
+        r.executeFunction('playNote', ['c4', 0.25], music, events);
+        expect(events).toHaveLength(1);
+        const expected = expectedCurrentPitch('c4', music);
+        expect(events[0].hz).toBeCloseTo(expected.freq);
+        expect(events[0].name).toBe(expected.genericName);
+        expect(events[0].octave).toBe(expected.octave);
+    });
+
+    it('rejects invalid numeric inputs without emitting note events', () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const r = new SingerFunctionRegistry();
+        const music = defaultMusicContext();
+        const events: NoteEvent[] = [];
+        r.executeFunction('playNote', [-100, 0.25], music, events);
+        r.executeFunction('playNote', [-1, 0.25], music, events);
+        expect(events).toHaveLength(0);
+        expect(warn).toHaveBeenCalledTimes(2);
+        warn.mockRestore();
+    });
+
+    it('rejects NaN and Infinity without emitting note events', () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const r = new SingerFunctionRegistry();
+        const music = defaultMusicContext();
+        const events: NoteEvent[] = [];
+        r.executeFunction('playNote', [NaN, 0.25], music, events);
+        r.executeFunction('playNote', [Infinity, 0.25], music, events);
+        r.executeFunction('playNote', [-Infinity, 0.25], music, events);
+        expect(events).toHaveLength(0);
+        expect(warn).toHaveBeenCalledTimes(3);
+        warn.mockRestore();
+    });
+
+    it('rejects missing or unsupported pitch types without emitting note events', () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const r = new SingerFunctionRegistry();
+        const music = defaultMusicContext();
+        const events: NoteEvent[] = [];
+        r.executeFunction('playNote', [undefined, 0.25], music, events);
+        r.executeFunction('playNote', [null, 0.25], music, events);
+        r.executeFunction('playNote', [{}, 0.25], music, events);
+        r.executeFunction('playNote', [true, 0.25], music, events);
+        expect(events).toHaveLength(0);
+        expect(warn).toHaveBeenCalledTimes(4);
+        warn.mockRestore();
+    });
+
+    it('rejects empty and whitespace note-name input without emitting note events', () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const r = new SingerFunctionRegistry();
+        const music = defaultMusicContext();
+        const events: NoteEvent[] = [];
+        r.executeFunction('playNote', ['', 0.25], music, events);
+        r.executeFunction('playNote', ['   ', 0.25], music, events);
+        expect(events).toHaveLength(0);
+        expect(warn).toHaveBeenCalledTimes(2);
+        warn.mockRestore();
     });
 });

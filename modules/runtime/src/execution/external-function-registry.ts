@@ -145,19 +145,39 @@ export class SingerFunctionRegistry implements IExternalFunctionRegistry {
     }
 
     /**
-     * Resolves a written pitch through the music context and appends a note event.
+     * Resolves a pitch (numeric or written note name) through the music context and appends a note event.
      */
     private _playNote(args: unknown[], music: MusicContext, events?: NoteEvent[]): void {
         if (events === undefined) {
             return;
         }
-        const pitchName = String(args[0]);
+
+        const rawPitch = args[0];
+        let pitch: number | string;
+
+        if (typeof rawPitch === 'number') {
+            if (!Number.isFinite(rawPitch) || rawPitch < 0) {
+                console.warn(`invalid numeric pitch: ${rawPitch}`);
+                return;
+            }
+            pitch = rawPitch;
+        } else if (typeof rawPitch === 'string') {
+            if (rawPitch.trim() === '') {
+                console.warn('invalid pitch: empty string');
+                return;
+            }
+            pitch = rawPitch;
+        } else {
+            console.warn(`unsupported pitch type: ${typeof rawPitch}`);
+            return;
+        }
+
         const durationBeats = Number(args[1]);
 
         const keySignature = new KeySignature(music.mode, music.key);
         const temperament = new Temperament(music.temperament);
         const current = new CurrentPitch(keySignature, temperament);
-        current.setPitch(pitchName, music.octave);
+        current.setPitch(pitch, music.octave);
 
         events.push({
             hz: current.freq,

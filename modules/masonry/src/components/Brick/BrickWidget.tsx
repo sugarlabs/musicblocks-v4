@@ -198,7 +198,10 @@ function NumberboxWidget({
       type="number"
       defaultValue={widget.value as number}
       onChange={(e) => {
-        widget.value = parseFloat(e.target.value);
+        const value = e.target.valueAsNumber;
+        if (Number.isNaN(value)) return;
+
+        widget.value = value;
         debouncedCommit();
       }}
       min={widget.min}

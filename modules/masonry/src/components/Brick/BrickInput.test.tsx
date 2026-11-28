@@ -7,7 +7,7 @@
 // sets *declaratively* — the widget's color, font size, and value rendering. The outline
 // path generation is geometry and is covered by path2 specs, which need no DOM.
 
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import type { WidgetInput } from '@/@types/brick.types';
@@ -106,6 +106,18 @@ describe('BrickViewInput widget types', () => {
     expect(input.min).toBe('0');
     expect(input.max).toBe('100');
     expect(input.step).toBe('5');
+  });
+
+  it('preserves the numberbox value when the input is cleared', async () => {
+    const widget: WidgetInput = { type: 'numberbox', value: 42 };
+    renderValueBrickInput(widget);
+
+    const input = (await screen.findByDisplayValue('42')) as HTMLInputElement;
+    fireEvent.change(input, { target: { value: '' } });
+
+    expect(input.value).toBe('');
+    expect(widget.value).toBe(42);
+    expect(Number.isNaN(widget.value)).toBe(false);
   });
 
   it('renders a toggle widget with checked state and labels', async () => {

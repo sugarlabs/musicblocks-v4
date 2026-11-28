@@ -55,4 +55,31 @@ describe('SingerFunctionRegistry through the interpreter', () => {
         expect(context.events[0].durationBeats).toBe(0.25);
         expect(context.events[1].durationBeats).toBe(0.5);
     });
+
+    it('emits note events for numeric pitch arguments through the interpreter', () => {
+        const functions = new Map<string, IRFunction>();
+        functions.set(
+            'start1',
+            new IRFunction('start1', [
+                new IRBasicBlock('entry', [
+                    new CallInstruction('playNote', [440, 0.25]),
+                    new CallInstruction('playNote', [261.63, 0.5]),
+                ]),
+            ]),
+        );
+        const program = new IRProgram(functions);
+
+        const interpreter = new IRInterpreter(new SingerFunctionRegistry());
+        interpreter.load(program);
+        interpreter.run();
+
+        const context = interpreter.getContext()!;
+        expect(context.events).toHaveLength(2);
+        expect(Math.round(context.events[0].hz)).toBe(440);
+        expect(context.events[0].name).toBe('n9');
+        expect(context.events[0].durationBeats).toBe(0.25);
+        expect(Math.round(context.events[1].hz)).toBe(262);
+        expect(context.events[1].name).toBe('n0');
+        expect(context.events[1].durationBeats).toBe(0.5);
+    });
 });
